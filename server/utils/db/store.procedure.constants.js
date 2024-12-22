@@ -1,0 +1,4 @@
+const STORE_PROCEDURES={
+
+}
+export default STORE_PROCEDURES
