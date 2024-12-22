@@ -1,0 +1,44 @@
+{
+    "codes": [
+      { "code": "2.0001", "message": "Internal server error" },
+      { "code": "4.0001", "message": "Data added successfully." },
+      { "code": "4.0002", "message": "Data updated successfully." },
+      { "code": "4.0003", "message": "Data deleted successfully." },
+      { "code": "4.0004", "message": "Data retrieved successfully." },
+      {
+        "code": "3.0001",
+        "message": "An error occurred while adding the record."
+      },
+      {
+        "code": "3.0002",
+        "message": "An error occurred while updating the record." 
+      },
+      {
+        "code": "3.0003",
+        "message": "An error occurred while deleting the record."
+      },
+      { "code": "3.0004", "message": "Data not found." },
+      { "code": "3.0005", "message": "Data already exist." },
+      { "code": "1.0001", "message": "Validation failed" },
+      { "code": "1.0002", "message": "API endpoint not found." },
+      { "code": "3.0006", "message": "Invalid Password!" },
+      { "code": "1.0003", "message": "Failed to verify JWT token" },
+      { "code": "1.0004", "message": "JWT token has expired" },
+      { "code": "1.0005", "message": "Unauthorized: Invalid or missing token" },
+      { "code": "1.0006", "message": "No Token Provided" },
+      { "code": "4.0005", "message": "Logged In Successfully" },
+      { "code": "1.0007", "message": "Shipment Not Found" },
+      { "code": "1.0008", "message": "BarCode Already Scanned" },
+      { "code": "1.0009", "message": "Shipper Id is Required" },
+      { "code": "1.0010", "message": "Consignee Id is Required" },
+      {
+        "code": "2.0002",
+        "message": "Too many requests, please try again later."
+      },{
+        "code":"3.0007",
+        "message":"Invalid Username!"
+      }
+    ]
+      
+  }
+  

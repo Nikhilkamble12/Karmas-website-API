@@ -1,0 +1,428 @@
+{"level":"error","message":"Error in Server File ---> Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/khana/Documents/massom/server/middleware/comman_paths/comman.path.js' imported from /Users/khana/Documents/massom/server/services/auth/auth.controller.js","timestamp":"2024-12-01T02:23:09.724Z"}
+{"level":"error","message":"Error in Server File ---> Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/khana/Documents/massom/server/middleware/comman_paths/comman.path.js' imported from /Users/khana/Documents/massom/server/services/auth/auth.controller.js","timestamp":"2024-12-01T02:23:11.020Z"}
+{"level":"error","message":"Error in Server File ---> Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/khana/Documents/massom/server/middleware/comman_paths/comman.path.js' imported from /Users/khana/Documents/massom/server/services/auth/auth.controller.js","timestamp":"2024-12-01T02:23:11.083Z"}
+{"level":"error","message":"Error in Server File ---> Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/khana/Documents/massom/server/middleware/comman_paths/comman.path.js' imported from /Users/khana/Documents/massom/server/services/auth/auth.controller.js","timestamp":"2024-12-01T02:23:11.087Z"}
+{"level":"error","message":"Error in Server File ---> Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/khana/Documents/massom/server/middleware/comman_paths/comman.path.js' imported from /Users/khana/Documents/massom/server/services/auth/auth.controller.js","timestamp":"2024-12-01T02:23:11.083Z"}
+{"level":"error","message":"Error in Server File ---> Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/khana/Documents/massom/server/middleware/comman_paths/comman.path.js' imported from /Users/khana/Documents/massom/server/services/auth/auth.controller.js","timestamp":"2024-12-01T02:23:11.098Z"}
+{"level":"error","message":"Error in Server File ---> Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/khana/Documents/massom/server/middleware/comman_paths/comman.path.js' imported from /Users/khana/Documents/massom/server/services/auth/auth.controller.js","timestamp":"2024-12-01T02:23:11.107Z"}
+{"level":"error","message":"Error in Server File ---> Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/khana/Documents/massom/server/middleware/comman_paths/comman.path.js' imported from /Users/khana/Documents/massom/server/services/auth/auth.controller.js","timestamp":"2024-12-01T02:23:11.134Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T02:23:11.143Z"}
+{"level":"error","message":"Error in Server File ---> Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/Users/khana/Documents/massom/server/middleware/comman_paths/comman.path.js' imported from /Users/khana/Documents/massom/server/services/auth/auth.controller.js","timestamp":"2024-12-01T02:23:11.143Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T02:23:11.215Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T02:23:11.217Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T02:23:11.221Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T02:23:11.221Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T02:23:11.234Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T02:23:11.237Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T02:23:11.238Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T02:23:42.062Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T02:23:42.131Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T02:23:42.141Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T02:23:42.154Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T02:23:42.167Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T02:23:42.200Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T02:23:42.224Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T02:23:42.246Z"}
+{"level":"error","message":"Error in Server File ---> Error [ERR_UNSUPPORTED_DIR_IMPORT]: Directory import '/Users/khana/Documents/massom/server/middleware/comman_path/' is not supported resolving ES modules imported from /Users/khana/Documents/massom/server/services/auth/auth.controller.js","timestamp":"2024-12-01T02:23:45.406Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T02:23:49.556Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T02:23:49.598Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T02:23:49.598Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T02:23:49.630Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T02:23:49.636Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T02:23:49.646Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T02:23:49.655Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T02:23:49.685Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token ','","timestamp":"2024-12-01T02:24:11.249Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token ','","timestamp":"2024-12-01T02:24:12.867Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token ','","timestamp":"2024-12-01T02:24:14.269Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token ','","timestamp":"2024-12-01T02:24:14.281Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token ','","timestamp":"2024-12-01T02:24:14.284Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token ','","timestamp":"2024-12-01T02:24:14.310Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token ','","timestamp":"2024-12-01T02:24:14.341Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token ','","timestamp":"2024-12-01T02:24:14.342Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token ','","timestamp":"2024-12-01T02:24:14.339Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T02:24:14.400Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T02:24:14.407Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T02:24:14.409Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token ','","timestamp":"2024-12-01T02:24:14.417Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T02:24:14.449Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T02:24:14.462Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T02:24:14.470Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T02:24:14.482Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T02:24:14.517Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T02:24:19.955Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T02:24:19.961Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T02:24:19.970Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T02:24:19.985Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T02:24:20.022Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T02:24:20.019Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T02:24:20.039Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T02:24:20.055Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T02:44:10.704Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T02:44:10.708Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T02:44:10.722Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T02:44:10.730Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T02:44:10.733Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T02:44:10.748Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T02:44:10.784Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T02:44:10.828Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T02:44:20.924Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T02:44:20.994Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T02:44:21.012Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T02:44:21.027Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T02:44:21.037Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T02:44:21.037Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T02:44:21.067Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T02:44:21.083Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T02:44:33.472Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T02:44:33.498Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T02:44:33.511Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T02:44:33.514Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T02:44:33.546Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T02:44:33.557Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T02:44:33.589Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T02:44:33.608Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T02:44:37.412Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T02:44:37.489Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T02:44:37.484Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T02:44:37.533Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T02:44:37.574Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T02:44:37.594Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T02:44:37.602Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T02:44:37.615Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T02:44:44.739Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T02:44:44.740Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T02:44:44.752Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T02:44:44.752Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T02:44:44.755Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T02:44:44.776Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T02:44:44.834Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T02:44:44.841Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T02:45:26.602Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T02:45:26.634Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T02:45:26.689Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T02:45:26.704Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T02:45:26.706Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T02:45:26.706Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T02:45:26.719Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T02:45:26.728Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T02:45:53.063Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T02:45:53.064Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T02:45:53.116Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T02:45:53.119Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T02:45:53.142Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T02:45:53.150Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T02:45:53.151Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T02:45:53.158Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T02:46:37.620Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T02:46:37.659Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T02:46:37.674Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T02:46:37.674Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T02:46:37.699Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T02:46:37.710Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T02:46:37.715Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T02:46:37.729Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T02:47:40.243Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T02:47:40.264Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T02:47:40.339Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T02:47:40.488Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T02:47:40.508Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T02:47:40.524Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T02:47:40.529Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T02:47:40.550Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T02:47:47.727Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T02:47:47.755Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T02:47:47.771Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T02:47:47.798Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T02:47:47.807Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T02:47:47.822Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T02:47:47.847Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T02:47:47.878Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:42:10.327Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:42:10.340Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:42:10.376Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:42:10.387Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:42:10.395Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:42:10.403Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:42:10.416Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:42:10.431Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:44:20.264Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:44:20.287Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:44:20.304Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:44:20.329Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:44:20.330Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:44:20.350Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:44:20.369Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:44:20.424Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'const'","timestamp":"2024-12-01T03:45:40.820Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:42.798Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:44.408Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:44.417Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:44.420Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:44.420Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:44.434Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:44.440Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:44.469Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:45:44.492Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:45:44.511Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:45:44.576Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:45:44.578Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:44.586Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:45:44.593Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:45:44.608Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:45:44.649Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:45:44.690Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:47.034Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:48.590Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:48.590Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:48.609Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:48.629Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:48.675Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:48.678Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:45:48.713Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:45:48.717Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:45:48.719Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:45:48.732Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:48.742Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:48.747Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:45:48.758Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:45:48.795Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:45:48.821Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:45:48.831Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:51.686Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:53.148Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:53.158Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:53.161Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:53.211Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:53.213Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:53.192Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:53.231Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:45:53.269Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:45:53.281Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:45:53.282Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token 'export'","timestamp":"2024-12-01T03:45:53.283Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:45:53.305Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:45:53.322Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:45:53.322Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:45:53.323Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:45:53.361Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:45:56.277Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:45:58.279Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:45:58.289Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:45:58.305Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:45:58.270Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:45:58.315Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:45:58.319Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:45:58.359Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:45:58.368Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:45:58.373Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:45:58.373Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:45:58.384Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:45:58.392Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:45:58.394Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:45:58.400Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:45:58.403Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:45:58.410Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:46:00.561Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:46:02.255Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:46:04.741Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:46:06.438Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:46:06.448Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:46:06.465Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:46:06.474Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:46:06.500Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:46:06.503Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:46:06.511Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:46:06.517Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:46:06.529Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:46:06.528Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:46:06.537Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:46:06.544Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:46:06.544Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:46:06.554Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:46:06.591Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:46:06.602Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Missing initializer in const declaration","timestamp":"2024-12-01T03:46:26.511Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Missing initializer in const declaration","timestamp":"2024-12-01T03:46:27.969Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Missing initializer in const declaration","timestamp":"2024-12-01T03:46:28.049Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Missing initializer in const declaration","timestamp":"2024-12-01T03:46:28.065Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Missing initializer in const declaration","timestamp":"2024-12-01T03:46:28.110Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:46:28.120Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Missing initializer in const declaration","timestamp":"2024-12-01T03:46:28.125Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Missing initializer in const declaration","timestamp":"2024-12-01T03:46:28.113Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Missing initializer in const declaration","timestamp":"2024-12-01T03:46:28.131Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:46:28.153Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Missing initializer in const declaration","timestamp":"2024-12-01T03:46:28.158Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:46:28.178Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:46:28.200Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:46:28.207Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:46:28.224Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:46:28.225Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:46:28.261Z"}
+{"level":"error","message":"Error in Server File ---> TypeError: Cannot read properties of undefined (reading 'loginUser')","timestamp":"2024-12-01T03:46:30.452Z"}
+{"level":"error","message":"Error in Server File ---> TypeError: Cannot read properties of undefined (reading 'loginUser')","timestamp":"2024-12-01T03:46:32.313Z"}
+{"level":"error","message":"Error in Server File ---> TypeError: Cannot read properties of undefined (reading 'loginUser')","timestamp":"2024-12-01T03:46:32.315Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:46:32.322Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:46:32.324Z"}
+{"level":"error","message":"Error in Server File ---> TypeError: Cannot read properties of undefined (reading 'loginUser')","timestamp":"2024-12-01T03:46:32.339Z"}
+{"level":"error","message":"Error in Server File ---> TypeError: Cannot read properties of undefined (reading 'loginUser')","timestamp":"2024-12-01T03:46:32.334Z"}
+{"level":"error","message":"Error in Server File ---> TypeError: Cannot read properties of undefined (reading 'loginUser')","timestamp":"2024-12-01T03:46:32.346Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:46:32.354Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:46:38.171Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:46:38.173Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:46:38.189Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:46:38.208Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:46:38.214Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:46:38.235Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:46:38.275Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:46:38.276Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:46:43.197Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:46:43.213Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:46:43.228Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:46:43.233Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:46:43.222Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:46:43.265Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:46:43.268Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:46:43.281Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token '}'","timestamp":"2024-12-01T03:46:51.236Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token '}'","timestamp":"2024-12-01T03:46:52.416Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token '}'","timestamp":"2024-12-01T03:46:53.784Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token '}'","timestamp":"2024-12-01T03:46:53.811Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token '}'","timestamp":"2024-12-01T03:46:53.821Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token '}'","timestamp":"2024-12-01T03:46:53.839Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token '}'","timestamp":"2024-12-01T03:46:53.860Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token '}'","timestamp":"2024-12-01T03:46:53.871Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:46:53.891Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token '}'","timestamp":"2024-12-01T03:46:53.909Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:46:53.924Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:46:53.944Z"}
+{"level":"error","message":"Error in Server File ---> SyntaxError: Unexpected token '}'","timestamp":"2024-12-01T03:46:53.933Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:46:53.949Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:46:53.980Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:46:53.994Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:46:54.007Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:46:54.040Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:46:59.441Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:46:59.470Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:46:59.481Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:46:59.513Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:46:59.518Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:46:59.521Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:46:59.553Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:46:59.595Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:49:18.144Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:49:18.152Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:49:18.170Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:49:18.169Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:49:18.174Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:49:18.188Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:49:18.236Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:49:18.236Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:51:43.504Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:51:45.200Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:51:45.210Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:51:45.179Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:51:45.217Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:51:45.227Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:51:45.169Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:51:45.242Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:51:45.241Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:51:45.320Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:51:45.338Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:51:45.339Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:51:45.364Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:51:45.372Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:51:45.380Z"}
+{"level":"error","message":"Error in Server File ---> ReferenceError: AuthController is not defined","timestamp":"2024-12-01T03:51:45.384Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:51:45.407Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:51:48.040Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:51:48.056Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:51:48.158Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:51:48.159Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:51:48.169Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:51:48.187Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:51:48.197Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:51:48.256Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:54:45.149Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:54:45.160Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:54:45.171Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:54:45.183Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:54:45.223Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:54:45.258Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:54:45.259Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:54:45.286Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:54:48.701Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:54:48.709Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:54:48.720Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:54:48.722Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:54:48.729Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:54:48.744Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:54:48.756Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:54:48.765Z"}
+{"level":"error","message":"Error ---> TypeError: Cannot read properties of undefined (reading 'query')","timestamp":"2024-12-01T03:55:10.574Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:55:40.199Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:55:40.213Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:55:40.242Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:55:40.243Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:55:40.254Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:55:40.262Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:55:40.274Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:55:40.284Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:56:01.582Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:56:01.607Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:56:01.637Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:56:01.654Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:56:01.663Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:56:01.672Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:56:01.707Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:56:01.712Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:56:08.514Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:56:08.554Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:56:08.597Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:56:08.599Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:56:08.599Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:56:08.614Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:56:08.619Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:56:08.643Z"}
+{"level":"error","message":"Error ---> TypeError: Cannot read properties of undefined (reading 'query')","timestamp":"2024-12-01T03:56:17.069Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:56:42.591Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:56:42.626Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:56:42.660Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:56:42.661Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:56:42.668Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:56:42.671Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:56:42.683Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:56:42.694Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:57:11.917Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:57:12.106Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:57:12.107Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:57:12.133Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:57:12.145Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:57:12.179Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:57:12.182Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:57:12.191Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:57:17.244Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:57:17.253Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:57:17.259Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:57:17.281Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:57:17.266Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:57:17.312Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:57:17.330Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:57:17.331Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:57:23.624Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:57:23.646Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:57:23.649Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:57:23.666Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:57:23.681Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:57:23.690Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:57:23.700Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:57:23.737Z"}
+{"level":"error","message":"Error ---> TypeError: Cannot read properties of undefined (reading 'query')","timestamp":"2024-12-01T03:57:29.742Z"}
+{"level":"info","message":"Worker 2 is running on port 8089.","timestamp":"2024-12-01T03:58:23.731Z"}
+{"level":"info","message":"Worker 3 is running on port 8089.","timestamp":"2024-12-01T03:58:23.760Z"}
+{"level":"info","message":"Worker 6 is running on port 8089.","timestamp":"2024-12-01T03:58:23.773Z"}
+{"level":"info","message":"Worker 1 is running on port 8089.","timestamp":"2024-12-01T03:58:23.775Z"}
+{"level":"info","message":"Worker 8 is running on port 8089.","timestamp":"2024-12-01T03:58:23.798Z"}
+{"level":"info","message":"Worker 4 is running on port 8089.","timestamp":"2024-12-01T03:58:23.801Z"}
+{"level":"info","message":"Worker 7 is running on port 8089.","timestamp":"2024-12-01T03:58:23.807Z"}
+{"level":"info","message":"Worker 5 is running on port 8089.","timestamp":"2024-12-01T03:58:23.829Z"}

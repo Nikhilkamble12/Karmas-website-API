@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 1
+    },
+    "auditLog": "/Users/khana/Documents/massom/logs/info-audit.json",
+    "files": [
+        {
+            "date": 1733019788984,
+            "name": "/Users/khana/Documents/massom/logs/log-01-12-2024.log",
+            "hash": "7320415f2de412faf6b70b9148992a4b36d1dab1e23fa7f8ea72e11ce4c7ef9a"
+        }
+    ],
+    "hashType": "sha256"
+}
