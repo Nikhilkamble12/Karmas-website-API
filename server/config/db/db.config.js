@@ -9,6 +9,7 @@ const development = {
     PASSWORD: process.env.DEV_DB_PASSWORD,
     DB: process.env.DEV_DB_NAME,
     DIALECT: process.env.DEV_DB_DIALECT,
+    PORT:process.env.DEV_DB_PORT,
     pool: {
       max: 5,
       min: 0,
@@ -24,6 +25,7 @@ const development = {
     PASSWORD: process.env.PROD_DB_PASSWORD,
     DB: process.env.PROD_DB_NAME,
     DIALECT: process.env.PROD_DB_DIALECT,
+    PORT:process.env.PROD_DB_PORT,
     pool: {
       max: 10, 
       min: 0,

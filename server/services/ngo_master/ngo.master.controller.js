@@ -1,0 +1,542 @@
+import NgoMasterService from "./ngo.master.service.js";
+import commonPath from "../../middleware/comman_path/comman.path.js";
+import NgoFundSDetailsService from "../ngo_funds_details/ngo.funds.details.service.js";
+import NgoOfficeBearersService from "../ngo_office_bearers/ngo.office.bearers.service.js";
+const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+
+const NgoMasterController = {
+     // Create A new Record 
+     create: async (req, res) => {
+        try {
+            const data = req.body;
+            // Add metadata for creation (created by, created at)
+            await addMetaDataWhileCreateUpdate(data, req, res, false);
+            // data.created_by=1,
+            // data.created_at = new Date()
+            // Create the record using ORM
+            const createData = await NgoMasterService.createService(data);
+            if(createData){
+                const ngo_id = createData.dataValues.ngo_id
+                let pan_file_path_name = null , ngo_logo_path_name = null , crs_regis_path_name = null ;
+                if(data.pan_file!==null && data.pan_file!=="" && data.pan_file!==0 && data.pan_file!==undefined){
+                await saveBase64ToFile(
+                    data.pan_file,
+                    "ngo_master/" + ngo_id + `/"pan"`,
+                    currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                      "_" +
+                      data.pan_cad_file_name
+                  );
+                  const upload_page_1 = data.pan_cad_file_name
+                  ? `ngo_master/${ngo_id}/"pan"/${currentTime()
+                      .replace(/ /g, "_")
+                      .replace(/:/g, "-")}_${data.pan_cad_file_name}`
+                  : null;
+                  pan_file_path_name = upload_page_1
+                }
+
+                if(data.ngo_logo_file!==null && data.ngo_logo_file!=="" && data.ngo_logo_file!==0 && data.ngo_logo_file!==undefined){
+                    await saveBase64ToFile(
+                        data.ngo_logo_file,
+                        "ngo_master/" + ngo_id + `/"logo"`,
+                        currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                          "_" +
+                          data.ngo_logo
+                      );
+                      const upload_page_1 = data.ngo_logo
+                      ? `ngo_master/${ngo_id}/"logo"/${currentTime()
+                          .replace(/ /g, "_")
+                          .replace(/:/g, "-")}_${data.ngo_logo}`
+                      : null;
+                      ngo_logo_path_name = upload_page_1
+                    }
+
+                    if(data.crs_regis_file!==null && data.crs_regis_file!=="" && data.crs_regis_file!==0 && data.crs_regis_file!==undefined){
+                        await saveBase64ToFile(
+                            data.crs_regis_file,
+                            "ngo_master/" + ngo_id + `/"logo"`,
+                            currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                              "_" +
+                              data.crs_regis_file_name
+                          );
+                          const upload_page_1 = data.crs_regis_file_name
+                          ? `ngo_master/${ngo_id}/"logo"/${currentTime()
+                              .replace(/ /g, "_")
+                              .replace(/:/g, "-")}_${data.crs_regis_file_name}`
+                          : null;
+                          crs_regis_path_name = upload_page_1
+                        }
+                        const updateData  ={
+                            ngo_logo:data.ngo_logo,
+                            ngo_logo_path:ngo_logo_path_name,
+                            pan_cad_file_name:data.pan_cad_file_name,
+                            pan_card_file_url:pan_file_path_name,
+                            crs_regis_file_name:data.crs_regis_file_name,
+                            crs_regis_file_path:crs_regis_path_name,
+                        } 
+                        const updateNgomaster = await NgoMasterService.updateService(ngo_id,updateData)
+                        
+
+            }
+            if (createData) {
+                return res
+                    .status(responseCode.CREATED)
+                    .send(
+                        commonResponse(
+                            responseCode.CREATED,
+                            responseConst.SUCCESS_ADDING_RECORD
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_ADDING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+        } catch (error) {
+            console.log("error",error)
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    }, 
+    // update Record Into Db
+    update: async (req, res) => {
+        try {
+            const id = req.query.id
+            const data = req.body
+            // Add metadata for modification (modified by, modified at)
+            await addMetaDataWhileCreateUpdate(data, req, res, false);
+
+            // Update the record using ORM
+            const updatedRowsCount = await NgoMasterService.updateService(id, data);
+
+            if(createData){
+                const ngo_id = createData.dataValues.ngo_id
+                let pan_file_path_name = null , ngo_logo_path_name = null , crs_regis_path_name = null ;
+                if(data.pan_file!==null && data.pan_file!=="" && data.pan_file!==0 && data.pan_file!==undefined){
+                await saveBase64ToFile(
+                    data.pan_file,
+                    "ngo_master/" + ngo_id + `/"pan"`,
+                    currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                      "_" +
+                      data.pan_cad_file_name
+                  );
+                  const upload_page_1 = data.pan_cad_file_name
+                  ? `ngo_master/${ngo_id}/"pan"/${currentTime()
+                      .replace(/ /g, "_")
+                      .replace(/:/g, "-")}_${data.pan_cad_file_name}`
+                  : null;
+                  pan_file_path_name = upload_page_1
+                }
+
+                if(data.ngo_logo_file!==null && data.ngo_logo_file!=="" && data.ngo_logo_file!==0 && data.ngo_logo_file!==undefined){
+                    await saveBase64ToFile(
+                        data.ngo_logo_file,
+                        "ngo_master/" + ngo_id + `/"logo"`,
+                        currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                          "_" +
+                          data.ngo_logo
+                      );
+                      const upload_page_1 = data.ngo_logo
+                      ? `ngo_master/${ngo_id}/"logo"/${currentTime()
+                          .replace(/ /g, "_")
+                          .replace(/:/g, "-")}_${data.ngo_logo}`
+                      : null;
+                      ngo_logo_path_name = upload_page_1
+                    }
+
+                    if(data.crs_regis_file!==null && data.crs_regis_file!=="" && data.crs_regis_file!==0 && data.crs_regis_file!==undefined){
+                        await saveBase64ToFile(
+                            data.crs_regis_file,
+                            "ngo_master/" + ngo_id + `/"logo"`,
+                            currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                              "_" +
+                              data.crs_regis_file_name
+                          );
+                          const upload_page_1 = data.crs_regis_file_name
+                          ? `ngo_master/${ngo_id}/"logo"/${currentTime()
+                              .replace(/ /g, "_")
+                              .replace(/:/g, "-")}_${data.crs_regis_file_name}`
+                          : null;
+                          crs_regis_path_name = upload_page_1
+                        }
+                        const updateData  ={
+                            ngo_logo:data.ngo_logo,
+                            ngo_logo_path:ngo_logo_path_name,
+                            pan_cad_file_name:data.pan_cad_file_name,
+                            pan_card_file_url:pan_file_path_name,
+                            crs_regis_file_name:data.crs_regis_file_name,
+                            crs_regis_file_path:crs_regis_path_name,
+                        } 
+                        const updateNgomaster = await NgoMasterService.updateService(ngo_id,updateData)
+
+            }
+            // if (updatedRowsCount > 0) {
+            //     const newData = await NgoMasterService.getServiceById(id);
+            //     // Update the JSON data in the file
+            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
+            // }
+            // Handle case where no records were updated
+            if (updatedRowsCount === 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_UPDATING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+            return res
+                .status(responseCode.CREATED)
+                .send(
+                    commonResponse(
+                        responseCode.CREATED,
+                        responseConst.SUCCESS_UPDATING_RECORD
+                    )
+                );
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    },
+    // Retrieve all records 
+    getAllByView: async (req, res) => {
+        try {
+            // Fetch local data from JSON
+            // const GetAllJson = await CommanJsonFunction.getAllData(CITY_FOLDER,CITY_JSON)
+            // if(GetAllJson!==null){
+            //     if(GetAllJson.length!==0){
+            //       return res
+            //       .status(responseCode.OK)
+            //       .send(
+            //         commonResponse(
+            //           responseCode.OK,
+            //           responseConst.DATA_RETRIEVE_SUCCESS,
+            //           GetAllJson
+            //         )
+            //       );
+            //     }
+            //   }
+            // Fetch data from the database if JSON is empty
+            const getAll = await NgoMasterService.getAllService()
+
+            // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
+            // // Store the data in JSON for future retrieval
+            // if(fileStatus==false){
+            //   const DataToSave=await NgoMasterService.getAllService()
+            //   if(DataToSave.length!==0){
+            //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
+            //   }
+            // }
+            // Return fetched data or handle case where no data is found
+            if (getAll.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            billingtypes
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    },
+    // Retrieve a record by its ID
+    getByIdByView: async (req, res) => {
+        try {
+            const Id = req.query.id
+            // Fetch data by ID from JSON
+            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
+            // if(getJsonDatabyId!==null){
+            //   return res
+            //     .status(responseCode.OK)
+            //     .send(
+            //       commonResponse(
+            //         responseCode.OK,
+            //         responseConst.DATA_RETRIEVE_SUCCESS,
+            //         getJsonDatabyId
+            //       )
+            //     );
+            // }
+
+            // If not found in JSON, fetch data from the database
+            const getDataByid = await NgoMasterService.getServiceById(Id)
+
+            // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
+            // // Store the data in JSON for future retrieval
+            // if(fileStatus==false){
+            //   const DataToSave=await NgoMasterService.getAllService()
+            //   if(DataToSave.length!==0){
+            //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
+            //   }
+            // }
+            // Return the fetched data or handle case where no data is found
+            if (getDataByid.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            billingtypes
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    },
+    // Delete A Record 
+    deleteData: async (req, res) => {
+        try {
+            const id = req.query.id
+            // Delete data from the database
+            const deleteData = await NgoMasterService.deleteByid(id, req, res)
+            // Also delete data from the JSON file
+            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
+            if (deleteData === 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_DELETING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+
+            return res
+                .status(responseCode.CREATED)
+                .send(
+                    commonResponse(
+                        responseCode.CREATED,
+                        responseConst.SUCCESS_DELETING_RECORD
+                    )
+                );
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    },createOrUpdateNgoMaster:async(req,res)=>{
+        try{
+            const data = req.body;
+            let ngoWalaId = null
+            let ngo_fund_saved_data = false
+            let ngo_office_berrars = false
+            // Add metadata for creation (created by, created at)
+            
+            // data.created_by=1,
+            // data.created_at = new Date()
+            // Create the record using ORM
+            if(data.ngo!==null && data.ngo!=="" && data.ngo!==0 && data.ngo!==undefined){
+
+            }else{  
+            await addMetaDataWhileCreateUpdate(data, req, res, false);
+            const createData = await NgoMasterService.createService(data);
+            const ngoWalaId = createData.dataValues.ngo_id
+                }
+                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
+                    let pan_file_path_name = null , ngo_logo_path_name = null , crs_regis_path_name = null ;
+                if(data.pan_file!==null && data.pan_file!=="" && data.pan_file!==0 && data.pan_file!==undefined){
+                await saveBase64ToFile(
+                    data.pan_file,
+                    "ngo_master/" + ngo_id + `/"pan"`,
+                    currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                      "_" +
+                      data.pan_cad_file_name
+                  );
+                  const upload_page_1 = data.pan_cad_file_name
+                  ? `ngo_master/${ngo_id}/"pan"/${currentTime()
+                      .replace(/ /g, "_")
+                      .replace(/:/g, "-")}_${data.pan_cad_file_name}`
+                  : null;
+                  pan_file_path_name = upload_page_1
+                }
+
+                if(data.ngo_logo_file!==null && data.ngo_logo_file!=="" && data.ngo_logo_file!==0 && data.ngo_logo_file!==undefined){
+                    await saveBase64ToFile(
+                        data.ngo_logo_file,
+                        "ngo_master/" + ngo_id + `/"logo"`,
+                        currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                          "_" +
+                          data.ngo_logo
+                      );
+                      const upload_page_1 = data.ngo_logo
+                      ? `ngo_master/${ngo_id}/"logo"/${currentTime()
+                          .replace(/ /g, "_")
+                          .replace(/:/g, "-")}_${data.ngo_logo}`
+                      : null;
+                      ngo_logo_path_name = upload_page_1
+                    }
+
+                    if(data.crs_regis_file!==null && data.crs_regis_file!=="" && data.crs_regis_file!==0 && data.crs_regis_file!==undefined){
+                        await saveBase64ToFile(
+                            data.crs_regis_file,
+                            "ngo_master/" + ngo_id + `/"logo"`,
+                            currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                              "_" +
+                              data.crs_regis_file_name
+                          );
+                          const upload_page_1 = data.crs_regis_file_name
+                          ? `ngo_master/${ngo_id}/"logo"/${currentTime()
+                              .replace(/ /g, "_")
+                              .replace(/:/g, "-")}_${data.crs_regis_file_name}`
+                          : null;
+                          crs_regis_path_name = upload_page_1
+                        }
+                        const updateData  ={
+                            ngo_logo:data.ngo_logo,
+                            ngo_logo_path:ngo_logo_path_name,
+                            pan_cad_file_name:data.pan_cad_file_name,
+                            pan_card_file_url:pan_file_path_name,
+                            crs_regis_file_name:data.crs_regis_file_name,
+                            crs_regis_file_path:crs_regis_path_name,
+                        } 
+                        const updateNgomaster = await NgoMasterService.updateService(ngo_id,updateData)
+                }
+
+                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
+                    for(let i =0 ;i<data.ngoFundsList.length;i++){
+                        let currentData = data.ngoFundsList[i]
+                        if(currentData.ngo_funds_id!==null && currentData.ngo_funds_id!=="" && currentData.ngo_funds_id!==0 && currentData.ngo_funds_id!==undefined){
+                            currentData.modified_by = tokenData(req,res)
+                            currentData.modified_at = currentTime()
+                            currentData.ngo_id = ngoWalaId
+                            const updateNgoFundsDetails = await NgoFundSDetailsService.updateService(currentData.ngo_funds_id,currentData)
+                            if(updateNgoFundsDetails>0){
+                                ngo_fund_saved_data = true
+                            }
+                        }else{
+                            currentData.created_by = tokenData(req,res)
+                            currentData.created_at = currentTime()
+                            currentData.is_active = true
+                            currentData.ngo_id = ngoWalaId
+                            const CreateNgoFundsDetails = await NgoFundSDetailsService.createService(currentData)
+                            if(CreateNgoFundsDetails){
+                                ngo_fund_saved_data = true
+                            }
+                        }
+                    }
+                }
+                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
+                    for(let i =0 ;i<data.ngoOfficeBerrarsList.length;i++){
+                        let office_berars_current = data.ngoOfficeBerrarsList[i]
+                        if(office_berars_current.bearer_id!=="" && office_berars_current.bearer_id!==null && office_berars_current.bearer_id!==undefined && office_berars_current.bearer_id!==0){
+                            office_berars_current.modified_by = tokenData(req,res)
+                            office_berars_current.modified_at = currentTime()
+                            office_berars_current.ngo_id = ngoWalaId
+                            const updateNgoBerrars = await NgoOfficeBearersService.updateService(office_berars_current.bearer_id,office_berars_current)
+                            if(updateNgoBerrars>0){
+                                ngo_office_berrars = true
+                            }
+                        }else{
+                            office_berars_current.created_by = tokenData(req,res)
+                            office_berars_current.created_at = currentTime()
+                            office_berars_current.is_active = true
+                            office_berars_current.ngo_id = ngoWalaId
+                            const createNgoBerrares = await NgoOfficeBearersService.createService(office_berars_current)
+                            if(createNgoBerrares){
+                                ngo_office_berrars = true
+                            }
+                        }
+                    }
+                }
+
+        }catch(error){
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    }
+}
+export default NgoMasterController

@@ -1,0 +1,30 @@
+# Ignore node_modules folder
+node_modules/
+
+# Ignore log files
+*.log
+
+# Ignore environment variable file (e.g., .env)
+.env
+
+# Ignore npm package lock file
+package-lock.json
+yarn.lock
+
+# Ignore OS files
+.DS_Store
+
+# Ignore coverage folder (if using test coverage)
+coverage/
+
+# Ignore IDE/editor-specific files (VSCode, JetBrains, etc.)
+.vscode/
+.idea/
+
+# Ignore build output folders (for example, if you're using webpack or build tools)
+dist/
+build/
+
+# Ignore other common artifacts
+*.bak
+*.swp
