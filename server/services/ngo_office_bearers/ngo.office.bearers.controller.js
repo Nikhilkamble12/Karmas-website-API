@@ -1,10 +1,10 @@
-import CityMasterService from "./city.master.service.js";
+import NgoOfficeBearersService from "./ngo.office.bearers.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
-const CityMasterController = {
-    // Create A new Record 
-    create: async (req, res) => {
+const NgoOfficeBearersController = {
+     // Create A new Record 
+     create: async (req, res) => {
         try {
             const data = req.body;
             // Add metadata for creation (created by, created at)
@@ -12,7 +12,7 @@ const CityMasterController = {
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
-            const createData = await CityMasterService.createService(data);
+            const createData = await NgoOfficeBearersService.createService(data);
             if (createData) {
                 return res
                     .status(responseCode.CREATED)
@@ -58,9 +58,9 @@ const CityMasterController = {
             await addMetaDataWhileCreateUpdate(data, req, res, false);
 
             // Update the record using ORM
-            const updatedRowsCount = await CityMasterService.updateService(id, data);
+            const updatedRowsCount = await NgoOfficeBearersService.updateService(id, data);
             // if (updatedRowsCount > 0) {
-            //     const newData = await CityMasterService.getServiceById(id);
+            //     const newData = await NgoOfficeBearersService.getServiceById(id);
             //     // Update the JSON data in the file
             //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
             // }
@@ -118,12 +118,12 @@ const CityMasterController = {
             //     }
             //   }
             // Fetch data from the database if JSON is empty
-            const getAll = await CityMasterService.getAllService()
+            const getAll = await NgoOfficeBearersService.getAllService()
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await CityMasterService.getAllService()
+            //   const DataToSave=await NgoOfficeBearersService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -184,12 +184,12 @@ const CityMasterController = {
             // }
 
             // If not found in JSON, fetch data from the database
-            const getDataByid = await CityMasterService.getServiceById(Id)
+            const getDataByid = await NgoOfficeBearersService.getServiceById(Id)
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await CityMasterService.getAllService()
+            //   const DataToSave=await NgoOfficeBearersService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -236,7 +236,7 @@ const CityMasterController = {
         try {
             const id = req.query.id
             // Delete data from the database
-            const deleteData = await CityMasterService.deleteByid(id, req, res)
+            const deleteData = await NgoOfficeBearersService.deleteByid(id, req, res)
             // Also delete data from the JSON file
             // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
             if (deleteData === 0) {
@@ -275,4 +275,5 @@ const CityMasterController = {
         }
     }
 }
-export default CityMasterController
+
+export default NgoOfficeBearersController
