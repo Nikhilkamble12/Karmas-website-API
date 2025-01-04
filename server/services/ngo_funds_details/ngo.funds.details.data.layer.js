@@ -1,5 +1,6 @@
 import NgoFundsDetailsModel from "./ngo.funds.details.model.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
+import VIEW_NAME from "../../utils/db/view.constants.js";
 const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessary components from commonPath
 
 const NgoFundsDetailsDAL = {
@@ -50,6 +51,13 @@ const NgoFundsDetailsDAL = {
             return deleteDataById
         } catch (error) {
             throw error // Throw error for handling in the controller
+        }
+    },getFundDetailsByIdNgoId:async(ngo_id)=>{
+        try{
+            const getData = await db.sequelize.query(` SELECT * FROM ${VIEW_NAME.GET_ALL_NGO_FUNDS_DETAILS} where  ngo_id = ${ngo_id} `,{type:db.Sequelize.QueryTypes.SELECT})
+            return getData
+        }catch(error){
+            throw error
         }
     }
 }

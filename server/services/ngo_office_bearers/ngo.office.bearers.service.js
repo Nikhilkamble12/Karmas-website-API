@@ -40,6 +40,12 @@ const NgoOfficeBearersService = {
         } catch (error) {
             throw error
         }
+    },getDataByNgoId:async(ngo_id)=>{
+        try{
+            return await NgoOfficeBearersDAL.getDataByNgoId(ngo_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default NgoOfficeBearersService
