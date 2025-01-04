@@ -10,5 +10,6 @@ GET_ALL_NGO_MASTER:"v_ngo_master",
 GET_ALL_NGO_FUNDS_DETAILS:"v_ngo_funds_details",
 GET_ALL_NGO_OFFICE_BEARRRS:"v_ngo_office_bearers",
 GET_ALL_NGO_STATE_DISTING_MAPPING_VIEW:"v_ngo_state_district_mapping",
+GET_ALL_USER_ACTIVITY:"v_user_activity",
 }
 export default VIEW_NAME

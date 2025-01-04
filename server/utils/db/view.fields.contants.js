@@ -23,7 +23,8 @@ const ViewFieldTableWise = {
     TABLE_MASTER_FIELDS: ` SELECT table_id, table_name, is_active FROM ${VIEW_NAME.GET_ALL_TABLE_MASTER}  `,
 
     //  ------> U
-    USER_MASTER_FIELDS:` SELECT user_id, user_name, password, full_name, email_id FROM ${VIEW_NAME.GET_ALL_USER_MASTER} `
+    USER_MASTER_FIELDS :` SELECT user_id, user_name, password, full_name, email_id FROM ${VIEW_NAME.GET_ALL_USER_MASTER} `,
+    USER_ACTIVITY_FIELDS :` SELECT * FROM ${VIEW_NAME.GET_ALL_USER_ACTIVITY} `,
 
 
 }
