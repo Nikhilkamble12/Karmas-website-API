@@ -12,6 +12,7 @@ import TableMasterModel from "./table_master/table.master.model.js";
 import NgoMasterModel from "./ngo_master/ngo.master.model.js";
 import NgoOfficeBearersModel from "./ngo_office_bearers/ngo.office.bearers.model.js";
 import NgoStateDistritMappingModel from "./ngo_state_district_mapping/ngo.state.district.mapping.model.js";
+import UserActivityModel from "./user_activity/user.activity.model.js";
 
 
 // Determine the environment (development or production)
@@ -55,6 +56,7 @@ db.TableMasterModel = TableMasterModel(sequelize,Sequelize);
 db.NgoMasterModel = NgoMasterModel(sequelize,Sequelize);
 db.NgoOfficeBearersModel = NgoOfficeBearersModel(sequelize,Sequelize);
 db.NgoStateDistritMappingModel = NgoStateDistritMappingModel(sequelize,Sequelize);
+db.UserActivityModel = UserActivityModel(sequelize,Sequelize);
 
 
 export default db
