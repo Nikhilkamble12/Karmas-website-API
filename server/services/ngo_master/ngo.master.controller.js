@@ -2,6 +2,7 @@ import NgoMasterService from "./ngo.master.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import NgoFundSDetailsService from "../ngo_funds_details/ngo.funds.details.service.js";
 import NgoOfficeBearersService from "../ngo_office_bearers/ngo.office.bearers.service.js";
+import NgoStateDistrictMappingService from "../ngo_state_district_mapping/ngo.state.district.mapping.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const NgoMasterController = {
@@ -74,7 +75,7 @@ const NgoMasterController = {
                             crs_regis_file_path:crs_regis_path_name,
                         } 
                         const updateNgomaster = await NgoMasterService.updateService(ngo_id,updateData)
-                        
+
 
             }
             if (createData) {
@@ -405,17 +406,27 @@ const NgoMasterController = {
             let ngoWalaId = null
             let ngo_fund_saved_data = false
             let ngo_office_berrars = false
+            let ngo_state_mappingData = false
+            let ngo_master_saved = false
             // Add metadata for creation (created by, created at)
             
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
-            if(data.ngo!==null && data.ngo!=="" && data.ngo!==0 && data.ngo!==undefined){
-
+            if(data.ngo_id!==null && data.ngo_id!=="" && data.ngo_id!==0 && data.ngo_id!==undefined){
+                await addMetaDataWhileCreateUpdate(data, req, res, true);
+                const updateData = await NgoMasterService.updateService(data.ngo_id,data);
+                if(updateData>0){
+                    ngo_master_saved = true
+                }
+                ngoWalaId = data.ngo_id
             }else{  
             await addMetaDataWhileCreateUpdate(data, req, res, false);
             const createData = await NgoMasterService.createService(data);
-            const ngoWalaId = createData.dataValues.ngo_id
+            if(createData){
+                ngo_master_saved = true
+            }
+             ngoWalaId = createData.dataValues.ngo_id
                 }
                 if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
                     let pan_file_path_name = null , ngo_logo_path_name = null , crs_regis_path_name = null ;
@@ -523,7 +534,95 @@ const NgoMasterController = {
                         }
                     }
                 }
-
+                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
+                    for(let i =0 ;i<data.ngoStateDistrictCityList.length;i++){
+                        let currentDataSatateDistrict = data.ngoStateDistrictCityList[i]
+                        if(currentDataSatateDistrict.ngo_state_district_mapping_id!==null && currentDataSatateDistrict.ngo_state_district_mapping_id!==0 && currentDataSatateDistrict.ngo_state_district_mapping_id!==undefined && currentDataSatateDistrict.ngo_state_district_mapping_id!==""){
+                            currentDataSatateDistrict.modified_by = tokenData(req,res)
+                            currentDataSatateDistrict.modified_at = currentTime()
+                            currentDataSatateDistrict.ngo_id = ngoWalaId
+                            const updateStateDistringMapping = await NgoStateDistrictMappingService.updateService(currentDataSatateDistrict.ngo_state_district_mapping_id,currentDataSatateDistrict)
+                            if(updateStateDistringMapping>0){
+                                ngo_state_mappingData = true
+                            }
+                        }else{
+                            currentDataSatateDistrict.created_by = tokenData(req,res)
+                            currentDataSatateDistrict.created_at = currentTime()
+                            currentDataSatateDistrict.is_active = true
+                            currentDataSatateDistrict.ngo_id = ngoWalaId
+                            const createSatateDistrictMapping = await NgoStateDistrictMappingService.createService(currentDataSatateDistrict)
+                            if(createSatateDistrictMapping){
+                                ngo_state_mappingData = true
+                            }
+                        }
+                    }
+                }
+                if (ngo_state_mappingData && ngo_office_berrars && ngo_fund_saved_data) {
+                    return res
+                        .status(responseCode.CREATED)
+                        .send(
+                            commonResponse(
+                                responseCode.CREATED,
+                                responseConst.SUCCESS_ADDING_RECORD
+                            )
+                        );
+                } else {
+                    return res
+                        .status(responseCode.BAD_REQUEST)
+                        .send(
+                            commonResponse(
+                                responseCode.BAD_REQUEST,
+                                responseConst.ERROR_ADDING_RECORD,
+                                null,
+                                true
+                            )
+                        );
+                }
+        }catch(error){
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    },getNgoMatserData:async(req,res)=>{
+        try{
+            const ngo_id = req.query.ngo_id
+            let getNgomaster = await NgoMasterService.getServiceById(ngo_id)
+            const getNgoOfficeBerrares = await NgoOfficeBearersService.getDataByNgoId(ngo_id)
+            const ngoFundsDetails = await NgoFundSDetailsService.getDataByIdNgoId(ngo_id)
+            const ngoStateDistrictMapping = await NgoStateDistrictMappingService.getDataByNgoId(ngo_id)
+            getNgomaster.office_berears_list = getNgoOfficeBerrares
+            getNgomaster.ngo_funds_details = ngoFundsDetails
+            getNgomaster.ngo_state_district_mapping_list = ngoStateDistrictMapping
+            if (getNgomaster.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getNgomaster
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
         }catch(error){
             logger.error(`Error ---> ${error}`);
             return res

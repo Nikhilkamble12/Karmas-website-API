@@ -40,6 +40,12 @@ const NgoFundSDetailsService = {
         } catch (error) {
             throw error
         }
+    },getDataByIdNgoId:async(ngo_id)=>{
+        try{
+            return await NgoFundsDetailsDAL.getFundDetailsByIdNgoId(ngo_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default NgoFundSDetailsService

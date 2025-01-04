@@ -1,22 +1,21 @@
-import NgoOfficeBearersModel from "./ngo.office.bearers.model.js";
+import NgoStateDistritMappingModel from "./ngo.state.district.mapping.model.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
-import VIEW_NAME from "../../utils/db/view.constants.js";
 const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessary components from commonPath
 
-const NgoOfficeBearersDAL = {
+const NgoOfficeDistrictMappingDAL = {
     // Method to create a new record in the database
     CreateData: async (data) => {
         try {
-            const createdData = await NgoOfficeBearersModel(db.sequelize).create(data)
+            const createdData = await NgoStateDistritMappingModel(db.sequelize).create(data)
             return createdData // Return the created data
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
     }, 
     // Method to update an existing record by its ID
-    UpdateData: async (bearer_id, data) => {
+    UpdateData: async (ngo_state_district_mapping_id, data) => {
         try {
-            const updateData = await NgoOfficeBearersModel(db.sequelize).update(data, { where: { bearer_id: bearer_id } })
+            const updateData = await NgoStateDistritMappingModel(db.sequelize).update(data, { where: { ngo_state_district_mapping_id: ngo_state_district_mapping_id } })
             return updateData // Return the result of the update operation
         } catch (error) {
             throw error // Throw error for handling in the controller
@@ -25,27 +24,27 @@ const NgoOfficeBearersDAL = {
     // Method to retrieve all records by view
     getAllDataByView: async () => {
         try {
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_BEARERS_FIELDS}`, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_STATE_DISTRICT_MAPPING_FILDS}`, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
     },
     // Method to retrieve a specific record by its ID
-    getDataByIdByView: async (bearer_id) => {
+    getDataByIdByView: async (ngo_state_district_mapping_id) => {
         try {
-            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.NGO_BEARERS_FIELDS} where bearer_id  = ${bearer_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.NGO_STATE_DISTRICT_MAPPING_FILDS} where ngo_state_district_mapping_id  = ${ngo_state_district_mapping_id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getDataById[0] ?? [] // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
     }, 
     // Method to mark a record as deleted (soft delete)
-    deleteDataById: async (bearer_id, req, res) => {
+    deleteDataById: async (ngo_state_district_mapping_id, req, res) => {
         try {
-            const [deleteDataById] = await NgoOfficeBearersModel(db.sequelize).update({ is_active: 0, deleted_by: tokenData(req, res), deleted_at: new Date() }, {
+            const [deleteDataById] = await NgoStateDistritMappingModel(db.sequelize).update({ is_active: 0, deleted_by: tokenData(req, res), deleted_at: new Date() }, {
                 where: {
-                    bearer_id: bearer_id
+                    ngo_state_district_mapping_id: ngo_state_district_mapping_id
                 }
             })
             return deleteDataById
@@ -54,11 +53,12 @@ const NgoOfficeBearersDAL = {
         }
     },getDataByNgoId:async(ngo_id)=>{
         try{
-            const getDataById = await db.sequelize.query(` SELECT * FROM ${VIEW_NAME.GET_ALL_NGO_OFFICE_BEARRRS} where ngo_id = ${ngo_id} `,{type:db.Sequelize.QueryTypes.SELECT} )
-            return getDataById
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_STATE_DISTRICT_MAPPING_FILDS} where ngo_id = ${ngo_id}`, { type: db.Sequelize.QueryTypes.SELECT })
+            return getAllData // Return the retrieved data
         }catch(error){
             throw error
         }
     }
 }
-export default NgoOfficeBearersDAL
+
+export default NgoOfficeDistrictMappingDAL

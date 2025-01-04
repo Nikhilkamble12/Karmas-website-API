@@ -3,7 +3,7 @@ import commonPath from "../../middleware/comman_path/comman.path.js"; // Import 
 const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessary components from commonPath
 
 const CityMasterDAL = {
-     // Method to create a new record in the database
+    // Method to create a new record in the database
      CreateData: async (data) => {
         try {
             const createdData = await CityMasterModel(db.sequelize).create(data)
@@ -53,4 +53,4 @@ const CityMasterDAL = {
         }
     }
 }
-export default CityMasterDAL
+export default CityMasterDAL 
