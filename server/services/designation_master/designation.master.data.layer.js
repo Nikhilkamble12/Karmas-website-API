@@ -51,6 +51,13 @@ const DestinationMasterDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
+    },getDataByTableId:async(table_id)=>{
+        try{
+            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.DESIGNATION_MASTER_FIELDS} where table_id = ${table_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getAllData // Return the retrieved data
+        }catch(error){
+            throw error
+        }
     }
 }
 export default DestinationMasterDAL
