@@ -3,6 +3,7 @@ import commonPath from "../../middleware/comman_path/comman.path.js";
 import NgoFundSDetailsService from "../ngo_funds_details/ngo.funds.details.service.js";
 import NgoOfficeBearersService from "../ngo_office_bearers/ngo.office.bearers.service.js";
 import NgoStateDistrictMappingService from "../ngo_state_district_mapping/ngo.state.district.mapping.service.js";
+import NgoFieldsMappingService from "../ngo_field_mapping/ngo.field.mapping.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const NgoMasterController = {
@@ -408,6 +409,7 @@ const NgoMasterController = {
             let ngo_office_berrars = false
             let ngo_state_mappingData = false
             let ngo_master_saved = false
+            let ngo_fields_mapping_saved = false
             // Add metadata for creation (created by, created at)
             
             // data.created_by=1,
@@ -489,6 +491,9 @@ const NgoMasterController = {
                 }
 
                 if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
+                    if(data.ngoFundsList.length==0){
+                        ngo_fund_saved_data = true
+                    }
                     for(let i =0 ;i<data.ngoFundsList.length;i++){
                         let currentData = data.ngoFundsList[i]
                         if(currentData.ngo_funds_id!==null && currentData.ngo_funds_id!=="" && currentData.ngo_funds_id!==0 && currentData.ngo_funds_id!==undefined){
@@ -512,6 +517,9 @@ const NgoMasterController = {
                     }
                 }
                 if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
+                    if(data.ngoOfficeBerrarsList.length == 0){
+                        ngo_office_berrars = true
+                    }
                     for(let i =0 ;i<data.ngoOfficeBerrarsList.length;i++){
                         let office_berars_current = data.ngoOfficeBerrarsList[i]
                         if(office_berars_current.bearer_id!=="" && office_berars_current.bearer_id!==null && office_berars_current.bearer_id!==undefined && office_berars_current.bearer_id!==0){
@@ -535,6 +543,9 @@ const NgoMasterController = {
                     }
                 }
                 if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
+                    if(data.ngoStateDistrictCityList.length == 0){
+                        ngo_state_mappingData = true
+                    }
                     for(let i =0 ;i<data.ngoStateDistrictCityList.length;i++){
                         let currentDataSatateDistrict = data.ngoStateDistrictCityList[i]
                         if(currentDataSatateDistrict.ngo_state_district_mapping_id!==null && currentDataSatateDistrict.ngo_state_district_mapping_id!==0 && currentDataSatateDistrict.ngo_state_district_mapping_id!==undefined && currentDataSatateDistrict.ngo_state_district_mapping_id!==""){
@@ -557,7 +568,34 @@ const NgoMasterController = {
                         }
                     }
                 }
-                if (ngo_state_mappingData && ngo_office_berrars && ngo_fund_saved_data) {
+                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
+                    if(data.ngoFieldList.length == 0){
+                        ngo_fields_mapping_saved = true
+                    }
+                    for(let i =0 ;i<data.ngoFieldList.length;i++){
+                        let currentData = data.ngoFieldList[i]
+                        if(currentData.ngo_field_mapping_id!==null && currentData.ngo_field_mapping_id!==0 && currentData.ngo_field_mapping_id!=="" && currentData.ngo_field_mapping_id!==undefined){
+                            currentData.modified_by = tokenData(req,res)
+                            currentData.modified_at = currentTime()
+                            currentData.ngo_id = ngoWalaId
+                            const updateNgoField = await NgoFieldsMappingService.updateService(currentData.ngo_field_mapping_id,currentData)
+                            if(updateNgoField>0){
+                                ngo_fields_mapping_saved = true
+                            }
+                        }else{
+                            currentData.created_by = tokenData(req,res)
+                            currentData.created_at = currentTime()
+                            currentData.is_active = true
+                            currentData.ngo_id = ngoWalaId
+                            const createNgoField = await NgoFieldsMappingService.createService(currentData)
+                            if(createNgoField){
+                                ngo_fields_mapping_saved = true
+                            }
+                        }
+                    }
+                }
+               
+                if (ngo_state_mappingData && ngo_office_berrars && ngo_fund_saved_data && ngo_fields_mapping_saved && ngo_master_saved) {
                     return res
                         .status(responseCode.CREATED)
                         .send(

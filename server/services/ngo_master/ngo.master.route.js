@@ -3,7 +3,7 @@ import commonPath from "../../middleware/comman_path/comman.path.js"; // Import 
 const {express,verifyToken,basePathRoute} = commonPath
 
 // Define the base path for routes
-const basePath=`${basePathRoute}/state_master`
+const basePath=`${basePathRoute}/ngo_master`
 const router = express.Router()
 // Route to create a new record
 
