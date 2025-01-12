@@ -40,6 +40,12 @@ const DesignationMasterService = {
         } catch (error) {
             throw error
         }
+    },getDataByTableId:async(table_id)=>{
+        try{
+            return await DestinationMasterDAL.getDataByTableId(table_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default DesignationMasterService

@@ -36,6 +36,18 @@ router.delete(
     verifyToken,
     DesignationMasterController.deleteData
 )
+// Router get Data By Table Id 
+router.get(
+    `${basePath}/getDataBy/TableId`,
+    verifyToken,
+    DesignationMasterController.getDataByTableId
+)
+// Router to get Data for Ngo Office Berears 
+router.get(
+    `${basePath}/getOffice/berearslist`,
+    verifyToken,
+    DesignationMasterController.getDataForNgoOfficeBerearsId
+)
 
 // Export the router for use in other parts of the application
 export default router
