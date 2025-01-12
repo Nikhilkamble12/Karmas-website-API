@@ -51,6 +51,13 @@ const CityMasterDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    }
+    },getDataByStateIdByView: async (state_id) => {
+        try {
+            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.CITY_MASTER_FIELDS} where state_id  = ${state_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getDataById // Return the retrieved data
+        } catch (error) {
+            throw error // Throw error for handling in the controller
+        }
+    },
 }
 export default CityMasterDAL 

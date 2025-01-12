@@ -36,6 +36,7 @@ router.delete(
     verifyToken,
     StateMasterController.deleteData
 )
+// Route to get State By Country ID
 router.get(
     `${basePath}/getByCountry`,
     verifyToken,

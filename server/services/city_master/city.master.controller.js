@@ -136,7 +136,7 @@ const CityMasterController = {
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            billingtypes
+                            getAll
                         )
                     );
             } else {
@@ -202,7 +202,7 @@ const CityMasterController = {
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            billingtypes
+                            getDataByid
                         )
                     );
             } else {
@@ -261,6 +261,55 @@ const CityMasterController = {
                     )
                 );
         } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    },getCityByStateId:async(req,res)=>{
+        try{
+            const Id = req.query.id
+            const getDataByid = await CityMasterService.getDataByStateIdByView(Id)
+
+            // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
+            // // Store the data in JSON for future retrieval
+            // if(fileStatus==false){
+            //   const DataToSave=await CityMasterService.getAllService()
+            //   if(DataToSave.length!==0){
+            //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
+            //   }
+            // }
+            // Return the fetched data or handle case where no data is found
+            if (getDataByid.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getDataByid
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        }catch(error){
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
