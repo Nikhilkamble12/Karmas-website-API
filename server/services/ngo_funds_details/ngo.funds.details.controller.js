@@ -136,7 +136,7 @@ const NgoFundsDetailsController = {
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            billingtypes
+                            getAll
                         )
                     );
             } else {
@@ -202,7 +202,7 @@ const NgoFundsDetailsController = {
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            billingtypes
+                            getDataByid
                         )
                     );
             } else {

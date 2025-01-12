@@ -264,7 +264,7 @@ const NgoMasterController = {
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            billingtypes
+                            getAll
                         )
                     );
             } else {
@@ -330,7 +330,7 @@ const NgoMasterController = {
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            billingtypes
+                            getDataByid
                         )
                     );
             } else {

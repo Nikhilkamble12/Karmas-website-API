@@ -40,6 +40,12 @@ const CityMasterService = {
         } catch (error) {
             throw error
         }
+    },getDataByStateIdByView:async(state_id)=>{
+        try{
+            return await CityMasterDAL.getDataByStateIdByView(state_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default CityMasterService

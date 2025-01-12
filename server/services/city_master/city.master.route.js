@@ -36,6 +36,12 @@ router.delete(
     verifyToken,
     CityMasterController.deleteData
 )
+// get by state id
+router.get(
+    `${basePath}/getBy/StateId`,
+    verifyToken,
+    CityMasterController.getCityByStateId
+)
 
 // Export the router for use in other parts of the application
 export default router

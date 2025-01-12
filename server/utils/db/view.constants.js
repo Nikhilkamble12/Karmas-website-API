@@ -13,6 +13,7 @@ GET_ALL_NGO_STATE_DISTING_MAPPING_VIEW:"v_ngo_state_district_mapping",
 GET_ALL_USER_ACTIVITY:"v_user_activity",
 GET_ALL_REQUEST:"v_Requests",
 GET_ALL_NGO_REQUEST:"v_Request_Ngo",
-GET_ALL_NGO_FIELD_MAPPING:"v_ngo_field_mapping"
+GET_ALL_NGO_FIELD_MAPPING:"v_ngo_field_mapping",
+GET_ALL_DISTRICT:"v_district"
 }
 export default VIEW_NAME
