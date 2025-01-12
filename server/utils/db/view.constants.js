@@ -11,5 +11,8 @@ GET_ALL_NGO_FUNDS_DETAILS:"v_ngo_funds_details",
 GET_ALL_NGO_OFFICE_BEARRRS:"v_ngo_office_bearers",
 GET_ALL_NGO_STATE_DISTING_MAPPING_VIEW:"v_ngo_state_district_mapping",
 GET_ALL_USER_ACTIVITY:"v_user_activity",
+GET_ALL_REQUEST:"v_Requests",
+GET_ALL_NGO_REQUEST:"v_Request_Ngo",
+GET_ALL_NGO_FIELD_MAPPING:"v_ngo_field_mapping"
 }
 export default VIEW_NAME
