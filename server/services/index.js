@@ -17,6 +17,7 @@ import RequestModel from "./requests/requests.model.js";
 import RequestNgoModel from "./request_ngo/request.ngo.model.js";
 import NgoFieldsMappingModel from "./ngo_field_mapping/ngo.field.mapping.model.js";
 import DistrictMasterModel from "./district_master/district.master.model.js";
+import StatusMasterModel from "./status_master/status.master.model.js";
 
 
 // Determine the environment (development or production)
@@ -65,6 +66,7 @@ db.RequestModel = RequestModel(sequelize,Sequelize);
 db.RequestNgoModel = RequestNgoModel(sequelize,Sequelize);
 db.NgoFieldsMappingModel = NgoFieldsMappingModel(sequelize,Sequelize);
 db.DistrictMasterModel = DistrictMasterModel(sequelize,Sequelize);
+db.StatusMasterModel = StatusMasterModel(sequelize,Sequelize);
 
 
 export default db

@@ -14,6 +14,7 @@ GET_ALL_USER_ACTIVITY:"v_user_activity",
 GET_ALL_REQUEST:"v_Requests",
 GET_ALL_NGO_REQUEST:"v_Request_Ngo",
 GET_ALL_NGO_FIELD_MAPPING:"v_ngo_field_mapping",
-GET_ALL_DISTRICT:"v_district"
+GET_ALL_DISTRICT:"v_district",
+GET_ALL_STATUS_MASTER:"v_status_master",
 }
 export default VIEW_NAME
