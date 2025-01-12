@@ -14,7 +14,11 @@ const ViewFieldTableWise = {
     NGO_FUNDS_DETAILS_FIELDS:` SELECT ngo_funds_id, ngo_id, department_name, source, financial_year, amount_sanctioned, purpose, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_FUNDS_DETAILS} `,
     NGO_BEARERS_FIELDS:` SELECT bearer_id, ngo_id, name, designation_id, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_OFFICE_BEARRRS} `,
     NGO_STATE_DISTRICT_MAPPING_FILDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_NGO_STATE_DISTING_MAPPING_VIEW} `,
+    NGO_FIELD_MAPPING_FIELDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_NGO_FIELD_MAPPING} `,
 
+    //  ------> R 
+    REQUEST_FIELDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_REQUEST} `,
+    REQUEST_NGO_FIELDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} `,
 
     // -------> S
     STATE_MASTER_FIELDS:` SELECT state_id, state_name, county_id, is_active  FROM ${VIEW_NAME.GET_ALL_STATE_MASTER} `,

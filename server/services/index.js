@@ -13,6 +13,10 @@ import NgoMasterModel from "./ngo_master/ngo.master.model.js";
 import NgoOfficeBearersModel from "./ngo_office_bearers/ngo.office.bearers.model.js";
 import NgoStateDistritMappingModel from "./ngo_state_district_mapping/ngo.state.district.mapping.model.js";
 import UserActivityModel from "./user_activity/user.activity.model.js";
+import RequestModel from "./requests/requests.model.js";
+import RequestNgoModel from "./request_ngo/request.ngo.model.js";
+import NgoFieldsMappingModel from "./ngo_field_mapping/ngo.field.mapping.model.js";
+import DistrictMasterModel from "./district_master/district.master.model.js";
 
 
 // Determine the environment (development or production)
@@ -57,6 +61,10 @@ db.NgoMasterModel = NgoMasterModel(sequelize,Sequelize);
 db.NgoOfficeBearersModel = NgoOfficeBearersModel(sequelize,Sequelize);
 db.NgoStateDistritMappingModel = NgoStateDistritMappingModel(sequelize,Sequelize);
 db.UserActivityModel = UserActivityModel(sequelize,Sequelize);
+db.RequestModel = RequestModel(sequelize,Sequelize);
+db.RequestNgoModel = RequestNgoModel(sequelize,Sequelize);
+db.NgoFieldsMappingModel = NgoFieldsMappingModel(sequelize,Sequelize);
+db.DistrictMasterModel = DistrictMasterModel(sequelize,Sequelize);
 
 
 export default db
