@@ -195,11 +195,11 @@ app.get("/", (req, res) => {
 });
 
 
-
-const PORT = process.env.PORT || 8089;
+// const PORT = process.env.PORT || 8089;
+const PORT = 8080;
 Promise.all(
   routes.map(async (route) => {
-    // console.log("route",route)
+    console.log("route",route)
     try {
       const { default: routeModule } = await import(route);
       if (typeof routeModule === "function") {
@@ -207,9 +207,8 @@ Promise.all(
         app.use(routeModule);
         // console.log("app.use(routeModule)",app.use(routeModule))
       } else {
-
         logger.error(
-          `Error in Server File ---> Module does not export a function. ${routeModule}`
+          "Error in Server File ---> Module does not export a function."
         );
       }
     } catch (error) {
