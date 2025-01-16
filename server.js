@@ -199,7 +199,7 @@ app.get("/", (req, res) => {
 const PORT = 8080;
 Promise.all(
   routes.map(async (route) => {
-    console.log("route",route)
+    // console.log("route",route)
     try {
       const { default: routeModule } = await import(route);
       if (typeof routeModule === "function") {
@@ -208,7 +208,7 @@ Promise.all(
         // console.log("app.use(routeModule)",app.use(routeModule))
       } else {
         logger.error(
-          "Error in Server File ---> Module does not export a function."
+          `Error in Server File ---> ${route} does not export a function.`
         );
       }
     } catch (error) {
@@ -218,7 +218,11 @@ Promise.all(
   })
 ).then(() => {
   startCluster((clusterObj) => {
-    app.listen(PORT, () => {
+    app.listen(PORT, (err) => {
+      if (err) {
+        logger.error(`Error starting server on port ${PORT}: ${err.message}`, { stack: err.stack });
+        return;
+      }
       if (clusterObj.worker) {
         logger.info(
           `Worker ${clusterObj.worker.id} is running on port ${PORT}.`
@@ -232,6 +236,9 @@ Promise.all(
       }
     });
   }, cluster);
+}).catch((error) => {
+  // Log if there is an issue with the Promise.all
+  logger.error(`Error in starting the server: ${error.message}`, { stack: error.stack });
 });
 
 
