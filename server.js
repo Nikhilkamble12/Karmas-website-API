@@ -218,7 +218,7 @@ Promise.all(
   })
 ).then(() => {
   startCluster((clusterObj) => {
-    app.listen(PORT, (err) => {
+    app.listen(PORT,'0.0.0.0',(err) => {
       if (err) {
         logger.error(`Error starting server on port ${PORT}: ${err.message}`, { stack: err.stack });
         return;
