@@ -11,7 +11,7 @@ const authenticate = (req, res, next) => {
   console.log("token",token)
   if (!token) {
     return res
-      .status(responseCode.INTERNAL_SERVER_ERROR)
+      .status(responseCode.UNAUTHORIZED)
       .send(
         commonResponse(
           responseCode.INTERNAL_SERVER_ERROR,
@@ -26,7 +26,7 @@ const authenticate = (req, res, next) => {
     console.log("err",err)
     if (err) {
       return res
-        .status(responseCode.INTERNAL_SERVER_ERROR)
+        .status(responseCode.UNAUTHORIZED)
         .send(
           commonResponse(
             responseCode.BAD_REQUEST,
