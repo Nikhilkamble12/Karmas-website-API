@@ -25,7 +25,7 @@ const CountryMasterDAL = {
     // Method to retrieve all records by view
     getAllDataByView: async () => {
         try {
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.USER_MASTER_FIELDS}`, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.COUNTRY_MASTER_FIELDS}`, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
@@ -34,7 +34,7 @@ const CountryMasterDAL = {
     // Method to retrieve a specific record by its ID
     getDataByIdByView: async (country_id) => {
         try {
-            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.USER_MASTER_FIELDS} where country_id  = ${country_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.COUNTRY_MASTER_FIELDS} where country_id  = ${country_id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getDataById[0] ?? [] // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
