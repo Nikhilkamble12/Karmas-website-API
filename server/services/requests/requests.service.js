@@ -40,6 +40,12 @@ const RequestService = {
         } catch (error) {
             throw error
         }
+    },getAllRequestByUserId:async(user_id)=>{
+        try{
+            return await RequestDAL.getUserByUserId(user_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 

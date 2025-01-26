@@ -273,6 +273,30 @@ const RequestNgoController = {
                     )
                 );
         }
+    },createUpdateRequestNgo :async(req,res)=>{
+        try{
+            const data = req.body 
+            for(let i = 0 ;i<data.requestNgoList.length;i++){
+                const currentData = data.requestNgoList[i]
+                if(currentData.Request_Ngo_Id!==null && currentData.Request_Ngo_Id!=="" && currentData.Request_Ngo_Id!==undefined && currentData.Request_Ngo_Id!==0){
+
+                }else{
+                    
+                }
+            }
+        }catch(error){
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
     }
 }
 export default RequestNgoController

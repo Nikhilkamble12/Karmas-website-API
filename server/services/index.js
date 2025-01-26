@@ -18,7 +18,9 @@ import RequestNgoModel from "./request_ngo/request.ngo.model.js";
 import NgoFieldsMappingModel from "./ngo_field_mapping/ngo.field.mapping.model.js";
 import DistrictMasterModel from "./district_master/district.master.model.js";
 import StatusMasterModel from "./status_master/status.master.model.js";
-
+import BonusMasterModel from "./bonus_master/bonus.master.model.js";
+import BonusHistoryModel from "./bonus_history/bonus.history.model.js";
+import CouponMasterModel from "./coupon_master/coupon.master.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -67,6 +69,9 @@ db.RequestNgoModel = RequestNgoModel(sequelize,Sequelize);
 db.NgoFieldsMappingModel = NgoFieldsMappingModel(sequelize,Sequelize);
 db.DistrictMasterModel = DistrictMasterModel(sequelize,Sequelize);
 db.StatusMasterModel = StatusMasterModel(sequelize,Sequelize);
+db.BonusMasterModel = BonusMasterModel(sequelize,Sequelize);
+db.BonusHistoryModel = BonusHistoryModel(sequelize,Sequelize);
+db.CouponMasterModel = CouponMasterModel(sequelize,Sequelize);
 
 
 export default db

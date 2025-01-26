@@ -6,9 +6,9 @@
     "auditLog": "/Users/khana/Documents/massom/logs/info-audit.json",
     "files": [
         {
-            "date": 1737004533777,
-            "name": "/Users/khana/Documents/massom/logs/log-16-01-2025.log",
-            "hash": "e28cbddb2a451dfe7759b9317be030ee3b90ec857609512312948baa93a7c6be"
+            "date": 1737908511905,
+            "name": "/Users/khana/Documents/massom/logs/log-26-01-2025.log",
+            "hash": "b81be272dab750fec42ee15468ea04aca6f1e4784caf83c676f7f456bfce6673"
         }
     ],
     "hashType": "sha256"
