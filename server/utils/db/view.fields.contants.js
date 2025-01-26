@@ -1,9 +1,15 @@
 import VIEW_NAME from "./view.constants.js";
 
 const ViewFieldTableWise = {
+    // -------> A
+    // -------> B
+    BONUS_MASTER_FIELDS:` SELECT bonus_id, create_score, start_date, end_date, score_category, status_id, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at ${VIEW_NAME.GET_ALL_BONUS_MASTER} `,
+    BONUS_HISTORY_FIELDS:` SELECT history_id, bonus_id, score_category, previous_create_score, new_create_score, change_date, changed_by, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_BONUS_HISTORY} `,
+
     //  ------> C
-    CITY_MASTER_FIELDS:` SELECT city_id, city_name, country_id, country_name, state_id, state_name, is_metro_city, is_active FROM ${VIEW_NAME.GET_ALL_CITY_MASTER} ` ,
-    COUNTRY_MASTER_FIELDS:` SELECT country_id, country_name, is_active FROM ${VIEW_NAME.GET_ALL_COUNTRY_MASTER} `,
+    CITY_MASTER_FIELDS :` SELECT city_id, city_name, country_id, country_name, state_id, state_name, is_metro_city, is_active FROM ${VIEW_NAME.GET_ALL_CITY_MASTER} ` ,
+    COUNTRY_MASTER_FIELDS :` SELECT country_id, country_name, is_active FROM ${VIEW_NAME.GET_ALL_COUNTRY_MASTER} `,
+    COUPON_MASTER_FIELDS : ` SELECT coupon_id, coupon_code, rate, amount, company_name, active_date, expires_date, distributed_status, active_status, created_at FROM ${VIEW_NAME.GET_ALL_COUPON_MASTER} `,
 
     // -------> D
     DESIGNATION_MASTER_FIELDS:` SELECT designation_id, table_id, table_name, designation_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_DESIGNATION_MASTER} `,

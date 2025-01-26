@@ -16,5 +16,8 @@ GET_ALL_NGO_REQUEST:"v_Request_Ngo",
 GET_ALL_NGO_FIELD_MAPPING:"v_ngo_field_mapping",
 GET_ALL_DISTRICT:"v_district",
 GET_ALL_STATUS_MASTER:"v_status_master",
+GET_ALL_BONUS_MASTER:"v_bonus_master",
+GET_ALL_BONUS_HISTORY:"v_bonus_history",
+GET_ALL_COUPON_MASTER:"v_coupon_master",
 }
 export default VIEW_NAME
