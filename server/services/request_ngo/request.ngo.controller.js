@@ -275,14 +275,50 @@ const RequestNgoController = {
         }
     },createUpdateRequestNgo :async(req,res)=>{
         try{
-            const data = req.body 
+            const data = req.body
+            let request_saved = false
+            let request_error = false
             for(let i = 0 ;i<data.requestNgoList.length;i++){
                 const currentData = data.requestNgoList[i]
-                if(currentData.Request_Ngo_Id!==null && currentData.Request_Ngo_Id!=="" && currentData.Request_Ngo_Id!==undefined && currentData.Request_Ngo_Id!==0){
-
+                const requestNgoMapping = await RequestNgoService.getRequestAndNGoData(currentData.ngo_id,currentData.RequestId)
+                if(requestNgoMapping && requestNgoMapping.length>0){
+                    await addMetaDataWhileCreateUpdate(currentData, req, res, true);
+                    const updateRequestNgo = await RequestNgoService.updateService(requestNgoMapping[0].Request_Ngo_Id,currentData)
+                    if(updateRequestNgo>0){
+                        request_saved = true
+                    }else{
+                        request_error = true
+                    }
                 }else{
-                    
+                    await addMetaDataWhileCreateUpdate(currentData, req, res, false);
+                    const createRequestNgo = await RequestNgoService.createService(currentData)
+                    if(createRequestNgo){
+                        request_saved = true
+                    }else{
+                        request_error = true
+                    }
                 }
+            }
+            if (request_saved && !request_error) {
+                return res
+                    .status(responseCode.CREATED)
+                    .send(
+                        commonResponse(
+                            responseCode.CREATED,
+                            responseConst.SUCCESS_ADDING_RECORD
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_ADDING_RECORD,
+                            null,
+                            true
+                        )
+                    );
             }
         }catch(error){
             logger.error(`Error ---> ${error}`);

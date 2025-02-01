@@ -40,6 +40,18 @@ const RequestNgoService = {
         } catch (error) {
             throw error
         }
+    },getRequestAndNGoData:async(NgoId,RequestId)=>{
+        try{
+           return await RequestNgoDAL.getDataByRequestIdAndNgoId(RequestId,NgoId)
+        }catch(error){
+            throw error
+        }
+    },getAllDataByNgoId:async(ngo_id)=>{
+        try{
+            return await RequestNgoDAL.getDataByNgoId(ngo_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default RequestNgoService

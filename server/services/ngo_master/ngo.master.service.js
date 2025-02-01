@@ -40,6 +40,24 @@ const NgoMasterService = {
         } catch (error) {
             throw error
         }
+    },getNgoDataByCityIdforMapping:async(CityId)=>{
+        try{
+            return await NgoMasterDAL
+        }catch(error){
+            throw error
+        }
+    },getNgoDataByStateAndNotCity:async(StateId,CityId)=>{
+        try{
+            return await NgoMasterDAL
+        }catch(error){
+            throw error
+        }
+    },getNgoDataByCountryIdAndNotStateAndCity:async(CountryId,StateId,CityId)=>{
+        try{
+            return await NgoMasterDAL
+        }catch(error){
+            throw error
+        }
     }
 }
 export default NgoMasterService

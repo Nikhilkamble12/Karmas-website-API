@@ -19,5 +19,8 @@ GET_ALL_STATUS_MASTER:"v_status_master",
 GET_ALL_BONUS_MASTER:"v_bonus_master",
 GET_ALL_BONUS_HISTORY:"v_bonus_history",
 GET_ALL_COUPON_MASTER:"v_coupon_master",
+GET_ALL_SIMPLE_SCORE_HISTORY:"v_simple_score_history",
+GET_ALL_SCORE_ELIGIBILITY:"v_score_eligibility",
+GET_ALL_VENDOR_COMPANY_MASTER : "v_vendor_company_master",
 }
 export default VIEW_NAME

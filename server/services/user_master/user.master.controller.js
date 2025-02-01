@@ -1,4 +1,5 @@
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
+import UserActivtyService from "../user_activity/user.activity.service.js";
 import UserMasterService from "./user.master.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
@@ -13,6 +14,15 @@ const UserMasterController = {
             // data.created_at = new Date()
             // Create the record using ORM
             const createData = await UserMasterService.createService(data);
+            if(createData){
+                const user_id = createData.dataValues.user_id
+                const userActvityCreate = {
+                    user_id:user_id,
+                }
+                await addMetaDataWhileCreateUpdate(userActvityCreate, req, res, false);
+                const UserActivity = await UserActivtyService.createService(userActvityCreate)
+
+            }
             if (createData) {
                 return res
                     .status(responseCode.CREATED)

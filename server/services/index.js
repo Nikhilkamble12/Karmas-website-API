@@ -21,6 +21,8 @@ import StatusMasterModel from "./status_master/status.master.model.js";
 import BonusMasterModel from "./bonus_master/bonus.master.model.js";
 import BonusHistoryModel from "./bonus_history/bonus.history.model.js";
 import CouponMasterModel from "./coupon_master/coupon.master.model.js";
+import ScoreHistoryModel from "./score_history/score.history.model.js";
+import ScoreEligibilityMapping from "./score_eligibility_mapping/score.eligibility.mapping.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -72,6 +74,8 @@ db.StatusMasterModel = StatusMasterModel(sequelize,Sequelize);
 db.BonusMasterModel = BonusMasterModel(sequelize,Sequelize);
 db.BonusHistoryModel = BonusHistoryModel(sequelize,Sequelize);
 db.CouponMasterModel = CouponMasterModel(sequelize,Sequelize);
+db.ScoreHistoryModel = ScoreHistoryModel(sequelize,Sequelize);
+db.ScoreEligibilityMapping = ScoreEligibilityMapping(sequelize,Sequelize);
 
 
 export default db
