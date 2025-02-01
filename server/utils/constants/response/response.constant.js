@@ -48,7 +48,8 @@ const RESPONSE_CONSTANTS = {
     WRONG_CREDENTIAL:"Invalid Credential.",
     USERNAME_ALREADY_IN_USE:"User Name Already In Use.",
     USERNAME_IS_READY_TO_USE:"User Name Ready To Use.",
-    ERROR_WHILE_SAVING_FILE_TO_SERVER:"Error While Saving File To Server."
+    ERROR_WHILE_SAVING_FILE_TO_SERVER:"Error While Saving File To Server.",
+    EMAIL_AND_PASSWORD_REQUIRED:"Email And Password Is Required."
   };
   
   export default RESPONSE_CONSTANTS;

@@ -4,6 +4,8 @@ import NgoFundSDetailsService from "../ngo_funds_details/ngo.funds.details.servi
 import NgoOfficeBearersService from "../ngo_office_bearers/ngo.office.bearers.service.js";
 import NgoStateDistrictMappingService from "../ngo_state_district_mapping/ngo.state.district.mapping.service.js";
 import NgoFieldsMappingService from "../ngo_field_mapping/ngo.field.mapping.service.js";
+import { ROLE_MASTER } from "../../utils/constants/id_constant/id.constants.js";
+import UserMasterService from "../user_master/user.master.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const NgoMasterController = {
@@ -410,6 +412,19 @@ const NgoMasterController = {
             let ngo_state_mappingData = false
             let ngo_master_saved = false
             let ngo_fields_mapping_saved = false
+            if(!data.email && !data.password){
+                return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.EMAIL_AND_PASSWORD_REQUIRED,
+                        null,
+                        true
+                    )
+                );
+            }
+
             // Add metadata for creation (created by, created at)
             
             // data.created_by=1,
@@ -488,6 +503,18 @@ const NgoMasterController = {
                             crs_regis_file_path:crs_regis_path_name,
                         } 
                         const updateNgomaster = await NgoMasterService.updateService(ngo_id,updateData)
+                        const createUserMaster = {
+                            user_name:data.email,
+                            password:data.password,
+                            full_name:data.ngo_name,
+                            email_id:data.email,
+                            gender:'NA',
+                            enrolling_date:currentTime(),
+                            ngo_id:ngoWalaId,
+                            role_id:ROLE_MASTER.NGO
+                        }
+                        await addMetaDataWhileCreateUpdate(createUserMaster, req, res, false);
+                        const CreateUser = await UserMasterService.createService(createUserMaster) 
                 }
 
                 if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
