@@ -36,6 +36,12 @@ router.delete(
     verifyToken,
     RequestsController.deleteData
 )
+// Get Request By User Id
+router.get(
+    `${basePath}/getBy/UserId`,
+    verifyToken,
+    RequestsController.getRequestByUserId
+)
 
 // Export the router for use in other parts of the application
 export default router
