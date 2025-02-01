@@ -22,14 +22,17 @@ const ViewFieldTableWise = {
     NGO_BEARERS_FIELDS:` SELECT bearer_id, ngo_id, name, designation_id, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_OFFICE_BEARRRS} `,
     NGO_STATE_DISTRICT_MAPPING_FILDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_NGO_STATE_DISTING_MAPPING_VIEW} `,
     NGO_FIELD_MAPPING_FIELDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_NGO_FIELD_MAPPING} `,
+    NGO_REQUEST_MAPPING_FIELDS:` SELECT Request_Ngo_Id, RequestId, ngo_id, status_id, Reason, AssignedDate, ApprovalDate, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} `,
 
     //  ------> R 
     REQUEST_FIELDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_REQUEST} `,
     REQUEST_NGO_FIELDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} `,
 
     // -------> S
-    STATE_MASTER_FIELDS:` SELECT state_id, state_name, country_id, country_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at  FROM ${VIEW_NAME.GET_ALL_STATE_MASTER} `,
-    STATUS_MASTER_FIELDS: ` SELECT * FROM ${VIEW_NAME.GET_ALL_STATUS_MASTER} `,
+    STATE_MASTER_FIELDS :` SELECT state_id, state_name, country_id, country_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at  FROM ${VIEW_NAME.GET_ALL_STATE_MASTER} `,
+    STATUS_MASTER_FIELDS : ` SELECT * FROM ${VIEW_NAME.GET_ALL_STATUS_MASTER} `,
+    SIMPLE_SCORE_HISTORY_FIELDS :` SELECT sr_no, user_id, user_name, request_name, git_score, description, status_id, status_name, date, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_SIMPLE_SCORE_HISTORY} `,
+    SCORE_ELIGIBILITY_MAPPING_FIELDS :` SELECT mapping_id, company_name, score_required, eligible_amount, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_SCORE_ELIGIBILITY} `,
 
     // -------> T
     TABLE_MASTER_FIELDS: ` SELECT table_id, table_name, is_active FROM ${VIEW_NAME.GET_ALL_TABLE_MASTER}  `,
@@ -37,6 +40,8 @@ const ViewFieldTableWise = {
     //  ------> U
     USER_MASTER_FIELDS :` SELECT user_id, user_name, password, full_name, email_id FROM ${VIEW_NAME.GET_ALL_USER_MASTER} `,
     USER_ACTIVITY_FIELDS :` SELECT * FROM ${VIEW_NAME.GET_ALL_USER_ACTIVITY} `,
+    // -------> V
+    VENDOR_COMPANY_MASTER_FIELDS :` SELECT company_id, company_name, company_photo_name, company_photo_path, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_VENDOR_COMPANY_MASTER} `,
 
 
 }

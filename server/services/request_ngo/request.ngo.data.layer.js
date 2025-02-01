@@ -24,7 +24,7 @@ const RequestNgoDAL = {
     // Method to retrieve all records by view
     getAllDataByView: async () => {
         try {
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.CITY_MASTER_FIELDS}`, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS}`, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
@@ -33,7 +33,7 @@ const RequestNgoDAL = {
     // Method to retrieve a specific record by its ID
     getDataByIdByView: async (Request_Ngo_Id) => {
         try {
-            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.CITY_MASTER_FIELDS} where Request_Ngo_Id  = ${Request_Ngo_Id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS} where Request_Ngo_Id  = ${Request_Ngo_Id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getDataById[0] ?? [] // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
@@ -50,6 +50,20 @@ const RequestNgoDAL = {
             return deleteDataById
         } catch (error) {
             throw error // Throw error for handling in the controller
+        }
+    },getDataByRequestIdAndNgoId:async(RequestId,NgoId)=>{
+        try{
+            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS}  where RequestId = ${RequestId} and ngo_id = ${NgoId} `,{ type: db.Sequelize.QueryTypes.SELECT })
+            return getAllData ?? [] // Return the retrieved data
+        }catch(error){
+            throw error
+        }
+    },getDataByNgoId:async(ngo_id)=>{
+        try{
+            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS} where ngo_id = ${ngo_id} `,{ type: db.Sequelize.QueryTypes.SELECT })
+            return getAllData ?? [] // Return the retrieved data
+        }catch(error){
+            throw error
         }
     }
 }
