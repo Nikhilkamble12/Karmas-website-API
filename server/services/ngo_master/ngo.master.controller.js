@@ -656,9 +656,10 @@ const NgoMasterController = {
                     )
                 );
         }
-    },getNgoMatserData:async(req,res)=>{
+    },getNgoMasterData:async(req,res)=>{
         try{
             const ngo_id = req.query.ngo_id
+            console.log("ngo_id",ngo_id)
             let getNgomaster = await NgoMasterService.getServiceById(ngo_id)
             const getNgoOfficeBerrares = await NgoOfficeBearersService.getDataByNgoId(ngo_id)
             const ngoFundsDetails = await NgoFundSDetailsService.getDataByIdNgoId(ngo_id)
