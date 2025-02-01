@@ -1,9 +1,9 @@
 import NgoMasterController from "./ngo.master.controller.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
-const {express,verifyToken,basePathRoute} = commonPath
+const { express, verifyToken, basePathRoute } = commonPath
 
 // Define the base path for routes
-const basePath=`${basePathRoute}/ngo_master`
+const basePath = `${basePathRoute}/ngo_master`
 const router = express.Router()
 // Route to create a new record
 
@@ -43,9 +43,10 @@ router.post(
     NgoMasterController.createOrUpdateNgoMaster
 )
 // Get Ngo Data By Id
-router.get(`${basePath}/getNgo/Databy/Id`,
+router.get(
+    `${basePath}/getNgo/Databy`,
     verifyToken,
-    NgoMasterController.getNgoMatserData
+    NgoMasterController.getNgoMasterData
 )
 
 // Export the router for use in other parts of the application
