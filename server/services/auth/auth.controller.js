@@ -56,6 +56,8 @@ const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,ad
               userDetails : {
                 user_id: userData.user_id,
                 user_name: userData.user_name,
+                full_name:userData.full_name,
+                role:userData.role
               },
               token: token,
             };

@@ -37,6 +37,9 @@
       },{
         "code":"3.0007",
         "message":"Invalid Username!"
+      },{
+        "code":"1.0011",
+        "message":"Email And Password Is Required."
       }
     ]
       
