@@ -1,4 +1,5 @@
 
+// this represent .env file
 import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
@@ -16,6 +17,7 @@ import responseCode from "./server/utils/constants/code/http.status.code.js";
 import encrypt from "./server/utils/security/encryption.js";
 import decrypt from "./server/utils/security/decryption.js";
 import startCluster from "./server/utils/helper/cluster.js";
+import https from "https"
 
 // import routeValidationMiddleware from "./server/middleware/route_validation/route.validation.js"
 
@@ -62,79 +64,55 @@ app.use(
 );
 
 
-// app.use((req, res, next) => {
-//   if (
-//     req.path !== "/api/v1/decrypt" &&
-//     req.path !== "/api/v1/encrypt" &&
-//     req.path !== "/"
-//   ) {
-//     const originalSend = res.send;
-//     res.send = function (data) {
-//       const encryptedData = encrypt(data);
-//       res.setHeader("Content-Type", "application/json");
-//       originalSend.call(this, JSON.stringify(encryptedData));
-//     };
-//   }
-//   next();
-// });
+app.use((req, res, next) => {
+  if (
+    req.path !== "/api/v1/decrypt" &&
+    req.path !== "/api/v1/encrypt" &&
+    req.path !== "/"
+  ) {
+    const originalSend = res.send;
+    res.send = function (data) {
+      const encryptedData = encrypt(data);
+      res.setHeader("Content-Type", "application/json");
+      originalSend.call(this, JSON.stringify(encryptedData));
+    };
+  }
+  next();
+});
 
-// app.use((req, res, next) => {
-//   if (
-//     req.path !== "/api/v1/decrypt" &&
-//     req.path !== "/api/v1/encrypt" &&
-//     req.method != "GET" &&
-//     req.method != "DELETE"
-//   ) {
-//     const reqBody = req.body;
-//     if (reqBody.hasOwnProperty("reqBody")) {
-//       if (req.body && req.body.reqBody) {
-//         const decryptedData = decrypt(req.body.reqBody);
-//         const decryptedObject = decryptedData;
-//         req.body = decryptedObject;
-//       }
-//       next();
-//     } else {
-//       return res.send(
-//         commonResponse(res.statusCode, "Body required!", null, true)
-//       );
-//     }
-//   } else {
-//     next();
-//   }
-// });
 
-// app.use((req, res, next) => {
-//   // Check if the request is not for decryption or encryption endpoints,
-//   // and it's not a GET or DELETE method.
-//   if (
-//     req.path !== "/api/v1/decrypt" &&
-//     req.path !== "/api/v1/encrypt" &&
-//     req.method !== "GET" &&
-//     req.method !== "DELETE"
-//   ) {
-//     // Check if the Content-Type is not form data
-//     if (!req.is("multipart/form-data")) {
-//       const reqBody = req.body;
-//       if (reqBody.hasOwnProperty("reqBody")) {
-//         if (req.body && req.body.reqBody) {
-//           const decryptedData = decrypt(req.body.reqBody);
-//           const decryptedObject = decryptedData;
-//           req.body = decryptedObject;
-//         }
-//         next();
-//       } else {
-//         return res.send(
-//           commonResponse(res.statusCode, "Body required!", null, true)
-//         );
-//       }
-//     } else {
-//       // If it's form data, skip decryption/encryption
-//       next();
-//     }
-//   } else {
-//     next();
-//   }
-// })
+app.use((req, res, next) => {
+  // Check if the request is not for decryption or encryption endpoints,
+  // and it's not a GET or DELETE method.
+  if (
+    req.path !== "/api/v1/decrypt" &&
+    req.path !== "/api/v1/encrypt" &&
+    req.method !== "GET" &&
+    req.method !== "DELETE"
+  ) {
+    // Check if the Content-Type is not form data
+    if (!req.is("multipart/form-data")) {
+      const reqBody = req.body;
+      if (reqBody.hasOwnProperty("reqBody")) {
+        if (req.body && req.body.reqBody) {
+          const decryptedData = decrypt(req.body.reqBody);
+          const decryptedObject = decryptedData;
+          req.body = decryptedObject;
+        }
+        next();
+      } else {
+        return res.send(
+          commonResponse(res.statusCode, "Body required!", null, true)
+        );
+      }
+    } else {
+      // If it's form data, skip decryption/encryption
+      next();
+    }
+  } else {
+    next();
+  }
+})
 
 
 
@@ -288,7 +266,7 @@ const getRandomPort = (min, max) => {
 
 // Try to bind to the given port, or use a random port if the desired one is in use
 const tryListenOnPort = (app, port, callback) => {
-  app.listen(port, "0.0.0.0", (err) => {
+  app.listen(PORT, (err) => {
     if (err) {
       logger.error(`Port ${port} is not available. Trying another port...`);
       
@@ -324,6 +302,7 @@ Promise.all(
   // Attempt to listen on the initial port, or fallback to a random port
   tryListenOnPort(app, PORT, (port) => {
     logger.info(`Server started successfully on port ${port}`);
+    console.log(`Server started successfully on port ${port}`)
   });
 }).catch((error) => {
   logger.error(`Error in starting the server: ${error.message}`, { stack: error.stack });
