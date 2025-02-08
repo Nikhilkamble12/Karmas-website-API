@@ -65,6 +65,13 @@ const RequestNgoDAL = {
         }catch(error){
             throw error
         }
+    },getAllNgoByRequestIdOnly:async(RequestId)=>{
+        try{
+            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS}  where RequestId = ${RequestId} `,{ type: db.Sequelize.QueryTypes.SELECT })
+            return getAllData ?? []
+        }catch(error){
+            throw error
+        }
     }
 }
 

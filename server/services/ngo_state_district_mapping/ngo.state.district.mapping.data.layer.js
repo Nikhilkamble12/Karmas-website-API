@@ -58,6 +58,39 @@ const NgoOfficeDistrictMappingDAL = {
         }catch(error){
             throw error
         }
+    },getNgoDataByCityId:async(city_id)=>{
+        try{
+            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.NGO_STATE_DISTRICT_MAPPING_FILDS} where city_id = ${city_id} `,{type:db.Sequelize.QueryTypes.SELECT})
+            return getDataById
+        }catch(error){
+            throw error
+        }
+    },getNgoDataByDistrictId:async(district_id,ngoId)=>{
+        try{
+            console.log("ngoId",ngoId)
+            const ngoIdCondition = ngoId && ngoId.length > 0 ? `AND ngo_id NOT IN (${ngoId.join(",")})` : "";
+            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.NGO_STATE_DISTRICT_MAPPING_FILDS} where district_id = ${district_id} ${ngoIdCondition} `,{type:db.Sequelize.QueryTypes.SELECT})
+            return getDataById 
+        }catch(error){
+            throw error
+        }
+    },getNgoDataByStateId:async(state_id,ngoId)=>{
+        try{
+              // If ngoId is empty or undefined, ignore the NOT IN clause
+            const ngoIdCondition = ngoId && ngoId.length > 0 ? `AND ngo_id NOT IN (${ngoId.join(",")})` : "";
+            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.NGO_STATE_DISTRICT_MAPPING_FILDS} where state_id = ${state_id} ${ngoIdCondition} `,{type:db.Sequelize.QueryTypes.SELECT})
+            return getDataById 
+        }catch(error){
+            throw error
+        }
+    },getRemaingNgoData:async(ngoId)=>{
+        try{
+            const ngoIdCondition = ngoId && ngoId.length > 0 ? `AND ngo_id NOT IN (${ngoId.join(",")})` : "";
+            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.NGO_STATE_DISTRICT_MAPPING_FILDS} where ngo_id IS NOT NULL ${ngoIdCondition} `,{type:db.Sequelize.QueryTypes.SELECT})
+            return getDataById   
+        }catch(error){
+            throw error
+        }
     }
 }
 

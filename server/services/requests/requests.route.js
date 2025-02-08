@@ -42,6 +42,10 @@ router.get(
     verifyToken,
     RequestsController.getRequestByUserId
 )
+router.get(`${basePath}/getNgo/DataByRequest`,
+    verifyToken,
+    RequestsController.getNgoRequstDataForMapping
+)
 
 // Export the router for use in other parts of the application
 export default router
