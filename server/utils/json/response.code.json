@@ -40,6 +40,9 @@
       },{
         "code":"1.0011",
         "message":"Email And Password Is Required."
+      },{
+        "code":"1.0012",
+        "message":"Ngo Already Assigned to Request."
       }
     ]
       
