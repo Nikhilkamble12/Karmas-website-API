@@ -444,6 +444,8 @@ const RequestsController = {
                 if (matchedRequest) {
                     ngo.Request_Ngo_Id = matchedRequest.Request_Ngo_Id
                     ngo.status_id = matchedRequest.status_id; // Update status_id if found
+                }else{
+                    ngo.Request_Ngo_Id = null
                 }
             });
             }
