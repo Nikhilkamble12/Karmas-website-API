@@ -58,13 +58,20 @@ const RequestModel = (sequelize)=>{
             }, CityId:{
                 type:DataTypes.INTEGER,
                 allowNull:true
-            }, StateId:{
+            },districtId:{
                 type:DataTypes.INTEGER,
                 allowNull:true
-            }, CountryId:{
+            },StateId:{
                 type:DataTypes.INTEGER,
                 allowNull:true
-            }, is_active: {
+            },CountryId:{
+                type:DataTypes.INTEGER,
+                allowNull:true
+            },status_id:{
+                type:DataTypes.INTEGER,
+                allowNull:true
+            },
+             is_active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
         },
