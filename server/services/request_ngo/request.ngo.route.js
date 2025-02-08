@@ -36,6 +36,11 @@ router.delete(
     verifyToken,
     RequestNgoController.deleteData
 )
+router.put(
+    `${basePath}/update/ngo/status`,
+    verifyToken,
+    RequestNgoController.updateStatusRequestNgoMaster
+)
 
 // Export the router for use in other parts of the application
 export default router

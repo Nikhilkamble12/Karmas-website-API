@@ -1,5 +1,6 @@
 import RequestNgoService from "./request.ngo.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
+import RequestService from "../requests/requests.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const RequestNgoController = {
@@ -291,6 +292,7 @@ const RequestNgoController = {
                     }
                 }else{
                     await addMetaDataWhileCreateUpdate(currentData, req, res, false);
+                    currentData.status_id = 5
                     const createRequestNgo = await RequestNgoService.createService(currentData)
                     if(createRequestNgo){
                         request_saved = true
@@ -315,6 +317,66 @@ const RequestNgoController = {
                         commonResponse(
                             responseCode.BAD_REQUEST,
                             responseConst.ERROR_ADDING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+        }catch(error){
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    },updateStatusRequestNgoMaster:async(req,res)=>{
+        try{
+            const Request_Ngo_Id = req.query.Request_Ngo_Id
+            const RequestId = req.body.RequestId
+            const requestDetails = await RequestService.getServiceById(RequestId)
+            const getDataByNgoRequest = await RequestNgoService.getServiceById(Request_Ngo_Id)
+            if(requestDetails.status_id!==8){
+                let dataToStore = {}
+                dataToStore.status_id = req.body.status_id
+                await addMetaDataWhileCreateUpdate(dataToStore, req, res, true);
+                
+                if(req.body.status_id==8){
+                    const updaterequest = await RequestService.updateService(RequestId,{status_id:8,AssignedNGO:getDataByNgoRequest.ngo_id})
+                }
+                const updateData = await RequestNgoService.updateService(Request_Ngo_Id,dataToStore)
+                if (updateData === 0) {
+                    return res
+                        .status(responseCode.BAD_REQUEST)
+                        .send(
+                            commonResponse(
+                                responseCode.BAD_REQUEST,
+                                responseConst.ERROR_UPDATING_RECORD,
+                                null,
+                                true
+                            )
+                        );
+                }
+                return res
+                    .status(responseCode.CREATED)
+                    .send(
+                        commonResponse(
+                            responseCode.CREATED,
+                            responseConst.SUCCESS_UPDATING_RECORD
+                        )
+                    );
+            }else{
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.NGO_ALREDY_ASSIGNED_TO_REQUEST,
                             null,
                             true
                         )
