@@ -334,6 +334,7 @@ const RequestsController = {
                     console.log("inside city for")
                     const CurrentData = getDataByCityId[i]
                     const NgoData = {
+                        Request_Ngo_Id:null,
                         ngo_id:CurrentData.ngo_id,
                         ngo_name:CurrentData.ngo_name,
                         unique_id:CurrentData.unique_id,
@@ -356,6 +357,7 @@ const RequestsController = {
                 for(let i=0;i<getAllDataByDistrictid.length;i++){
                     const CurrentData = getAllDataByDistrictid[i]
                     const NgoData = {
+                        Request_Ngo_Id:null,
                         ngo_id:CurrentData.ngo_id,
                         ngo_name:CurrentData.ngo_name,
                         unique_id:CurrentData.unique_id,
@@ -378,6 +380,7 @@ const RequestsController = {
                 for(let i=0;i<getDataByStateId.length;i++){
                     const CurrentData = getDataByStateId[i]
                     const NgoData = {
+                        Request_Ngo_Id:null,
                         ngo_id:CurrentData.ngo_id,
                         ngo_name:CurrentData.ngo_name,
                         unique_id:CurrentData.unique_id,
@@ -398,6 +401,7 @@ const RequestsController = {
                 for(let i=0;i<getDataByCountryId.length;i++){
                     const CurrentData = getDataByCountryId[i]
                     const NgoData = {
+                        Request_Ngo_Id:null,
                         ngo_id:CurrentData.ngo_id,
                         ngo_name:CurrentData.ngo_name,
                         unique_id:CurrentData.unique_id,
@@ -417,6 +421,7 @@ const RequestsController = {
                 for(let i=0;i<getFinalNgos.length;i++){
                     const CurrentData = getFinalNgos[i]
                     const NgoData = {
+                        Request_Ngo_Id:null,
                         ngo_id:CurrentData.ngo_id,
                         ngo_name:CurrentData.ngo_name,
                         unique_id:CurrentData.unique_id,
@@ -437,6 +442,7 @@ const RequestsController = {
             fullData.forEach((ngo) => {
                 const matchedRequest = requestData.find(req => req.ngo_id === ngo.ngo_id);
                 if (matchedRequest) {
+                    ngo.Request_Ngo_Id = matchedRequest.Request_Ngo_Id
                     ngo.status_id = matchedRequest.status_id; // Update status_id if found
                 }
             });
