@@ -40,21 +40,9 @@ const NgoMasterService = {
         } catch (error) {
             throw error
         }
-    },getNgoDataByCityIdforMapping:async(CityId)=>{
+    },getAllNgoWhichAreNotSelected:async(ngo_id)=>{
         try{
-            return await NgoMasterDAL
-        }catch(error){
-            throw error
-        }
-    },getNgoDataByStateAndNotCity:async(StateId,CityId)=>{
-        try{
-            return await NgoMasterDAL
-        }catch(error){
-            throw error
-        }
-    },getNgoDataByCountryIdAndNotStateAndCity:async(CountryId,StateId,CityId)=>{
-        try{
-            return await NgoMasterDAL
+            return await NgoMasterDAL.getRemaingNgoWhoseIsNotYetCreated(ngo_id)
         }catch(error){
             throw error
         }

@@ -58,6 +58,14 @@ const NgoMasterDAL = {
         }catch(error){
             throw error
         }
+    },getRemaingNgoWhoseIsNotYetCreated:async(ngoId)=>{
+        try{
+            const ngoIdCondition = ngoId && ngoId.length > 0 ? `where ngo_id NOT IN (${ngoId.join(",")})` : "";
+            const getAllNgo = await db.sequelize.query(` ${ViewFieldTableVise.NGO_MASTER_FIELDS} ${ngoIdCondition} `,{ type: db.Sequelize.QueryTypes.SELECT})
+            return getAllNgo
+        }catch(error){
+            throw error
+        }
     }
 }
 export default NgoMasterDAL

@@ -14,7 +14,7 @@ router.post(
 )
 // Route to update an existing record by ID
 router.put(
-    `${basePath}/:id`,
+    `${basePath}/update`,
     verifyToken,
     UserMasterController.update
 )
@@ -26,7 +26,7 @@ router.get(
 )
 // Route to retrieve a record by ID
 router.get(
-    `${basePath}/:id`,
+    `${basePath}/getById`,
     verifyToken,
     UserMasterController.getByIdByView
 )

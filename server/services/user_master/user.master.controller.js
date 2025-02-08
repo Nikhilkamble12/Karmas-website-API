@@ -62,7 +62,7 @@ const UserMasterController = {
     // update Record Into Db
     update: async (req, res) => {
         try {
-            const id = req.params.id
+            const id = req.query.id
             const data = req.body
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, false);
@@ -178,7 +178,7 @@ const UserMasterController = {
     // Retrieve a record by its ID
     getByIdByView: async (req, res) => {
         try {
-            const Id = req.params.id
+            const Id = req.query.id
             // Fetch data by ID from JSON
             // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
             // if(getJsonDatabyId!==null){
@@ -228,6 +228,7 @@ const UserMasterController = {
                     );
             }
         } catch (error) {
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)

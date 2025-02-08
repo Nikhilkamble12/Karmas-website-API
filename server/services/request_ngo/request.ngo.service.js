@@ -52,6 +52,12 @@ const RequestNgoService = {
         }catch(error){
             throw error
         }
+    },getAllNgoByRequestIdOnly:async(RequestId)=>{
+        try{
+            return await RequestNgoDAL.getAllNgoByRequestIdOnly(RequestId)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default RequestNgoService

@@ -1,6 +1,8 @@
 import RequestService from "./requests.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import NgoMasterService from "../ngo_master/ngo.master.service.js";
+import NgoStateDistrictMappingService from "../ngo_state_district_mapping/ngo.state.district.mapping.service.js";
+import RequestNgoService from "../request_ngo/request.ngo.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const RequestsController = {
@@ -317,11 +319,153 @@ const RequestsController = {
         try{
             const request_id = req.query.RequestId
             let fullData = []
+            let ngoIds = []
             const getRequestData = await RequestService.getServiceById(request_id)
-            const getDataByCityId = await NgoMasterService
-            const getDataByStateId = await NgoMasterService
-            const getDataByCountryId = await NgoMasterService
+            let getDataByCityId = []
+            let getDataByStateId = []
+            let getAllDataByDistrictid = []
+
+            if(getRequestData.CityId){
+            getDataByCityId = await NgoStateDistrictMappingService.getAllNgoDataByCityId(getRequestData.CityId)
+            console.log("getDataByCityId",getDataByCityId)
+            if(getDataByCityId.length>0){
+                console.log("inside city if")
+                for(let i=0;i<getDataByCityId.length;i++){
+                    console.log("inside city for")
+                    const CurrentData = getDataByCityId[i]
+                    const NgoData = {
+                        ngo_id:CurrentData.ngo_id,
+                        ngo_name:CurrentData.ngo_name,
+                        unique_id:CurrentData.unique_id,
+                        ngo_type_name:CurrentData.ngo_type_name,
+                        darpan_reg_date:CurrentData.darpan_reg_date,
+                        registration_no:CurrentData.registration_no,
+                        email:CurrentData.email,
+                        mobile_no:CurrentData.mobile_no,
+                        status_id:null
+                    }
+                    fullData.push(NgoData)
+                    ngoIds.push(CurrentData.ngo_id)
+                }
+            }
+            }
+            console.log("ngoIds",ngoIds)
+            if(getRequestData.districtId){
+            getAllDataByDistrictid = await NgoStateDistrictMappingService.getAllNgoDataByDistrictId(getRequestData.districtId,ngoIds)
+            if( getAllDataByDistrictid.length>0){
+                for(let i=0;i<getAllDataByDistrictid.length;i++){
+                    const CurrentData = getAllDataByDistrictid[i]
+                    const NgoData = {
+                        ngo_id:CurrentData.ngo_id,
+                        ngo_name:CurrentData.ngo_name,
+                        unique_id:CurrentData.unique_id,
+                        ngo_type_name:CurrentData.ngo_type_name,
+                        darpan_reg_date:CurrentData.darpan_reg_date,
+                        registration_no:CurrentData.registration_no,
+                        email:CurrentData.email,
+                        mobile_no:CurrentData.mobile_no,
+                        status_id:null
+                    }
+                    fullData.push(NgoData)
+                    ngoIds.push(CurrentData.ngo_id)
+                }
+            }
+            }
+            console.log("ngoIds",ngoIds)
+            if(getRequestData.StateId){
+            getDataByStateId = await NgoStateDistrictMappingService.getAllNgoDataByStateId(getRequestData.StateId,ngoIds)
+            if( getDataByStateId.length>0){
+                for(let i=0;i<getDataByStateId.length;i++){
+                    const CurrentData = getDataByStateId[i]
+                    const NgoData = {
+                        ngo_id:CurrentData.ngo_id,
+                        ngo_name:CurrentData.ngo_name,
+                        unique_id:CurrentData.unique_id,
+                        ngo_type_name:CurrentData.ngo_type_name,
+                        darpan_reg_date:CurrentData.darpan_reg_date,
+                        registration_no:CurrentData.registration_no,
+                        email:CurrentData.email,
+                        mobile_no:CurrentData.mobile_no,
+                        status_id:null
+                    }
+                    fullData.push(NgoData)
+                    ngoIds.push(CurrentData.ngo_id)
+                }
+            }
+            }
+            const getDataByCountryId = await NgoStateDistrictMappingService.getAllRemainingNgo(ngoIds)
+            if(getDataByCountryId.length>0){
+                for(let i=0;i<getDataByCountryId.length;i++){
+                    const CurrentData = getDataByCountryId[i]
+                    const NgoData = {
+                        ngo_id:CurrentData.ngo_id,
+                        ngo_name:CurrentData.ngo_name,
+                        unique_id:CurrentData.unique_id,
+                        ngo_type_name:CurrentData.ngo_type_name,
+                        darpan_reg_date:CurrentData.darpan_reg_date,
+                        registration_no:CurrentData.registration_no,
+                        email:CurrentData.email,
+                        mobile_no:CurrentData.mobile_no,
+                        status_id:null
+                    }
+                    fullData.push(NgoData)
+                    ngoIds.push(CurrentData.ngo_id)
+                }
+            }
+            const getFinalNgos = await NgoMasterService.getAllNgoWhichAreNotSelected(ngoIds)
+            if(getFinalNgos.length>0){
+                for(let i=0;i<getFinalNgos.length;i++){
+                    const CurrentData = getFinalNgos[i]
+                    const NgoData = {
+                        ngo_id:CurrentData.ngo_id,
+                        ngo_name:CurrentData.ngo_name,
+                        unique_id:CurrentData.unique_id,
+                        ngo_type_name:CurrentData.ngo_type_name,
+                        darpan_reg_date:CurrentData.darpan_reg_date,
+                        registration_no:CurrentData.registration_no,
+                        email:CurrentData.email,
+                        mobile_no:CurrentData.mobile_no,
+                        status_id:null
+                    }
+                    fullData.push(NgoData)
+                    ngoIds.push(CurrentData.ngo_id)
+                }
+            }
+            const requestData = await RequestNgoService.getAllNgoByRequestIdOnly(request_id)
+            if(requestData.length!==0){
+            // Loop through fullData and update status_id if ngo_id matches
+            fullData.forEach((ngo) => {
+                const matchedRequest = requestData.find(req => req.ngo_id === ngo.ngo_id);
+                if (matchedRequest) {
+                    ngo.status_id = matchedRequest.status_id; // Update status_id if found
+                }
+            });
+            }
+
+            if (fullData.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            fullData
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
         }catch(error){
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
