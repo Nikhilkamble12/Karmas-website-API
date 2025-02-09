@@ -412,7 +412,7 @@ const NgoMasterController = {
             let ngo_state_mappingData = false
             let ngo_master_saved = false
             let ngo_fields_mapping_saved = false
-            if(!data.email && !data.password){
+            if(!data.email || !data.password){
                 return res
                 .status(responseCode.BAD_REQUEST)
                 .send(
