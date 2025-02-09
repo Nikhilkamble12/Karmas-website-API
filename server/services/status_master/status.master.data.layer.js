@@ -24,7 +24,7 @@ const StatusMasterDAL = {
     // Method to retrieve all records by view
     getAllDataByView: async () => {
         try {
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.STATE_MASTER_FIELDS}`, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.STATUS_MASTER_FIELDS}`, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
@@ -33,7 +33,7 @@ const StatusMasterDAL = {
     // Method to retrieve a specific record by its ID
     getDataByIdByView: async (status_id) => {
         try {
-            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.STATE_MASTER_FIELDS} where status_id  = ${status_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.STATUS_MASTER_FIELDS} where status_id  = ${status_id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getDataById[0] ?? [] // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
@@ -53,7 +53,7 @@ const StatusMasterDAL = {
         }
     },getDataByParentId:async(parent_id)=>{
         try{
-            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.STATE_MASTER_FIELDS} where  parent_id = ${parent_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.STATUS_MASTER_FIELDS} where  parent_id = ${parent_id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData // Return the retrieved data
         }catch(error){
             throw error
