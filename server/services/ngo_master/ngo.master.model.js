@@ -6,7 +6,11 @@ const NgoMasterModel = (sequelize)=>{
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true
-        }, unique_id:{
+        },ngo_name:{
+            type:DataTypes.INTEGER,
+            allowNull:false
+        },
+        unique_id:{
             type:DataTypes.STRING(50),
             allowNull:true
         }, darpan_reg_date:{
