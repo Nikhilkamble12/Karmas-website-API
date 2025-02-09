@@ -41,6 +41,10 @@ router.put(
     verifyToken,
     RequestNgoController.updateStatusRequestNgoMaster
 )
-
+router.put(
+    `${basePath}/create/update/requestNgo`,
+    verifyToken,
+    RequestNgoController.createUpdateRequestNgo
+)
 // Export the router for use in other parts of the application
 export default router
