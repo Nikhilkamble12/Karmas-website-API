@@ -517,7 +517,7 @@ const NgoMasterController = {
                         const CreateUser = await UserMasterService.createService(createUserMaster) 
                 }
 
-                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
+                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0 && data.ngoFundsList){
                     if(data.ngoFundsList && data.ngoFundsList.length==0){
                         ngo_fund_saved_data = true
                     }
@@ -542,8 +542,10 @@ const NgoMasterController = {
                             }
                         }
                     }
+                }else{
+                    ngo_fund_saved_data = true
                 }
-                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
+                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0 && data.ngoOfficeBerrarsList){
                     if(data.ngoOfficeBerrarsList && data.ngoOfficeBerrarsList.length == 0){
                         ngo_office_berrars = true
                     }
@@ -568,8 +570,10 @@ const NgoMasterController = {
                             }
                         }
                     }
+                }else{
+                    ngo_office_berrars = true
                 }
-                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
+                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0 && data.ngoStateDistrictCityList){
                     if(data.ngoStateDistrictCityList &&  data.ngoStateDistrictCityList.length == 0){
                         ngo_state_mappingData = true
                     }
@@ -594,8 +598,10 @@ const NgoMasterController = {
                             }
                         }
                     }
+                }else{
+                    ngo_state_mappingData = true 
                 }
-                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
+                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0 && data.ngoFieldList){
                     if(data.ngoFieldList &&  data.ngoFieldList.length == 0){
                         ngo_fields_mapping_saved = true
                     }
@@ -620,6 +626,8 @@ const NgoMasterController = {
                             }
                         }
                     }
+                }else{
+                    ngo_fields_mapping_saved = true
                 }
                
                 if (ngo_state_mappingData && ngo_office_berrars && ngo_fund_saved_data && ngo_fields_mapping_saved && ngo_master_saved) {
