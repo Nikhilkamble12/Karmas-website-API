@@ -502,7 +502,7 @@ const NgoMasterController = {
                             crs_regis_file_name:data.crs_regis_file_name,
                             crs_regis_file_path:crs_regis_path_name,
                         } 
-                        const updateNgomaster = await NgoMasterService.updateService(ngo_id,updateData)
+                        const updateNgomaster = await NgoMasterService.updateService(ngoWalaId,updateData)
                         const createUserMaster = {
                             user_name:data.email,
                             password:data.password,
