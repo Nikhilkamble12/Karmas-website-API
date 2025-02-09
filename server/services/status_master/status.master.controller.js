@@ -325,6 +325,7 @@ const StatusMasterController = {
                     );
             }
         }catch(error){
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
