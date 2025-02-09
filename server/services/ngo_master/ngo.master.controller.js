@@ -518,7 +518,7 @@ const NgoMasterController = {
                 }
 
                 if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
-                    if(data.ngoFundsList.length==0){
+                    if(data.ngoFundsList && data.ngoFundsList.length==0){
                         ngo_fund_saved_data = true
                     }
                     for(let i =0 ;i<data.ngoFundsList.length;i++){
@@ -544,7 +544,7 @@ const NgoMasterController = {
                     }
                 }
                 if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
-                    if(data.ngoOfficeBerrarsList.length == 0){
+                    if(data.ngoOfficeBerrarsList && data.ngoOfficeBerrarsList.length == 0){
                         ngo_office_berrars = true
                     }
                     for(let i =0 ;i<data.ngoOfficeBerrarsList.length;i++){
@@ -570,7 +570,7 @@ const NgoMasterController = {
                     }
                 }
                 if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
-                    if(data.ngoStateDistrictCityList.length == 0){
+                    if(data.ngoStateDistrictCityList &&  data.ngoStateDistrictCityList.length == 0){
                         ngo_state_mappingData = true
                     }
                     for(let i =0 ;i<data.ngoStateDistrictCityList.length;i++){
@@ -596,7 +596,7 @@ const NgoMasterController = {
                     }
                 }
                 if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
-                    if(data.ngoFieldList.length == 0){
+                    if(data.ngoFieldList &&  data.ngoFieldList.length == 0){
                         ngo_fields_mapping_saved = true
                     }
                     for(let i =0 ;i<data.ngoFieldList.length;i++){
