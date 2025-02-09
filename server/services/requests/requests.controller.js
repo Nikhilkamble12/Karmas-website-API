@@ -420,6 +420,7 @@ const RequestsController = {
             if(getFinalNgos.length>0){
                 for(let i=0;i<getFinalNgos.length;i++){
                     const CurrentData = getFinalNgos[i]
+                    console.log("CurrentData",CurrentData)
                     const NgoData = {
                         Request_Ngo_Id:null,
                         ngo_id:CurrentData.ngo_id,
