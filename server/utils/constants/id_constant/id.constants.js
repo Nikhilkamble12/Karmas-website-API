@@ -2,5 +2,9 @@ const ROLE_MASTER={
     ADMIN:1,
     NGO:2
 }
+const STATUS_MASTER = {
+    ACTIVE:2,
+    INACTIVE:3
+}
 
-export {ROLE_MASTER}
+export {ROLE_MASTER,STATUS_MASTER}

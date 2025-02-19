@@ -3,7 +3,7 @@ import VIEW_NAME from "./view.constants.js";
 const ViewFieldTableWise = {
     // -------> A
     // -------> B
-    BONUS_MASTER_FIELDS:` SELECT bonus_id, create_score, start_date, end_date, score_category, status_id, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at ${VIEW_NAME.GET_ALL_BONUS_MASTER} `,
+    BONUS_MASTER_FIELDS:` SELECT bonus_id, create_score, start_date, end_date, score_category_id, score_category_name, status_id, status_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_BONUS_MASTER} `,
     BONUS_HISTORY_FIELDS:` SELECT history_id, bonus_id, score_category, previous_create_score, new_create_score, change_date, changed_by, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_BONUS_HISTORY} `,
 
     //  ------> C
@@ -34,6 +34,7 @@ const ViewFieldTableWise = {
     STATUS_MASTER_FIELDS : ` SELECT * FROM ${VIEW_NAME.GET_ALL_STATUS_MASTER} `,
     SIMPLE_SCORE_HISTORY_FIELDS :` SELECT sr_no, user_id, user_name, request_name, git_score, description, status_id, status_name, date, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_SIMPLE_SCORE_HISTORY} `,
     SCORE_ELIGIBILITY_MAPPING_FIELDS :` SELECT mapping_id, company_name, score_required, eligible_amount, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_SCORE_ELIGIBILITY} `,
+    SCORE_CATEGORY_FIELDS:` SELECT score_category_id, score_category_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_SCORE_CATEGORY} `,
 
     // -------> T
     TABLE_MASTER_FIELDS: ` SELECT table_id, table_name, is_active FROM ${VIEW_NAME.GET_ALL_TABLE_MASTER}  `,

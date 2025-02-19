@@ -24,6 +24,7 @@ import CouponMasterModel from "./coupon_master/coupon.master.model.js";
 import ScoreHistoryModel from "./score_history/score.history.model.js";
 import ScoreEligibilityMapping from "./score_eligibility_mapping/score.eligibility.mapping.model.js";
 import RoleMasterModel from "./role_master/role.master.model.js";
+import ScoreCategoryModel from "./score_category/score.category.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -78,6 +79,7 @@ db.CouponMasterModel = CouponMasterModel(sequelize,Sequelize);
 db.ScoreHistoryModel = ScoreHistoryModel(sequelize,Sequelize);
 db.ScoreEligibilityMapping = ScoreEligibilityMapping(sequelize,Sequelize);
 db.RoleMasterModel = RoleMasterModel(sequelize,Sequelize);
+db.ScoreCategoryModel = ScoreCategoryModel(sequelize,Sequelize);
 
 
 export default db

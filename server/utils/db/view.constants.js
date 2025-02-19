@@ -23,5 +23,6 @@ GET_ALL_SIMPLE_SCORE_HISTORY:"v_simple_score_history",
 GET_ALL_SCORE_ELIGIBILITY:"v_score_eligibility",
 GET_ALL_VENDOR_COMPANY_MASTER : "v_vendor_company_master",
 GET_ALL_ROLE_MASTER:"v_role_master",
+GET_ALL_SCORE_CATEGORY:"v_score_category",
 }
 export default VIEW_NAME
