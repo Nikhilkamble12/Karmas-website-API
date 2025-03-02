@@ -1,6 +1,11 @@
 import RequestNgoService from "./request.ngo.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import RequestService from "../requests/requests.service.js";
+import BonusMasterService from "../bonus_master/bonus.master.service.js";
+import { BONUS_MASTER, STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
+import UserMasterService from "../user_master/user.master.service.js";
+import UserActivtyService from "../user_activity/user.activity.service.js";
+import ScoreHistoryService from "../score_history/score.history.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const RequestNgoController = {
@@ -56,7 +61,7 @@ const RequestNgoController = {
             const id = req.query.id
             const data = req.body
             // Add metadata for modification (modified by, modified at)
-            await addMetaDataWhileCreateUpdate(data, req, res, false);
+            await addMetaDataWhileCreateUpdate(data, req, res, true);
 
             // Update the record using ORM
             const updatedRowsCount = await RequestNgoService.updateService(id, data);
@@ -341,13 +346,35 @@ const RequestNgoController = {
             const RequestId = req.body.RequestId
             const requestDetails = await RequestService.getServiceById(RequestId)
             const getDataByNgoRequest = await RequestNgoService.getServiceById(Request_Ngo_Id)
-            if(requestDetails.status_id!==8){
-                let dataToStore = {}
+            let dataToStore = {}
                 dataToStore.status_id = req.body.status_id
+            if(requestDetails.status_id!==8){
+                let userActivityData = {}
+                const getUserDataByUserId = await UserActivtyService.getDataByUserId(requestDetails[0].request_user_id)
                 await addMetaDataWhileCreateUpdate(dataToStore, req, res, true);
-                
+                let total_bonus = 0
+                const getTotalBonsRate = await BonusMasterService.getBonusMasterDataByCategoryStatus(BONUS_MASTER.REQUEST_ACCEPTED_ID,STATUS_MASTER.ACTIVE)
+                if(getTotalBonsRate.length!==0){
+                    total_bonus = parseFloat(getTotalBonsRate[0].create_score)
+                    userActivityData.total_scores_no = parseFloat(getUserDataByUserId[0].total_scores_no) + parseFloat(total_bonus)
+                }else{
+                    userActivityData.total_scores_no = parseFloat(getUserDataByUserId[0].total_scores_no)
+                }
+                await addMetaDataWhileCreateUpdate(userActivityData, req, res, true);
                 if(req.body.status_id==8){
                     const updaterequest = await RequestService.updateService(RequestId,{status_id:8,AssignedNGO:getDataByNgoRequest.ngo_id})
+                    const updateUserActivity = await UserActivtyService.updateService(getUserDataByUserId[0].user_activity_id,userActivityData)
+                    const gitScoreHistory = {
+                        user_id:request_user_id,
+                        git_score:total_bonus,
+                        request_id:RequestId,
+                        score_category_id:getTotalBonsRate[0].score_category_id,
+                        description:`${getDataByNgoRequest[0].ngo_name} Accepted Your Request`,
+                        date:currentTime(),
+                        status_id:req.body.status_id
+                    }
+                    await addMetaDataWhileCreateUpdate(userActivityData, req, res, false);
+                    const createGitScore  = await ScoreHistoryService.createService(gitScoreHistory)
                 }
                 const updateData = await RequestNgoService.updateService(Request_Ngo_Id,dataToStore)
                 if (updateData === 0) {

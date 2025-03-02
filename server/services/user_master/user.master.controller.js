@@ -13,6 +13,7 @@ const UserMasterController = {
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
+            data.first_time_login = true
             const createData = await UserMasterService.createService(data);
             if(createData){
                 const user_id = createData.dataValues.user_id
@@ -65,7 +66,7 @@ const UserMasterController = {
             const id = req.query.id
             const data = req.body
             // Add metadata for modification (modified by, modified at)
-            await addMetaDataWhileCreateUpdate(data, req, res, false);
+            await addMetaDataWhileCreateUpdate(data, req, res, true);
 
             // Update the record using ORM
             const updatedRowsCount = await UserMasterService.updateService(id, data);
