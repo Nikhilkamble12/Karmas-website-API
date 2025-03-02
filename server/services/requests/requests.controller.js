@@ -15,6 +15,9 @@ const RequestsController = {
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
+            if(data.request_user_id == null  || data.request_user_id == "" || data.request_user_id == undefined || data.request_user_id == 0){
+                data.request_user_id = tokenData(req,res)
+            }
             const createData = await RequestService.createService(data);
             if (createData) {
                 return res
@@ -58,7 +61,7 @@ const RequestsController = {
             const id = req.query.id
             const data = req.body
             // Add metadata for modification (modified by, modified at)
-            await addMetaDataWhileCreateUpdate(data, req, res, false);
+            await addMetaDataWhileCreateUpdate(data, req, res, true);
 
             // Update the record using ORM
             const updatedRowsCount = await RequestService.updateService(id, data);

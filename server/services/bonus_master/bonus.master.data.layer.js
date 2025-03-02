@@ -54,7 +54,7 @@ const BonusMasterDAL = {
     },getBonusMasterDataByCategoryStatus:async(score_category_id,status_id)=>{
         try{
             const todaydate = new Date().toISOString().split('T')[0]; // Get today's date in "YYYY-MM-DD" format
-            const query = `${ViewFieldTableVise.SCORE_CATEGORY_FIELDS} WHERE score_category_id = ${score_category_id} 
+            const query = `${ViewFieldTableVise.BONUS_MASTER_FIELDS} WHERE score_category_id = ${score_category_id} 
             AND status_id = ${status_id} 
             AND '${todaydate}' BETWEEN start_date AND end_date`;
             const data = await db.sequelize.query(query,{ type:db.Sequelize.QueryTypes.SELECT })

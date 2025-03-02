@@ -35,7 +35,12 @@ const UserMasterModel = (sequelize) => {
             type: DataTypes.INTEGER,
             allowNull: true,
             DefaultValue: null
-        }, is_active: {
+        },first_time_login:{
+            type:DataTypes.TINYINT(1),
+            allowNull:true,
+            DefaultValue: true
+        },
+        is_active: {
             type: DataTypes.TINYINT(1),
             allowNull: false,
             DefaultValue: true

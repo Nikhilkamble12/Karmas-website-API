@@ -55,7 +55,7 @@ const RoleMasterController = {
             const id = req.query.id
             const data = req.body
             // Add metadata for modification (modified by, modified at)
-            await addMetaDataWhileCreateUpdate(data, req, res, false);
+            await addMetaDataWhileCreateUpdate(data, req, res, true);
 
             // Update the record using ORM
             const updatedRowsCount = await RoleMasterService.updateService(id, data);
