@@ -1,5 +1,6 @@
 import BonusMasterService from "./bonus.master.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
+import BonusHistoryService from "../bonus_history/bonus.history.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const BonusMasterController = {
@@ -58,7 +59,26 @@ const BonusMasterController = {
             await addMetaDataWhileCreateUpdate(data, req, res, false);
 
             // Update the record using ORM
+            const olderData = await BonusMasterService.getServiceById(id)
             const updatedRowsCount = await BonusMasterService.updateService(id, data);
+            if(updatedRowsCount>0){
+                const newData = await BonusMasterService.getServiceById(id)
+                if(parseInt(olderData.create_score) !== parseInt(newData.create_score)){
+                    const createBonusHistoryData =  {
+                        history_id:null,
+                        bonus_id:id,
+                        previous_create_score:olderData.create_score,
+                        new_create_score:newData.create_score,
+                        change_date:currentTime(),
+                        changed_by:tokenData(req,res),
+                        is_active:true,
+                        created_by:tokenData(req,res),
+                        created_at:currentTime()
+                    }
+                    console.log("createBonusHistoryData",createBonusHistoryData)
+                    const createBonusHistory = await BonusHistoryService.createService(createBonusHistoryData)
+                }
+            }
             // if (updatedRowsCount > 0) {
             //     const newData = await BonusMasterService.getServiceById(id);
             //     // Update the JSON data in the file
@@ -86,6 +106,7 @@ const BonusMasterController = {
                     )
                 );
         } catch (error) {
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -185,7 +206,8 @@ const BonusMasterController = {
 
             // If not found in JSON, fetch data from the database
             const getDataByid = await BonusMasterService.getServiceById(Id)
-
+            const getBonusHistoryData = await BonusHistoryService.getBonusHistoryByBonusId(Id)
+            getDataByid.BonusHistory = getBonusHistoryData
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){

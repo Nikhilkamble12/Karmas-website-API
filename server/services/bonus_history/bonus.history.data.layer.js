@@ -51,6 +51,13 @@ const BonusHistoryDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
+    },getHistoryDataByBonusId:async(bonus_id)=>{
+        try{
+            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.BONUS_HISTORY_FIELDS} where bonus_id  = ${bonus_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getDataById // Return the retrieved data
+        }catch(error){
+            throw error
+        }
     }
 }
 export default BonusHistoryDAL

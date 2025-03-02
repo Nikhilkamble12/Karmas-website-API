@@ -51,6 +51,13 @@ const ScoreHistoryDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
+    },getSimpleScoreHistoryByUserId:async(user_id)=>{
+        try{
+            const getDataByuserId = await db.sequelize.query(` ${ViewFieldTableVise.SIMPLE_SCORE_HISTORY_FIELDS} where user_id  = ${user_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getDataByuserId
+        }catch(error){
+            throw error
+        }
     }
 }
 

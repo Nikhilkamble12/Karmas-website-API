@@ -40,6 +40,12 @@ const BonusHistoryService = {
         } catch (error) {
             throw error
         }
+    },getBonusHistoryByBonusId:async(bonus_id)=>{
+        try{
+            return await  BonusHistoryDAL.getHistoryDataByBonusId(bonus_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default BonusHistoryService

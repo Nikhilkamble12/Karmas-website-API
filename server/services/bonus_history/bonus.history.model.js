@@ -19,7 +19,7 @@ const BonusHistoryModel = (sequelize)=>{
             type:DataTypes.DATE,
             allowNull:true
         }, changed_by:{
-            type:DataTypes.DATE,
+            type:DataTypes.INTEGER,
             allowNull:true
         }, is_active: {
             type: DataTypes.BOOLEAN,
