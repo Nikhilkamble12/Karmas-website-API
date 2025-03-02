@@ -9,13 +9,16 @@ const ScoreHistoryModel = (sequelize)=>{
         }, user_id:{
             type:DataTypes.INTEGER,
             allowNull:false
-        }, request_name:{
+        }, request_id:{
             type:DataTypes.STRING(255),
             allowNull:true
         }, git_score:{
             type:DataTypes.INTEGER,
             allowNull:true
-        }, description:{
+        },score_category_id:{
+            type:DataTypes.INTEGER,
+            allowNull:true
+        },description:{
             type:DataTypes.TEXT,
             allowNull:true
         }, date:{

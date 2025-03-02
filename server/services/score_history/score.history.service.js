@@ -40,6 +40,12 @@ const ScoreHistoryService = {
         } catch (error) {
             throw error
         }
+    },getSimpleScoreHistoryByUserId:async(user_id)=>{
+        try{
+            return await ScoreHistoryDAL.getSimpleScoreHistoryByUserId(user_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default ScoreHistoryService 
