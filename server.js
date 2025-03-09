@@ -64,55 +64,55 @@ app.use(
 );
 
 
-app.use((req, res, next) => {
-  if (
-    req.path !== "/api/v1/decrypt" &&
-    req.path !== "/api/v1/encrypt" &&
-    req.path !== "/"
-  ) {
-    const originalSend = res.send;
-    res.send = function (data) {
-      const encryptedData = encrypt(data);
-      res.setHeader("Content-Type", "application/json");
-      originalSend.call(this, JSON.stringify(encryptedData));
-    };
-  }
-  next();
-});
+// app.use((req, res, next) => {
+//   if (
+//     req.path !== "/api/v1/decrypt" &&
+//     req.path !== "/api/v1/encrypt" &&
+//     req.path !== "/"
+//   ) {
+//     const originalSend = res.send;
+//     res.send = function (data) {
+//       const encryptedData = encrypt(data);
+//       res.setHeader("Content-Type", "application/json");
+//       originalSend.call(this, JSON.stringify(encryptedData));
+//     };
+//   }
+//   next();
+// });
 
 
-app.use((req, res, next) => {
-  // Check if the request is not for decryption or encryption endpoints,
-  // and it's not a GET or DELETE method.
-  if (
-    req.path !== "/api/v1/decrypt" &&
-    req.path !== "/api/v1/encrypt" &&
-    req.method !== "GET" &&
-    req.method !== "DELETE"
-  ) {
-    // Check if the Content-Type is not form data
-    if (!req.is("multipart/form-data")) {
-      const reqBody = req.body;
-      if (reqBody.hasOwnProperty("reqBody")) {
-        if (req.body && req.body.reqBody) {
-          const decryptedData = decrypt(req.body.reqBody);
-          const decryptedObject = decryptedData;
-          req.body = decryptedObject;
-        }
-        next();
-      } else {
-        return res.send(
-          commonResponse(res.statusCode, "Body required!", null, true)
-        );
-      }
-    } else {
-      // If it's form data, skip decryption/encryption
-      next();
-    }
-  } else {
-    next();
-  }
-})
+// app.use((req, res, next) => {
+//   // Check if the request is not for decryption or encryption endpoints,
+//   // and it's not a GET or DELETE method.
+//   if (
+//     req.path !== "/api/v1/decrypt" &&
+//     req.path !== "/api/v1/encrypt" &&
+//     req.method !== "GET" &&
+//     req.method !== "DELETE"
+//   ) {
+//     // Check if the Content-Type is not form data
+//     if (!req.is("multipart/form-data")) {
+//       const reqBody = req.body;
+//       if (reqBody.hasOwnProperty("reqBody")) {
+//         if (req.body && req.body.reqBody) {
+//           const decryptedData = decrypt(req.body.reqBody);
+//           const decryptedObject = decryptedData;
+//           req.body = decryptedObject;
+//         }
+//         next();
+//       } else {
+//         return res.send(
+//           commonResponse(res.statusCode, "Body required!", null, true)
+//         );
+//       }
+//     } else {
+//       // If it's form data, skip decryption/encryption
+//       next();
+//     }
+//   } else {
+//     next();
+//   }
+// })
 
 
 
