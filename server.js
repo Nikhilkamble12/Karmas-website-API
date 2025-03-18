@@ -148,7 +148,7 @@ const __dirname = dirname(__filename);
 const baseDir = join(__dirname, "server", "services");
 const baseDirs = [
   join(__dirname, "server", "services"),
-  join(__dirname, "server", "third-party-services"), // Add your additional folders here
+  // join(__dirname, "server", "third-party-services"), // Add your additional folders here
 ];
 
 // const routes = walkSync(baseDir);
