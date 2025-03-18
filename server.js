@@ -9,7 +9,7 @@ import cors from "cors";
 import logger from "./server/config/winston_logs/winston.js";
 import consoleLogger from "./server/utils/helper/logger.js";
 import { readdirSync, statSync } from "fs";
-import { join } from "path";
+import { join,dirname,resolve } from "path";
 import path from "path";
 import { fileURLToPath, pathToFileURL } from "url";
 import commonResponse from "./server/utils/helper/response.js";
@@ -118,19 +118,25 @@ app.use(
 
 // Create Routes
 
+// Ensure the directory exists before attempting to walk through it
 const walkSync = function (dirs, filelist = []) {
   dirs.forEach((dir) => {
-    // Ensure the directory is resolved correctly to work across platforms
-    const files = readdirSync(dir);
-    files.forEach((file) => {
-      const filePath = join(dir, file); // use join to handle paths correctly
-      if (statSync(filePath).isDirectory()) {
-        filelist = walkSync([filePath], filelist); // Recursively walk into subdirectories
-      } else if (filePath.endsWith('.route.js')) {
-        const fileUrlPath = pathToFileURL(filePath).href;
-        filelist.push(fileUrlPath);
-      }
-    });
+    // Normalize the directory to prevent redundant slashes
+    const normalizedDir = resolve(dir);  // resolves path to absolute and removes any redundant slashes
+    try {
+      const files = readdirSync(normalizedDir); // read the directory content
+      files.forEach((file) => {
+        const filePath = join(normalizedDir, file);
+        if (statSync(filePath).isDirectory()) {
+          filelist = walkSync([filePath], filelist); // Recursively walk into subdirectories
+        } else if (filePath.endsWith('.route.js')) {
+          const fileUrlPath = pathToFileURL(filePath).href;
+          filelist.push(fileUrlPath);
+        }
+      });
+    } catch (err) {
+      console.error(`Error reading directory: ${normalizedDir}`, err); // Handle errors gracefully
+    }
   });
   return filelist;
 };
@@ -138,7 +144,7 @@ const walkSync = function (dirs, filelist = []) {
 
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 const baseDir = join(__dirname, "server", "services");
 const baseDirs = [
   join(__dirname, "server", "services"),
