@@ -120,12 +120,13 @@ app.use(
 
 const walkSync = function (dirs, filelist = []) {
   dirs.forEach((dir) => {
+    // Ensure the directory is resolved correctly to work across platforms
     const files = readdirSync(dir);
     files.forEach((file) => {
-      const filePath = join(dir, file);
+      const filePath = join(dir, file); // use join to handle paths correctly
       if (statSync(filePath).isDirectory()) {
         filelist = walkSync([filePath], filelist); // Recursively walk into subdirectories
-      } else if (filePath.endsWith(".route.js")) {
+      } else if (filePath.endsWith('.route.js')) {
         const fileUrlPath = pathToFileURL(filePath).href;
         filelist.push(fileUrlPath);
       }
@@ -133,6 +134,8 @@ const walkSync = function (dirs, filelist = []) {
   });
   return filelist;
 };
+
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
