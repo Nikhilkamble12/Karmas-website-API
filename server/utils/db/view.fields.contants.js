@@ -26,6 +26,7 @@ const ViewFieldTableWise = {
 
     // -------> P
     POSTS_FIELDS:` SELECT post_id, user_id, description, created_at, total_likes, total_comments, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_POSTS} `,
+    POST_MEDIA_FIELDS:` SELECT media_id, post_id, media_type, media_url, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_POST_MEDIA} `,
 
     //  ------> R 
     REQUEST_FIELDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_REQUEST} `,

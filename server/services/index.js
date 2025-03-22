@@ -26,6 +26,7 @@ import ScoreEligibilityMapping from "./score_eligibility_mapping/score.eligibili
 import RoleMasterModel from "./role_master/role.master.model.js";
 import ScoreCategoryModel from "./score_category/score.category.model.js";
 import PostsModel from "./Posts/posts.model.js";
+import PostMediaModel from "./PostMedia/postmedia.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -82,6 +83,7 @@ db.ScoreEligibilityMapping = ScoreEligibilityMapping(sequelize,Sequelize);
 db.RoleMasterModel = RoleMasterModel(sequelize,Sequelize);
 db.ScoreCategoryModel = ScoreCategoryModel(sequelize,Sequelize);
 db.PostsModel = PostsModel(sequelize,Sequelize);
+db.PostMediaModel = PostMediaModel(sequelize,Sequelize);
 
 
 export default db
