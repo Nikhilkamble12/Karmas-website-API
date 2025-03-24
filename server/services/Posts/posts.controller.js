@@ -29,8 +29,7 @@ const PostController = {
             commonResponse(
               responseCode.CREATED,
               responseConst.SUCCESS_ADDING_RECORD,
-              createdData,
-              
+              createdData
             )
           );
       } else {
@@ -60,7 +59,7 @@ const PostController = {
         );
     }
   },
-
+  //  update Record Into Db
   update: async (req, res) => {
     try {
       const id = req.params.id;
@@ -70,7 +69,12 @@ const PostController = {
 
       // update the record using ORM
       const updatedRowsCount = await PostService.updateService(id, data);
-
+      // if (updatedRowsCount > 0) {
+      //     const newData = await PostService.getServiceById(id);
+      //     // Update the JSON data in the file
+      //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
+      // }
+      // Handle case where no records were updated
       if (updatedRowsCount === 0) {
         return res
           .status(responseCode.BAD_REQUEST)
@@ -86,11 +90,7 @@ const PostController = {
       return res
         .status(responseCode.OK)
         .send(
-          commonResponse(
-            responseCode.OK,
-            responseConst.SUCCESS_UPDATING_RECORD,
-            
-          )
+          commonResponse(responseCode.OK, responseConst.SUCCESS_UPDATING_RECORD)
         );
     } catch (error) {
       logger.error(`Error ---> ${error}`);
@@ -109,7 +109,32 @@ const PostController = {
   // Retrieve all records
   getAllByView: async (req, res) => {
     try {
+          // Fetch local data from JSON
+          // const GetAllJson = await CommanJsonFunction.getAllData(CITY_FOLDER,CITY_JSON)
+          // if(GetAllJson!==null){
+          //     if(GetAllJson.length!==0){
+          //       return res
+          //       .status(responseCode.OK)
+          //       .send(
+          //         commonResponse(
+          //           responseCode.OK,
+          //           responseConst.DATA_RETRIEVE_SUCCESS,
+          //           GetAllJson
+          //         )
+          //       );
+          //     }
+          //   }
+          // Fetch data from the database if JSON is empty
       const getAll = await PostService.getAllService();
+          // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
+          // // Store the data in JSON for future retrieval
+          // if(fileStatus==false){
+          //   const DataToSave=await PostService.getAllService()
+          //   if(DataToSave.length!==0){
+          //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
+          //   }
+          // }
+          // Return fetched data or handle case where no data is found
 
       if (getAll.length !== 0) {
         return res
@@ -151,7 +176,32 @@ const PostController = {
   getByIdByView: async (req, res) => {
     try {
       const Id = req.params.id;
+      // Fetch data by ID from JSON
+      // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
+      // if(getJsonDatabyId!==null){
+      //   return res
+      //     .status(responseCode.OK)
+      //     .send(
+      //       commonResponse(
+      //         responseCode.OK,
+      //         responseConst.DATA_RETRIEVE_SUCCESS,
+      //         getJsonDatabyId
+      //       )
+      //     );
+      // }
+
+      // If not found in JSON, fetch data from the database
       const getDataByid = await PostService.getServiceById(Id);
+
+      // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
+      // // Store the data in JSON for future retrieval
+      // if(fileStatus==false){
+      //   const DataToSave=await PostService.getAllService()
+      //   if(DataToSave.length!==0){
+      //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
+      //   }
+      // }
+      // Return the fetched data or handle case where no data is found
 
       if (getDataByid.length !== 0) {
         return res
@@ -194,9 +244,10 @@ const PostController = {
   deleteData: async (req, res) => {
     try {
       const id = req.params.id;
-
+      // Delete data from the database
       const deleteData = await PostService.deleteById(id, req, res);
-
+      // Also delete data from the JSON file
+      // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
       if (deleteData === 0) {
         return res
           .status(responseCode.BAD_REQUEST)
