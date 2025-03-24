@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 
 const ScoreEligibilityMapping = (sequelize)=>{
     return sequelize.define("score_eligibility_mapping",{
-        mapping_id:{
+        score_eligible_mapping_id:{
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true

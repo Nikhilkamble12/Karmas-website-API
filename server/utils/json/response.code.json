@@ -43,6 +43,9 @@
       },{
         "code":"1.0012",
         "message":"Ngo Already Assigned to Request."
+      },{
+        "code":1.0013,
+        "message":"An error occurred while adding the record."
       }
     ]
       
