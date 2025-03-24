@@ -86,4 +86,5 @@ db.PostsModel = PostsModel(sequelize,Sequelize);
 db.PostMediaModel = PostMediaModel(sequelize,Sequelize);
 
 
+
 export default db
