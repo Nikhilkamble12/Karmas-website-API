@@ -12,7 +12,7 @@ const {
 
 const PostMediaController = {
   // Create a new record
-  create: async (req,res) => {
+  create: async (req, res) => {
     try {
       const data = req.body;
       // Add metadata to creation (created_by, created_at)
@@ -21,7 +21,7 @@ const PostMediaController = {
       // data.created_at = new Data()
       // Create the recod using ORM
       const createdData = await PostMediaService.createSerive(data);
-      if(createdData) {
+      if (createdData) {
         return res
           .status(responseCode.CREATED)
           .send(
@@ -31,7 +31,7 @@ const PostMediaController = {
             )
           );
       } else {
-        return res 
+        return res
           .status(responseCode.BAD_REQUEST)
           .send(
             commonResponse(
@@ -40,9 +40,8 @@ const PostMediaController = {
               null,
               true
             )
-          )
+          );
       }
-
     } catch (error) {
       console.log("error", error);
       logger.error(`Error --> ${error}`);
@@ -59,7 +58,7 @@ const PostMediaController = {
     }
   },
   // Update a record
-  update : async (req, res) => {
+  update: async (req, res) => {
     try {
       const data = req.body;
       const id = req.params.id;
@@ -69,6 +68,12 @@ const PostMediaController = {
       // data.updated_at = new Data()
       // Update the recod using ORM
       const updatedRowsCount = await PostMediaService.updateService(id, data);
+      // if (updatedRowsCount > 0) {
+      //     const newData = await PostMediaService.getServiceById(id);
+      //     // Update the JSON data in the file
+      //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
+      // }
+      // Handle case where no records were updated
       if (updatedRowsCount === 0) {
         return res
           .status(responseCode.BAD_REQUEST)
@@ -81,15 +86,14 @@ const PostMediaController = {
             )
           );
       } else {
-        return res 
-        .status(responseCode.OK)
-        .send(
-          commonResponse(
-            responseCode.OK,
-            responseConst.SUCCESS_UPDATING_RECORD,
-            
-          )
-        );
+        return res
+          .status(responseCode.OK)
+          .send(
+            commonResponse(
+              responseCode.OK,
+              responseConst.SUCCESS_UPDATING_RECORD
+            )
+          );
       }
     } catch (error) {
       console.log("error", error);
@@ -108,10 +112,35 @@ const PostMediaController = {
   },
 
   // Retrieve all records
-  getALLByView : async (req, res) => {
+  getALLByView: async (req, res) => {
     try {
+      // Fetch local data from JSON
+      // const GetAllJson = await CommanJsonFunction.getAllData(CITY_FOLDER,CITY_JSON)
+      // if(GetAllJson!==null){
+      //     if(GetAllJson.length!==0){
+      //       return res
+      //       .status(responseCode.OK)
+      //       .send(
+      //         commonResponse(
+      //           responseCode.OK,
+      //           responseConst.DATA_RETRIEVE_SUCCESS,
+      //           GetAllJson
+      //         )
+      //       );
+      //     }
+      //   }
+      // Fetch data from the database if JSON is empty
       const getAll = await PostMediaService.getAllService();
-      if(getAll !== 0) {
+      // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
+      // // Store the data in JSON for future retrieval
+      // if(fileStatus==false){
+      //   const DataToSave=await PostMediaService.getAllService()
+      //   if(DataToSave.length!==0){
+      //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
+      //   }
+      // }
+      // Return fetched data or handle case where no data is found
+      if (getAll !== 0) {
         return res
           .status(responseCode.OK)
           .send(
@@ -148,12 +177,35 @@ const PostMediaController = {
     }
   },
   // Retrieve a specific record by its ID
-  getByIdByView : async (req, res) => {
+  getByIdByView: async (req, res) => {
     try {
       const id = req.params.id;
-      const getDataById = await PostMediaService.getServiceById(id);
+      // Fetch data by ID from JSON
+      // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
+      // if(getJsonDatabyId!==null){
+      //   return res
+      //     .status(responseCode.OK)
+      //     .send(
+      //       commonResponse(
+      //         responseCode.OK,
+      //         responseConst.DATA_RETRIEVE_SUCCESS,
+      //         getJsonDatabyId
+      //       )
+      //     );
+      // }
 
-      if(getDataById.length !== 0) {
+      // If not found in JSON, fetch data from the database
+      const getDataById = await PostMediaService.getServiceById(id);
+      // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
+      // // Store the data in JSON for future retrieval
+      // if(fileStatus==false){
+      //   const DataToSave=await PostMediaService.getAllService()
+      //   if(DataToSave.length!==0){
+      //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
+      //   }
+      // }
+      // Return the fetched data or handle case where no data is found
+      if (getDataById.length !== 0) {
         return res
           .status(responseCode.OK)
           .send(
@@ -190,14 +242,15 @@ const PostMediaController = {
         );
     }
   },
-
   // Delete a record
-  deleteData : async (req, res) => {
+  deleteData: async (req, res) => {
     try {
       const id = req.params.id;
+      // Delete data from the database
       const deleteData = await PostMediaService.deleteServiceById(id, req, res);
-
-      if(deleteData === 0) {
+      // Also delete data from the JSON file
+      // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
+      if (deleteData === 0) {
         return res
           .status(responseCode.BAD_REQUEST)
           .send(
@@ -230,12 +283,8 @@ const PostMediaController = {
             true
           )
         );
-      
     }
-  }
+  },
 };
 
 export default PostMediaController;
-
-
-
