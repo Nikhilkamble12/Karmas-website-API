@@ -30,9 +30,9 @@ const PostDAL = {
     try {
       const getAllData = await db.sequelize.query(
         `${ViewFieldTableVise.POSTS_FIELDS}`,
-        { type: db.Sequelize.QueryTypes.SELECT } // Return the retrieved data
+        { type: db.Sequelize.QueryTypes.SELECT } 
       );
-      return getAllData;
+      return getAllData; // Return the retrieved data
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
@@ -42,9 +42,9 @@ const PostDAL = {
     try {
       const getDataById = await db.sequelize.query(
         ` ${ViewFieldTableVise.POSTS_FIELDS} where post_id  = ${post_id} `,
-        { type: db.Sequelize.QueryTypes.SELECT } // Return the retrieved data
+        { type: db.Sequelize.QueryTypes.SELECT }
       );
-      return getDataById[0] ?? [];
+      return getDataById[0] ?? [];  // Return the retrieved data
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
@@ -71,4 +71,4 @@ const PostDAL = {
   },
 };
 
-export default PostDAL;
+export default PostDAL; // Export the CommentsDAL object for use in the controller
