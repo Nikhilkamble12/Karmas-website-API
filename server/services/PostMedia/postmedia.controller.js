@@ -61,7 +61,7 @@ const PostMediaController = {
   update: async (req, res) => {
     try {
       const data = req.body;
-      const id = req.params.id;
+      const id = req.query.id;
       // Add metadata to creation (updated_by, updated_at)
       await addMetaDataWhileCreateUpdate(data, req, res, true);
       // data.updated_by = 1,
@@ -179,7 +179,7 @@ const PostMediaController = {
   // Retrieve a specific record by its ID
   getByIdByView: async (req, res) => {
     try {
-      const id = req.params.id;
+      const id = req.query.id;
       // Fetch data by ID from JSON
       // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
       // if(getJsonDatabyId!==null){
@@ -245,7 +245,7 @@ const PostMediaController = {
   // Delete a record
   deleteData: async (req, res) => {
     try {
-      const id = req.params.id;
+      const id = req.query.id;
       // Delete data from the database
       const deleteData = await PostMediaService.deleteServiceById(id, req, res);
       // Also delete data from the JSON file

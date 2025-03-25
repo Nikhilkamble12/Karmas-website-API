@@ -29,7 +29,7 @@ const PostController = {
             commonResponse(
               responseCode.CREATED,
               responseConst.SUCCESS_ADDING_RECORD,
-              createdData
+              //createdData
             )
           );
       } else {
@@ -62,7 +62,7 @@ const PostController = {
   //  update Record Into Db
   update: async (req, res) => {
     try {
-      const id = req.params.id;
+      const id = req.query.id;
       const data = req.body;
       // Add metadata to creation (modified_by, modified_at,)
       await addMetaDataWhileCreateUpdate(data, req, res, true);
@@ -175,7 +175,7 @@ const PostController = {
   // Retrieve a record by its ID
   getByIdByView: async (req, res) => {
     try {
-      const Id = req.params.id;
+      const Id = req.query.id;
       // Fetch data by ID from JSON
       // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
       // if(getJsonDatabyId!==null){
@@ -243,7 +243,7 @@ const PostController = {
   // delete a record
   deleteData: async (req, res) => {
     try {
-      const id = req.params.id;
+      const id = req.query.id;
       // Delete data from the database
       const deleteData = await PostService.deleteById(id, req, res);
       // Also delete data from the JSON file

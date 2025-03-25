@@ -15,7 +15,7 @@ router.post(
 
 // Route to update an existing record by ID
 router.put(
-    `${basePath}/update/:id`,
+    `${basePath}/update`,
     verifyToken,
     PostController.update
 )
@@ -28,14 +28,14 @@ router.get(
 )
 // Route to retrieve a record by ID
 router.get(
-    `${basePath}/:id`,
+    `${basePath}/getById`,
     verifyToken,
     PostController.getByIdByView
 )
 
 // Route to delete a record by ID
 router.delete(
-    `${basePath}/delete/:id`,
+    `${basePath}/delete`,
     verifyToken,
     PostController.deleteData
 )

@@ -25,6 +25,8 @@ GET_ALL_VENDOR_COMPANY_MASTER : "v_vendor_company_master",
 GET_ALL_ROLE_MASTER:"v_role_master",
 GET_ALL_SCORE_CATEGORY:"v_score_category",
 GET_ALL_POSTS:"v_Posts",
-GET_ALL_POST_MEDIA:"v_PostMedia"
+GET_ALL_POST_MEDIA:"v_PostMedia",
+GET_ALL_LIKES:"v_Likes",
+GET_ALL_COMMENTS:"v_Comments"
 }
 export default VIEW_NAME
