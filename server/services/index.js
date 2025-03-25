@@ -27,6 +27,8 @@ import RoleMasterModel from "./role_master/role.master.model.js";
 import ScoreCategoryModel from "./score_category/score.category.model.js";
 import PostsModel from "./Posts/posts.model.js";
 import PostMediaModel from "./PostMedia/postmedia.model.js";
+import LikesModel from "./Likes/likes.model.js";
+import CommentsModel from "./Comments/comments.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -84,6 +86,8 @@ db.RoleMasterModel = RoleMasterModel(sequelize,Sequelize);
 db.ScoreCategoryModel = ScoreCategoryModel(sequelize,Sequelize);
 db.PostsModel = PostsModel(sequelize,Sequelize);
 db.PostMediaModel = PostMediaModel(sequelize,Sequelize);
+db.LikesModel = LikesModel(sequelize,Sequelize);
+db.CommentsModel = CommentsModel(sequelize,Sequelize);
 
 
 export default db
