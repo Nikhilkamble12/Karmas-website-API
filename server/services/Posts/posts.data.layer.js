@@ -15,8 +15,11 @@ const PostDAL = {
   // Method to update an existing record by its ID
   UpdateData: async (post_id, data) => {
     try {
+<<<<<<< Updated upstream
       // console.log("data", data);
       // console.log("post_id", post_id);
+=======
+>>>>>>> Stashed changes
       const updateData = await PostsModel(db.sequelize).update(data, {
         where: { post_id: post_id }, 
       }); // Return the result of the update operation
