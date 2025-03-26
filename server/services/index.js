@@ -90,4 +90,5 @@ db.LikesModel = LikesModel(sequelize,Sequelize);
 db.CommentsModel = CommentsModel(sequelize,Sequelize);
 
 
+
 export default db
