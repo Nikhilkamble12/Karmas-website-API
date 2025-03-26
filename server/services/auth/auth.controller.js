@@ -4,6 +4,7 @@ import BonusMasterService from "../bonus_master/bonus.master.service.js";
 import { BONUS_MASTER, STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
 import UserMasterService from "../user_master/user.master.service.js";
+import ScoreHistoryService from "../score_history/score.history.service.js";
 // import RoleService from "../access_control/role/role.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate,JWT} = commonPath
 
@@ -56,6 +57,7 @@ const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,ad
                 date:currentTime()
               }
               await addMetaDataWhileCreateUpdate(git_score, req, res, false);
+              const createGitScore = await ScoreHistoryService.createService(git_score)
               const getPreviousBonus = await UserActivtyService.getDataByUserId(userData.user_id)
               let updateUserActivity = {}
               const totalScore = parseFloat(getPreviousBonus[0].total_scores_no) + parseFloat(total_bonus_to_give)
