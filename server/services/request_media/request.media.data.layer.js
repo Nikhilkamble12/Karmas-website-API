@@ -1,22 +1,22 @@
-import PostsModel from "./posts.model.js";
+import RequestMediaModel from "./request.media.model.js"; 
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 const { db, ViewFieldTableVise, tokenData } = commonPath; // Destructure necessary components from commonPath
 
-const PostDAL = {
+const RequestMediaDAL = {
   // Method to create a new record in the database
   CreateData: async (data) => {
     try {
-      const createdData = await PostsModel(db.sequelize).create(data);
+      const createdData = await RequestMediaModel(db.sequelize).create(data);
       return createdData; // Return the created data
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
   },
   // Method to update an existing record by its ID
-  UpdateData: async (post_id, data) => {
+  UpdateData: async (request_media_id, data) => {
     try {
-      const updateData = await PostsModel(db.sequelize).update(data, {
-        where: { post_id: post_id }, 
+      const updateData = await RequestMediaModel(db.sequelize).update(data, {
+        where: { request_media_id: request_media_id }, 
       }); // Return the result of the update operation
       return updateData;
     } catch (error) {
@@ -27,7 +27,7 @@ const PostDAL = {
   getAllDataByView: async () => {
     try {
       const getAllData = await db.sequelize.query(
-        `${ViewFieldTableVise.POSTS_FIELDS}`,
+        `${ViewFieldTableVise.REQUEST_MEDIA_FIELDS}`,
         { type: db.Sequelize.QueryTypes.SELECT } 
       );
       return getAllData; // Return the retrieved data
@@ -36,10 +36,10 @@ const PostDAL = {
     }
   },
   // Method to retrieve a specific record by its ID
-  getDataByIdByView: async (post_id) => {
+  getDataByIdByView: async (request_media_id ) => {
     try {
       const getDataById = await db.sequelize.query(
-        ` ${ViewFieldTableVise.POSTS_FIELDS} where post_id  = ${post_id} `,
+        ` ${ViewFieldTableVise.REQUEST_MEDIA_FIELDS} where request_media_id  = ${request_media_id} `,
         { type: db.Sequelize.QueryTypes.SELECT }
       );
       return getDataById[0] ?? [];  // Return the retrieved data
@@ -48,9 +48,9 @@ const PostDAL = {
     }
   },
   // Method to mark a record as deleted (soft delete)
-  deleteDataById: async (post_id, req, res) => {
+  deleteDataById: async (request_media_id, req, res) => {
     try {
-      const [deleteDataById] = await PostsModel(db.sequelize).update(
+      const [deleteDataById] = await RequestMediaModel(db.sequelize).update(
         {
           is_active: 0,
           deleted_by: tokenData(req, res),
@@ -58,7 +58,7 @@ const PostDAL = {
         },
         {
           where: {
-            post_id: post_id,
+            request_media_id : request_media_id ,
           },
         }
       );
@@ -69,4 +69,4 @@ const PostDAL = {
   },
 };
 
-export default PostDAL; // Export the CommentsDAL object for use in the controller
+export default RequestMediaDAL; // Export the CommentsDAL object for use in the controller
