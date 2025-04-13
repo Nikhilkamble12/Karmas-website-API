@@ -40,7 +40,13 @@ const PostMediaService = {
     } catch (error) {
       throw error;
     }
-  },
+  },getDatabyPostIdByView:async(post_id)=>{
+    try{
+      return await PostMediaDAL.getDataByPostIdByView(post_id)
+    }catch(error){
+      throw error
+    }
+  }
 };
 
 export default PostMediaService;

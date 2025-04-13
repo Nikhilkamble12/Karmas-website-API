@@ -1,5 +1,6 @@
 import PostMediaService from "./postmedia.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
+import uploadFileToS3 from "../../utils/helper/s3.common.code.js";
 const {
   commonResponse,
   responseCode,
@@ -8,6 +9,7 @@ const {
   tokenData,
   currentTime,
   addMetaDataWhileCreateUpdate,
+  fs
 } = commonPath;
 
 const PostMediaController = {
@@ -284,7 +286,174 @@ const PostMediaController = {
           )
         );
     }
-  },
+  },BulkCreateOrUpdatePostMedia:async(req,res)=>{
+    try{
+      // Ensure a file is uploaded
+      function deleteFile(filePath) {
+        // Use fs.unlink to remove the file at the specified file path
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.log("error while deleting file --->",err)
+            // If an error occurs while deleting the file, log it
+            console.error(`Error deleting file: ${filePath}`, err);
+          } else {
+            // If the file is successfully deleted, log the success
+            console.log(`Local file deleted: ${filePath}`);
+          }
+        });
+      }
+    const data = req.body
+    const fileType = req.file.mimetype; 
+    const folderType = 'post'; 
+    const filePath = req.file.path;  // Multer stores the file temporarily here
+    const fileName = req.file.filename;
+    if (!req.file) {
+      return res.status(400).send({ error: 'No file uploaded' });
+    }
+    console.log("data",data)
+    console.log("data.post_id",data.post_id)
+    if(data.post_id== "" && data.post_id== "undefined" && data.post_id== '0' && data.post_id==0 && data.post_id==undefined){
+      deleteFile(filePath)
+          return res 
+          .status(responseCode.BAD_REQUEST)
+          .send(
+            commonResponse(
+              responseCode.BAD_REQUEST,
+              responseConst.POST_ID_IS_REQUIRED,
+              null,
+              true
+            )
+          )
+    }
+    if(data.sequence== "" && data.sequence== "undefined" && data.sequence== "0" && data.sequence== 0 && data.sequence== undefined){
+      deleteFile(filePath)
+      return res 
+      .status(responseCode.BAD_REQUEST)
+      .send(
+        commonResponse(
+          responseCode.BAD_REQUEST,
+          responseConst.SEQUENCE_ID_IS_REQUIRED,
+          null,
+          true
+        )
+      )
+    }
+     // File name on the server
+    console.log("fileType",fileType)
+    console.log("folderType",folderType)
+    console.log("fileName",fileName)
+    if(data.media_id){
+    
+    // You can dynamically decide where to store the file, for example, 'post' or 'request'
+     // For example, 'post', 'request', etc.
+    const s3BucketFileDynamic = `${folderType}/${data.post_id}/${data.sequence}/${fileName}`
+    // Upload the file to S3
+    const fileUrl = await uploadFileToS3( s3BucketFileDynamic, filePath,fileType);
+    if (fileUrl.success) {
+      
+      // If the upload was successful, return the file URL or save it to the database
+      const fileUrlData = fileUrl.url;
+      const dataToStore = {
+        media_url:fileUrlData,
+        media_type:data.media_type,
+        sequence:data.sequence,
+        post_id:data.post_id,
+      }
+      await addMetaDataWhileCreateUpdate(dataToStore, req, res, true);
+      const update = await PostMediaService.updateService(data.media_id,dataToStore)
+      // Save to DB or perform further actions as needed
+      // Example: await saveMediaToDatabase(fileUrl, data);  // This is a placeholder function
+      deleteFile(filePath)
+      if (update === 0) {
+        return res
+          .status(responseCode.BAD_REQUEST)
+          .send(
+            commonResponse(
+              responseCode.BAD_REQUEST,
+              responseConst.ERROR_UPDATING_RECORD,
+              null,
+              true
+            )
+          );
+      } else {
+        return res 
+        .status(responseCode.OK)
+        .send(
+          commonResponse(
+            responseCode.OK,
+            responseConst.SUCCESS_UPDATING_RECORD,
+            
+          )
+        );
+      }
+    } else {
+      deleteFile(filePath)
+      // If the upload failed
+      return res.status(500).send({
+        error: 'File upload failed!'
+      });
+    }
+  }else{
+    const s3BucketFileDynamic = `${folderType}/${data.post_id}/${data.sequence}/${fileName}`
+    // Upload the file to S3
+    const fileUrl = await uploadFileToS3(s3BucketFileDynamic, filePath,fileType);
+    console.log("fileUrl",fileUrl)
+    if (fileUrl.success) {
+      const fileUrlData = fileUrl.url;
+    const dataToStore = {
+      media_url:fileUrlData,
+      media_type:data.media_type,
+      sequence:data.sequence,
+      post_id:data.post_id,
+    }
+    await addMetaDataWhileCreateUpdate(dataToStore, req, res, false);
+    const createData = await PostMediaService.createSerive(dataToStore)
+    deleteFile(filePath)
+    if(createData) {
+      return res
+        .status(responseCode.CREATED)
+        .send(
+          commonResponse(
+            responseCode.CREATED,
+            responseConst.SUCCESS_ADDING_RECORD
+          )
+        );
+    } else {
+      return res 
+        .status(responseCode.BAD_REQUEST)
+        .send(
+          commonResponse(
+            responseCode.BAD_REQUEST,
+            responseConst.ERROR_ADDING_RECORD,
+            null,
+            true
+          )
+        )
+    }
+  }else{
+    deleteFile(filePath)
+    return res.status(500).send({
+      error: 'File upload failed!'
+    });
+  }
+
+  }
+    }catch(error){
+      deleteFile(filePath)
+      console.log("error", error);
+      logger.error(`Error ---> ${error}`);
+      return res
+        .status(responseCode.INTERNAL_SERVER_ERROR)
+        .send(
+          commonResponse(
+            responseCode.INTERNAL_SERVER_ERROR,
+            responseConst.INTERNAL_SERVER_ERROR,
+            null,
+            true
+          )
+        );
+    }
+  }
 };
 
 export default PostMediaController;

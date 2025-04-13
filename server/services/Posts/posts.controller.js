@@ -1,15 +1,8 @@
 import PostService from "./posts.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
+import PostMediaService from "../PostMedia/postmedia.service.js";
 
-const {
-  commonResponse,
-  responseCode,
-  responseConst,
-  logger,
-  tokenData,
-  currentTime,
-  addMetaDataWhileCreateUpdate,
-} = commonPath;
+const { commonResponse,responseCode, responseConst, logger,tokenData, currentTime,addMetaDataWhileCreateUpdate } = commonPath;
 
 const PostController = {
   // Create a new Record
@@ -29,7 +22,7 @@ const PostController = {
             commonResponse(
               responseCode.CREATED,
               responseConst.SUCCESS_ADDING_RECORD,
-              //createdData
+              createdData,
             )
           );
       } else {
@@ -90,7 +83,11 @@ const PostController = {
       return res
         .status(responseCode.OK)
         .send(
-          commonResponse(responseCode.OK, responseConst.SUCCESS_UPDATING_RECORD)
+          commonResponse(
+            responseCode.OK,
+            responseConst.SUCCESS_UPDATING_RECORD,
+
+          )
         );
     } catch (error) {
       logger.error(`Error ---> ${error}`);
@@ -281,7 +278,149 @@ const PostController = {
           )
         );
     }
-  },
+  },createOrUpdateUpdatePostDataAndMediaById:async(req,res)=>{
+    try{
+      const data = req.body
+      if(data.post_id){
+        const getDataByPostId = await PostService.getServiceById(data.post_id)
+        const updatePostData = {
+          user_id:tokenData(req,res),
+          description:data.description,
+          total_likes:getDataByPostId.total_likes,
+          total_comments:getDataByPostId.total_comments
+        }
+        await addMetaDataWhileCreateUpdate(updatePostData, req, res, true);
+
+        // update the record using ORM
+        const updatedRowsCount = await PostService.updateService(data.post_id, updatePostData);
+        
+        if(updatedRowsCount>0){
+        const getDataByPostIdAfter = await PostService.getServiceById(data.post_id)
+        const mergedData = {
+          post_id:data.post_id,
+          user_id:getDataByPostIdAfter.user_id,
+          description:getDataByPostIdAfter.description,
+          user_name:getDataByPostIdAfter.user_name,
+          full_name:getDataByPostIdAfter.full_name,
+          role_name:getDataByPostIdAfter.role_name
+        }
+        return res
+        .status(responseCode.OK)
+        .send(
+          commonResponse(
+            responseCode.OK,
+            responseConst.SUCCESS_UPDATING_RECORD,
+            mergedData
+          )
+        );
+        }else{
+          return res
+          .status(responseCode.BAD_REQUEST)
+          .send(
+            commonResponse(
+              responseCode.BAD_REQUEST,
+              responseConst.ERROR_UPDATING_RECORD,
+              null,
+              true
+            )
+          );
+        }
+      }else{
+        const updatePostData = {
+          user_id:tokenData(req,res),
+          description:data.description,
+          total_likes:0,
+          total_comments:0
+        }
+        await addMetaDataWhileCreateUpdate(updatePostData, req, res, false);
+        const createdData = await PostService.createSerive(data);
+        if(createdData){
+          const getDataByPostIdAfter = await PostService.getServiceById(createdData.dataValues.post_id)
+          const mergedData = {
+            post_id:createdData.dataValues.post_id,
+            user_id:getDataByPostIdAfter.user_id,
+            description:getDataByPostIdAfter.description,
+            user_name:getDataByPostIdAfter.user_name,
+            full_name:getDataByPostIdAfter.full_name,
+            role_name:getDataByPostIdAfter.role_name
+          }
+          return res
+          .status(responseCode.CREATED)
+          .send(
+            commonResponse(
+              responseCode.CREATED,
+              responseConst.SUCCESS_ADDING_RECORD,
+              mergedData,
+            )
+          );
+        }else{
+          return res
+          .status(responseCode.BAD_REQUEST)
+          .send(
+            commonResponse(
+              responseCode.BAD_REQUEST,
+              responseConst.ERROR_ADDING_RECORD,
+              null,
+              true
+            )
+          );
+        }
+      }
+    }catch(error){
+      logger.error(`Error ---> ${error}`);
+      return res
+        .status(responseCode.INTERNAL_SERVER_ERROR)
+        .send(
+          commonResponse(
+            responseCode.INTERNAL_SERVER_ERROR,
+            responseConst.INTERNAL_SERVER_ERROR,
+            null,
+            true
+          )
+        );
+    }
+  },getDatabyPostIdByViewAndMedia:async(req,res)=>{
+    try{
+      const post_id = req.query.post_id
+      const getDatabyPost = await PostService.getServiceById(post_id)
+      if(getDatabyPost.length!==0){
+        const getMediaByPostId = await PostMediaService.getDatabyPostIdByView(post_id)
+        getDatabyPost.mediaData = getMediaByPostId
+        return res
+          .status(responseCode.OK)
+          .send(
+            commonResponse(
+              responseCode.OK,
+              responseConst.DATA_RETRIEVE_SUCCESS,
+              getDatabyPost
+            )
+          );
+      }else{
+        return res
+        .status(responseCode.BAD_REQUEST)
+        .send(
+          commonResponse(
+            responseCode.BAD_REQUEST,
+            responseConst.DATA_NOT_FOUND,
+            null,
+            true
+          )
+        );
+      }
+    }catch(error){
+      logger.error(`Error ---> ${error}`);
+      return res
+        .status(responseCode.INTERNAL_SERVER_ERROR)
+        .send(
+          commonResponse(
+            responseCode.INTERNAL_SERVER_ERROR,
+            responseConst.INTERNAL_SERVER_ERROR,
+            null,
+            true
+          )
+        );
+    }
+  }
 };
 
 export default PostController;
