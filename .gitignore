@@ -6,6 +6,9 @@ node_modules/
 
 # Ignore environment variable file (e.g., .env)
 .env
+# .gitignore
+.env
+
 
 # Ignore npm package lock file
 package-lock.json
