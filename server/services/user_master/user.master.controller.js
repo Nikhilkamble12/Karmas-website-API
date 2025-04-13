@@ -285,6 +285,48 @@ const UserMasterController = {
                     )
                 );
         }
+    },getuserDataNadActivity:async(req,res)=>{
+        try{
+            const Id = req.query.id
+            // If not found in JSON, fetch data from the database
+            const getDataByid = await UserMasterService.getServiceById(Id)
+            const getActivity = await UserActivtyService.getDataByUserId(Id)
+            if (getDataByid.length !== 0) {
+                getDataByid.getActivity = getActivity
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getDataByid
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        }catch(error){
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
     }
 }
 export default UserMasterController
