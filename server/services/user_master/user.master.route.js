@@ -36,6 +36,12 @@ router.delete(
     verifyToken,
     UserMasterController.deleteData
 )
+// get User And Activity Data 
+router.get(
+    `${basePath}/getUserData/Activity`,
+    verifyToken,
+    UserMasterController.getuserDataAndActivity
+)
 
 // Export the router for use in other parts of the application
 export default router

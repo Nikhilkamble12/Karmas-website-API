@@ -20,7 +20,11 @@ const UserMasterModel = (sequelize) => {
         }, role_id: {
             type: DataTypes.INTEGER,
             allowNull: false
-        }, email_id: {
+        },is_account_public:{
+            type:DataTypes.TINYINT(1),
+            DefaultValue: true
+        },
+         email_id: {
             type: DataTypes.STRING(200),
             allowNull: false
         }, gender: {
@@ -39,6 +43,14 @@ const UserMasterModel = (sequelize) => {
             type:DataTypes.TINYINT(1),
             allowNull:true,
             DefaultValue: true
+        },
+        file_name:{
+            type:DataTypes.STRING(300),
+            allowNull:true
+        },
+        file_path:{
+            type:DataTypes.STRING(500),
+            allowNull:true
         },
         is_active: {
             type: DataTypes.TINYINT(1),

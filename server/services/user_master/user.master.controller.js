@@ -1,4 +1,6 @@
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
+import getBase64FromFile from "../../utils/helper/base64.retrive.data.js";
+import saveBase64ToFile from "../../utils/helper/base64ToFile.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
 import UserMasterService from "./user.master.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
@@ -15,6 +17,24 @@ const UserMasterController = {
             // Create the record using ORM
             data.first_time_login = true
             const createData = await UserMasterService.createService(data);
+            if(createData){
+            if(data.Base64File!==null && data.Base64File!=="" && data.Base64File!==0 && data.Base64File!==undefined){
+                const user_id = createData.dataValues.user_id
+                await saveBase64ToFile(
+                    data.Base64File,
+                    "user_master/" + user_id ,
+                    currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                      "_" +
+                      data.file_name
+                  );
+                  const upload_page_1 = data.file_name
+                  ? `user_master/${user_id}/${currentTime()
+                      .replace(/ /g, "_")
+                      .replace(/:/g, "-")}_${data.file_name}`
+                  : null;
+                   const updateUserMaster = await UserMasterService.updateService(createData.dataValues.user_id,{file_path:upload_page_1})
+                }
+            }
             if(createData){
                 const user_id = createData.dataValues.user_id
                 const userActvityCreate = {
@@ -67,7 +87,22 @@ const UserMasterController = {
             const data = req.body
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, true);
-
+            if(data.Base64File!==null && data.Base64File!=="" && data.Base64File!==0 && data.Base64File!==undefined){
+                await saveBase64ToFile(
+                    data.Base64File,
+                    "user_master/" + id ,
+                    currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                      "_" +
+                      data.file_name
+                  );
+                  const upload_page_1 = data.file_name
+                  ? `user_master/${id}/${currentTime()
+                      .replace(/ /g, "_")
+                      .replace(/:/g, "-")}_${data.file_name}`
+                  : null;
+                  data.file_path = upload_page_1
+                delete data.Base64File
+                }
             // Update the record using ORM
             const updatedRowsCount = await UserMasterService.updateService(id, data);
             // if (updatedRowsCount > 0) {
@@ -97,6 +132,7 @@ const UserMasterController = {
                     )
                 );
         } catch (error) {
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -285,14 +321,19 @@ const UserMasterController = {
                     )
                 );
         }
-    },getuserDataNadActivity:async(req,res)=>{
+    },getuserDataAndActivity:async(req,res)=>{
         try{
             const Id = req.query.id
             // If not found in JSON, fetch data from the database
             const getDataByid = await UserMasterService.getServiceById(Id)
             const getActivity = await UserActivtyService.getDataByUserId(Id)
             if (getDataByid.length !== 0) {
-                getDataByid.getActivity = getActivity
+                getDataByid.getActivity = getActivity[0]
+                if(getDataByid.file_path && getDataByid.file_path!=="" && getDataByid.file_path!==0){
+                getDataByid.Base64File = await getBase64FromFile(getDataByid.file_path)
+                }else{
+                    getDataByid.Base64File = null 
+                }
                 return res
                     .status(responseCode.OK)
                     .send(
@@ -315,6 +356,7 @@ const UserMasterController = {
                     );
             }
         }catch(error){
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
