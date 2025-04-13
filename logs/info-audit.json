@@ -6,9 +6,14 @@
     "auditLog": "/Users/khana/Documents/massom/logs/info-audit.json",
     "files": [
         {
-            "date": 1738408349262,
-            "name": "/Users/khana/Documents/massom/logs/log-01-02-2025.log",
-            "hash": "0dfe125a6983e2ddefa3634e71bf81ba7fdcbc08be73ce06df1968117a671263"
+            "date": 1744041157525,
+            "name": "/Users/khana/Documents/massom/logs/log-07-04-2025.log",
+            "hash": "c6869715da527fc4202e8b7be949dbf454ebab53e778e1ac405fd7ee53cbad24"
+        },
+        {
+            "date": 1744087680588,
+            "name": "/Users/khana/Documents/massom/logs/log-08-04-2025.log",
+            "hash": "76f2882a965b91723b1afedadbd098da652de8b8c87272b907c2f9b14c3049ca"
         }
     ],
     "hashType": "sha256"

@@ -39,6 +39,11 @@ router.delete(
     verifyToken,
     PostController.deleteData
 )
+router.get(
+    `${basePath}/getData/byPostId`,
+    verifyToken,
+    PostController.getDatabyPostIdByViewAndMedia
+)
 
 // Export the router for use in other parts of the application
 export default router

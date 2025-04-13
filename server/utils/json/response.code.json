@@ -46,6 +46,12 @@
       },{
         "code":1.0013,
         "message":"An error occurred while adding the record."
+      },{
+        "code":"1.0014",
+        "message":"Post Id Is Required."
+      },{
+        "code":"1.0015",
+        "message":"Sequence Id Is Required."
       }
     ]
       

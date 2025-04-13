@@ -66,7 +66,17 @@ const PostMediaDAL = {
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
-  },
+  },getDataByPostIdByView:async(post_id)=>{
+    try{
+      const getDataById = await db.sequelize.query(
+        ` ${ViewFieldTableVise.POST_MEDIA_FIELDS} where post_id  = ${post_id} `,
+        { type: db.Sequelize.QueryTypes.SELECT } // Return the retrieved data
+      );
+      return getDataById ?? [];
+    }catch(error){
+      throw error
+    }
+  }
 }
 
 export default PostMediaDAL; 

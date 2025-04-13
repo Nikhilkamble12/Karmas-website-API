@@ -7,12 +7,16 @@ const PostMediaModel = (sequelize) => {
       autoIncrement: true,
       primaryKey: true,
     },
+    sequence:{
+      type:DataTypes.INTEGER,
+      allowNull:true
+    },
     post_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
     media_type: {
-      type: DataTypes.ENUM('photo', 'video'),
+      type: DataTypes.STRING(255),
       allowNull: false,
     },
     media_url: {

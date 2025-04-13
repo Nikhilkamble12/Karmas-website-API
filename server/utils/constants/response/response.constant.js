@@ -50,7 +50,9 @@ const RESPONSE_CONSTANTS = {
     USERNAME_IS_READY_TO_USE:"User Name Ready To Use.",
     ERROR_WHILE_SAVING_FILE_TO_SERVER:"Error While Saving File To Server.",
     EMAIL_AND_PASSWORD_REQUIRED:"Email And Password Is Required.",
-    NGO_ALREDY_ASSIGNED_TO_REQUEST:"Ngo Already Assigned to Request."
+    NGO_ALREDY_ASSIGNED_TO_REQUEST:"Ngo Already Assigned to Request.",
+    POST_ID_IS_REQUIRED:"Post Id Is Required.",
+    SEQUENCE_ID_IS_REQUIRED:"Sequence Id Is Required.",
   };
   
   export default RESPONSE_CONSTANTS;

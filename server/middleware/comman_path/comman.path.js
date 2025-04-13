@@ -20,7 +20,10 @@ import express from "express"
 import verifyToken from "../auth/authJwt.js";
 import JWT from "jsonwebtoken";
 import { Op } from 'sequelize';
+import multer from 'multer'
 const basePathRoute =`${process.env.BASE_ROUTE_PATH || '/api/v1'}`
+import path from 'path';
+import fs from "fs"
 
 const commonPath={
     responseConst:responseConst,
@@ -42,7 +45,10 @@ const commonPath={
     basePathRoute:basePathRoute,
     // CommanJsonFunction:CommanJsonFunction,
     JWT,
-    Op
+    Op,
+    multer:multer,
+    path:path,
+    fs:fs
 }
 
 export default commonPath
