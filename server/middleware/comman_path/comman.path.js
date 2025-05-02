@@ -23,7 +23,8 @@ import { Op } from 'sequelize';
 import multer from 'multer'
 const basePathRoute =`${process.env.BASE_ROUTE_PATH || '/api/v1'}`
 import path from 'path';
-import fs from "fs"
+import fs from "fs";
+import { fileURLToPath } from 'url';
 
 const commonPath={
     responseConst:responseConst,
@@ -48,7 +49,8 @@ const commonPath={
     Op,
     multer:multer,
     path:path,
-    fs:fs
+    fs:fs,
+    fileURLToPath:fileURLToPath
 }
 
 export default commonPath

@@ -9,19 +9,19 @@ const RequestMediaModel = (sequelize) => {
         primaryKey: true,
         autoIncrement: true,
       },
-      request_id: {
+      RequestId: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
       img_name: {
         type: DataTypes.STRING(255),
-        allowNull: false,
+        allowNull: true,
       },
-      img_path: {
+      media_url: {
         type: DataTypes.STRING(500),
         allowNull: false,
       },
-      sequence_id: {
+      sequence: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },

@@ -58,6 +58,12 @@ const RequestNgoService = {
         }catch(error){
             throw error
         }
+    },getAllByFilterByNgoId:async(ngo_id, offset , limit , status_id )=>{
+        try{
+            return await RequestNgoDAL.getNgoDataByFilterAndNgoId(ngo_id, offset , limit , status_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default RequestNgoService

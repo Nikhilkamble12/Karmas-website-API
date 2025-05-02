@@ -36,7 +36,7 @@ const ViewFieldTableWise = {
     REQUEST_FIELDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_REQUEST} `,
     REQUEST_NGO_FIELDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} `,
     ROLE_MASTER_FIELDS:` SELECT role_id, role, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_ROLE_MASTER} `,
-    REQUEST_MEDIA_FIELDS:` SELECT request_media_id, request_id, img_name, img_path, sequence_id, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_REQUEST_MEDIA} `,
+    REQUEST_MEDIA_FIELDS:` SELECT request_media_id, RequestId, img_name, media_url, sequence, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_REQUEST_MEDIA} `,
 
     // -------> S
     STATE_MASTER_FIELDS :` SELECT state_id, state_name, country_id, country_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at  FROM ${VIEW_NAME.GET_ALL_STATE_MASTER} `,
@@ -49,7 +49,7 @@ const ViewFieldTableWise = {
     TABLE_MASTER_FIELDS: ` SELECT table_id, table_name, is_active FROM ${VIEW_NAME.GET_ALL_TABLE_MASTER}  `,
 
     //  ------> U
-    USER_MASTER_FIELDS :` SELECT user_id, user_name, password, full_name, role_id, role, is_account_public, email_id, gender, enrolling_date, ngo_id, ngo_name, ngo_unique_id, file_name, file_path, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at, first_time_login FROM ${VIEW_NAME.GET_ALL_USER_MASTER} `,
+    USER_MASTER_FIELDS :` SELECT  user_id, user_name, password, full_name, role_id, role, is_account_public, email_id, gender, enrolling_date, ngo_id, ngo_name, ngo_unique_id, file_name, file_path, reset_otp, reset_otp_expiry, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at, first_time_login FROM ${VIEW_NAME.GET_ALL_USER_MASTER} `,
     USER_ACTIVITY_FIELDS :` SELECT * FROM ${VIEW_NAME.GET_ALL_USER_ACTIVITY} `,
     // -------> V
     VENDOR_COMPANY_MASTER_FIELDS :` SELECT company_id, company_name, company_photo_name, company_photo_path, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_VENDOR_COMPANY_MASTER} `,

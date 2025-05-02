@@ -420,6 +420,63 @@ const PostController = {
           )
         );
     }
+  },getAllPostbyUserIdAndFilter:async(req,res)=>{
+    try{
+      const user_id = req.query.user_id
+      const offset = req.query.offset
+      const limit = req.query.limit
+      if(!user_id || user_id=="" || user_id=="null" || user_id=="undefined"){
+          return res
+              .status(responseCode.BAD_REQUEST)
+              .send(
+                  commonResponse(
+                      responseCode.BAD_REQUEST,
+                      responseConst.USER_ID_IS_REQUIRED,
+                      null,
+                      true
+                  )
+              );
+      }
+      const getDataByPostId = await PostService.getPostByUserIdByFilterData(user_id, offset, limit)
+      if(getDataByPostId && getDataByPostId.length>0){
+          for(let i = 0;i< getDataByPostId.length ;i++){
+            getDataByPostId[i].post_media = await PostMediaService.getDatabyPostIdByView(getDataByPostId[i].post_id)
+          }
+          return res
+              .status(responseCode.OK)
+              .send(
+                  commonResponse(
+                      responseCode.OK,
+                      responseConst.DATA_RETRIEVE_SUCCESS,
+                      getDataByPostId
+                  )
+              );
+      }else{
+          return res
+          .status(responseCode.BAD_REQUEST)
+          .send(
+              commonResponse(
+                  responseCode.BAD_REQUEST,
+                  responseConst.DATA_NOT_FOUND,
+                  null,
+                  true
+              )
+          );
+      }
+    }catch(error){
+      console.log("error",error)
+      logger.error(`Error ---> ${error}`);
+      return res
+        .status(responseCode.INTERNAL_SERVER_ERROR)
+        .send(
+          commonResponse(
+            responseCode.INTERNAL_SERVER_ERROR,
+            responseConst.INTERNAL_SERVER_ERROR,
+            null,
+            true
+          )
+        );
+    }
   }
 };
 

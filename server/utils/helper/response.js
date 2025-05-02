@@ -40,7 +40,14 @@ const getCode = (message) => {
     const __dirname = path.dirname(__filename);
     const filePath = join(__dirname, "..", "json/response.code.json");
 
-    const responseData = JSON.parse(fs.readFileSync(filePath));
+    // const responseData = JSON.parse(fs.readFileSync(filePath));
+    let responseData
+    try {
+      responseData = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+    } catch (err) {
+      console.error(`Error reading response code file: ${err.message}`);
+      return null;
+    }
     for (const response of responseData.codes) {
       if (response.message === message) {
         return response.code;

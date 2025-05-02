@@ -66,7 +66,17 @@ const RequestMediaDAL = {
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
-  },
+  },getDataByRequestIdByView:async(RequestId)=>{
+    try{
+      const getDataByRequestId = await db.sequelize.query(
+        ` ${ViewFieldTableVise.REQUEST_MEDIA_FIELDS} where RequestId  = ${RequestId} `,
+        { type: db.Sequelize.QueryTypes.SELECT }
+      )
+      return getDataByRequestId
+    }catch(error){
+      throw error
+    }
+  }
 };
 
 export default RequestMediaDAL; // Export the CommentsDAL object for use in the controller

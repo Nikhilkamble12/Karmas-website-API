@@ -72,7 +72,35 @@ const RequestNgoDAL = {
         }catch(error){
             throw error
         }
-    }
+    },getNgoDataByFilterAndNgoId: async (ngo_id, offset = null, limit = null, status_id = null) => {
+        try {
+          let baseQuery = `${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS} WHERE ngo_id = :ngo_id`;
+          const replacements = { ngo_id };
+      
+          if (status_id !== null && status_id !== undefined && status_id!=="null" && status_id !=="undefined" && status_id!==""){
+            baseQuery += ` AND status_id = :status_id`;
+            replacements.status_id = status_id;
+          }
+      
+          baseQuery += ` ORDER BY Request_Ngo_Id DESC`;
+      
+          if (limit !== null && offset !== null && limit!=="null" && limit!=="undefined" && offset!=="null" && offset!=="undefined" && offset!=="" && limit!=="") {
+            baseQuery += ` LIMIT :limit OFFSET :offset`;
+            replacements.limit = Number(limit);   // ✅ Ensure numeric type
+            replacements.offset = Number(offset); // ✅ Ensure numeric type
+          }
+          
+      
+          const results = await db.sequelize.query(baseQuery, {
+            replacements,
+            type: db.Sequelize.QueryTypes.SELECT,
+          });
+      
+          return results ?? [];
+        } catch (error) {
+          throw error;
+        }
+      }
 }
 
 export default RequestNgoDAL

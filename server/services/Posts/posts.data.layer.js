@@ -66,7 +66,30 @@ const PostDAL = {
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
-  },
+  },getPostDataByUserIdByFilter:async(user_id,offset, limit)=>{
+    try{
+      let baseQuery = `${ViewFieldTableVise.POSTS_FIELDS} WHERE user_id = :user_id`;
+          const replacements = { user_id };
+      
+          baseQuery += ` ORDER BY post_id DESC`;
+      
+          if (limit !== null && offset !== null && limit!=="null" && limit!=="undefined" && offset!=="null" && offset!=="undefined" && offset!=="" && limit!=="") {
+            baseQuery += ` LIMIT :limit OFFSET :offset`;
+            replacements.limit = Number(limit);   // ✅ Ensure numeric type
+            replacements.offset = Number(offset); // ✅ Ensure numeric type
+          }
+          
+      
+          const results = await db.sequelize.query(baseQuery, {
+            replacements,
+            type: db.Sequelize.QueryTypes.SELECT,
+          });
+      
+          return results ?? [];
+    }catch(error){
+      throw error
+    }
+  }
 };
 
 export default PostDAL; // Export the CommentsDAL object for use in the controller

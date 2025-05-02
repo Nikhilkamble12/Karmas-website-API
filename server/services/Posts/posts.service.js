@@ -40,7 +40,13 @@ const PostService = {
     } catch (error) {
       throw error;
     }
-  },
+  },getPostByUserIdByFilterData:async(user_id,offset, limit)=>{
+    try{
+      return await PostDAL.getPostDataByUserIdByFilter(user_id,offset, limit)
+    }catch(error){
+      throw error
+    }
+  }
 };
 
 export default PostService;

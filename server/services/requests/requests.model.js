@@ -1,81 +1,86 @@
 import { DataTypes } from "sequelize";
 
-const RequestModel = (sequelize)=>{
+const RequestModel = (sequelize) => {
     return sequelize.define(
-        "requests",{
-            RequestId:{
-                type: DataTypes.INTEGER,
-                primaryKey: true,
-                autoIncrement: true
-            },request_user_id:{
-                type:DataTypes.INTEGER,
-                allowNull:false
-            },
-             UserName:{
-                type:DataTypes.STRING(255),
-                allowNull:false
-            }, RequestName:{
-                type:DataTypes.STRING(255),
-                allowNull:false
-            }, Age:{
-                type:DataTypes.INTEGER,
-                allowNull:true
-            }, Gender:{
-                type:DataTypes.STRING(10),
-                allowNull:true
-            }, SahaykaPhoneNo:{
-                type:DataTypes.STRING(20),
-                allowNull:true
-            }, SahaykaEmailID:{
-                type:DataTypes.STRING(255),
-                allowNull:true
-            }, Category:{
-                type:DataTypes.STRING(255),
-                allowNull:true
-            }, Address:{
-                type:DataTypes.TEXT,
-                allowNull:true
-            }, Pincode:{
-                type:DataTypes.STRING(10),
-                allowNull:true
-            }, Remark:{
-                type:DataTypes.TEXT,
-                allowNull:true
-            }, Story:{
-                type:DataTypes.TEXT,
-                allowNull:true
-            }, Problem:{
-                type:DataTypes.TEXT,
-                allowNull:true
-            }, Solution:{
-                type:DataTypes.TEXT,
-                allowNull:true
-            }, MessageToSahayak:{
-                type:DataTypes.TEXT,
-                allowNull:true
-            }, RejectRemark:{
-                type:DataTypes.TEXT,
-                allowNull:true
-            }, AssignedNGO:{
-                type:DataTypes.INTEGER,
-                allowNull:true
-            }, CityId:{
-                type:DataTypes.INTEGER,
-                allowNull:true
-            },districtId:{
-                type:DataTypes.INTEGER,
-                allowNull:true
-            },StateId:{
-                type:DataTypes.INTEGER,
-                allowNull:true
-            },CountryId:{
-                type:DataTypes.INTEGER,
-                allowNull:true
-            },status_id:{
-                type:DataTypes.INTEGER,
-                allowNull:true
-            },
-             is_active: {
+        "requests", {
+        RequestId: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true
+        }, request_user_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
+        UserName: {
+            type: DataTypes.STRING(255),
+            allowNull: false
+        }, RequestName: {
+            type: DataTypes.STRING(255),
+            allowNull: false
+        }, Age: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }, Gender: {
+            type: DataTypes.STRING(10),
+            allowNull: true
+        }, SahaykaPhoneNo: {
+            type: DataTypes.STRING(20),
+            allowNull: true
+        }, SahaykaEmailID: {
+            type: DataTypes.STRING(255),
+            allowNull: true
+        }, Category: {
+            type: DataTypes.STRING(255),
+            allowNull: true
+        }, Address: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        }, Pincode: {
+            type: DataTypes.STRING(10),
+            allowNull: true
+        }, Remark: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        }, Story: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        }, Problem: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        }, Solution: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        }, MessageToSahayak: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        }, RejectRemark: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        }, AssignedNGO: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }, CityId: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }, districtId: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }, StateId: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }, CountryId: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }, status_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        is_self: {
+            type: DataTypes.TINYINT(1),
+            allowNull: false,
+            defaultValue: false
+        },
+        is_active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
         },
@@ -104,8 +109,8 @@ const RequestModel = (sequelize)=>{
             type: DataTypes.DATE,
             allowNull: true
         }
-        },{
-            tableName: "requests",
+    }, {
+        tableName: "requests",
         paranoid: true,
         timestamps: false,
         defaultScope: {
@@ -121,7 +126,7 @@ const RequestModel = (sequelize)=>{
                 ],
             },
         },
-        }
+    }
     )
 }
 export default RequestModel
