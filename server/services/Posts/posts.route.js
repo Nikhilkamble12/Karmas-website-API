@@ -44,6 +44,11 @@ router.get(
     verifyToken,
     PostController.getDatabyPostIdByViewAndMedia
 )
+router.get(
+    `${basePath}/getPost/byUserId`,
+    verifyToken,
+    PostController.getAllPostbyUserIdAndFilter
+)
 
 // Export the router for use in other parts of the application
 export default router

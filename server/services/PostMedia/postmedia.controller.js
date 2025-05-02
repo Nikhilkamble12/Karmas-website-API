@@ -1,6 +1,7 @@
 import PostMediaService from "./postmedia.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 import uploadFileToS3 from "../../utils/helper/s3.common.code.js";
+// import autoTagMedia from "../../utils/helper/auto.tag.media.js";
 const {
   commonResponse,
   responseCode,
@@ -312,7 +313,7 @@ const PostMediaController = {
     }
     console.log("data",data)
     console.log("data.post_id",data.post_id)
-    if(data.post_id== "" && data.post_id== "undefined" && data.post_id== '0' && data.post_id==0 && data.post_id==undefined){
+    if(data.post_id== "" || data.post_id== "undefined" || data.post_id== '0' || data.post_id==0 || data.post_id==undefined){
       deleteFile(filePath)
           return res 
           .status(responseCode.BAD_REQUEST)
@@ -325,7 +326,7 @@ const PostMediaController = {
             )
           )
     }
-    if(data.sequence== "" && data.sequence== "undefined" && data.sequence== "0" && data.sequence== 0 && data.sequence== undefined){
+    if(data.sequence== "" || data.sequence== "undefined" || data.sequence== "0" || data.sequence== 0 || data.sequence== undefined){
       deleteFile(filePath)
       return res 
       .status(responseCode.BAD_REQUEST)
@@ -343,7 +344,6 @@ const PostMediaController = {
     console.log("folderType",folderType)
     console.log("fileName",fileName)
     if(data.media_id){
-    
     // You can dynamically decide where to store the file, for example, 'post' or 'request'
      // For example, 'post', 'request', etc.
     const s3BucketFileDynamic = `${folderType}/${data.post_id}/${data.sequence}/${fileName}`

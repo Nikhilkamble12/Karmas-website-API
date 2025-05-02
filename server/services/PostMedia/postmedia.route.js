@@ -1,21 +1,20 @@
 
 import PostMediaController from "./postmedia.controller.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
-const {express,verifyToken,basePathRoute,multer,path,fs} = commonPath
+const {express,verifyToken,basePathRoute,multer,path,fs,fileURLToPath} = commonPath
 
 // Define the base path for routes
 const basePath=`${basePathRoute}/postmedia` 
 const router = express.Router()
 
-// Get the current directory name using import.meta.url
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
-// Ensure the 'uploads' folder exists
-const uploadDir = path.join(__dirname, 'uploads'); // Use path.join to create a platform-independent path
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Check if 'uploads' directory exists; if not, create it
+const uploadDir = path.join(__dirname, 'uploads');
+
 if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);  // Create the folder if it doesn't exist
-  }
+    fs.mkdirSync(uploadDir, { recursive: true }); // safer to add recursive
+}
 // Route to create a new record
 
 router.post(

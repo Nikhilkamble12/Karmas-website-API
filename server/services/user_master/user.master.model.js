@@ -52,6 +52,14 @@ const UserMasterModel = (sequelize) => {
             type:DataTypes.STRING(500),
             allowNull:true
         },
+        reset_otp:{
+            type:DataTypes.STRING(20),
+            allowNull:true
+        },
+        reset_otp_expiry:{
+            type:DataTypes.DATE,
+            allowNull:true
+        },
         is_active: {
             type: DataTypes.TINYINT(1),
             allowNull: false,

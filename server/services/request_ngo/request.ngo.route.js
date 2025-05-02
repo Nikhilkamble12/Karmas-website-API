@@ -46,5 +46,11 @@ router.put(
     verifyToken,
     RequestNgoController.createUpdateRequestNgo
 )
+// get NgoRequest By Ngo Id And By Filter
+router.get(
+    `${basePath}/getData/ByFilter/Ngo`,
+    verifyToken,
+    RequestNgoController.getAllNgoRequestLiveStatusWise
+)
 // Export the router for use in other parts of the application
 export default router

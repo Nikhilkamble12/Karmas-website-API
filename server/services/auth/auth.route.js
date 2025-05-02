@@ -7,5 +7,13 @@ router.post(
   `${basePath}/auth`,
   AuthController.loginUser
 )
+router.post(
+  `${basePath}/sendOpt/Resetpassword`,
+  AuthController.sendResetOtp
+)
+router.post(
+  `${basePath}/validate/otp/password`,
+  AuthController.resetPassword
+)
 // console.log("router",router)
 export default router

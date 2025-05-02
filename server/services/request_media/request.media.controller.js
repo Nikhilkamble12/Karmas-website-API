@@ -10,6 +10,9 @@ const {
   currentTime,
   addMetaDataWhileCreateUpdate,
 } = commonPath;
+import fs from 'fs/promises'; // ✅ Correct for async/await usage
+import uploadFileToS3 from "../../utils/helper/s3.common.code.js";
+
 
 const RequestMediaController = {
   // Create a new Record
@@ -281,7 +284,172 @@ const RequestMediaController = {
           )
         );
     }
-  },
+  },createOrUpdateMulitileRequestMedia:async(req,res)=>{
+    const data = req.body
+    const fileType = req.file.mimetype; 
+    const folderType = 'request'; 
+    const filePath = req.file.path;  // Multer stores the file temporarily here
+    const fileName = req.file.filename;
+     // Ensure a file is uploaded
+     async function deleteFile(filePath) {
+      console.log("Inside delete function:", filePath);
+      try {
+        await fs.access(filePath); // Check if file exists
+        await fs.unlink(filePath); // Delete it
+        console.log(`✅ File deleted: ${filePath}`);
+      } catch (err) {
+        console.error(`❌ Failed to delete file: ${filePath}`, err.message);
+      }
+    }
+    try{
+      if (!req.file) {
+        return res.status(400).send({ error: 'No file uploaded' });
+      }
+      console.log("data.RequestId",data.RequestId)
+      console.log("data.RequestId",data.RequestId)
+      if(data.RequestId == "" ||  data.RequestId== "undefined" || data.RequestId== '0' || data.RequestId==0 || data.RequestId==undefined){
+        console.log("filePath",filePath)
+        deleteFile(filePath)
+        console.log("after delete")
+            return res 
+            .status(responseCode.BAD_REQUEST)
+            .send(
+              commonResponse(
+                responseCode.BAD_REQUEST,
+                responseConst.REQUEST_ID_IS_REQUIRED,
+                null,
+                true
+              )
+            )
+      }
+      if(data.sequence== "" || data.sequence== "undefined" || data.sequence== "0" || data.sequence== 0 || data.sequence== undefined){
+         deleteFile(filePath)
+        return res 
+        .status(responseCode.BAD_REQUEST)
+        .send(
+          commonResponse(
+            responseCode.BAD_REQUEST,
+            responseConst.SEQUENCE_ID_IS_REQUIRED,
+            null,
+            true
+          )
+        )
+      }
+       // File name on the server
+      console.log("fileType",fileType)
+      console.log("folderType",folderType)
+      console.log("fileName",fileName)
+      if(data.request_media_id && data.request_media_id!=="" && data.request_media_id!==0 && data.request_media_id!=="null"){
+      // You can dynamically decide where to store the file, for example, 'post' or 'request'
+       // For example, 'post', 'request', etc.
+      const s3BucketFileDynamic = `${folderType}/${data.RequestId}/${data.sequence}/${fileName}`
+      // Upload the file to S3
+      const fileUrl = await uploadFileToS3( s3BucketFileDynamic, filePath,fileType);
+      if (fileUrl.success) {
+        
+        // If the upload was successful, return the file URL or save it to the database
+        const fileUrlData = fileUrl.url;
+        const dataToStore = {
+          media_url:fileUrlData,
+          media_type:data.media_type,
+          sequence:data.sequence,
+          RequestId:data.RequestId,
+        }
+        await addMetaDataWhileCreateUpdate(dataToStore, req, res, true);
+        const update = await RequestMediaService.updateService(data.request_media_id,dataToStore)
+        // Save to DB or perform further actions as needed
+        // Example: await saveMediaToDatabase(fileUrl, data);  // This is a placeholder function
+        deleteFile(filePath)
+        if (update === 0) {
+          return res
+            .status(responseCode.BAD_REQUEST)
+            .send(
+              commonResponse(
+                responseCode.BAD_REQUEST,
+                responseConst.ERROR_UPDATING_RECORD,
+                null,
+                true
+              )
+            );
+        } else {
+          return res 
+          .status(responseCode.OK)
+          .send(
+            commonResponse(
+              responseCode.OK,
+              responseConst.SUCCESS_UPDATING_RECORD,
+              
+            )
+          );
+        }
+      } else {
+        deleteFile(filePath)
+        // If the upload failed
+        return res.status(500).send({
+          error: 'File upload failed!'
+        });
+      }
+    }else{
+      const s3BucketFileDynamic = `${folderType}/${data.RequestId}/${data.sequence}/${fileName}`
+      // Upload the file to S3
+      const fileUrl = await uploadFileToS3(s3BucketFileDynamic, filePath,fileType);
+      console.log("fileUrl",fileUrl)
+      if (fileUrl.success) {
+        const fileUrlData = fileUrl.url;
+      const dataToStore = {
+        media_url:fileUrlData,
+        media_type:data.media_type,
+        sequence:data.sequence,
+        RequestId:data.RequestId,
+      }
+      await addMetaDataWhileCreateUpdate(dataToStore, req, res, false);
+      const createData = await RequestMediaService.createSerive(dataToStore)
+      deleteFile(filePath)
+      if(createData) {
+        return res
+          .status(responseCode.CREATED)
+          .send(
+            commonResponse(
+              responseCode.CREATED,
+              responseConst.SUCCESS_ADDING_RECORD
+            )
+          );
+      } else {
+        return res 
+          .status(responseCode.BAD_REQUEST)
+          .send(
+            commonResponse(
+              responseCode.BAD_REQUEST,
+              responseConst.ERROR_ADDING_RECORD,
+              null,
+              true
+            )
+          )
+      }
+    }else{
+      deleteFile(filePath)
+      return res.status(500).send({
+        error: 'File upload failed!'
+      });
+    }
+  
+    }
+    }catch(error){
+      console.log("error",error)
+      deleteFile(filePath)
+      logger.error(`Error ---> ${error}`);
+      return res
+        .status(responseCode.INTERNAL_SERVER_ERROR)
+        .send(
+          commonResponse(
+            responseCode.INTERNAL_SERVER_ERROR,
+            responseConst.INTERNAL_SERVER_ERROR,
+            null,
+            true
+          )
+        );
+    }
+  }
 };
 
 export default RequestMediaController;

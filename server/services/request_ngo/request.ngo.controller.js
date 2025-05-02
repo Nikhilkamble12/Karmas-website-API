@@ -6,6 +6,7 @@ import { BONUS_MASTER, STATUS_MASTER } from "../../utils/constants/id_constant/i
 import UserMasterService from "../user_master/user.master.service.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
 import ScoreHistoryService from "../score_history/score.history.service.js";
+import RequestMediaService from "../request_media/request.media.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const RequestNgoController = {
@@ -297,7 +298,7 @@ const RequestNgoController = {
                     }
                 }else{
                     await addMetaDataWhileCreateUpdate(currentData, req, res, false);
-                    currentData.status_id = 5
+                    currentData.status_id = STATUS_MASTER.REQUEST_APPROVAL_PENDINNG
                     const createRequestNgo = await RequestNgoService.createService(currentData)
                     if(createRequestNgo){
                         request_saved = true
@@ -348,7 +349,7 @@ const RequestNgoController = {
             const getDataByNgoRequest = await RequestNgoService.getServiceById(Request_Ngo_Id)
             let dataToStore = {}
                 dataToStore.status_id = req.body.status_id
-            if(requestDetails.status_id!==8){
+            if(requestDetails.status_id!==STATUS_MASTER.REQUEST_APPROVED){
                 let userActivityData = {}
                 const getUserDataByUserId = await UserActivtyService.getDataByUserId(requestDetails[0].request_user_id)
                 await addMetaDataWhileCreateUpdate(dataToStore, req, res, true);
@@ -361,7 +362,7 @@ const RequestNgoController = {
                     userActivityData.total_scores_no = parseFloat(getUserDataByUserId[0].total_scores_no)
                 }
                 await addMetaDataWhileCreateUpdate(userActivityData, req, res, true);
-                if(req.body.status_id==8){
+                if(req.body.status_id==STATUS_MASTER.REQUEST_APPROVED){
                     const updaterequest = await RequestService.updateService(RequestId,{status_id:8,AssignedNGO:getDataByNgoRequest.ngo_id})
                     const updateUserActivity = await UserActivtyService.updateService(getUserDataByUserId[0].user_activity_id,userActivityData)
                     const gitScoreHistory = {
@@ -422,6 +423,73 @@ const RequestNgoController = {
                     )
                 );
         }
-    }
+    },
+    // Below is code to get all request for the Ngo Data
+    getAllNgoRequestLiveStatusWise:async(req,res)=>{
+        try{
+            const ngo_id = req.query.ngo_id
+            const offset = req.query.offset
+            const limit = req.query.limit
+            const status_id = req.query.status_id
+            if(!ngo_id || ngo_id=="" || ngo_id=="null" || ngo_id=="undefined"){
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.NGO_ID_REQUIRED,
+                            null,
+                            true
+                        )
+                    );
+            }
+            const getDataByNogId = await RequestNgoService.getAllByFilterByNgoId(ngo_id, offset, limit , status_id)
+            if(getDataByNogId && getDataByNogId.length>0){
+                for(let i = 0;i< getDataByNogId.length ;i++){
+                    let currentData = await RequestService.getServiceById(getDataByNogId[i].RequestId)
+                    if(currentData && currentData.length!==0){
+                        getDataByNogId[i] = {
+                            ...currentData, // assuming currentData is an array with one object
+                            ...getDataByNogId[i],
+                          }; 
+                          getDataByNogId[i].request_media = await RequestMediaService.getDataByRequestIdByView(getDataByNogId[i].RequestId)
+                    }
+                }
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getDataByNogId
+                        )
+                    );
+            }else{
+                return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
+            }
+        }catch(error){
+            console.log("error",error)
+        logger.error(`Error ---> ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
+        }
+    } 
 }
 export default RequestNgoController

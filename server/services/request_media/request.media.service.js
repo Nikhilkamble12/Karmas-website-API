@@ -40,7 +40,13 @@ const RequestMediaService = {
     } catch (error) {
       throw error;
     }
-  },
+  },getDataByRequestIdByView:async(RequestId)=>{
+    try{
+      return await RequestMediaDAL.getDataByRequestIdByView(RequestId)
+    }catch(error){
+      throw error
+    }
+  }
 };
 
 export default RequestMediaService;

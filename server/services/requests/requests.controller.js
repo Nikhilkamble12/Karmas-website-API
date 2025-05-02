@@ -3,6 +3,8 @@ import commonPath from "../../middleware/comman_path/comman.path.js";
 import NgoMasterService from "../ngo_master/ngo.master.service.js";
 import NgoStateDistrictMappingService from "../ngo_state_district_mapping/ngo.state.district.mapping.service.js";
 import RequestNgoService from "../request_ngo/request.ngo.service.js";
+import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
+import RequestMediaService from "../request_media/request.media.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const RequestsController = {
@@ -18,6 +20,7 @@ const RequestsController = {
             if(data.request_user_id == null  || data.request_user_id == "" || data.request_user_id == undefined || data.request_user_id == 0){
                 data.request_user_id = tokenData(req,res)
             }
+            data.status_id = STATUS_MASTER.REQUEST_INSIATED
             const createData = await RequestService.createService(data);
             if (createData) {
                 return res
@@ -191,7 +194,8 @@ const RequestsController = {
 
             // If not found in JSON, fetch data from the database
             const getDataByid = await RequestService.getServiceById(Id)
-
+            const getRequestMedia = await RequestMediaService.getDataByRequestIdByView(Id)
+            getDataByid.request_media = getRequestMedia
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
@@ -224,6 +228,7 @@ const RequestsController = {
                     );
             }
         } catch (error) {
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
