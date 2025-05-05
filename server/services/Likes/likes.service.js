@@ -40,7 +40,13 @@ const LikesService = {
     } catch (error) {
       throw error;
     }
-  },
+  },getLikesByPostId:async(post_id)=>{
+    try{
+      return await LikesDAL.getLikesByPostId(post_id)
+    }catch(error){
+      throw error
+    }
+  }
 }
 
 export default LikesService;

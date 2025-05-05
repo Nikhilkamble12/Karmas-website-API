@@ -41,6 +41,12 @@ router.delete(
   verifyToken,
   LikesController.deleteData
 );
+// Router To Get Likes By Post Id 
+router.get(
+  `${basePath}/get/ByPostId`,
+  verifyToken,
+  LikesController.getLikesbyPostId
+)
 
 // Export the router for use in other parts of the application
 export default router;

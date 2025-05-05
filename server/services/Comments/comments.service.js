@@ -40,6 +40,12 @@ const CommentService = {
         } catch (error) {
             throw error
         }
+    },getCommentByPostOrParentId:async(post_id,parent_id)=>{
+        try{
+            return await CommentsDAL.getCommentByPostAndParentId(post_id,parent_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default CommentService
