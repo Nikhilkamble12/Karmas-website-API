@@ -34,6 +34,30 @@ function isExpired(entry) {
 function getRemainingMs(entry) {
   return entry.expiresAt ? Math.max(0, entry.expiresAt - Date.now()) : null;
 }
+function formatDate(timestamp) {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Kolkata' }); // 'YYYY-MM-DD'
+  }
+  function formatTimeRemaining(ms) {
+    if (ms <= 0) return '00:00:00';
+  
+    const totalSeconds = Math.floor(ms / 1000);
+    const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+    const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+    const seconds = String(totalSeconds % 60).padStart(2, '0');
+  
+    return `${hours}:${minutes}:${seconds}`;
+  }
+    
+function deleteFile(filePath) {
+    try {
+      fs.unlinkSync(filePath);  // Delete the expired file
+      console.log(`File ${filePath} deleted due to expiration.`);
+    } catch (err) {
+      console.error(`Error deleting file ${filePath}:`, err);
+    }
+  }
+  
 
 
 async function set(relativePath, key, newValue, ttlMs = null) {
@@ -100,23 +124,27 @@ async function set(relativePath, key, newValue, ttlMs = null) {
 function getById(relativePath, field, value) {
     const filePath = getFilePath(relativePath);
     const db = load(filePath);
-  
+    // Check for file expiration
+    if (isExpired(db)) {
+        deleteFile(filePath);  // Delete expired file
+        return [];
+      }
     // Ensure the value is an array and search for the entry by the given field and value
     const entry = db.value && Array.isArray(db.value)
       ? db.value.find(item => item[field] === value)
-      : null;
+      : [];
   
     if (!entry || isExpired(entry)) {
-      return null;
+      return [];
     }
-  
+    
     return {
       value: entry,
-      createdAt: db.createdAt,
-      updatedAt: db.updatedAt,
-      expiresAt: db.expiresAt,
-      ttlMs: db.ttlMs,
-      remainingMs: getRemainingMs(entry)
+      createdAt: formatDate(db.createdAt),
+      updatedAt: formatDate(db.updatedAt),
+      expiresAt: formatDate(db.expiresAt),
+      ttlMs: formatTimeRemaining(db.ttlMs),
+      remainingMs: formatTimeRemaining(getRemainingMs(entry))
     };
   }
   
@@ -127,16 +155,28 @@ function getById(relativePath, field, value) {
     if (!fs.existsSync(filePath)) {
       return [];  // Return an empty array if the file doesn't exist
     }
-  
+   
     try {
       const raw = await fs.promises.readFile(filePath, 'utf8');
-      console.log("------>raw",raw)
       const parsed = JSON.parse(raw);
-    console.log("parsed",parsed)
+      // Check for file expiration
+      if (isExpired(parsed)) {
+        deleteFile(filePath);  // Delete expired file
+        return [];  // Return empty array if expired
+      }
       // Ensure `value` is an array and return it
         // Check if `parsed.value` is an object and return its properties
+
+    const remainingMs = parsed.expiresAt ? parsed.expiresAt - Date.now() : null;
     if (parsed.value && typeof parsed.value === 'object') {
-        return parsed.value;  // Return the object if it's structured as expected
+        return {
+            ...parsed.value,
+            createdAt: formatDate(parsed.createdAt),
+            updatedAt: formatDate(parsed.updatedAt),
+            expiresAt: formatDate(parsed.expiresAt),
+            ttlMs: formatTimeRemaining(parsed.ttlMs),
+            remainingMs:formatTimeRemaining(remainingMs)
+        };  // Return the object if it's structured as expected
       }
       return []
     } catch (err) {
