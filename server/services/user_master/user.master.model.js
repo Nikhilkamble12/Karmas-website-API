@@ -49,8 +49,8 @@ const UserMasterModel = (sequelize) => {
             allowNull:true
         },
         file_path:{
-            type:DataTypes.STRING(500),
-            allowNull:true
+            type:DataTypes.STRING(500), 
+           allowNull:true
         },
         reset_otp:{
             type:DataTypes.STRING(20),
