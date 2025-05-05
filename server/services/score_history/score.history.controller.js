@@ -1,5 +1,6 @@
 import ScoreHistoryService from "./score.history.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
+import LocalJsonHelper from "../../utils/helper/local.json.helper.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const ScoreHistoryController = {
@@ -315,8 +316,28 @@ const ScoreHistoryController = {
     },getScoreDashBordData:async(req,res)=>{
         try{
             const limit = req.query.limit
+            const fileName = `score/score_${limit}.json`;
+            // const fileName = `score/score_${limit}.json`;
+            const ttlMs = 10 * 60 * 5; // 5 minutes TTL 30 sec
+    
+            // Step 1: Try to get from local file cache
+            const cachedData = await LocalJsonHelper.getAll(fileName, 'get');
+            console.log("cachedData",cachedData)
+            if (cachedData && cachedData.length!==0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            cachedData
+                        )
+                    );
+            }
             const getData = await ScoreHistoryService.getScoreDasHBoardDataByLimit(limit)
             if (getData.length !== 0) {
+                 // Step 3: Save the data to local file cache
+            await LocalJsonHelper.set(fileName, null, getData, ttlMs);
                 return res
                     .status(responseCode.OK)
                     .send(
@@ -339,6 +360,7 @@ const ScoreHistoryController = {
                     );
             }
         }catch(error){
+        console.log("error",error)
         logger.error(`Error ---> ${error}`);
         return res
             .status(responseCode.INTERNAL_SERVER_ERROR)
