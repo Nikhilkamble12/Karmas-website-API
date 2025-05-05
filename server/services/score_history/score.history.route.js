@@ -36,7 +36,12 @@ router.delete(
     verifyToken,
     ScoreHistoryController.deleteData
 )
-
+// get Data To Get Latest Score Dashboard
+router.get(
+    `${basePath}/get/dashBoard`,
+    verifyToken,
+    ScoreHistoryController.getScoreDashBordData
+)
 
 // Export the router for use in other parts of the application
 export default router
