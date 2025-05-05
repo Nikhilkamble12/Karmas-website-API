@@ -273,6 +273,46 @@ const CommentsController = {
                     )
                 );
         }
+    },getCommentByPostIdAndParentId:async(req,res)=>{
+        try{
+            const post_id = req.query.post_id
+            const parent_id = req.query.parent_id
+            const getCommentData = await CommentService.getCommentByPostOrParentId(post_id,parent_id)
+            if (getCommentData.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getCommentData
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        }catch(error){
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
     }
 }
 

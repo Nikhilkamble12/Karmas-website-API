@@ -63,7 +63,17 @@ const LikesDAL = {
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
-  },
+  },getLikesByPostId:async(post_id)=>{
+    try{
+      const getDataById = await db.sequelize.query(
+        ` ${ViewFieldTableVise.LIKES_FIELDS} where post_id  = ${post_id} `,
+        { type: db.Sequelize.QueryTypes.SELECT } // Return the retrieved data
+      );
+      return getDataById[0] ?? [];
+    }catch(error){
+      throw error
+    }
+  }
 };
 
 export default LikesDAL; // Export the LikesDAL object for use in the service

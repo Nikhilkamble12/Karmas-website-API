@@ -1,9 +1,9 @@
 import CommentsController from "./comments.controller.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
-const {express,verifyToken,basePathRoute} = commonPath
+const { express, verifyToken, basePathRoute } = commonPath
 
 // Define the base path for routes
-const basePath=`${basePathRoute}/comments`
+const basePath = `${basePathRoute}/comments`
 const router = express.Router()
 // Route to create a new record
 
@@ -36,7 +36,12 @@ router.delete(
     verifyToken,
     CommentsController.deleteData
 )
-
+// Router To get Comment
+router.get(
+    `${basePath}/ByPostAnd/Parent/dynamic`,
+    verifyToken,
+    CommentsController.getCommentByPostIdAndParentId
+)
 
 // Export the router for use in other parts of the application
 export default router

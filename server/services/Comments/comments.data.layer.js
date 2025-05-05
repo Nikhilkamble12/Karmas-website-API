@@ -51,6 +51,34 @@ const CommentsDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    }
+    },getCommentByPostAndParentId: async (post_id, parent_id) => {
+        try {
+          let whereClause = "";
+          const replacements = {};
+      
+          // Check if post_id is valid
+          if (post_id && post_id !== "null" && post_id !== "undefined") {
+            whereClause += " WHERE post_id = :post_id";
+            replacements.post_id = post_id;
+          }
+      
+          // Check if parent_id is valid
+          if (parent_id && parent_id !== "null" && parent_id !== "undefined") {
+            whereClause += whereClause ? " AND parent_id = :parent_id" : " WHERE parent_id = :parent_id";
+            replacements.parent_id = parent_id;
+          }
+      
+          const query = `${ViewFieldTableVise.COMMENTS_FIELDS} ${whereClause}`;
+          const getCommentData = await db.sequelize.query(query, {
+            replacements,
+            type: db.Sequelize.QueryTypes.SELECT
+          });
+      
+          return getCommentData ?? [];
+        } catch (error) {
+          throw error;
+        }
+      }
+      
 }
 export default CommentsDAL // Export the CommentsDAL object for use in the controller
