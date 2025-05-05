@@ -318,7 +318,7 @@ const ScoreHistoryController = {
             const limit = req.query.limit
             const fileName = `score/score_${limit}.json`;
             // const fileName = `score/score_${limit}.json`;
-            const ttlMs = 10 * 60 * 5; // 5 minutes TTL 30 sec
+            const ttlMs = 60 * 60 * 1000; // 1 hour in milliseconds
     
             // Step 1: Try to get from local file cache
             const cachedData = await LocalJsonHelper.getAll(fileName, 'get');
