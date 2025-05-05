@@ -58,6 +58,33 @@ const ScoreHistoryDAL = {
         }catch(error){
             throw error
         }
+    },getScoreDashBoardDataByLimit:async(limit)=>{
+        try{
+            const replacements = { limit: parseInt(limit) };
+
+            // Fetch Top Scorers (highest cumulative total score)
+            const topScorers = await db.sequelize.query(
+              `SELECT * FROM v_weekly_user_scores ORDER BY total_score DESC LIMIT :limit`,
+              { replacements, type: db.Sequelize.QueryTypes.SELECT }
+            );
+      
+            // Fetch Top Gainers (highest positive difference between total score and last week's score)
+            const topGainers = await db.sequelize.query(
+              `SELECT * FROM v_weekly_user_scores ORDER BY difference DESC LIMIT :limit`,
+              { replacements, type: db.Sequelize.QueryTypes.SELECT }
+            );
+      
+            // Fetch Top Losers (highest negative difference between total score and last week's score)
+            const topLosers = await db.sequelize.query(
+              `SELECT * FROM v_weekly_user_scores ORDER BY difference ASC LIMIT :limit`,
+              { replacements, type: db.Sequelize.QueryTypes.SELECT }
+            );
+      
+            return { topScorers, topGainers, topLosers };
+      
+        }catch(error){
+            throw error
+        }
     }
 }
 

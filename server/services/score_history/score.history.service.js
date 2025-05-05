@@ -46,6 +46,12 @@ const ScoreHistoryService = {
         }catch(error){
             throw error
         }
+    },getScoreDasHBoardDataByLimit:async(limit)=>{
+        try{
+            return await ScoreHistoryDAL.getScoreDashBoardDataByLimit(limit)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default ScoreHistoryService 
