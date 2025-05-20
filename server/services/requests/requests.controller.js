@@ -5,6 +5,7 @@ import NgoStateDistrictMappingService from "../ngo_state_district_mapping/ngo.st
 import RequestNgoService from "../request_ngo/request.ngo.service.js";
 import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 import RequestMediaService from "../request_media/request.media.service.js";
+import UserActivtyService from "../user_activity/user.activity.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const RequestsController = {
@@ -19,6 +20,10 @@ const RequestsController = {
             // Create the record using ORM
             if(data.request_user_id == null  || data.request_user_id == "" || data.request_user_id == undefined || data.request_user_id == 0){
                 data.request_user_id = tokenData(req,res)
+                const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
+                const totalRequest = parseInt(getUserActivityData[0].total_requests_no) + 1
+                const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_requests_no:totalRequest})
+
             }
             data.status_id = STATUS_MASTER.REQUEST_INSIATED
             const createData = await RequestService.createService(data);
@@ -247,6 +252,9 @@ const RequestsController = {
         try {
             const id = req.query.id
             // Delete data from the database
+            const getDataById = await RequestService.getServiceById(id)
+            const getUserActivityData = await UserActivtyService.getDataByUserId(getDataById.request_user_id)
+            const updateUserActivityData = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_requests_no:parseInt(getUserActivityData[0].total_requests_no) - 1})
             const deleteData = await RequestService.deleteByid(id, req, res)
             // Also delete data from the JSON file
             // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)

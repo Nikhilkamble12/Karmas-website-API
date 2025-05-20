@@ -30,6 +30,7 @@ import PostMediaModel from "./PostMedia/postmedia.model.js";
 import LikesModel from "./Likes/likes.model.js";
 import CommentsModel from "./Comments/comments.model.js";
 import RequestMediaModel from "./request_media/request.media.model.js";
+import UserBlackListModel from "./user_blacklist/user.blacklist.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -90,6 +91,7 @@ db.PostMediaModel = PostMediaModel(sequelize,Sequelize);
 db.LikesModel = LikesModel(sequelize,Sequelize);
 db.CommentsModel = CommentsModel(sequelize,Sequelize);
 db.RequestMediaModel = RequestMediaModel(sequelize,Sequelize);
+db.UserBlackListModel = UserBlackListModel(sequelize,Sequelize);
 
 
 

@@ -46,6 +46,12 @@ const RequestMediaService = {
     }catch(error){
       throw error
     }
+  },getAnyOneRequestMediaLink:async(request_id)=>{
+    try{
+      return await RequestMediaDAL.getANyOneRequestMediaById(request_id)
+    }catch(error){
+      throw error
+    }
   }
 };
 

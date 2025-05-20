@@ -18,6 +18,8 @@ import encrypt from "./server/utils/security/encryption.js";
 import decrypt from "./server/utils/security/decryption.js";
 import startCluster from "./server/utils/helper/cluster.js";
 import https from "https"
+import fs from "fs"
+
 
 // import routeValidationMiddleware from "./server/middleware/route_validation/route.validation.js"
 
@@ -180,7 +182,47 @@ app.get("/", (req, res) => {
   const message = `Welcome to Massom from Worker ${workerId}.`;
   return res.json({ message });
 });
+// API endpoint to get image as base64
+app.get('/image/imagerurl', (req, res) => {
+  const imageName = req.query.ulr; // e.g., example.jpg
+  const imagePath = path.join(__dirname,'server', 'resources', imageName);
+  const responseType = req.query.type; // base64 or image
 
+  if (!imageName || !responseType) {
+    return res.status(400).json({ error: 'Missing required query parameters: url and type' });
+  }
+
+  if (!fs.existsSync(imagePath)) {
+    return res.status(404).json({ error: 'Image not found' });
+  }
+
+  try {
+    const ext = path.extname(imageName).substring(1).toLowerCase();
+    const mimeType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+
+    if (responseType === 'image' || responseType === 'raw') {
+      // Send raw image
+      res.setHeader('Content-Type', mimeType);
+      const stream = fs.createReadStream(imagePath);
+      return stream.pipe(res);
+    }
+
+    if (responseType === 'base64') {
+      const imageBuffer = fs.readFileSync(imagePath);
+      const base64Image = imageBuffer.toString('base64');
+      
+      // Send only the raw base64 string with proper headers
+      res.setHeader('Content-Type', 'text/plain');
+      return res.send(`data:${mimeType};base64,${base64Image}`);
+    }
+
+    // Invalid type
+    return res.status(400).json({ error: 'Invalid type. Use "base64" or "image"' });
+
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to read image' });
+  }
+});
 
 // // const PORT = process.env.PORT || 8089;
 // const PORT = 8080;
@@ -304,6 +346,7 @@ Promise.all(
         logger.error(`Error in Server File ---> ${route} does not export a function.`);
       }
     } catch (error) {
+      console.log("error",error)
       logger.error(`Error in Server File ---> ${error}`);
     }
   })

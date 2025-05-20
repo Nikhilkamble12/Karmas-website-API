@@ -1,35 +1,70 @@
-import CommentService from "./comments.service.js";
+import UserFollowingService from "./user.following.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
-import UserMasterService from "../user_master/user.master.service.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
-const CommentsController = {
-     // Create A new Record 
-     create: async (req, res) => {
+const UserFollowingController = {
+    // Create A new Record 
+    create: async (req, res) => {
         try {
             const data = req.body;
+
+            const getUserActivityByUser = await UserActivtyService.getDataByUserId(data.user_id)
+            const getUserActivityByFollowingId = await UserActivtyService.getDataByUserId(data.following_user_id)
+            let total_following_count = parseInt(getUserActivityByUser[0].following_no) ?? 0
+            let total_followed_count = parseInt(getUserActivityByFollowingId[0].follower_no) ?? 0
+            const checkWetherItIsPresent = await UserFollowingService.getDataByUserIdAndFollowId(data.user_id,data.following_user_id)
+            if(checkWetherItIsPresent && checkWetherItIsPresent.length>0){
+                if(checkWetherItIsPresent[0].is_following==false){
+                    if(data.is_following){
+                        total_following_count =  total_following_count + 1
+                        total_followed_count = total_followed_count  + 1
+                    }
+                }else if(checkWetherItIsPresent[0].is_following==true){
+                    if(data.is_following && data.is_following == false){
+                        total_following_count = total_following_count - 1
+                        total_followed_count = total_followed_count - 1
+                    }
+                }
+                await addMetaDataWhileCreateUpdate(data, req, res, true);
+                const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
+                const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
+                const updateUserFollowing = await UserFollowingService.updateService(checkWetherItIsPresent[0].follow_id,data)
+                if(updateUserFollowing>0){
+                return res
+                    .status(responseCode.CREATED)
+                    .send(
+                        commonResponse(
+                            responseCode.CREATED,
+                            responseConst.SUCCESS_ADDING_RECORD
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_ADDING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+                
+            }
             // Add metadata for creation (created by, created at)
             await addMetaDataWhileCreateUpdate(data, req, res, false);
-            if(data.user_id==null ||data.user_id==undefined || data.user_id=="null" || data.user_id=="undefined" || data.user_id==0){
-                data.user_id = tokenData(req,res)
+            if(data.is_following){
+            total_following_count =  total_following_count + 1
+            total_followed_count = total_followed_count  + 1
             }
-            if(data.parent_id!==null && data.parent_id!==undefined && data.parent_id!=="null" && data.parent_id!=="undefined" && data.parent_id!==0 && data.parent_id!=="0"){
-                if(parseInt(data.parent_id)>0){
-                    const getDataByIdByView = await CommentService.getServiceById(data.parent_id)
-                    const UpdateComment = await CommentService.updateService(getDataByIdByView.comment_id,{total_comment:parseInt(getDataByIdByView.total_comment) + 1})
-                }
-            }
-            const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id)
-            if(getUserActivityData){
-                const total_comment = parseInt(getUserActivityData[0].total_comments_no) + 1
-                const userActivityUpdate = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_comments_no:total_comment})
-            }
+            const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
+            const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
-
-            const createData = await CommentService.createService(data);
+            const createData = await UserFollowingService.createService(data);
             if (createData) {
                 return res
                     .status(responseCode.CREATED)
@@ -71,21 +106,33 @@ const CommentsController = {
         try {
             const id = req.query.id
             const data = req.body
-            const getCommentById = await CommentService.getServiceById(id)
-            if(getCommentById.parent_id==0){
-                if(data.parent_id>0){
-                    const updateComment = await CommentService.updateService(data.parent_id,{total_comment:parseInt(getCommentById.total_comment) + 1})
-                }
-            }
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, true);
+            const getOlderDatabyId = await UserFollowingService.getServiceById(id)
+            const getUserActivityByUser = await UserActivtyService.getDataByUserId(data.user_id)
+            const getUserActivityByFollowingId = await UserActivtyService.getDataByUserId(data.following_user_id)
+            let total_following_count = parseInt(getUserActivityByUser[0].following_no) ?? 0
+            let total_followed_count = parseInt(getUserActivityByFollowingId[0].follower_no) ?? 0
+            if(getOlderDatabyId.is_following==false){
+                    if(data.is_following){
+                        total_following_count =  total_following_count + 1
+                        total_followed_count = total_followed_count  + 1
+                    }
+                }else if(getOlderDatabyId.is_following==true){
+                    if(data.is_following && data.is_following==false){
+                        total_following_count = total_following_count - 1
+                        total_followed_count = total_followed_count - 1
+                    }
+                }
+            const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
+            const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
 
             // Update the record using ORM
-            const updatedRowsCount = await CommentService.updateService(id, data);
+            const updatedRowsCount = await UserFollowingService.updateService(id, data);
             // if (updatedRowsCount > 0) {
-            //     const newData = await CommentService.getServiceById(id);
+            //     const newData = await UserFollowingService.getServiceById(id);
             //     // Update the JSON data in the file
-            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
+            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "table_id", id, newData, CITY_VIEW_NAME);
             // }
             // Handle case where no records were updated
             if (updatedRowsCount === 0) {
@@ -141,12 +188,12 @@ const CommentsController = {
             //     }
             //   }
             // Fetch data from the database if JSON is empty
-            const getAll = await CommentService.getAllService()
+            const getAll = await UserFollowingService.getAllService()
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await CommentService.getAllService()
+            //   const DataToSave=await UserFollowingService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -193,7 +240,7 @@ const CommentsController = {
         try {
             const Id = req.query.id
             // Fetch data by ID from JSON
-            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
+            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"table_id",Id)
             // if(getJsonDatabyId!==null){
             //   return res
             //     .status(responseCode.OK)
@@ -207,12 +254,12 @@ const CommentsController = {
             // }
 
             // If not found in JSON, fetch data from the database
-            const getDataByid = await CommentService.getServiceById(Id)
+            const getDataByid = await UserFollowingService.getServiceById(Id)
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await CommentService.getAllService()
+            //   const DataToSave=await UserFollowingService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -259,21 +306,20 @@ const CommentsController = {
         try {
             const id = req.query.id
             // Delete data from the database
-            const getDataByCommentId = await CommentService.getServiceById(id)
-            if(getDataByCommentId){
-                if(getDataByCommentId.parent_id!=="" && getDataByCommentId.parent_id!==null && getDataByCommentId.parent_id!=="null" && getDataByCommentId.parent_id!=="undefined" && getDataByCommentId.parent_id!==0 && getDataByCommentId.parent_id>0){
-                    const getParentData = await CommentService.getServiceById(getDataByCommentId.parent_id)
-                    const updateComment = await CommentService.updateService(getParentData.comment_id,{total_comment:parseInt(getParentData.total_comment)})
-                }
+            const getOlderData = await UserFollowingService.getServiceById(id)
+            if(getOlderData.is_following){
+            const getUserActivityByUser = await UserActivtyService.getDataByUserId(data.user_id)
+            const getUserActivityByFollowingId = await UserActivtyService.getDataByUserId(data.following_user_id)
+            let total_following_count = parseInt(getUserActivityByUser[0].following_no) ?? 0
+            let total_followed_count = parseInt(getUserActivityByFollowingId[0].follower_no) ?? 0
+            total_following_count = total_following_count - 1
+            total_followed_count = total_followed_count - 1
+            const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
+            const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
             }
-             const getUserActivityData = await UserActivtyService.getDataByUserId(getDataByCommentId.user_id)
-            if(getUserActivityData){
-                const total_comment = parseInt(getUserActivityData[0].total_comments_no) - 1
-                const userActivityUpdate = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_comments_no:total_comment})
-            }
-            const deleteData = await CommentService.deleteByid(id, req, res)
+            const deleteData = await UserFollowingService.deleteByid(id, req, res)
             // Also delete data from the JSON file
-            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
+            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"table_id",id)
             if (deleteData === 0) {
                 return res
                     .status(responseCode.BAD_REQUEST)
@@ -308,19 +354,18 @@ const CommentsController = {
                     )
                 );
         }
-    },getCommentByPostIdAndParentId:async(req,res)=>{
+    },getDataByUserIdByview:async(req,res)=>{
         try{
-            const post_id = req.query.post_id
-            const parent_id = req.query.parent_id
-            const getCommentData = await CommentService.getCommentByPostOrParentId(post_id,parent_id)
-            if (getCommentData.length !== 0) {
+            const user_id = req.query.user_id
+            const getDatabyuserId = await UserFollowingService.getByUserId(user_id)
+            if (getDatabyuserId.length !== 0) {
                 return res
                     .status(responseCode.OK)
                     .send(
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            getCommentData
+                            getDatabyuserId
                         )
                     );
             } else {
@@ -348,18 +393,18 @@ const CommentsController = {
                     )
                 );
         }
-    },getCommentByUserId:async(req,res)=>{
+    },getDatabyFollowingUserId:async(req,res)=>{
         try{
-            const user_id = req.query.user_id
-            const getAllUserData = await CommentService.getCommentByUserIdByView(user_id)
-            if (getAllUserData.length !== 0) {
+            const following_user_id = req.query.following_user_id
+            const getDataByFollowingUserId = await UserFollowingService.getDataByFollowingUserId(following_user_id)
+            if (getDataByFollowingUserId.length !== 0) {
                 return res
                     .status(responseCode.OK)
                     .send(
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            getAllUserData
+                            getDataByFollowingUserId
                         )
                     );
             } else {
@@ -385,9 +430,9 @@ const CommentsController = {
                         null,
                         true
                     )
-                );  
+                );
         }
     }
 }
 
-export default CommentsController
+export default UserFollowingController

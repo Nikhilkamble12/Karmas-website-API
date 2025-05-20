@@ -76,6 +76,22 @@ const RequestMediaDAL = {
     }catch(error){
       throw error
     }
+  },getANyOneRequestMediaById:async(request_id)=>{
+    try{
+      let requestMedia = null
+      const getReqestDataDefault = await db.sequelize.query(` ${ViewFieldTableVise.REQUEST_MEDIA_FIELDS} where RequestId = ${request_id} and sequence = 1 and media_url is not null `,{type:db.Sequelize.QueryTypes.SELECT})
+      if(getReqestDataDefault && getReqestDataDefault.length==0){
+        const getRequestDataWithoutSequence = await db.sequelize.query(` ${ViewFieldTableVise.REQUEST_MEDIA_FIELDS} where RequestId = ${request_id} and media_url is not null `,{type:db.Sequelize.QueryTypes.SELECT})
+        if(getRequestDataWithoutSequence && getRequestDataWithoutSequence.length>0){
+          requestMedia = getRequestDataWithoutSequence
+        }
+      }else if(getReqestDataDefault && getReqestDataDefault.length>0){
+        requestMedia = getReqestDataDefault
+      }
+      return requestMedia
+    }catch(error){
+      throw error
+    }
   }
 };
 

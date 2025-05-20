@@ -51,6 +51,8 @@ const ViewFieldTableWise = {
     //  ------> U
     USER_MASTER_FIELDS :` SELECT  user_id, user_name, password, full_name, role_id, role, is_account_public, email_id, gender, enrolling_date, ngo_id, ngo_name, ngo_unique_id, file_name, file_path, reset_otp, reset_otp_expiry, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at, first_time_login FROM ${VIEW_NAME.GET_ALL_USER_MASTER} `,
     USER_ACTIVITY_FIELDS :` SELECT * FROM ${VIEW_NAME.GET_ALL_USER_ACTIVITY} `,
+    USER_FOLLOWING_FIELDS:` SELECT follow_id, user_id, user_name, user_file_name, user_file_path, following_user_id, following_user_name, following_user_file_name, following_user_file_path, followed_at, is_following FROM ${VIEW_NAME.GET_ALL_USER_BLACKLIST} `,
+    USER_BLACKLIST_FIELDS:` SELECT blacklist_id, user_id, user_name, blacklisted_user_id, blacklisted_user_name, reason, blacklisted_at, is_active  FROM ${VIEW_NAME.GET_ALL_USER_BLACKLIST} `,
     // -------> V
     VENDOR_COMPANY_MASTER_FIELDS :` SELECT company_id, company_name, company_photo_name, company_photo_path, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_VENDOR_COMPANY_MASTER} `,
 
