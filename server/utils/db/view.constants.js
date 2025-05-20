@@ -28,6 +28,8 @@ GET_ALL_POSTS:"v_Posts",
 GET_ALL_POST_MEDIA:"v_PostMedia",
 GET_ALL_LIKES:"v_Likes",
 GET_ALL_COMMENTS:"v_Comments",
-GET_ALL_REQUEST_MEDIA:"v_Request_media"
+GET_ALL_REQUEST_MEDIA:"v_Request_media",
+GET_ALL_USER_FOLLOWING:"v_user_following",
+GET_ALL_USER_BLACKLIST:"v_user_blacklist",
 }
 export default VIEW_NAME

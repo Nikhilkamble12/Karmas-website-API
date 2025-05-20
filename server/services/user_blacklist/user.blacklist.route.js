@@ -1,59 +1,50 @@
-import ScoreHistoryController from "./score.history.controller.js";
+import UserBlackListController from "./user.blacklist.controller.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 const {express,verifyToken,basePathRoute} = commonPath
 
 // Define the base path for routes
-const basePath=`${basePathRoute}/score_history`
+const basePath=`${basePathRoute}/user_blacklist`
 const router = express.Router()
 // Route to create a new record
 
+
 router.post(
     `${basePath}/create`,
-    verifyToken,
-    ScoreHistoryController.create
+    // verifyToken,
+    UserBlackListController.create
 )
 // Route to update an existing record by ID
 router.put(
     `${basePath}/update`,
     verifyToken,
-    ScoreHistoryController.update
+    UserBlackListController.update
 )
 // Route to retrieve all records
 router.get(
     `${basePath}`,
     verifyToken,
-    ScoreHistoryController.getAllByView
+    UserBlackListController.getAllByView
 )
 // Route to retrieve a record by ID
 router.get(
     `${basePath}/getById`,
     verifyToken,
-    ScoreHistoryController.getByIdByView
+    UserBlackListController.getByIdByView
 )
 // Route to delete a record by ID
 router.delete(
     `${basePath}/delete`,
     verifyToken,
-    ScoreHistoryController.deleteData
+    UserBlackListController.deleteData
 )
-// get Data To Get Latest Score Dashboard
+// get Data By User Id 
 router.get(
-    `${basePath}/get/dashBoard`,
+    `${basePath}/getBy/UserId`,
     verifyToken,
-    ScoreHistoryController.getScoreDashBordData
+    UserBlackListController.getDataByUseridByView
 )
-// get Data by currnet User 
-router.get(
-    `${basePath}/getData/currentUser`,
-    verifyToken,
-    ScoreHistoryController.getDataByUserIdScoreHistory
-)
-// get Data By User Id
-router.get(
-    `${basePath}/getData/byUserId`,
-    verifyToken,
-    ScoreHistoryController.SearchUserScoreByUserName
-)
+
 
 // Export the router for use in other parts of the application
 export default router
+

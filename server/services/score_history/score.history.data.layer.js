@@ -85,6 +85,60 @@ const ScoreHistoryDAL = {
         }catch(error){
             throw error
         }
+    },getUserRankByUseriD:async(user_id)=>{
+        try{
+
+     const getUserScore = await db.sequelize.query(`
+        WITH ranked_users AS (
+        SELECT *,
+                ROW_NUMBER() OVER (ORDER BY total_score DESC) AS row_num
+        FROM massom.v_weekly_user_scores
+        ),
+        target_rank AS (
+        SELECT row_num
+        FROM ranked_users
+        WHERE user_id = 1
+        ),
+        bounds AS (
+        SELECT 
+            GREATEST(CAST(row_num AS SIGNED) - 2, 1) AS lower_bound,
+            CAST(row_num AS SIGNED) + 2 AS upper_bound
+        FROM target_rank
+        )
+        SELECT *
+        FROM ranked_users, bounds
+        WHERE ranked_users.row_num BETWEEN bounds.lower_bound AND bounds.upper_bound
+        ORDER BY ranked_users.row_num;
+
+        `, {
+        replacements: { userId: user_id },
+        type: db.Sequelize.QueryTypes.SELECT
+        });
+        const updatedUsers = getUserScore.map(user => {
+        return {
+            ...user,
+            current_user: user.user_id === user_id
+        };
+        });
+        return updatedUsers
+        }catch(error){
+            throw error
+        }
+    },getAllScoreHistoryByUserIdByLimit:async(user_id,limit,offset)=>{
+        try{
+            const getUserData = await db.sequelize.query(`
+      ${ViewFieldTableVise.SIMPLE_SCORE_HISTORY_FIELDS}
+      WHERE user_id = :user_id
+      ORDER BY date DESC
+      LIMIT :limit OFFSET :offset
+    `, {
+      replacements: { user_id,limit: Number(limit),offset: Number(offset) },
+      type: db.Sequelize.QueryTypes.SELECT
+    });            
+    return getUserData
+        }catch(error){
+            throw error
+        }
     }
 }
 

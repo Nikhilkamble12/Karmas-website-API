@@ -1,6 +1,7 @@
 import ScoreHistoryService from "./score.history.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import LocalJsonHelper from "../../utils/helper/local.json.helper.js";
+import RequestMediaService from "../request_media/request.media.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const ScoreHistoryController = {
@@ -315,14 +316,17 @@ const ScoreHistoryController = {
         }
     },getScoreDashBordData:async(req,res)=>{
         try{
+            const user_id = tokenData(req, res)
             const limit = req.query.limit
             const fileName = `score/score_${limit}.json`;
             // const fileName = `score/score_${limit}.json`;
-            const ttlMs = 60 * 60 * 1000; // 1 hour in milliseconds
-    
+            const ttlMs = 60 * 60 * 1000; 
+            // 1 hour in milliseconds
             // Step 1: Try to get from local file cache
             const cachedData = await LocalJsonHelper.getAll(fileName, 'get');
-            console.log("cachedData",cachedData)
+            const getUserrank = await ScoreHistoryService.getUserRankByUserId(user_id)
+            cachedData.user_rank = getUserrank
+
             if (cachedData && cachedData.length!==0) {
                 return res
                     .status(responseCode.OK)
@@ -335,6 +339,7 @@ const ScoreHistoryController = {
                     );
             }
             const getData = await ScoreHistoryService.getScoreDasHBoardDataByLimit(limit)
+            getData.user_rank = getUserrank
             if (getData.length !== 0) {
                  // Step 3: Save the data to local file cache
             await LocalJsonHelper.set(fileName, null, getData, ttlMs);
@@ -361,6 +366,115 @@ const ScoreHistoryController = {
             }
         }catch(error){
         console.log("error",error)
+        logger.error(`Error ---> ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
+        }
+    },getDataByUserIdScoreHistory:async(req,res)=>{
+        try{
+            const user_id = tokenData(req, res)
+            const limit = req.query.limit
+            const offset = req.query.offset
+            const getScoreHistory = await ScoreHistoryService.getScoreHistoryByUserIdByView(user_id,limit,offset)
+            for(let i = 0;i<getScoreHistory.length;i++){
+                let currentData = getScoreHistory[i]
+                if(currentData.request_id!==null && currentData.request_id!=="" && currentData.request_id!=="null" && currentData.request_id!==undefined && currentData.request_id!==0){
+                    const getAnyOneRequestImage = await RequestMediaService.getAnyOneRequestMediaLink(currentData.request_id)
+                    if(getAnyOneRequestImage && getAnyOneRequestImage!==null && getAnyOneRequestImage.length>0){
+                        currentData.receipt_url = getAnyOneRequestImage[0].media_url
+                    }else{
+                        currentData.receipt_url = null
+                    }
+                }else{
+                    currentData.receipt_url = null
+                }
+            }
+            if (getScoreHistory.length !== 0) {
+                const getUserrank = await ScoreHistoryService.getUserRankByUserId(user_id)
+                 // Step 3: Save the data to local file cache
+                 const mergedData = {
+                    user_score_history : getScoreHistory,
+                    user_rank :getUserrank
+                 }
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            mergedData
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        }catch(error){
+        console.log("error",error)
+        logger.error(`Error ---> ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
+        }
+    },SearchUserScoreByUserName:async(req,res)=>{
+        try{
+            const user_id = req.query.user_id
+            const limit = req.query.limit
+            const offset = req.query.offset
+            const getScoreHistory = await ScoreHistoryService.getScoreHistoryByUserIdByView(user_id,limit,offset)
+            if (getScoreHistory.length !== 0) {
+                const getUserrank = await ScoreHistoryService.getUserRankByUserId(user_id)
+                const mergedList = {
+                    userScoredData : getScoreHistory,
+                    user_rank :getUserrank
+                }
+                 // Step 3: Save the data to local file cache
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            mergedList
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        }catch(error){
+            console.log("error",error)
         logger.error(`Error ---> ${error}`);
         return res
             .status(responseCode.INTERNAL_SERVER_ERROR)

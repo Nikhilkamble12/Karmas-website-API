@@ -46,6 +46,12 @@ const CommentService = {
         }catch(error){
             throw error
         }
+    },getCommentByUserId:async(user_id,limit,offset)=>{
+        try{
+            return await CommentsDAL
+        }catch(error){
+            throw error
+        }
     }
 }
 export default CommentService

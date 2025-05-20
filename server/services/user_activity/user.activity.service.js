@@ -47,6 +47,12 @@ const UserActivtyService = {
         }catch(error){
             throw error
         }
+    },updateByuserId:async(user_id,data)=>{
+        try{
+            return await UserActivityDAL.updateByUserId(user_id,data)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default UserActivtyService

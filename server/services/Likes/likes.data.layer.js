@@ -63,13 +63,31 @@ const LikesDAL = {
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
-  },getLikesByPostId:async(post_id)=>{
+  },getLikesByPostId:async(post_id,limit,offset)=>{
     try{
+       let query = `${ViewFieldTableVise.LIKES_FIELDS} WHERE post_id = ${post_id}`;
+        if (limit && offset && typeof limit === 'number' && typeof offset === 'number' && limit!=="null" && offset!=="null"){
+          query += ` LIMIT ${limit} OFFSET ${offset}`;
+        }
       const getDataById = await db.sequelize.query(
-        ` ${ViewFieldTableVise.LIKES_FIELDS} where post_id  = ${post_id} `,
+        ` ${query}`,
         { type: db.Sequelize.QueryTypes.SELECT } // Return the retrieved data
       );
-      return getDataById[0] ?? [];
+      return getDataById ?? [];
+    }catch(error){
+      throw error
+    }
+  },getAllLikeByUserId:async(user_id,limit,offset)=>{
+    try{
+      let query = `${ViewFieldTableVise.LIKES_FIELDS} WHERE user_id = ${user_id}`;
+        if (limit && offset && typeof limit === 'number' && typeof offset === 'number' && limit!=="null" && offset!=="null"){
+          query += ` LIMIT ${limit} OFFSET ${offset}`;
+        }
+      const getDataById = await db.sequelize.query(
+        ` ${query}`,
+        { type: db.Sequelize.QueryTypes.SELECT } // Return the retrieved data
+      );
+      return getDataById ?? [];
     }catch(error){
       throw error
     }

@@ -52,6 +52,18 @@ const ScoreHistoryService = {
         }catch(error){
             throw error
         }
+    },getUserRankByUserId:async(user_id)=>{
+        try{
+            return await ScoreHistoryDAL.getUserRankByUseriD(user_id)
+        }catch(error){
+            throw error
+        }
+    },getScoreHistoryByUserIdByView:async(user_id,limit,offset)=>{
+        try{
+            return await ScoreHistoryDAL.getAllScoreHistoryByUserIdByLimit(user_id,limit,offset)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default ScoreHistoryService 

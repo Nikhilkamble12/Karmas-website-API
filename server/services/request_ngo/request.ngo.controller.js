@@ -357,6 +357,7 @@ const RequestNgoController = {
                 const getTotalBonsRate = await BonusMasterService.getBonusMasterDataByCategoryStatus(BONUS_MASTER.REQUEST_ACCEPTED_ID,STATUS_MASTER.ACTIVE)
                 if(getTotalBonsRate.length!==0){
                     total_bonus = parseFloat(getTotalBonsRate[0].create_score)
+                    userActivityData.total_rewards_no = parseInt(getUserDataByUserId[0].total_rewards_no) + 1
                     userActivityData.total_scores_no = parseFloat(getUserDataByUserId[0].total_scores_no) + parseFloat(total_bonus)
                 }else{
                     userActivityData.total_scores_no = parseFloat(getUserDataByUserId[0].total_scores_no)

@@ -1,35 +1,28 @@
-import CommentService from "./comments.service.js";
+import UserBlackListService from "./user.blacklist.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
-import UserMasterService from "../user_master/user.master.service.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
-const CommentsController = {
-     // Create A new Record 
-     create: async (req, res) => {
+const UserBlackListController = {
+    // Create A new Record 
+    create: async (req, res) => {
         try {
             const data = req.body;
             // Add metadata for creation (created by, created at)
+            const getserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
+            const total_blocked_user = parseInt(getserActivityData[0].total_blacklist_user) ?? 0
+            const getDataByUserId = await UserBlackListService.getDataByUserIdAndBackListUser(tokenData(req,res),data.blacklisted_user_id)
+            
+
             await addMetaDataWhileCreateUpdate(data, req, res, false);
-            if(data.user_id==null ||data.user_id==undefined || data.user_id=="null" || data.user_id=="undefined" || data.user_id==0){
-                data.user_id = tokenData(req,res)
-            }
-            if(data.parent_id!==null && data.parent_id!==undefined && data.parent_id!=="null" && data.parent_id!=="undefined" && data.parent_id!==0 && data.parent_id!=="0"){
-                if(parseInt(data.parent_id)>0){
-                    const getDataByIdByView = await CommentService.getServiceById(data.parent_id)
-                    const UpdateComment = await CommentService.updateService(getDataByIdByView.comment_id,{total_comment:parseInt(getDataByIdByView.total_comment) + 1})
-                }
-            }
-            const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id)
-            if(getUserActivityData){
-                const total_comment = parseInt(getUserActivityData[0].total_comments_no) + 1
-                const userActivityUpdate = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_comments_no:total_comment})
-            }
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
-
-            const createData = await CommentService.createService(data);
+            const createData = await UserBlackListService.createService(data);
+            if(getDataByUserId && getDataByUserId.length==0){
+                total_blocked_user = total_blocked_user + 1
+                const updateUserActivity = await UserActivtyService.updateService(getserActivityData[0].user_activity_id,{total_blacklist_user:total_blocked_user})
+            }
             if (createData) {
                 return res
                     .status(responseCode.CREATED)
@@ -71,21 +64,15 @@ const CommentsController = {
         try {
             const id = req.query.id
             const data = req.body
-            const getCommentById = await CommentService.getServiceById(id)
-            if(getCommentById.parent_id==0){
-                if(data.parent_id>0){
-                    const updateComment = await CommentService.updateService(data.parent_id,{total_comment:parseInt(getCommentById.total_comment) + 1})
-                }
-            }
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, true);
 
             // Update the record using ORM
-            const updatedRowsCount = await CommentService.updateService(id, data);
+            const updatedRowsCount = await UserBlackListService.updateService(id, data);
             // if (updatedRowsCount > 0) {
-            //     const newData = await CommentService.getServiceById(id);
+            //     const newData = await UserBlackListService.getServiceById(id);
             //     // Update the JSON data in the file
-            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
+            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "table_id", id, newData, CITY_VIEW_NAME);
             // }
             // Handle case where no records were updated
             if (updatedRowsCount === 0) {
@@ -141,12 +128,12 @@ const CommentsController = {
             //     }
             //   }
             // Fetch data from the database if JSON is empty
-            const getAll = await CommentService.getAllService()
+            const getAll = await UserBlackListService.getAllService()
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await CommentService.getAllService()
+            //   const DataToSave=await UserBlackListService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -193,7 +180,7 @@ const CommentsController = {
         try {
             const Id = req.query.id
             // Fetch data by ID from JSON
-            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
+            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"table_id",Id)
             // if(getJsonDatabyId!==null){
             //   return res
             //     .status(responseCode.OK)
@@ -207,12 +194,12 @@ const CommentsController = {
             // }
 
             // If not found in JSON, fetch data from the database
-            const getDataByid = await CommentService.getServiceById(Id)
+            const getDataByid = await UserBlackListService.getServiceById(Id)
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await CommentService.getAllService()
+            //   const DataToSave=await UserBlackListService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -258,22 +245,14 @@ const CommentsController = {
     deleteData: async (req, res) => {
         try {
             const id = req.query.id
+            const getDataById = await UserBlackListService.getServiceById(id)
+            const getserActivityData = await UserActivtyService.getDataByUserId(getDataById.user_id)
+            const total_blocked_user = parseInt(getserActivityData[0].total_blacklist_user) ?? 0
+
             // Delete data from the database
-            const getDataByCommentId = await CommentService.getServiceById(id)
-            if(getDataByCommentId){
-                if(getDataByCommentId.parent_id!=="" && getDataByCommentId.parent_id!==null && getDataByCommentId.parent_id!=="null" && getDataByCommentId.parent_id!=="undefined" && getDataByCommentId.parent_id!==0 && getDataByCommentId.parent_id>0){
-                    const getParentData = await CommentService.getServiceById(getDataByCommentId.parent_id)
-                    const updateComment = await CommentService.updateService(getParentData.comment_id,{total_comment:parseInt(getParentData.total_comment)})
-                }
-            }
-             const getUserActivityData = await UserActivtyService.getDataByUserId(getDataByCommentId.user_id)
-            if(getUserActivityData){
-                const total_comment = parseInt(getUserActivityData[0].total_comments_no) - 1
-                const userActivityUpdate = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_comments_no:total_comment})
-            }
-            const deleteData = await CommentService.deleteByid(id, req, res)
+            const deleteData = await UserBlackListService.deleteByid(id, req, res)
             // Also delete data from the JSON file
-            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
+            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"table_id",id)
             if (deleteData === 0) {
                 return res
                     .status(responseCode.BAD_REQUEST)
@@ -286,7 +265,10 @@ const CommentsController = {
                         )
                     );
             }
-
+            if(getserActivityData && getserActivityData.length==0){
+                total_blocked_user = total_blocked_user - 1
+                const updateUserActivity = await UserActivtyService.updateService(getserActivityData[0].user_activity_id,{total_blacklist_user:total_blocked_user})
+            }
             return res
                 .status(responseCode.CREATED)
                 .send(
@@ -308,19 +290,18 @@ const CommentsController = {
                     )
                 );
         }
-    },getCommentByPostIdAndParentId:async(req,res)=>{
+    },getDataByUseridByView:async(req,res)=>{
         try{
-            const post_id = req.query.post_id
-            const parent_id = req.query.parent_id
-            const getCommentData = await CommentService.getCommentByPostOrParentId(post_id,parent_id)
-            if (getCommentData.length !== 0) {
+            const user_id = req.query.user_id
+            const getDataByView = await UserBlackListService.getByUserId(user_id)
+            if (getDataByView.length !== 0) {
                 return res
                     .status(responseCode.OK)
                     .send(
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            getCommentData
+                            getDataByView
                         )
                     );
             } else {
@@ -348,46 +329,7 @@ const CommentsController = {
                     )
                 );
         }
-    },getCommentByUserId:async(req,res)=>{
-        try{
-            const user_id = req.query.user_id
-            const getAllUserData = await CommentService.getCommentByUserIdByView(user_id)
-            if (getAllUserData.length !== 0) {
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            getAllUserData
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
-            }
-        }catch(error){
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );  
-        }
     }
 }
 
-export default CommentsController
+export default UserBlackListController

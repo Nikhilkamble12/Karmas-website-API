@@ -21,6 +21,11 @@ const CommentsModel = (sequelize)=>{
         type: DataTypes.TEXT,
         allowNull: false,
       },
+      total_comment:{
+        type:DataTypes.INTEGER,
+        allowNull:true,
+        defaultValue:false
+      },
       parent_id: {
         type: DataTypes.INTEGER,
         allowNull: true,

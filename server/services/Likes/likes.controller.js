@@ -1,5 +1,6 @@
 import LikesService from "./likes.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
+import UserActivtyService from "../user_activity/user.activity.service.js";
 
 const {
   commonResponse,
@@ -21,6 +22,11 @@ const LikesController = {
       // data.created_by=1,
       // data.created_at = new Date()
       // Create the record using ORM
+      if(data.is_liked){
+      const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
+      const total_likes = parseInt(getUserActivityData[0].total_likes_no) + 1
+      const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes:total_likes})
+      }
       const createdData = await LikesService.createSerive(data);
       if (createdData) {
         return res
@@ -66,6 +72,17 @@ const LikesController = {
       const id = req.query.id;
       // Add metadata to update (updated_by, updated_at,)
       await addMetaDataWhileCreateUpdate(data, req, res, true);
+      const getOlderData = await LikesService.getServiceById(id)
+      if(data.is_liked !== getOlderData.is_liked){
+        const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
+        if(data.is_liked){
+          const total_likes = parseInt(getUserActivityData[0].total_likes_no) + 1
+          const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes:total_likes})
+        }else{
+          const total_likes = parseInt(getUserActivityData[0].total_likes_no) - 1
+          const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes:total_likes})
+        }
+      }
       // data.updated_by=1,
       // data.updated_at = new Date()
       // Update the record using ORM
@@ -284,7 +301,9 @@ const LikesController = {
   },getLikesbyPostId:async(req,res)=>{
     try{
       const post_id = req.query.post_id
-      const getAllLikesByPostId = await LikesService.getLikesByPostId(post_id)
+      const limit = req.query.limit
+      const offset = req.query.offset
+      const getAllLikesByPostId = await LikesService.getLikesByPostId(post_id,limit,offset)
       if (getAllLikesByPostId.length !== 0) {
         return res
           .status(responseCode.OK)
@@ -293,6 +312,47 @@ const LikesController = {
               responseCode.OK,
               responseConst.DATA_RETRIEVE_SUCCESS,
               getAllLikesByPostId
+            )
+          );
+      } else {
+        return res
+          .status(responseCode.BAD_REQUEST)
+          .send(
+            commonResponse(
+              responseCode.BAD_REQUEST,
+              responseConst.DATA_NOT_FOUND,
+              null,
+              true
+            )
+          );
+      }
+    }catch(error){
+      logger.error(`Error ---> ${error}`);
+      return res
+        .status(responseCode.INTERNAL_SERVER_ERROR)
+        .send(
+          commonResponse(
+            responseCode.INTERNAL_SERVER_ERROR,
+            responseConst.INTERNAL_SERVER_ERROR,
+            null,
+            true
+          )
+        );
+    }
+  },getAllLikesByUserId:async(req,res)=>{
+    try{
+      const user_id = req.query.user_id
+      const limit = req.query.limit
+      const offset = req.query.offset
+      const getLikesByUserId = await LikesService.getLikesByUserId(user_id,limit,offset)
+      if (getLikesByUserId.length !== 0) {
+        return res
+          .status(responseCode.OK)
+          .send(
+            commonResponse(
+              responseCode.OK,
+              responseConst.DATA_RETRIEVE_SUCCESS,
+              getLikesByUserId
             )
           );
       } else {

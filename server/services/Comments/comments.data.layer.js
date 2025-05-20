@@ -51,7 +51,7 @@ const CommentsDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    },getCommentByPostAndParentId: async (post_id, parent_id) => {
+    },getCommentByPostAndParentId: async (post_id, parent_id,limit,offset) => {
         try {
           let whereClause = "";
           const replacements = {};
@@ -67,6 +67,11 @@ const CommentsDAL = {
             whereClause += whereClause ? " AND parent_id = :parent_id" : " WHERE parent_id = :parent_id";
             replacements.parent_id = parent_id;
           }
+          if (limit && offset && typeof limit === 'number' && typeof offset === 'number' && limit!=="null" && offset!=="null"){
+          whereClause += whereClause ?  ` LIMIT ${limit} OFFSET ${offset}` : `LIMIT ${limit} OFFSET ${offset}`;
+          replacements.limit = limit;
+          replacements.offset = offset;
+        }
       
           const query = `${ViewFieldTableVise.COMMENTS_FIELDS} ${whereClause}`;
           const getCommentData = await db.sequelize.query(query, {
@@ -77,6 +82,27 @@ const CommentsDAL = {
           return getCommentData ?? [];
         } catch (error) {
           throw error;
+        }
+      },getCommentByUserIdByView:async(user_id,limit,offset)=>{
+        try{
+            let whereClause = "";
+          const replacements = {};
+      
+          // Check if post_id is valid
+          if (user_id && user_id !== "null" && user_id !== "undefined") {
+            whereClause += " WHERE user_id = :user_id";
+            replacements.user_id = user_id;
+          }
+      
+          if (limit && offset && typeof limit === 'number' && typeof offset === 'number' && limit!=="null" && offset!=="null"){
+          whereClause += whereClause ?  ` LIMIT ${limit} OFFSET ${offset}` : `LIMIT ${limit} OFFSET ${offset}`;
+          replacements.limit = limit;
+          replacements.offset = offset;
+        }
+            const getDatabyView = await db.sequelize.query(` ${ViewFieldTableVise.COMMENTS_FIELDS} ${whereClause} `,{replacements,type:db.Sequelize.QueryTypes.SELECT})
+            return getDatabyView
+        }catch(error){
+            throw error
         }
       }
       
