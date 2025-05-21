@@ -389,7 +389,7 @@ const ScoreHistoryController = {
                 if(currentData.request_id!==null && currentData.request_id!=="" && currentData.request_id!=="null" && currentData.request_id!==undefined && currentData.request_id!==0){
                     const getAnyOneRequestImage = await RequestMediaService.getAnyOneRequestMediaLink(currentData.request_id)
                     if(getAnyOneRequestImage && getAnyOneRequestImage!==null && getAnyOneRequestImage.length>0){
-                        currentData.receipt_url = `${GET_LIVE_CURRENT_URL}/resources/${getAnyOneRequestImage[0].media_url}`
+                        currentData.receipt_url = `${process.env.GET_LIVE_CURRENT_URL}/resources/${getAnyOneRequestImage[0].media_url}`
                     }else{
                         currentData.receipt_url = null
                     }
