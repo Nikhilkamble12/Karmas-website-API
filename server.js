@@ -183,46 +183,7 @@ app.get("/", (req, res) => {
   return res.json({ message });
 });
 // API endpoint to get image as base64
-app.get('/image/imagerurl', (req, res) => {
-  const imageName = req.query.ulr; // e.g., example.jpg
-  const imagePath = path.join(__dirname,'server', 'resources', imageName);
-  const responseType = req.query.type; // base64 or image
-
-  if (!imageName || !responseType) {
-    return res.status(400).json({ error: 'Missing required query parameters: url and type' });
-  }
-
-  if (!fs.existsSync(imagePath)) {
-    return res.status(404).json({ error: 'Image not found' });
-  }
-
-  try {
-    const ext = path.extname(imageName).substring(1).toLowerCase();
-    const mimeType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
-
-    if (responseType === 'image' || responseType === 'raw') {
-      // Send raw image
-      res.setHeader('Content-Type', mimeType);
-      const stream = fs.createReadStream(imagePath);
-      return stream.pipe(res);
-    }
-
-    if (responseType === 'base64') {
-      const imageBuffer = fs.readFileSync(imagePath);
-      const base64Image = imageBuffer.toString('base64');
-      
-      // Send only the raw base64 string with proper headers
-      res.setHeader('Content-Type', 'text/plain');
-      return res.send(`data:${mimeType};base64,${base64Image}`);
-    }
-
-    // Invalid type
-    return res.status(400).json({ error: 'Invalid type. Use "base64" or "image"' });
-
-  } catch (err) {
-    res.status(500).json({ error: 'Failed to read image' });
-  }
-});
+app.use('/resources', express.static(path.resolve(__dirname, 'server','resources')));
 
 // // const PORT = process.env.PORT || 8089;
 // const PORT = 8080;
