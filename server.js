@@ -152,7 +152,7 @@ const baseDirs = [
   join(__dirname, "server", "services"),
   // join(__dirname, "server", "third-party-services"), // Add your additional folders here
 ];
-
+app.use('/resources', express.static(path.resolve(__dirname, 'server','resources')));
 // const routes = walkSync(baseDir);
 const routes = walkSync(baseDirs);
 
@@ -183,7 +183,6 @@ app.get("/", (req, res) => {
   return res.json({ message });
 });
 // API endpoint to get image as base64
-app.use('/resources', express.static(path.resolve(__dirname, 'server','resources')));
 
 // // const PORT = process.env.PORT || 8089;
 // const PORT = 8080;
