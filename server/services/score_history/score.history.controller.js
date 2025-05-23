@@ -401,7 +401,11 @@ const ScoreHistoryController = {
                 const getUserrank = await ScoreHistoryService.getUserRankByUserId(user_id)
                 for(let i = 0;i<getUserrank.length;i++){
                     const currentData = getUserrank[i]
+                    if(currentData.file_path!==null && currentData.file_path!=="" && currentData.file_path!==undefined && currentData.file_path!=="null"){
                     currentData.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.file_path}`
+                    }else{
+                        currentData.file_path= null
+                    }
                 }
                  // Step 3: Save the data to local file cache
                  const mergedData = {
