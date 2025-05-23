@@ -42,6 +42,11 @@ router.get(
     verifyToken,
     UserMasterController.getuserDataAndActivity
 )
+router.get(
+    `${basePath}/search/user`,
+    verifyToken,
+    UserMasterController.getUserDataByUserName
+)
 
 // Export the router for use in other parts of the application
 export default router

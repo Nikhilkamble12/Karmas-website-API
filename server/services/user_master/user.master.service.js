@@ -40,6 +40,18 @@ const UserMasterService = {
         } catch (error) {
             throw error
         }
+    },getUserDataByUserName:async(user_name)=>{
+        try{
+            return await UserMasterDAL.checkIfUserNameIsPresent(user_name)
+        }catch(error){
+            throw error
+        }
+    },findUserByFulNameAndUseName:async(user_name,limit,offset)=>{
+        try{
+            return await UserMasterDAL.checkWetherUserIsPresent(user_name,limit,offset)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default UserMasterService
