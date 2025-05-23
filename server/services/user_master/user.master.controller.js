@@ -369,6 +369,56 @@ const UserMasterController = {
                     )
                 );
         }
+    },getUserDataByUserName:async(req,res)=>{
+        try{
+            const user_name = req.query.user_name
+            const limit = req.query.limit
+            const offset = req.query.offset
+            const FindUserBySearchQuery = await UserMasterService.findUserByFulNameAndUseName(user_name,limit,offset)
+            if (FindUserBySearchQuery.length !== 0) {
+                for(let i = 0;i<FindUserBySearchQuery.length;i++){
+                    const currentuserData = FindUserBySearchQuery[i]
+                if(currentuserData.file_path && currentuserData.file_path!=="" && currentuserData.file_path!==0){
+                currentuserData.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentuserData.file_path}`
+                }else{
+                    currentuserData.file_path = null 
+                }
+                }
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            FindUserBySearchQuery
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        }catch(error){
+            console.log("error",error)
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
     }
 }
 export default UserMasterController

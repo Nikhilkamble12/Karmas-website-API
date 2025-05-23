@@ -26,7 +26,6 @@ import fs from "fs"
 dotenv.config();
 import db from "./server/services/index.js";
 const app = express();
-app.use(express.json()); // This is necessary for parsing JSON request bodies
 app.use(helmet());
 app.use(cors());
 app.use(morgan("dev"));
@@ -158,8 +157,8 @@ const routes = walkSync(baseDirs);
 
 app.use((err, req, res, next) => {
   logger.error(req.path + " Error in Server File ---> " + err);
+  console.log("err",err)
   res.status(responseCode.METHOD_NOT_ALLOWED);
-  res.json(
     commonResponse(
       req,
       responseCode.METHOD_NOT_ALLOWED,
@@ -167,7 +166,6 @@ app.use((err, req, res, next) => {
       null,
       err.message
     )
-  );
 });
 
 app.use((req, res, next) => {

@@ -73,6 +73,32 @@ const UserMasterDAL = {
         }catch(error){
             throw error
         }
+    },checkWetherUserIsPresent:async(user_name,limit,offset)=>{
+        try{
+            const query = `
+            ${ViewFieldTableVise.USER_MASTER_FIELDS}
+            WHERE user_name LIKE :search
+                OR full_name LIKE :search
+            `;
+            // Add LIMIT and OFFSET only if both are present and valid numbers
+            if (limit && offset && limit!=="null" && offset!=="null"  && typeof limit === 'number' && typeof offset === 'number') {
+                query += ` LIMIT :limit OFFSET :offset`;
+            }
+             const replacements = { search: `%${user_name}%` };
+
+            // Include limit and offset in replacements only if added in query
+            if (query.includes('LIMIT')) {
+                replacements.limit = limit;
+                replacements.offset = offset;
+            }
+            const getData = await db.sequelize.query(query, {
+            replacements,
+            type: db.Sequelize.QueryTypes.SELECT,
+            });
+            return getData
+        }catch(error){
+            throw error
+        }
     }
 }
 
