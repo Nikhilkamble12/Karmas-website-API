@@ -36,6 +36,8 @@ const sts = new AWS.STS({ credentials });
       }
       const key = `${s3FolderPath}`;
       const fileStream = fs.createReadStream(localFilePath);
+      console.log("process.env.AMAZON_ACCESS_KEY_ID_S3",process.env.AMAZON_ACCESS_KEY_ID_S3)
+      console.log("process.env.AMAZON_SECRET_KEY_ID_S3",process.env.AMAZON_SECRET_KEY_ID_S3)
       sts.getCallerIdentity({}, (err, data) => {
         if (err) {
           console.error('Invalid credentials:', err);
