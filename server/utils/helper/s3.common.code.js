@@ -20,6 +20,10 @@ const s3 = new S3Client({
   const uploadFileToS3 = async (s3FolderPath, localFilePath, fileType) => {
     try {
       // Construct the key for the file in the S3 bucket (using custom folder and file name)
+       // Validate local file
+      if (!fs.existsSync(localFilePath)) {
+        throw new Error(`Local file not found: ${localFilePath}`);
+      }
       const key = `${s3FolderPath}`;
   
       // Set up the S3 upload parameters
