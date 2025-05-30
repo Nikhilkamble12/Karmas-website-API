@@ -3,6 +3,7 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import fs from 'fs';
 import dotenv from 'dotenv';
+import AWS from 'aws-sdk';
 dotenv.config();
 
 
@@ -15,7 +16,16 @@ const s3 = new S3Client({
       accessKeyId: process.env.AMAZON_ACCESS_KEY_ID_S3,
       secretAccessKey: process.env.AMAZON_SECRET_KEY_ID_S3,
     },
+    logger: console
   });
+// Test credentials setup
+const credentials = new AWS.Credentials({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+});
+
+// Validate by calling STS
+const sts = new AWS.STS({ credentials });
   
   const uploadFileToS3 = async (s3FolderPath, localFilePath, fileType) => {
     try {
@@ -25,12 +35,19 @@ const s3 = new S3Client({
         throw new Error(`Local file not found: ${localFilePath}`);
       }
       const key = `${s3FolderPath}`;
-  
+      const fileStream = fs.createReadStream(localFilePath);
+      sts.getCallerIdentity({}, (err, data) => {
+        if (err) {
+          console.error('Invalid credentials:', err);
+        } else {
+          console.log('Valid credentials:', data);
+        }
+      });
       // Set up the S3 upload parameters
       const params = {
         Bucket: 'karmasmedia',  // Your S3 Bucket name
         Key: key,               // S3 object key (file path)
-        Body: fs.createReadStream(localFilePath),  // File body (streamed from local path)
+        Body: fileStream,  // File body (streamed from local path)
         ContentType: fileType,  // MIME type
         ACL: 'public-read',     // Optional: Public read access
       };
