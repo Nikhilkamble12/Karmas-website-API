@@ -51,9 +51,19 @@ const RequestDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    },getUserByUserId:async(user_id)=>{
+    },getUserByUserId:async(user_id,limit,offset)=>{
         try{
-            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.REQUEST_FIELDS} where created_by = ${user_id} `,{type:db.Sequelize.QueryTypes.SELECT})
+             // Start with the base query
+            let query = `${ViewFieldTableVise.REQUEST_FIELDS} WHERE created_by = ${user_id} order by RequestId desc`;
+
+            // Add LIMIT and OFFSET if they’re provided
+            if (limit && offset >= 0) {
+            query += ` LIMIT ${offset}, ${limit}`;
+            }
+
+            const getAllData = await db.sequelize.query(query, {
+            type: db.Sequelize.QueryTypes.SELECT
+            });
             return getAllData
         }catch(error){
             throw error
