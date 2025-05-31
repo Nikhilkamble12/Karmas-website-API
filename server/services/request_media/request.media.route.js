@@ -75,6 +75,11 @@ router.post(
     upload.single('mediaFile'), 
     RequestMediaController.createOrUpdateMulitileRequestMedia
 )
+// Router to get Request media By User id
+// router.get(
+//     `${basePath}/getBy/UserId`,
+//     verifyToken,
+// )
 
 // Export the router for use in other parts of the application
 export default router
