@@ -297,6 +297,11 @@ const RequestsController = {
             const user_id = req.query.id
             const getAllRequestByUserId = await RequestService.getAllRequestByUserId(user_id)
             if (getAllRequestByUserId.length !== 0) {
+                for(let i = 0;i<getAllRequestByUserId.length;i++){
+                    let currentData = getAllRequestByUserId[i]
+                    const getRequestMedia = await RequestMediaService.getDataByRequestIdByView(currentData.RequestId)
+                    currentData.request_media = getRequestMedia
+                }
                 return res
                     .status(responseCode.OK)
                     .send(
