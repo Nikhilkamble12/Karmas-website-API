@@ -295,7 +295,9 @@ const RequestsController = {
     },getRequestByUserId:async(req,res)=>{
         try{
             const user_id = req.query.id
-            const getAllRequestByUserId = await RequestService.getAllRequestByUserId(user_id)
+            const limit = req.query.limit
+            const offset = req.query.offset
+            const getAllRequestByUserId = await RequestService.getAllRequestByUserId(user_id,limit,offset)
             if (getAllRequestByUserId.length !== 0) {
                 for(let i = 0;i<getAllRequestByUserId.length;i++){
                     let currentData = getAllRequestByUserId[i]
