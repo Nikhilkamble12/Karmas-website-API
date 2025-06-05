@@ -150,6 +150,9 @@
     },{
       "code":"1.0024",
       "message":"OTP has not been generated yet. Kindly Regenerate."
+    },{
+      "code":"1.0025",
+      "message":"User Limit Has Been Exceeded."
     }
   ]
 }
