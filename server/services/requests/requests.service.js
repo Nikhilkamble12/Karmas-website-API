@@ -40,9 +40,9 @@ const RequestService = {
         } catch (error) {
             throw error
         }
-    },getAllRequestByUserId:async(user_id)=>{
+    },getAllRequestByUserId:async(user_id,limit,offset)=>{
         try{
-            return await RequestDAL.getUserByUserId(user_id)
+            return await RequestDAL.getUserByUserId(user_id,limit,offset)
         }catch(error){
             throw error
         }
