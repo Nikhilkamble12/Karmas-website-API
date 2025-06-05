@@ -1,0 +1,5 @@
+{
+  "ignore": [
+    "**/resources/json/**/*.json"
+  ]
+}

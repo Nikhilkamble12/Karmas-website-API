@@ -37,6 +37,9 @@ const ViewFieldTableWise = {
     REQUEST_NGO_FIELDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} `,
     ROLE_MASTER_FIELDS:` SELECT role_id, role, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_ROLE_MASTER} `,
     REQUEST_MEDIA_FIELDS:` SELECT request_media_id, RequestId, img_name, media_url, sequence, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_REQUEST_MEDIA} `,
+    REQUEST_TYPE_FIELDS:` SELECT request_type_id, request_type_name, created_by, created_at, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_REQUEST_TYPE} `,
+    REQUEST_COMMENTS:` SELECT comment_id, user_id, RequestName, request_id, comment_text, total_comment, parent_id, created_at, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_COMMENTS} `,
+    REQUEST_LIKES:` SELECT like_id, user_id, RequestName, request_id, is_liked, created_at, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_LIKE} `,
 
     // -------> S
     STATE_MASTER_FIELDS :` SELECT state_id, state_name, country_id, country_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at  FROM ${VIEW_NAME.GET_ALL_STATE_MASTER} `,
@@ -44,13 +47,16 @@ const ViewFieldTableWise = {
     SIMPLE_SCORE_HISTORY_FIELDS :` SELECT sr_no, user_id, user_name, request_id, request_name, git_score, score_category_id, score_category_name, description, status_id, status_name, date, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at  FROM ${VIEW_NAME.GET_ALL_SIMPLE_SCORE_HISTORY} `,
     SCORE_ELIGIBILITY_MAPPING_FIELDS :` SELECT mapping_id, company_name, score_required, eligible_amount, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_SCORE_ELIGIBILITY} `,
     SCORE_CATEGORY_FIELDS:` SELECT score_category_id, score_category_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_SCORE_CATEGORY} `,
+    SOS_USER_LIST_FIELDS:` SELECT sos_user_id, user_id, user_name, user_email, user_file_name, user_file_path, contact_name, contact_email, contact_file_name, contact_file_path, is_active, is_currently_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_SOS_USER_LIST} `,
+    SOS_MAIN_FIELDS:` SELECT sos_id, user_id, user_name, email_id, is_sos_on, start_time, end_time, reason, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_SOS_MAIN} `,
+    SOS_HISTORY_FIELDS:` SELECT history_id, sos_id, user_id, user_name, email_id, user_file_name, user_file_path, latitude, longitude, captured_time, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_SOS_HISTORY} `,
 
     // -------> T
     TABLE_MASTER_FIELDS: ` SELECT table_id, table_name, is_active FROM ${VIEW_NAME.GET_ALL_TABLE_MASTER}  `,
 
     //  ------> U
     USER_MASTER_FIELDS :` SELECT  user_id, user_name, password, full_name, role_id, role, is_account_public, email_id, gender, enrolling_date, ngo_id, ngo_name, ngo_unique_id, file_name, file_path, reset_otp, reset_otp_expiry, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at, first_time_login FROM ${VIEW_NAME.GET_ALL_USER_MASTER} `,
-    USER_ACTIVITY_FIELDS :` SELECT * FROM ${VIEW_NAME.GET_ALL_USER_ACTIVITY} `,
+    USER_ACTIVITY_FIELDS :` SELECT user_id, user_name, email_id, enrolling_date, user_activity_id, follower_no, following_no, total_reports_no, total_scores_no, total_requests_no, total_rewards_no, total_likes_no, total_comments_no, total_request_like_no, total_request_comment_no, total_shares_no, total_blacklist_user, total_refer_and_earn_no, show_user_chats_history, show_user_posts_history, screen_time, last_active_at FROM ${VIEW_NAME.GET_ALL_USER_ACTIVITY} `,
     USER_FOLLOWING_FIELDS:` SELECT follow_id, user_id, user_name, user_file_name, user_file_path, following_user_id, following_user_name, following_user_file_name, following_user_file_path, followed_at, is_following FROM ${VIEW_NAME.GET_ALL_USER_BLACKLIST} `,
     USER_BLACKLIST_FIELDS:` SELECT blacklist_id, user_id, user_name, blacklisted_user_id, blacklisted_user_name, reason, blacklisted_at, is_active  FROM ${VIEW_NAME.GET_ALL_USER_BLACKLIST} `,
     // -------> V

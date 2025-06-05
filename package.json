@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \\\\\\\"Error: no test specified\\\\\\\" && exit 1",
-    "start": "nodemon server.js"
+    "start": "nodemon --ignore '**/resources/json/**/*.json' server.js"
   },
   "author": "kewal Patel",
   "license": "ISC",
@@ -47,6 +47,7 @@
     "winston": "^3.13.0",
     "winston-daily-rotate-file": "^5.0.0",
     "winston-syslog": "^2.7.0",
+    "ws": "^8.18.2",
     "xlsx": "^0.18.5"
   }
 }
