@@ -26,8 +26,8 @@
       {
         "user_id": 9,
         "user_name": "john_doe",
-        "file_name": null,
-        "file_path": null,
+        "file_name": "test.webp",
+        "file_path": "user_master/9/2025-05-23_13-21-46_test.webp",
         "total_score": 0,
         "week1_score": "0",
         "week2_score": "0",
@@ -72,8 +72,8 @@
       {
         "user_id": 9,
         "user_name": "john_doe",
-        "file_name": null,
-        "file_path": null,
+        "file_name": "test.webp",
+        "file_path": "user_master/9/2025-05-23_13-21-46_test.webp",
         "total_score": 0,
         "week1_score": "0",
         "week2_score": "0",
@@ -118,8 +118,8 @@
       {
         "user_id": 9,
         "user_name": "john_doe",
-        "file_name": null,
-        "file_path": null,
+        "file_name": "test.webp",
+        "file_path": "user_master/9/2025-05-23_13-21-46_test.webp",
         "total_score": 0,
         "week1_score": "0",
         "week2_score": "0",
@@ -151,7 +151,8 @@
         "rank": 1,
         "row_num": 1,
         "lower_bound": 1,
-        "upper_bound": 3
+        "upper_bound": 3,
+        "current_user": true
       },
       {
         "user_id": 2,
@@ -165,13 +166,14 @@
         "rank": 2,
         "row_num": 2,
         "lower_bound": 1,
-        "upper_bound": 3
+        "upper_bound": 3,
+        "current_user": false
       },
       {
         "user_id": 9,
         "user_name": "john_doe",
-        "file_name": null,
-        "file_path": null,
+        "file_name": "test.webp",
+        "file_path": "user_master/9/2025-05-23_13-21-46_test.webp",
         "total_score": 0,
         "week1_score": "0",
         "week2_score": "0",
@@ -179,12 +181,13 @@
         "rank": 3,
         "row_num": 3,
         "lower_bound": 1,
-        "upper_bound": 3
+        "upper_bound": 3,
+        "current_user": false
       }
     ]
   },
-  "createdAt": 1747630187734,
-  "updatedAt": 1747630187734,
-  "expiresAt": 1747633787734,
+  "createdAt": 1748268553977,
+  "updatedAt": 1748268553977,
+  "expiresAt": 1748272153977,
   "ttlMs": 3600000
 }
