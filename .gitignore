@@ -32,3 +32,6 @@ build/
 # Ignore other common artifacts
 *.bak
 *.swp
+
+/server/resources/json/
+
