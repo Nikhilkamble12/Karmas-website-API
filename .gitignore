@@ -33,5 +33,4 @@ build/
 *.bak
 *.swp
 
-/server/resources/json/
-
+/server/resources/json
