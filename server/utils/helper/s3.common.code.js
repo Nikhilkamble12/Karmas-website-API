@@ -3,7 +3,6 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import fs from 'fs';
 import dotenv from 'dotenv';
-import AWS from 'aws-sdk';
 dotenv.config();
 
 
@@ -18,14 +17,6 @@ const s3 = new S3Client({
     },
     logger: console
   });
-// Test credentials setup
-const credentials = new AWS.Credentials({
-  accessKeyId: process.env.AMAZON_ACCESS_KEY_ID_S3,
-  secretAccessKey: process.env.AMAZON_SECRET_KEY_ID_S3
-});
-
-// Validate by calling STS
-const sts = new AWS.STS({ credentials });
   
   const uploadFileToS3 = async (s3FolderPath, localFilePath, fileType) => {
     try {
@@ -36,15 +27,7 @@ const sts = new AWS.STS({ credentials });
       }
       const key = `${s3FolderPath}`;
       const fileStream = fs.createReadStream(localFilePath);
-      console.log("process.env.AMAZON_ACCESS_KEY_ID_S3",process.env.AMAZON_ACCESS_KEY_ID_S3)
-      console.log("process.env.AMAZON_SECRET_KEY_ID_S3",process.env.AMAZON_SECRET_KEY_ID_S3)
-      sts.getCallerIdentity({}, (err, data) => {
-        if (err) {
-          console.error('Invalid credentials:', err);
-        } else {
-          console.log('Valid credentials:', data);
-        }
-      });
+      
       // Set up the S3 upload parameters
       const params = {
         Bucket: 'karmasmedia',  // Your S3 Bucket name
