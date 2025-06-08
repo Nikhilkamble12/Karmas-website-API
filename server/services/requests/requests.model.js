@@ -71,14 +71,13 @@ const RequestModel = (sequelize) => {
         }, CountryId: {
             type: DataTypes.INTEGER,
             allowNull: true
-        }, status_id: {
+        },request_type_id:{
+            type:DataTypes.INTEGER,
+            allowNull:true
+        },
+         status_id: {
             type: DataTypes.INTEGER,
             allowNull: true
-        },
-        is_self: {
-            type: DataTypes.TINYINT(1),
-            allowNull: false,
-            defaultValue: false
         },
         is_active: {
             type: DataTypes.BOOLEAN,
