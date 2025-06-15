@@ -54,7 +54,7 @@ const UserActivityDAL = {
         }
     },getDataByUserId : async(user_id)=>{
         try{
-            const getData = await db.sequelize.query(` SELECT * FROM ${VIEW_NAME.GET_ALL_USER_ACTIVITY } where user_id = ${user_id} `,{type:db.Sequelize.QueryTypes.SELECT})
+            const getData = await db.sequelize.query(` ${ViewFieldTableVise.USER_ACTIVITY_FIELDS} where user_id = ${user_id} `,{type:db.Sequelize.QueryTypes.SELECT})
             return getData
         }catch(error){
             throw error

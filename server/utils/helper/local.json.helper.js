@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
+const fsPromises = fs.promises;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -18,13 +19,14 @@ function getFilePath(relativePath) {
   return path.join(BASE_DIR, safePath);
 }
 
-function load(filePath) {
-  ensureDir(filePath);
-  return JSON.parse(fs.readFileSync(filePath, 'utf-8') || '{}');
+async function load(filePath) {
+  await ensureDir(filePath);
+  const data = await fsPromises.readFile(filePath, 'utf-8');
+  return JSON.parse(data || '{}');
 }
 
-function save(filePath, data) {
-  fs.writeFileSync(filePath, data);
+async function save(filePath, data) {
+  await fsPromises.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
 }
 
 function isExpired(entry) {
@@ -61,6 +63,7 @@ function deleteFile(filePath) {
 
 
 async function set(relativePath, key, newValue, ttlMs = null) {
+  try{
   const filePath = path.join(BASE_DIR, relativePath);
   const now = Date.now();
   const expiresAt = ttlMs ? now + ttlMs : null;
@@ -99,7 +102,7 @@ async function set(relativePath, key, newValue, ttlMs = null) {
     fileData.value = fileData.value.map(item => {
       if (item[key] !== undefined && item[key] === newValue[key]) {
         updated = true;
-        return { ...item, ...newValue };
+        return newValue;  // Replace instead of merging
       }
       return item;
     });
@@ -108,22 +111,27 @@ async function set(relativePath, key, newValue, ttlMs = null) {
   }
 
   // If not updated (no key match), push as new
-  if (!updated) {
-    fileData.value= newValue;
-  }
-
+  if (!updated && key) {
+  fileData.value.push(newValue);
+}
+// Split the relative path to get the directory
+const dir = path.join(BASE_DIR, relativePath.substring(0, relativePath.lastIndexOf('/')));
+await fs.promises.mkdir(dir, { recursive: true });
   // Save file
    // Use async write
    await fs.promises.writeFile(filePath, JSON.stringify(fileData, null, 2), 'utf8');
   return true;
+}catch(error){
+  console.log(" inside json set error -->",error)
+}
 }
 
 
 
 
-function getById(relativePath, field, value) {
+async function getById(relativePath, field, value) {
     const filePath = getFilePath(relativePath);
-    const db = load(filePath);
+    const db = await load(filePath);
     // Check for file expiration
     if (isExpired(db)) {
         deleteFile(filePath);  // Delete expired file
@@ -131,7 +139,7 @@ function getById(relativePath, field, value) {
       }
     // Ensure the value is an array and search for the entry by the given field and value
     const entry = db.value && Array.isArray(db.value)
-      ? db.value.find(item => item[field] === value)
+      ? db.value.find(item => item[field] == value)
       : [];
   
     if (!entry || isExpired(entry)) {
@@ -147,6 +155,38 @@ function getById(relativePath, field, value) {
       remainingMs: formatTimeRemaining(getRemainingMs(entry))
     };
   }
+
+async function getAllByField(relativePath, field, value) {
+  const filePath = getFilePath(relativePath);
+  const db = await load(filePath);
+
+  // Check for file expiration
+  if (isExpired(db)) {
+    deleteFile(filePath);  // Delete expired file
+    return [];
+  }
+
+  // Filter all matching entries
+  // Filter all matching entries
+  const entries = db.value && Array.isArray(db.value)
+    ? db.value.filter(item => item[field] == value)
+    : [];
+
+  if (!entries.length) {
+    return [];
+  }
+
+  return {
+    values: entries,
+    createdAt: formatDate(db.createdAt),
+    updatedAt: formatDate(db.updatedAt),
+    expiresAt: formatDate(db.expiresAt),
+    ttlMs: formatTimeRemaining(db.ttlMs),
+    remainingMs: formatTimeRemaining(getRemainingMs(db))
+  };
+
+}
+
   
 
   async function getAll(relativePath) {
@@ -185,24 +225,76 @@ function getById(relativePath, field, value) {
     }
   }
 
-function remove(relativePath, key) {
+async function remove(relativePath, key, value) {
   const filePath = getFilePath(relativePath);
-  const db = load(filePath);
+  const db = await load(filePath);
 
-  if (db[key]) {
-    delete db[key];
-    save(filePath, db);
-    return true;
+  if (Array.isArray(db.value)) {
+    const originalLength = db.value.length;
+
+    // Filter out the object with the matching key-value pair
+    db.value = db.value.filter(item => item[key] !== value);
+
+    // If at least one object was removed, update updatedAt and save
+    if (db.value.length < originalLength) {
+      db.updatedAt = Date.now();
+      await save(filePath, db);
+      return true;
+    }
   }
 
+  // Nothing was removed
   return false;
+}
+
+async function checkDataStatus(relativePath) {
+  const filePath = getFilePath(relativePath);
+  try {
+    await fsPromises.access(filePath);
+    const raw = await fsPromises.readFile(filePath, 'utf8');
+    const parsed = JSON.parse(raw);
+
+    if (isExpired(parsed)) {
+      deleteFile(filePath);
+      return { exists: false, expired: true, totalCount: 0 };
+    }
+
+    const totalCount = Array.isArray(parsed.value) ? parsed.value.length : 0;
+    return { exists: true, expired: false, totalCount };
+
+  } catch (err) {
+    console.log("json err-->",err)
+    if (err.code === 'ENOENT') {
+      console.log("inside if")
+      return { exists: false, expired: false, totalCount: 0 };
+    } else {
+      console.log("inside else")
+      console.error('Error reading file:', filePath, err);
+      throw err;
+    }
+  }
+}
+async function deleteFullFile(relativePath) {
+  const filePath = getFilePath(relativePath);
+
+  try {
+    await fsPromises.unlink(filePath);  // deletes the file
+    console.log(`File ${filePath} deleted.`);
+    return true;
+  } catch (err) {
+    console.error(`Error deleting file ${filePath}:`, err);
+    return false;
+  }
 }
 
 const LocalJsonHelper = {
   set,
   getById,
   getAll,
-  remove
+  getAllByField,
+  remove,
+  checkDataStatus,
+  deleteFullFile
 };
 
 export default LocalJsonHelper;

@@ -50,6 +50,7 @@ const RESPONSE_CONSTANTS = {
     OTP_GENERATED_SUCCESSFULLY:"OTP Generated Successfully. Kindly Check E-mail.",
     PASSWORD_UPDATED_SUCCESSFULLY:"Password updated Successfully.",
     KINDLY_REGENRATE_OTP:"OTP has not been generated yet. Kindly Regenerate.",
+    SOS_USER_LIMIT_EXCEEDED:"User Limit Has Been Exceeded."
   };
   
   export default RESPONSE_CONSTANTS;

@@ -79,7 +79,7 @@ const LikesDAL = {
     }
   },getAllLikeByUserId:async(user_id,limit,offset)=>{
     try{
-      let query = `${ViewFieldTableVise.LIKES_FIELDS} WHERE user_id = ${user_id}`;
+      let query = `${ViewFieldTableVise.LIKES_FIELDS} WHERE user_id = ${user_id} and is_like = true`;
         if (limit && offset && typeof limit === 'number' && typeof offset === 'number' && limit!=="null" && offset!=="null"){
           query += ` LIMIT ${limit} OFFSET ${offset}`;
         }

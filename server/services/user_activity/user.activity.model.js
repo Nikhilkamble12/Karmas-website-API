@@ -33,7 +33,15 @@ const UserActivityModel = (sequelize)=>{
         }, total_comments_no:{
             type:DataTypes.INTEGER,
             allowNull:true
-        }, total_shares_no:{
+        },total_request_like_no:{
+            type:DataTypes.INTEGER,
+            allowNull:true
+        },
+        total_request_comment_no:{
+            type:DataTypes.INTEGER,
+            allowNull:true
+        },
+        total_shares_no:{
             type:DataTypes.INTEGER,
             allowNull:true
         }, total_blacklist_user:{

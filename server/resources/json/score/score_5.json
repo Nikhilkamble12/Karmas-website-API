@@ -44,6 +44,17 @@
         "week2_score": "0",
         "difference": "0",
         "rank": 4
+      },
+      {
+        "user_id": 12,
+        "user_name": "Nikhil",
+        "file_name": null,
+        "file_path": null,
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 5
       }
     ],
     "topGainers": [
@@ -90,6 +101,17 @@
         "week2_score": "0",
         "difference": "0",
         "rank": 4
+      },
+      {
+        "user_id": 12,
+        "user_name": "Nikhil",
+        "file_name": null,
+        "file_path": null,
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 5
       }
     ],
     "topLosers": [
@@ -136,6 +158,17 @@
         "week2_score": "0",
         "difference": "0",
         "rank": 4
+      },
+      {
+        "user_id": 12,
+        "user_name": "Nikhil",
+        "file_name": null,
+        "file_path": null,
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 5
       }
     ],
     "user_rank": [
@@ -186,8 +219,8 @@
       }
     ]
   },
-  "createdAt": 1748268553977,
-  "updatedAt": 1748268553977,
-  "expiresAt": 1748272153977,
+  "createdAt": 1749314422256,
+  "updatedAt": 1749314422256,
+  "expiresAt": 1749318022256,
   "ttlMs": 3600000
 }
