@@ -380,6 +380,7 @@ const ScoreHistoryController = {
         }
     },getDataByUserIdScoreHistory:async(req,res)=>{
         try{
+	    console.log(">>> controller hit:", new Date());
             const user_id = tokenData(req, res)
             const limit = req.query.limit
             const offset = req.query.offset

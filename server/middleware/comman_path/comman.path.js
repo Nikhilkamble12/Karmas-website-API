@@ -25,6 +25,8 @@ const basePathRoute =`${process.env.BASE_ROUTE_PATH || '/api/v1'}`
 import path from 'path';
 import fs from "fs";
 import { fileURLToPath } from 'url';
+import LocalJsonHelper from "../../utils/helper/local.json.helper.js";
+
 
 const commonPath={
     responseConst:responseConst,
@@ -50,7 +52,8 @@ const commonPath={
     multer:multer,
     path:path,
     fs:fs,
-    fileURLToPath:fileURLToPath
+    fileURLToPath:fileURLToPath,
+    LocalJsonHelper:LocalJsonHelper,
 }
 
 export default commonPath

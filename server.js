@@ -19,6 +19,7 @@ import decrypt from "./server/utils/security/decryption.js";
 import startCluster from "./server/utils/helper/cluster.js";
 import https from "https"
 import fs from "fs"
+import setupWebSocket from "./websocket.config.js";
 
 
 // import routeValidationMiddleware from "./server/middleware/route_validation/route.validation.js"
@@ -26,6 +27,14 @@ import fs from "fs"
 dotenv.config();
 import db from "./server/services/index.js";
 const app = express();
+app.use((req, res, next) => {
+  
+  if (req.headers.upgrade && req.headers.upgrade.toLowerCase() === 'websocket') {
+    // Let the server's 'upgrade' event handle this request
+    return;
+  }
+  next();
+});
 app.use(helmet());
 app.use(cors());
 app.use(morgan("dev"));
@@ -180,25 +189,20 @@ app.get("/", (req, res) => {
   const message = `Welcome to Massom from Worker ${workerId}.`;
   return res.json({ message });
 });
-// API endpoint to get image as base64
+// app.get('/api/v1/wsauth', (req, res) => {
+//   res.status(426).send('Please upgrade to WebSocket.');
+// });
 
-// // const PORT = process.env.PORT || 8089;
-// const PORT = 8080;
-// // Helper function to find a random available port
-// const getRandomPort = (min, max) => {
-//   return Math.floor(Math.random() * (max - min + 1)) + min;
-// };
+
+// Define the initial port
+const PORT = 3000;
+
 
 // // Try to bind to the given port, or use a random port if the desired one is in use
 // const tryListenOnPort = (app, port, callback) => {
 //   app.listen(PORT, (err) => {
-//     console.log("err",err)
 //     if (err) {
 //       logger.error(`Port ${port} is not available. Trying another port...`);
-//       // If the port is taken, try with a random port between 3000 and 5000
-//       const randomPort = getRandomPort(3000, 5000);
-//       logger.info(`Trying to bind to a random port: ${randomPort}`);
-//       tryListenOnPort(app, randomPort, callback); // Recursively attempt to listen on a random port
 //     } else {
 //       logger.info(`Server is running on port ${port}.`);
 //       consoleLogger.log(`Server is running on port ${port}.`);
@@ -206,93 +210,20 @@ app.get("/", (req, res) => {
 //     }
 //   });
 // };
-// Promise.all(
-//   routes.map(async (route) => {
-//     // console.log("route",route)
-//     try {
-//       const { default: routeModule } = await import(route);
-//       if (typeof routeModule === "function") {
-//         await import(route);
-//         app.use(routeModule);
-//         // console.log("app.use(routeModule)",app.use(routeModule))
-//       } else {
-//         logger.error(
-//           `Error in Server File ---> ${route} does not export a function.`
-//         );
-//       }
-//     } catch (error) {
-//       console.log("error",error)
-//       logger.error(`Error in Server File ---> ${error}`);
-//     }
-//   })
-// )
-// // ).then(() => {
-// //   startCluster((clusterObj) => {
-// //     app.listen(PORT,'0.0.0.0',(err) => {
-// //       if (err) {
-// //         logger.error(`Error starting server on port ${PORT}: ${err.message}`, { stack: err.stack });
-// //         return;
-// //       }
-// //       if (clusterObj.worker) {
-// //         logger.info(
-// //           `Worker ${clusterObj.worker.id} is running on port ${PORT}.`
-// //         );
-// //         consoleLogger.log(
-// //           `Worker ${clusterObj.worker.id} is running on port ${PORT}.`
-// //         );
-// //       } else {
-// //         logger.info(`Master process is running on port ${PORT}.`);
-// //         consoleLogger.log(`Master process is running on port ${PORT}.`);
-// //       }
-// //     });
-// //   }, cluster);
-// // }).catch((error) => {
-// //   // Log if there is an issue with the Promise.all
-// //   logger.error(`Error in starting the server: ${error.message}`, { stack: error.stack });
-// // });
-// .then(() => {
-//   // app.listen(PORT, '0.0.0.0', (err) => {
-//   //   if (err) {
-//   //     logger.error(`Error starting server on port ${PORT}: ${err.message}`, { stack: err.stack });
-//   //     return;
-//   //   }
-//   //   logger.info(`Server is running on port ${PORT}.`);
-//   //   consoleLogger.log(`Server is running on port ${PORT}.`);
-//   // });
-//   tryListenOnPort(app, PORT)
-// }).catch((error) => {
-//   logger.error(`Error in starting the server: ${error.message}`, { stack: error.stack });
-// })
-
-
-// Define the initial port
-const PORT = 3000;
-
-// Helper function to find a random available port
-const getRandomPort = (min, max) => {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-};
-
-// Try to bind to the given port, or use a random port if the desired one is in use
 const tryListenOnPort = (app, port, callback) => {
-  app.listen(PORT, (err) => {
+  const server = app.listen(port, (err) => {
     if (err) {
       logger.error(`Port ${port} is not available. Trying another port...`);
-      
-      // If the port is taken, try with a random port between 3000 and 5000
-      const randomPort = getRandomPort(3000, 5000);
-      logger.info(`Trying to bind to a random port: ${randomPort}`);
-      
-      // Recursively attempt to listen on a random port
-      tryListenOnPort(app, randomPort, callback);
     } else {
       logger.info(`Server is running on port ${port}.`);
       consoleLogger.log(`Server is running on port ${port}.`);
       if (callback) callback(port); // Execute the callback with the successful port
+
+      // 👇 Add this line to initialize WebSocket:
+      setupWebSocket(server);
     }
   });
 };
-
 Promise.all(
   routes.map(async (route) => {
     try {
@@ -301,6 +232,7 @@ Promise.all(
         await import(route);
         app.use(routeModule);
       } else {
+        console.error(`❌ Route ${routeFile} does not export a function.`);
         logger.error(`Error in Server File ---> ${route} does not export a function.`);
       }
     } catch (error) {

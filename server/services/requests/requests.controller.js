@@ -23,7 +23,6 @@ const RequestsController = {
                 const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
                 const totalRequest = parseInt(getUserActivityData[0].total_requests_no) + 1
                 const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_requests_no:totalRequest})
-
             }
             data.status_id = STATUS_MASTER.REQUEST_INSIATED
             const createData = await RequestService.createService(data);

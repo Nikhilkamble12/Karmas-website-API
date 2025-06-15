@@ -40,9 +40,9 @@ const CommentService = {
         } catch (error) {
             throw error
         }
-    },getCommentByPostOrParentId:async(post_id,parent_id)=>{
+    },getCommentByPostOrParentId:async(post_id,parent_id,limit,offset)=>{
         try{
-            return await CommentsDAL.getCommentByPostAndParentId(post_id,parent_id)
+            return await CommentsDAL.getCommentByPostAndParentId(post_id,parent_id,limit,offset)
         }catch(error){
             throw error
         }
