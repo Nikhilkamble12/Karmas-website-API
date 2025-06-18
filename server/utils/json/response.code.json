@@ -153,6 +153,9 @@
     },{
       "code":"1.0025",
       "message":"User Limit Has Been Exceeded."
+    },{
+      "code":"1.0026",
+      "message":"Sos Not Yet Created."
     }
   ]
 }
