@@ -1,6 +1,10 @@
 
-import WebSocket from 'ws';
-import { WebSocketServer } from 'ws';
+// import WebSocket from 'ws';
+// import { WebSocketServer } from 'ws';
+
+import pkg from 'ws';
+const { WebSocketServer } = pkg;
+
 import jwt from 'jsonwebtoken';
 import url from 'url';
 import { loadWsRoutes } from './server/middleware/ws_route_middleware/wsRouterLoader.js';
@@ -17,7 +21,7 @@ const baseDirs = [
 ];
 
 async function setupWebSocket(server) {
-    console.log("🛠️ Setting up WebSocket upgrade handler...")
+  console.log("🛠️ Setting up WebSocket upgrade handler...")
   const wss = new WebSocketServer({ noServer: true });
   const wsRoutes = await loadWsRoutes(baseDirs,activeConnections);
   console.log("wsRoutes---->",wsRoutes)

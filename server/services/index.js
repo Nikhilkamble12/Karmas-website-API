@@ -31,11 +31,6 @@ import LikesModel from "./Likes/likes.model.js";
 import CommentsModel from "./Comments/comments.model.js";
 import RequestMediaModel from "./request_media/request.media.model.js";
 import UserBlackListModel from "./user_blacklist/user.blacklist.model.js";
-import SosUserListModel from "./sos_user_list/sos.user.list.model.js";
-import SosMainModel from "./sos_main/sos.main.model.js";
-import SosHistoryModel from "./sos_history/sos.history.model.js";
-import RequestTypeModel from "./request_type/request.type.model.js";
-import RequestCommentsModel from "./request_comments/request.comments.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -97,11 +92,6 @@ db.LikesModel = LikesModel(sequelize,Sequelize);
 db.CommentsModel = CommentsModel(sequelize,Sequelize);
 db.RequestMediaModel = RequestMediaModel(sequelize,Sequelize);
 db.UserBlackListModel = UserBlackListModel(sequelize,Sequelize);
-db.SosUserListModel = SosUserListModel(sequelize,Sequelize);
-db.SosMainModel = SosMainModel(sequelize,Sequelize);
-db.SosHistoryModel = SosHistoryModel(sequelize,Sequelize);
-db.RequestTypeModel = RequestTypeModel(sequelize,Sequelize);
-db.RequestCommentsModel = RequestCommentsModel(sequelize,Sequelize);
 
 
 
