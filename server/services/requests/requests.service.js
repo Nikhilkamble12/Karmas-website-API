@@ -46,6 +46,12 @@ const RequestService = {
         }catch(error){
             throw error
         }
+    },getRequestsForUserFeed:async(user_id,limit,already_viewed)=>{
+        try{
+            return await RequestDAL.getRequestsForUserFeed(user_id,limit,already_viewed)
+        }catch(error){
+            throw error
+        }
     }
 }
 
