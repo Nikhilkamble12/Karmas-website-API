@@ -1,20 +1,26 @@
-
+import { fileURLToPath } from 'url'; // Importing fileURLToPath to convert URL to file path
 import PostMediaController from "./postmedia.controller.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
-const {express,verifyToken,basePathRoute,multer,path,fs,fileURLToPath} = commonPath
+const {express,verifyToken,basePathRoute,multer,path,fs} = commonPath
 
 // Define the base path for routes
 const basePath=`${basePathRoute}/postmedia` 
 const router = express.Router()
 
+// Convert import.meta.url to a file path
 const __filename = fileURLToPath(import.meta.url);
+
+// Get the directory name of the current module
 const __dirname = path.dirname(__filename);
 
+// Join the path to get the full uploads directory path
 const uploadDir = path.join(__dirname, 'uploads');
 
+// Create 'uploads' directory if it doesn't exist
 if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true }); // safer to add recursive
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
+
 // Route to create a new record
 
 router.post(

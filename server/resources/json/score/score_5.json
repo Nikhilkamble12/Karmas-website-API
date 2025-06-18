@@ -1,0 +1,226 @@
+{
+  "value": {
+    "topScorers": [
+      {
+        "user_id": 1,
+        "user_name": "kewal@123",
+        "file_name": "test.jpg",
+        "file_path": "user_master/1/2025-04-13_14-34-23_test.jpg",
+        "total_score": 40,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 1
+      },
+      {
+        "user_id": 2,
+        "user_name": "Sandesh",
+        "file_name": null,
+        "file_path": null,
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 2
+      },
+      {
+        "user_id": 9,
+        "user_name": "john_doe",
+        "file_name": "test.webp",
+        "file_path": "user_master/9/2025-05-23_13-21-46_test.webp",
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 3
+      },
+      {
+        "user_id": 11,
+        "user_name": "joane_doe",
+        "file_name": null,
+        "file_path": null,
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 4
+      },
+      {
+        "user_id": 12,
+        "user_name": "Nikhil",
+        "file_name": null,
+        "file_path": null,
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 5
+      }
+    ],
+    "topGainers": [
+      {
+        "user_id": 1,
+        "user_name": "kewal@123",
+        "file_name": "test.jpg",
+        "file_path": "user_master/1/2025-04-13_14-34-23_test.jpg",
+        "total_score": 40,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 1
+      },
+      {
+        "user_id": 2,
+        "user_name": "Sandesh",
+        "file_name": null,
+        "file_path": null,
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 2
+      },
+      {
+        "user_id": 9,
+        "user_name": "john_doe",
+        "file_name": "test.webp",
+        "file_path": "user_master/9/2025-05-23_13-21-46_test.webp",
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 3
+      },
+      {
+        "user_id": 11,
+        "user_name": "joane_doe",
+        "file_name": null,
+        "file_path": null,
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 4
+      },
+      {
+        "user_id": 12,
+        "user_name": "Nikhil",
+        "file_name": null,
+        "file_path": null,
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 5
+      }
+    ],
+    "topLosers": [
+      {
+        "user_id": 1,
+        "user_name": "kewal@123",
+        "file_name": "test.jpg",
+        "file_path": "user_master/1/2025-04-13_14-34-23_test.jpg",
+        "total_score": 40,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 1
+      },
+      {
+        "user_id": 2,
+        "user_name": "Sandesh",
+        "file_name": null,
+        "file_path": null,
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 2
+      },
+      {
+        "user_id": 9,
+        "user_name": "john_doe",
+        "file_name": "test.webp",
+        "file_path": "user_master/9/2025-05-23_13-21-46_test.webp",
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 3
+      },
+      {
+        "user_id": 11,
+        "user_name": "joane_doe",
+        "file_name": null,
+        "file_path": null,
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 4
+      },
+      {
+        "user_id": 12,
+        "user_name": "Nikhil",
+        "file_name": null,
+        "file_path": null,
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 5
+      }
+    ],
+    "user_rank": [
+      {
+        "user_id": 1,
+        "user_name": "kewal@123",
+        "file_name": "test.jpg",
+        "file_path": "user_master/1/2025-04-13_14-34-23_test.jpg",
+        "total_score": 40,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 1,
+        "row_num": 1,
+        "lower_bound": 1,
+        "upper_bound": 3,
+        "current_user": true
+      },
+      {
+        "user_id": 2,
+        "user_name": "Sandesh",
+        "file_name": null,
+        "file_path": null,
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 2,
+        "row_num": 2,
+        "lower_bound": 1,
+        "upper_bound": 3,
+        "current_user": false
+      },
+      {
+        "user_id": 9,
+        "user_name": "john_doe",
+        "file_name": "test.webp",
+        "file_path": "user_master/9/2025-05-23_13-21-46_test.webp",
+        "total_score": 0,
+        "week1_score": "0",
+        "week2_score": "0",
+        "difference": "0",
+        "rank": 3,
+        "row_num": 3,
+        "lower_bound": 1,
+        "upper_bound": 3,
+        "current_user": false
+      }
+    ]
+  },
+  "createdAt": 1749314422256,
+  "updatedAt": 1749314422256,
+  "expiresAt": 1749318022256,
+  "ttlMs": 3600000
+}
