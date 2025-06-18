@@ -477,6 +477,78 @@ const PostController = {
           )
         );
     }
+  },getAllPostByUserIdForHomePage:async(req,res)=>{
+    try{
+      const user_id = tokenData(req,res)
+      const limit = req.query.limit
+      const already_viewed = req.query.already_viewed
+      console.log(typeof("already_viewed",already_viewed))
+      const getAllPostData = await PostService.getPostByUserIdForHomePage(user_id,limit,already_viewed)
+      // for(let i = 0; i<getAllPostData.length;i++){
+      //   const currentData = getAllPostData[i]
+      //   if(currentData.file_path!==null && currentData.file_path!=="" && currentData.file_path!==undefined && currentData.file_path!=="null"){
+      //   currentData.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.file_path}`
+      //   }else{
+      //       currentData.file_path= null
+      //   }
+      //   const getAllPostMedia = await PostMediaService.getDatabyPostIdByView(currentData.post_id)
+      //   currentData.post_media = getAllPostMedia ?? []
+      // }
+      const updatedPostData = await Promise.all(getAllPostData.map(async (currentData) => {
+            // Normalize file path
+            if (
+              currentData.file_path &&
+              currentData.file_path !== "null" &&
+              currentData.file_path !== ""
+            ) {
+              currentData.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.file_path}`;
+            } else {
+              currentData.file_path = null;
+            }
+
+            // Fetch post media in parallel
+            const getAllPostMedia = await PostMediaService.getDatabyPostIdByView(currentData.post_id);
+            currentData.post_media = getAllPostMedia ?? [];
+
+            return currentData;
+            }));
+
+      if (getAllPostData.length !== 0) {
+        return res
+          .status(responseCode.OK)
+          .send(
+            commonResponse(
+              responseCode.OK,
+              responseConst.DATA_RETRIEVE_SUCCESS,
+              updatedPostData
+            )
+          );
+      } else {
+        return res
+          .status(responseCode.BAD_REQUEST)
+          .send(
+            commonResponse(
+              responseCode.BAD_REQUEST,
+              responseConst.DATA_NOT_FOUND,
+              null,
+              true
+            )
+          );
+      }
+    }catch(error){
+      console.log("error",error)
+      logger.error(`Error ---> ${error}`);
+      return res
+        .status(responseCode.INTERNAL_SERVER_ERROR)
+        .send(
+          commonResponse(
+            responseCode.INTERNAL_SERVER_ERROR,
+            responseConst.INTERNAL_SERVER_ERROR,
+            null,
+            true
+          )
+        );
+    }
   }
 };
 

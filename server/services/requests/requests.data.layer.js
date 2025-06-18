@@ -68,6 +68,73 @@ const RequestDAL = {
         }catch(error){
             throw error
         }
+    },getRequestsForUserFeed: async (user_id, limit = 20, already_viewed) => {
+  try {
+    const replacements = { user_id, limit: Number(limit) };
+    
+    let exclusionClause = '';
+    console.log("already_viewed",already_viewed)
+    if (already_viewed.trim().startsWith('[')) {
+      // JSON-style string: "[174860345,174860346]"
+      already_viewed = JSON.parse(already_viewed);
+    } else {
+      // Comma-separated string: "174860345,174860346"
+      already_viewed = already_viewed
+        .split(',')
+        .map(id => parseInt(id.trim(), 10))
+        .filter(id => !isNaN(id));
     }
+    console.log(typeof(already_viewed))
+    if (already_viewed && Array.isArray(already_viewed) && already_viewed.length > 0) {
+      exclusionClause = `AND r.RequestId NOT IN (:already_viewed)`;
+      replacements.already_viewed = already_viewed;
+    }
+
+    const query = `
+      SELECT * FROM (
+        (
+          SELECT r.*
+          FROM v_Requests r
+          JOIN user_following uf ON uf.following_user_id = r.request_user_id
+          WHERE uf.user_id = :user_id
+            AND uf.is_following = 1
+            AND uf.is_active = 1
+            AND r.is_active = 1
+            AND r.request_user_id NOT IN (
+              SELECT ub.user_id FROM user_blacklist ub WHERE ub.blacklisted_user_id = :user_id AND ub.is_active = 1
+            )
+            ${exclusionClause}
+        )
+        UNION
+        (
+          SELECT r.*
+          FROM v_Requests r
+          WHERE r.request_user_id NOT IN (
+              SELECT following_user_id FROM user_following WHERE user_id = :user_id AND is_following = 1 AND is_active = 1
+            )
+            AND r.request_user_id NOT IN (
+              SELECT user_id FROM user_blacklist WHERE blacklisted_user_id = :user_id AND is_active = 1
+            )
+            AND r.is_active = 1
+            ${exclusionClause}
+          ORDER BY RAND()
+          LIMIT 5
+        )
+      ) AS combined_requests
+      ORDER BY created_at DESC
+      LIMIT :limit;
+    `;
+
+    const results = await db.sequelize.query(query, {
+      replacements,
+      type: db.Sequelize.QueryTypes.SELECT
+    });
+
+    return results ?? [];
+  } catch (error) {
+    throw error;
+  }
+}
+
 }
 export default RequestDAL

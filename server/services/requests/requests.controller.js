@@ -509,6 +509,66 @@ const RequestsController = {
                     )
                 );
         }
+    },getRequestDataByDescUserWise:async(req,res)=>{
+        try{
+            const user_id = tokenData(req,res)
+            const limit = req.query.limit
+            const already_viewed = req.query.alredy_viewed
+            const getAllRequest = await RequestService.getRequestsForUserFeed(user_id,limit,already_viewed)
+            const updatedPostData = await Promise.all(getAllRequest.map(async (currentData) => {
+                // Normalize file path
+                if (
+                    currentData.request_user_file_path &&
+                    currentData.request_user_file_path !== "null" &&
+                    currentData.request_user_file_path !== ""
+                ) {
+                    currentData.request_user_file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.request_user_file_path}`;
+                } else {
+                    currentData.request_user_file_path = null;
+                }
+    
+                // Fetch post media in parallel
+                const getAllRequestMedia = await RequestMediaService.getDataByRequestIdByView(currentData.RequestId);
+                currentData.request_media = getAllRequestMedia ?? [];
+    
+                return currentData;
+                }));
+            if (getAllRequest.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            updatedPostData
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        }catch(error){
+            console.log("error",error)
+            logger.error(`Error ---> ${error}`);
+            return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
+        }
     }
 }
 

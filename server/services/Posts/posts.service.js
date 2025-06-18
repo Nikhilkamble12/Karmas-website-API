@@ -46,6 +46,12 @@ const PostService = {
     }catch(error){
       throw error
     }
+  },getPostByUserIdForHomePage:async(user_id,limit,already_viewed)=>{
+    try{
+      return await PostDAL.getPostByUserIdForHome(user_id,limit,already_viewed)
+    }catch(error){
+      throw error
+    }
   }
 };
 

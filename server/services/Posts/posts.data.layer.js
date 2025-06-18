@@ -89,7 +89,81 @@ const PostDAL = {
     }catch(error){
       throw error
     }
+  },getPostByUserIdForHome: async (user_id, limit = 20, already_viewed = []) => {
+  try {
+    const replacements = { user_id, limit: Number(limit) };
+    let exclusionClause = '';
+    if (already_viewed.trim().startsWith('[')) {
+      // JSON-style string: "[174860345,174860346]"
+      already_viewed = JSON.parse(already_viewed);
+    } else {
+      // Comma-separated string: "174860345,174860346"
+      already_viewed = already_viewed
+        .split(',')
+        .map(id => parseInt(id.trim(), 10))
+        .filter(id => !isNaN(id));
+    }
+    if (Array.isArray(already_viewed) && already_viewed.length > 0) {
+      exclusionClause = `AND vp.post_id NOT IN (:already_viewed)`;
+      replacements.already_viewed = already_viewed;
+    }
+
+    const query = `
+    SELECT * FROM (
+      (
+        -- Followed users' posts
+        SELECT vp.*
+        FROM massom.v_Posts vp
+        JOIN user_following uf 
+          ON uf.following_user_id = vp.user_id
+        WHERE uf.user_id = :user_id
+          AND uf.is_following = 1
+          AND uf.is_active = 1
+          AND vp.is_active = 1
+          AND vp.user_id NOT IN (
+              SELECT ub.user_id 
+              FROM user_blacklist ub 
+              WHERE ub.blacklisted_user_id = :user_id AND ub.is_active = 1
+          )
+          ${exclusionClause}
+      )
+      UNION
+      (
+        -- Random discovery posts
+        SELECT vp.*
+        FROM massom.v_Posts vp
+        WHERE vp.user_id NOT IN (
+            SELECT following_user_id 
+            FROM user_following 
+            WHERE user_id = :user_id AND is_following = 1 AND is_active = 1
+        )
+          AND vp.user_id NOT IN (
+              SELECT user_id 
+              FROM user_blacklist 
+              WHERE blacklisted_user_id = :user_id AND is_active = 1
+          )
+          AND vp.is_active = 1
+          ${exclusionClause}
+        ORDER BY RAND()
+        LIMIT 5
+      )
+    ) AS combined_posts
+    ORDER BY created_at DESC
+    LIMIT :limit;
+    `;
+
+    const results = await db.sequelize.query(query, {
+      replacements,
+      type: db.Sequelize.QueryTypes.SELECT
+    });
+
+    return results ?? [];
+  } catch (error) {
+    throw error;
   }
+}
+
+
 };
 
 export default PostDAL; // Export the CommentsDAL object for use in the controller
