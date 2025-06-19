@@ -31,5 +31,13 @@ GET_ALL_COMMENTS:"v_Comments",
 GET_ALL_REQUEST_MEDIA:"v_Request_media",
 GET_ALL_USER_FOLLOWING:"v_user_following",
 GET_ALL_USER_BLACKLIST:"v_user_blacklist",
+GET_ALL_SOS_USER_LIST:"v_active_sos_contacts",
+GET_ALL_SOS_MAIN:"v_sos_main",
+GET_ALL_SOS_HISTORY:"v_sos_history",
+GET_ALL_REQUEST_TYPE:"v_request_type",
+GET_ALL_REQUEST_COMMENTS:"v_request_comments",
+GET_ALL_REQUEST_LIKE:"v_request_likes",
+GET_ALL_REQUEST_COMMENT_LIKE:"v_request_comment_likes",
+GET_ALL_POST_COMMENT_LIKE:"v_post_comment_likes"
 }
 export default VIEW_NAME
