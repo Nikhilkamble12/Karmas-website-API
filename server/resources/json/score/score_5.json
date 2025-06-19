@@ -8,8 +8,8 @@
         "file_path": "user_master/1/2025-04-13_14-34-23_test.jpg",
         "total_score": 40,
         "week1_score": "0",
-        "week2_score": "0",
-        "difference": "0",
+        "week2_score": "60",
+        "difference": "-60",
         "rank": 1
       },
       {
@@ -59,17 +59,6 @@
     ],
     "topGainers": [
       {
-        "user_id": 1,
-        "user_name": "kewal@123",
-        "file_name": "test.jpg",
-        "file_path": "user_master/1/2025-04-13_14-34-23_test.jpg",
-        "total_score": 40,
-        "week1_score": "0",
-        "week2_score": "0",
-        "difference": "0",
-        "rank": 1
-      },
-      {
         "user_id": 2,
         "user_name": "Sandesh",
         "file_name": null,
@@ -112,6 +101,17 @@
         "week2_score": "0",
         "difference": "0",
         "rank": 5
+      },
+      {
+        "user_id": 1,
+        "user_name": "kewal@123",
+        "file_name": "test.jpg",
+        "file_path": "user_master/1/2025-04-13_14-34-23_test.jpg",
+        "total_score": 40,
+        "week1_score": "0",
+        "week2_score": "60",
+        "difference": "-60",
+        "rank": 1
       }
     ],
     "topLosers": [
@@ -122,8 +122,8 @@
         "file_path": "user_master/1/2025-04-13_14-34-23_test.jpg",
         "total_score": 40,
         "week1_score": "0",
-        "week2_score": "0",
-        "difference": "0",
+        "week2_score": "60",
+        "difference": "-60",
         "rank": 1
       },
       {
@@ -179,8 +179,8 @@
         "file_path": "user_master/1/2025-04-13_14-34-23_test.jpg",
         "total_score": 40,
         "week1_score": "0",
-        "week2_score": "0",
-        "difference": "0",
+        "week2_score": "60",
+        "difference": "-60",
         "rank": 1,
         "row_num": 1,
         "lower_bound": 1,
@@ -219,8 +219,8 @@
       }
     ]
   },
-  "createdAt": 1749314422256,
-  "updatedAt": 1749314422256,
-  "expiresAt": 1749318022256,
+  "createdAt": 1750272350786,
+  "updatedAt": 1750272350786,
+  "expiresAt": 1750275950786,
   "ttlMs": 3600000
 }
