@@ -10,6 +10,10 @@ package-lock.json
 # .gitignore
 .env
 
+# Ignore all .json files under resources/
+resources/json/**/*.json
+/logs/
+
 
 # Ignore npm package lock file
 package-lock.json
