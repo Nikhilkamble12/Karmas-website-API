@@ -21,6 +21,11 @@ const RequestMediaModel = (sequelize) => {
         type: DataTypes.STRING(500),
         allowNull: false,
       },
+      media_type:{
+        type:DataTypes.STRING(50),
+        allowNull: false,
+        defaultValue: 'image'
+      },
       sequence: {
         type: DataTypes.INTEGER,
         allowNull: false,

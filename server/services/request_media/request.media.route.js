@@ -64,9 +64,38 @@ const storage = multer.diskStorage({
       cb(null, `${timestamp}-${safeName}`);
     }
   });
+
+  // Video validation function
+const validateVideoFile = (file) => {
+  const allowedVideoTypes = ['video/mp4', 'video/mov', 'video/avi', 'video/mkv', 'video/webm'];
+  const maxVideoSize = 50 * 1024 * 1024; // 50MB
+
+  if (!allowedVideoTypes.includes(file.mimetype)) {
+    throw new Error('Unsupported video format');
+  }
+
+  if (file.size > maxVideoSize) {
+    throw new Error('Video file too large (max 50MB)');
+  }
+
+  return true;
+};
+
+// Multer fileFilter for video validation only
+const fileFilter = (req, file, cb) => {
+  try {
+    if (file.mimetype.startsWith('video/')) {
+      validateVideoFile(file);
+    }
+    // For images or other types, allow by default
+    cb(null, true);
+  } catch (err) {
+    cb(new Error(err.message), false);
+  }
+};
   
 // Create the Multer instance with the storage settings
-const upload = multer({ storage });
+const upload = multer({ storage,fileFilter });
 
 // Route To Create A Record For Request POST
 router.post(

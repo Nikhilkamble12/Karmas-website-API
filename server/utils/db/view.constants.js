@@ -38,6 +38,7 @@ GET_ALL_REQUEST_TYPE:"v_request_type",
 GET_ALL_REQUEST_COMMENTS:"v_request_comments",
 GET_ALL_REQUEST_LIKE:"v_request_likes",
 GET_ALL_REQUEST_COMMENT_LIKE:"v_request_comment_likes",
-GET_ALL_POST_COMMENT_LIKE:"v_post_comment_likes"
+GET_ALL_POST_COMMENT_LIKE:"v_post_comment_likes",
+GET_ALL_NGO_TYPE:"v_ngo_type",
 }
 export default VIEW_NAME

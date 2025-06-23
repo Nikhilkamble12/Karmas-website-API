@@ -26,12 +26,13 @@ const ViewFieldTableWise = {
 
     // -------> N
     NGO_FIELD_FIELDS:` SELECT ngo_field_id, field_name, field_description, is_active, created_by, created_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_FIELDS} `,
-    NGO_MASTER_FIELDS:` SELECT ngo_id, unique_id, darpan_reg_date, ngo_type, ngo_name, ngo_type_name, registration_no, act_name, city_of_registration_id, city_of_registration_name, state_of_registration_id, state_of_registration_name, country_of_registration_id, country_of_registration_name, date_of_registration, address, city_id, city_name, state_id, state_name, country_id, country_name, telephone, mobile_no, website_url, email, ngo_logo, ngo_logo_path, pan_cad_file_name, pan_card_file_url, crs_regis_file_name, crs_regis_file_path, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_MASTER} `,
+    NGO_MASTER_FIELDS:` SELECT ngo_id, unique_id, darpan_reg_date, ngo_name, ngo_type, ngo_type_name, registration_no, act_name, city_of_registration_id, city_of_registration_name, state_of_registration_id, state_of_registration_name, country_of_registration_id, country_of_registration_name, date_of_registration, address, city_id, city_name, state_id, state_name, country_id, country_name, telephone, mobile_no, website_url, email, ngo_logo, ngo_logo_path, pan_cad_file_name, pan_card_file_url, crs_regis_file_name, crs_regis_file_path, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_MASTER} `,
     NGO_FUNDS_DETAILS_FIELDS:` SELECT ngo_funds_id, ngo_id, department_name, source, financial_year, amount_sanctioned, purpose, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_FUNDS_DETAILS} `,
     NGO_BEARERS_FIELDS:` SELECT bearer_id, ngo_id, name, designation_id, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_OFFICE_BEARRRS} `,
     NGO_STATE_DISTRICT_MAPPING_FILDS:` SELECT ngo_state_district_mapping_id, ngo_id, ngo_name, unique_id, darpan_reg_date, ngo_type, registration_no, email, mobile_no, state_id, state_name, district_id, district_name, city_id, city_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_STATE_DISTING_MAPPING_VIEW} `,
     NGO_FIELD_MAPPING_FIELDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_NGO_FIELD_MAPPING} `,
     NGO_REQUEST_MAPPING_FIELDS:` SELECT Request_Ngo_Id, RequestId, RequestName, ngo_id, ngo_name, status_id, status_name, Reason, AssignedDate, ApprovalDate, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} `,
+    NGO_TYPE_FIELDS:` SELECT ngo_type_id, ngo_type, is_active, created_by, created_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_TYPE} `,
 
     // -------> P
     POSTS_FIELDS:` SELECT post_id, user_id, description, created_at, total_likes, total_comments, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_POSTS} `,
@@ -42,7 +43,7 @@ const ViewFieldTableWise = {
     REQUEST_FIELDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_REQUEST} `,
     REQUEST_NGO_FIELDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} `,
     ROLE_MASTER_FIELDS:` SELECT role_id, role, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_ROLE_MASTER} `,
-    REQUEST_MEDIA_FIELDS:` SELECT request_media_id, RequestId, img_name, media_url, sequence, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_REQUEST_MEDIA} `,
+    REQUEST_MEDIA_FIELDS:` SELECT request_media_id, RequestId, img_name, media_url, media_type, sequence, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_REQUEST_MEDIA} `,
     REQUEST_TYPE_FIELDS:` SELECT request_type_id, request_type_name, created_by, created_at, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_REQUEST_TYPE} `,
     REQUEST_COMMENTS:` SELECT comment_id, user_id, RequestName, request_id, comment_text, total_comment, parent_id, created_at, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_COMMENTS} `,
     REQUEST_LIKES:` SELECT like_id, user_id, RequestName, request_id, is_liked, created_at, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_LIKE} `,

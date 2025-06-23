@@ -1,7 +1,8 @@
 import SosUserListService from "./sos.user.list.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import getSosUserJsonFileName from "../../utils/helper/sos_user_file_helper.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate,LocalJsonHelper} = commonPath
+import LocalJsonHelper from "../../utils/helper/local.json.helper.js";
+const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const SosUserListController = {
     // Create A new Record 

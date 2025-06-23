@@ -19,7 +19,11 @@ const NgoMasterModel = (sequelize)=>{
         }, ngo_type:{
             type:DataTypes.INTEGER,
             allowNull:false
-        }, registration_no:{
+        },ngo_field_id:{
+            type:DataTypes.INTEGER,
+            allowNull:true
+        },
+         registration_no:{
             type:DataTypes.STRING(50),
             allowNull:false
         }, act_name:{
