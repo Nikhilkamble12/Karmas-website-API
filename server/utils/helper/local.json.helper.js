@@ -5,9 +5,17 @@ const fsPromises = fs.promises;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+import commonPath from '../../middleware/comman_path/comman.path.js';
+
+const { basePathRoute } = commonPath;
 
 const BASE_DIR = path.join(__dirname, '../../resources/json');
 
+// List of peer backend instances (adjust ports/hosts as needed)
+const PEERS = [
+   
+];
+ 
 function ensureDir(filePath) {
   const dir = path.dirname(filePath);
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
@@ -60,6 +68,22 @@ function deleteFile(filePath) {
     }
   }
   
+  export async function broadcastToPeers(relativePath, operation, data = null, field = null) {
+  for (const peer of PEERS) {
+    const fullUrl = `${peer}${basePathRoute}/json_auto_update_common/sync/push`;
+    try {
+      await axios.post(fullUrl, {
+        path: relativePath,
+        operation,
+        data,
+        field
+      });
+    } catch (err) {
+      console.warn(`⚠️ Push to peer ${peer} failed:`, err.message);
+    }
+  }
+}
+
 
 
 async function set(relativePath, key, newValue, ttlMs = null) {
@@ -120,6 +144,7 @@ await fs.promises.mkdir(dir, { recursive: true });
   // Save file
    // Use async write
    await fs.promises.writeFile(filePath, JSON.stringify(fileData, null, 2), 'utf8');
+   await syncFromPeers(relativePath, key);
   return true;
 }catch(error){
   console.log(" inside json set error -->",error)
