@@ -99,7 +99,7 @@ async function set(relativePath, key, newValue, ttlMs = null) {
     expiresAt,
     ttlMs
   };
-
+  let operationType = ""
   // If file exists, read it
   if (fs.existsSync(filePath)) {
     try {
@@ -124,27 +124,38 @@ async function set(relativePath, key, newValue, ttlMs = null) {
   if (key) {
     // Try to find and update entry by key (e.g., user_id or id)
     fileData.value = fileData.value.map(item => {
-      if (item[key] !== undefined && item[key] === newValue[key]) {
+      if (item[key] !== undefined && item[key] == newValue[key]) {
         updated = true;
         return newValue;  // Replace instead of merging
       }
       return item;
     });
+    if (!updated) {
+      fileData.value.push(newValue); 
+    }
+    operationType = 'ADD_OR_UPDATE';
   }else{
+    operationType = 'FULL_REPLACE';
     fileData.value = newValue
   }
 
   // If not updated (no key match), push as new
-  if (!updated && key) {
-  fileData.value.push(newValue);
-}
-// Split the relative path to get the directory
-const dir = path.join(BASE_DIR, relativePath.substring(0, relativePath.lastIndexOf('/')));
-await fs.promises.mkdir(dir, { recursive: true });
+  
+// // Split the relative path to get the directory
+// const dir = path.join(BASE_DIR, relativePath.substring(0, relativePath.lastIndexOf('/')));
+// await fs.promises.mkdir(dir, { recursive: true });
+
+ // Ensure directory exists
+    const dir = path.dirname(filePath);
+    await fs.promises.mkdir(dir, { recursive: true });
+    
   // Save file
    // Use async write
    await fs.promises.writeFile(filePath, JSON.stringify(fileData, null, 2), 'utf8');
-   await syncFromPeers(relativePath, key);
+   if(operationType!==""){
+   await broadcastToPeers(relativePath, operationType, newValue, key);
+   }
+
   return true;
 }catch(error){
   console.log(" inside json set error -->",error)
@@ -267,6 +278,8 @@ async function remove(relativePath, key, value) {
       return true;
     }
   }
+  await broadcastToPeers(relativePath, 'DELETE', { [key]: value }, key);
+
 
   // Nothing was removed
   return false;
@@ -305,6 +318,7 @@ async function deleteFullFile(relativePath) {
   try {
     await fsPromises.unlink(filePath);  // deletes the file
     console.log(`File ${filePath} deleted.`);
+    await broadcastToPeers(relativePath, 'DELETE_FILE');
     return true;
   } catch (err) {
     console.error(`Error deleting file ${filePath}:`, err);
