@@ -40,5 +40,8 @@ GET_ALL_REQUEST_LIKE:"v_request_likes",
 GET_ALL_REQUEST_COMMENT_LIKE:"v_request_comment_likes",
 GET_ALL_POST_COMMENT_LIKE:"v_post_comment_likes",
 GET_ALL_NGO_TYPE:"v_ngo_type",
+GET_ALL_COMPANY_MASTER:"v_company_master",
+GET_ALL_GIFT_MASTER:"v_gift_master",
+GET_ALL_COUPONS:"v_coupons",
 }
 export default VIEW_NAME
