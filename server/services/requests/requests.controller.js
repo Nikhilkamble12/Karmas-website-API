@@ -513,7 +513,7 @@ const RequestsController = {
         try{
             const user_id = tokenData(req,res)
             const limit = req.query.limit
-            const already_viewed = req.query.alredy_viewed
+            const already_viewed = req.query.already_viewed
             const getAllRequest = await RequestService.getRequestsForUserFeed(user_id,limit,already_viewed)
             const updatedPostData = await Promise.all(getAllRequest.map(async (currentData) => {
                 // Normalize file path
