@@ -99,6 +99,14 @@ const UserMasterDAL = {
         }catch(error){
             throw error
         }
+    }, checkIfUserNameIsPresentByGoogleId: async (google_id) => {
+        try {
+            console.log('google_id', google_id)
+            const getData = await db.sequelize.query(`${ViewFieldTableVise.USER_MASTER_FIELDS} where google_id = '${google_id}'`, { type: db.Sequelize.QueryTypes.SELECT })
+            return getData[0] ?? []
+        } catch (error) {
+            throw error
+        }
     }
 }
 

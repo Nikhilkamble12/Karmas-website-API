@@ -14,6 +14,12 @@ const AuthService={
         }catch(error){
             throw error
         }
+    },checkWetherUserIsPresertByGoogleId:async(google_id)=>{
+        try{
+            return await UserMasterDAL.checkIfUserNameIsPresentByGoogleId(google_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default AuthService
