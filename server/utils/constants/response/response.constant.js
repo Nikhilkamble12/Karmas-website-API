@@ -51,7 +51,8 @@ const RESPONSE_CONSTANTS = {
     PASSWORD_UPDATED_SUCCESSFULLY:"Password updated Successfully.",
     KINDLY_REGENRATE_OTP:"OTP has not been generated yet. Kindly Regenerate.",
     SOS_USER_LIMIT_EXCEEDED:"User Limit Has Been Exceeded.",
-    SOS_NOT_YET_CREATED:"Sos Not Yet Created."
+    SOS_NOT_YET_CREATED:"Sos Not Yet Created.",
+    USER_HAS_BLOCKED_YOU:"User has Blocaked You."
   };
   
   export default RESPONSE_CONSTANTS;

@@ -1,25 +1,31 @@
 import UserFollowingService from "./user.following.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+import UserTokenService from "../user_tokens/user.tokens.service.js";
+import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
+const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate,notificationTemplates} = commonPath
 
 const UserFollowingController = {
     // Create A new Record 
     create: async (req, res) => {
         try {
             const data = req.body;
-
+            let templateData = null
             const getUserActivityByUser = await UserActivtyService.getDataByUserId(data.user_id)
             const getUserActivityByFollowingId = await UserActivtyService.getDataByUserId(data.following_user_id)
             let total_following_count = parseInt(getUserActivityByUser[0].following_no) ?? 0
             let total_followed_count = parseInt(getUserActivityByFollowingId[0].follower_no) ?? 0
             const checkWetherItIsPresent = await UserFollowingService.getDataByUserIdAndFollowId(data.user_id,data.following_user_id)
             if(checkWetherItIsPresent && checkWetherItIsPresent.length>0){
-                if(checkWetherItIsPresent[0].is_following==false){
+                if(checkWetherItIsPresent[0].is_following==false && getUserActivityByFollowingId[0].is_account_public == true){
                     if(data.is_following){
                         total_following_count =  total_following_count + 1
                         total_followed_count = total_followed_count  + 1
                     }
+                    templateData = await notificationTemplates.friendRequestAccepted(getData[0].following_user_name) 
+                }else if(checkWetherItIsPresent[0].is_following==false && getUserActivityByFollowingId[0].is_account_public == false){
+                    templateData = await notificationTemplates.friendRequestSent(getData[0].following_user_name)
+                    data.is_following = false
                 }else if(checkWetherItIsPresent[0].is_following==true){
                     if(data.is_following && data.is_following == false){
                         total_following_count = total_following_count - 1
@@ -55,9 +61,12 @@ const UserFollowingController = {
             }
             // Add metadata for creation (created by, created at)
             await addMetaDataWhileCreateUpdate(data, req, res, false);
-            if(data.is_following){
+            if(data.is_following && getUserActivityByFollowingId[0].is_account_public == true){
             total_following_count =  total_following_count + 1
             total_followed_count = total_followed_count  + 1
+            }else if(getUserActivityByFollowingId[0].is_account_public == false){
+            data.is_following = false
+            templateData = await notificationTemplates.friendRequestSent(getData[0].following_user_name)
             }
             const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
             const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
@@ -114,10 +123,14 @@ const UserFollowingController = {
             let total_following_count = parseInt(getUserActivityByUser[0].following_no) ?? 0
             let total_followed_count = parseInt(getUserActivityByFollowingId[0].follower_no) ?? 0
             if(getOlderDatabyId.is_following==false){
-                    if(data.is_following){
+                    if(data.is_following && getUserActivityByFollowingId[0].is_account_public == true){
                         total_following_count =  total_following_count + 1
                         total_followed_count = total_followed_count  + 1
+                    }else if (data.is_following && getUserActivityByFollowingId[0].is_account_public == false){
+                        data.is_rejected = false 
                     }
+                }else if(checkWetherItIsPresent[0].is_following==false && getUserActivityByFollowingId[0].is_account_public == false){
+                    data.is_following = false
                 }else if(getOlderDatabyId.is_following==true){
                     if(data.is_following && data.is_following==false){
                         total_following_count = total_following_count - 1
@@ -431,6 +444,116 @@ const UserFollowingController = {
                         true
                     )
                 );
+        }
+    },acceptPrivateUserRequest:async(req,res)=>{
+        try{
+            const current_user_id = tokenData(req,res)
+            const follow_user_id = req.body.follower_user_id
+            const getData = await UserFollowingService.getDataByUserIdAndFollowId(follow_user_id,current_user_id)
+            if(getData && getData.length>0){
+                const data = req.body
+                const getUserActivityByUser = await UserActivtyService.getDataByUserId(data.user_id)
+                const getUserActivityByFollowingId = await UserActivtyService.getDataByUserId(data.following_user_id)
+                let total_following_count = parseInt(getUserActivityByUser[0].following_no) ?? 0
+                let total_followed_count = parseInt(getUserActivityByFollowingId[0].follower_no) ?? 0
+                await addMetaDataWhileCreateUpdate(data, req, res, true);
+                const updateData = await UserFollowingService.updateService(getData[0].follow_id,{data})
+                if(data.is_following){
+                    total_following_count =  total_following_count + 1
+                    total_followed_count = total_followed_count  + 1
+                    const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
+                    const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
+                    const templateData = await notificationTemplates.friendRequestAccepted(getData[0].following_user_name)
+                    const userToken = await UserTokenService.GetTokensByUserIds(getData[0].user_id)
+                    const sendNotification = await sendTemplateNotification({templateKey:"User-Follow",templateData:templateData,userIds:userToken})
+                }else if(data.is_rejected){
+                    const templateData = await notificationTemplates.friendRequestRejected(getData[0].following_user_name)
+                    const userToken = await UserTokenService.GetTokensByUserIds(getData[0].user_id)
+                    const sendNotification = await sendTemplateNotification({templateKey:"User-Follow",templateData:templateData,userIds:userToken})
+                }
+                if (updateData === 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_UPDATING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+            return res
+                .status(responseCode.CREATED)
+                .send(
+                    commonResponse(
+                        responseCode.CREATED,
+                        responseConst.SUCCESS_UPDATING_RECORD
+                    )
+                );
+            }else{
+                return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
+            }
+        }catch(error){
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    },getListByFollowingUserToAccepted:async(req,res)=>{
+        try{
+            const user_id = tokenData(req,res)
+            const getData = await UserFollowingService.getListByFollowingUserToAccepted(user_id)
+            if (getData.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getData
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        }catch(error){
+        logger.error(`Error ---> ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
         }
     }
 }

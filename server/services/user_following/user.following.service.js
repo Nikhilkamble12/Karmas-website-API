@@ -58,6 +58,12 @@ const UserFollowingService = {
         }catch(error){
             throw error
         }
+    },getListByFollowingUserToAccepted:async(user_follow_id)=>{
+        try{
+            return await UserFollowingDAL.getListByFollowingUserToAccepted(user_follow_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 

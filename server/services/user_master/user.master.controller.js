@@ -2,6 +2,7 @@ import commonPath from "../../middleware/comman_path/comman.path.js"; // Import 
 import getBase64FromFile from "../../utils/helper/base64.retrive.data.js";
 import saveBase64ToFile from "../../utils/helper/base64ToFile.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
+import UserBlackListService from "../user_blacklist/user.blacklist.service.js";
 import UserMasterService from "./user.master.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
@@ -323,7 +324,23 @@ const UserMasterController = {
         }
     },getuserDataAndActivity:async(req,res)=>{
         try{
+            const token_user = tokenData(req,res)
             const Id = req.query.id
+            if(Id !== token_user){
+                const checkWetherBlocked = await UserBlackListService.getDataByUserIdAndBackListUser(token_user,Id)
+                if(checkWetherBlocked && checkWetherBlocked.length>0){
+                    return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+                }
+            }
             // If not found in JSON, fetch data from the database
             const getDataByid = await UserMasterService.getServiceById(Id)
             const getActivity = await UserActivtyService.getDataByUserId(Id)

@@ -156,6 +156,9 @@
     },{
       "code":"1.0026",
       "message":"Sos Not Yet Created."
+    },{
+      "code":"1.0027",
+      "message":"User has Blocaked You."
     }
   ]
 }

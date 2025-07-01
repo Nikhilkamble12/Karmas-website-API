@@ -1,26 +1,18 @@
-import UserBlackListService from "./user.blacklist.service.js";
+import UserTokenService from "./user.tokens.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
-import UserActivtyService from "../user_activity/user.activity.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
-const UserBlackListController = {
+const UserTokenController = {
     // Create A new Record 
     create: async (req, res) => {
         try {
             const data = req.body;
             // Add metadata for creation (created by, created at)
-            const getserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
-            const total_blocked_user = parseInt(getserActivityData[0].total_blacklist_user) ?? 0
-            const getDataByUserId = await UserBlackListService.getDataByUserIdAndBackListUser(tokenData(req,res),data.blacklisted_user_id)
             await addMetaDataWhileCreateUpdate(data, req, res, false);
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
-            const createData = await UserBlackListService.createService(data);
-            if(getDataByUserId && getDataByUserId.length==0){
-                total_blocked_user = total_blocked_user + 1
-                const updateUserActivity = await UserActivtyService.updateService(getserActivityData[0].user_activity_id,{total_blacklist_user:total_blocked_user})
-            }
+            const createData = await UserTokenService.createService(data);
             if (createData) {
                 return res
                     .status(responseCode.CREATED)
@@ -66,11 +58,11 @@ const UserBlackListController = {
             await addMetaDataWhileCreateUpdate(data, req, res, true);
 
             // Update the record using ORM
-            const updatedRowsCount = await UserBlackListService.updateService(id, data);
+            const updatedRowsCount = await UserTokenService.updateService(id, data);
             // if (updatedRowsCount > 0) {
-            //     const newData = await UserBlackListService.getServiceById(id);
+            //     const newData = await UserTokenService.getServiceById(id);
             //     // Update the JSON data in the file
-            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "table_id", id, newData, CITY_VIEW_NAME);
+            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
             // }
             // Handle case where no records were updated
             if (updatedRowsCount === 0) {
@@ -126,12 +118,12 @@ const UserBlackListController = {
             //     }
             //   }
             // Fetch data from the database if JSON is empty
-            const getAll = await UserBlackListService.getAllService()
+            const getAll = await UserTokenService.getAllService()
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await UserBlackListService.getAllService()
+            //   const DataToSave=await UserTokenService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -178,7 +170,7 @@ const UserBlackListController = {
         try {
             const Id = req.query.id
             // Fetch data by ID from JSON
-            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"table_id",Id)
+            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
             // if(getJsonDatabyId!==null){
             //   return res
             //     .status(responseCode.OK)
@@ -192,12 +184,12 @@ const UserBlackListController = {
             // }
 
             // If not found in JSON, fetch data from the database
-            const getDataByid = await UserBlackListService.getServiceById(Id)
+            const getDataByid = await UserTokenService.getServiceById(Id)
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await UserBlackListService.getAllService()
+            //   const DataToSave=await UserTokenService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -243,14 +235,10 @@ const UserBlackListController = {
     deleteData: async (req, res) => {
         try {
             const id = req.query.id
-            const getDataById = await UserBlackListService.getServiceById(id)
-            const getserActivityData = await UserActivtyService.getDataByUserId(getDataById.user_id)
-            const total_blocked_user = parseInt(getserActivityData[0].total_blacklist_user) ?? 0
-
             // Delete data from the database
-            const deleteData = await UserBlackListService.deleteByid(id, req, res)
+            const deleteData = await UserTokenService.deleteByid(id, req, res)
             // Also delete data from the JSON file
-            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"table_id",id)
+            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
             if (deleteData === 0) {
                 return res
                     .status(responseCode.BAD_REQUEST)
@@ -263,10 +251,7 @@ const UserBlackListController = {
                         )
                     );
             }
-            if(getserActivityData && getserActivityData.length==0){
-                total_blocked_user = total_blocked_user - 1
-                const updateUserActivity = await UserActivtyService.updateService(getserActivityData[0].user_activity_id,{total_blacklist_user:total_blocked_user})
-            }
+
             return res
                 .status(responseCode.CREATED)
                 .send(
@@ -288,46 +273,7 @@ const UserBlackListController = {
                     )
                 );
         }
-    },getDataByUseridByView:async(req,res)=>{
-        try{
-            const user_id = req.query.user_id
-            const getDataByView = await UserBlackListService.getByUserId(user_id)
-            if (getDataByView.length !== 0) {
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            getDataByView
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
-            }
-        }catch(error){
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
-        }
     }
 }
 
-export default UserBlackListController
+export default UserTokenController

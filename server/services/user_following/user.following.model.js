@@ -20,6 +20,11 @@ const UserFollowingModel = (sequelize)=>{
             allowNull:true,
             defaultValue:false
         },
+        is_rejected:{
+          type:DataTypes.BOOLEAN,
+          allowNull:false,
+          defaultValue:false
+        },
          is_active: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

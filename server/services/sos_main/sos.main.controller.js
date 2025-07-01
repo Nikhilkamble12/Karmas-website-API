@@ -322,7 +322,37 @@ const SosMainController = {
     },CreateOrUpdateSosMain:async(req,res)=>{
         try{
             const data = req.body
-            
+            const user_id = tokenData(req,res)
+            const checkWhoseSosIsOn = await SosMainService.getByUserIdOnlyActive(user_id)
+            if(checkWhoseSosIsOn && checkWhoseSosIsOn.length>0){
+                if(!data.is_sos_on){
+                    data.end_time = currentTime()
+                }
+                const updateData = await SosMainService.updateService(checkWhoseSosIsOn[0].sos_id,data)
+                const getOlderData = await SosMainService.getServiceById(checkWhoseSosIsOn[0].sos_id)
+                if(!getOlderData.is_sos_on){
+
+                }
+            }else{
+                if(data.is_sos_on){
+                  data.start_time = currentTime()
+                  await addMetaDataWhileCreateUpdate(data, req, res, false);
+                  data.end_time = null
+                  const createData = await SosMainService.createService(data)
+                  
+                }else{
+                  return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.SOS_NOT_YET_CREATED,
+                            null,
+                            true
+                        )
+                    );  
+                }
+            }
         }catch(error){
             logger.error(`Error ---> ${error}`);
             return res

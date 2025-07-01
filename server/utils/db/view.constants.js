@@ -43,5 +43,7 @@ GET_ALL_NGO_TYPE:"v_ngo_type",
 GET_ALL_COMPANY_MASTER:"v_company_master",
 GET_ALL_GIFT_MASTER:"v_gift_master",
 GET_ALL_COUPONS:"v_coupons",
+GET_ALL_USER_TOKEN:"v_user_token",
+GET_ALL_NOTIFICATIONS:"v_notifications",
 }
 export default VIEW_NAME
