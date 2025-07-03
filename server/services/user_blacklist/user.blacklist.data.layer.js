@@ -60,7 +60,7 @@ const UserBlackListDAL = {
         }
     },getDatabyUserIdAndBlacklistUserid:async(user_id,blacklist_user_id)=>{
         try{
-            const getDataByUserIdAndBackList = await db.sequelize.query(` ${ViewFieldTableVise} where user_id = ${user_id} and blacklisted_user_id = ${blacklist_user_id} `,{type:db.Sequelize.QueryTypes.SELECT})
+            const getDataByUserIdAndBackList = await db.sequelize.query(` ${ViewFieldTableVise.USER_BLACKLIST_FIELDS} where user_id = ${user_id} and blacklisted_user_id = ${blacklist_user_id} `,{type:db.Sequelize.QueryTypes.SELECT})
             return getDataByUserIdAndBackList
         }catch(error){
             throw error
