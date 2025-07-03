@@ -1,6 +1,6 @@
 import admin from 'firebase-admin';
 import serviceAccount from "../../middleware/external_documents/firebase/karmas.firebase.json" assert { type: 'json' };
-import NotificationHistoryDAL from '../../services/notification_history/notification.history.data.layer';
+import NotificationHistoryDAL from '../../services/notification_history/notification.history.data.layer.js';
 
 if (!admin.apps.length) {
   admin.initializeApp({

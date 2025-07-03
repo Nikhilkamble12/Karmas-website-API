@@ -2,8 +2,8 @@
 // import WebSocket from 'ws';
 // import { WebSocketServer } from 'ws';
 
-import pkg from 'ws';
-const { WebSocketServer } = pkg;
+import ws from 'ws';
+const WebSocketServer = ws.Server;
 
 import jwt from 'jsonwebtoken';
 import url from 'url';
