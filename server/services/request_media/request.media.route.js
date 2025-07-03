@@ -110,5 +110,11 @@ router.post(
 //     verifyToken,
 // )
 
+router.get(
+  `${basePath}/getMedia/byRequest`,
+  verifyToken,
+  RequestMediaController.getRequestMediaByRequestId
+)
+
 // Export the router for use in other parts of the application
 export default router

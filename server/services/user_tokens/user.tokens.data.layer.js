@@ -147,9 +147,19 @@ const UserTokenDAL = {
       console.error("Error fetching tokens by user IDs:", error);
       throw error;
     }
+  },getTokenByRoleId:async(role_id)=>{
+    try{
+      const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.USER_TOKEN_FIELDS} where role_id = ${role_id} and
+          (
+            (is_android = 1 AND is_android_on = 1 AND android_token IS NOT NULL)
+            OR 
+            (is_web = 1 AND is_web_on = 1 AND web_token IS NOT NULL)
+          )`, { type: db.Sequelize.QueryTypes.SELECT })
+      return mapTokenResults(getAllData) // Return the retrieved data
+    }catch(error){
+      throw error;
+    }
   }
-
-
 }
 
 export default UserTokenDAL

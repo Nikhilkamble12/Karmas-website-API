@@ -33,7 +33,8 @@ import RequestMediaModel from "./request_media/request.media.model.js";
 import UserBlackListModel from "./user_blacklist/user.blacklist.model.js";
 import NgoTypesModel from "./ngo_type/ngo.type.model.js";
 import UserTokenModel from "./user_tokens/user.tokens.model.js";
-import NotificationModel from "./notifications/notifications.model.js";
+// import NotificationModel from "./notifications/notifications.model.js";
+import NotificationHistoryModel from "./notification_history/notification.history.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -97,7 +98,7 @@ db.RequestMediaModel = RequestMediaModel(sequelize,Sequelize);
 db.UserBlackListModel = UserBlackListModel(sequelize,Sequelize);
 db.NgoTypesModel = NgoTypesModel(sequelize,Sequelize);
 db.UserTokenModel = UserTokenModel(sequelize,Sequelize);
-db.NotificationModel = NotificationModel(sequelize,Sequelize);
+db.NotificationHistoryModel = NotificationHistoryModel(sequelize,Sequelize);
 
 
 export default db

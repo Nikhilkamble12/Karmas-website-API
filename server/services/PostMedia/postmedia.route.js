@@ -80,5 +80,11 @@ router.post(
     PostMediaController.BulkCreateOrUpdatePostMedia // Controller function that handles the creation logic
   );
 
+  router.get(
+    `${basePath}/getMedia/ByPostId`,
+    verifyToken,
+    PostMediaController.getPostMediaByPostId
+  )
+
 // console.log("router",router)
 export default router

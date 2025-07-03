@@ -79,7 +79,31 @@ const UserFollowingDAL = {
         }catch(error){
             throw error
         }
-    }
+    },getOnlyFollowAndBlockedUserByUserId: async (user_id) => {
+  try {
+    // 1. Get all users the user is following
+    const getDatabyView = await db.sequelize.query( ` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where user_id = ${user_id} and is_following = true`,{type:db.Sequelize.QueryTypes.SELECT})
+    const followingUserIds = getDatabyView.map(item => item.following_user_id);
+
+    if (!followingUserIds.length) return [];
+
+    // 2. Get all blacklisted users by this user
+    const blacklistedData = await db.sequelize.query(`
+      ${ViewFieldTableVise.USER_BLACKLIST_FIELDS} 
+      WHERE user_id = ${user_id}
+    `, { type: db.Sequelize.QueryTypes.SELECT });
+
+    const blacklistedUserIds = new Set(blacklistedData.map(item => item.blacklisted_user_id));
+
+    // 3. Filter out blacklisted users from following list
+    const validFollowingUserIds = followingUserIds.filter(id => !blacklistedUserIds.has(id));
+
+    return validFollowingUserIds;
+  } catch (error) {
+    throw error;
+  }
+}
+
 }
 
 export default UserFollowingDAL

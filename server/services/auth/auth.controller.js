@@ -8,6 +8,7 @@ import ScoreHistoryService from "../score_history/score.history.service.js";
 import CommonEmailtemplate from "../../utils/helper/common.email.templates.js";
 import sendEmail from "../../utils/helper/comman.email.function.js";
 import RESPONSE_CONSTANTS from "../../utils/constants/response/response.constant.js";
+import UserTokenService from "../user_tokens/user.tokens.service.js";
 // import RoleService from "../access_control/role/role.service.js";
 const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate, JWT } = commonPath
 
@@ -15,7 +16,7 @@ let AuthController = {
   loginUser: async (req, res) => {
     try {
       console.log(req.body)
-      const { user_name, password, google_id } = req.body;
+      const { user_name, password, google_id,web_token,android_token } = req.body;
 
       let userData;
       // if google id -> fetch by googleid
@@ -30,7 +31,7 @@ let AuthController = {
       // console.log("hash",hash)
       if (userData.length == 0) {
         console.log("inside serData==null")
-        logger.error(`User with name ${user_name} not found`);
+        logger.error(`User with name or Id ${user_name || google_id} not found`);
         return res
           .status(responseCode.UNAUTHORIZED)
           .send(
@@ -58,7 +59,21 @@ let AuthController = {
           );
         }
       }
-      
+      if(web_token){
+        const DataToUpdate = {
+          web_token:android_token,
+          is_web:true,
+          role_id:userData.role_id
+        }
+        await UserTokenService.CreateOrUpdateUserToken(userData.user_id,DataToUpdate)
+      }else if(android_token){
+         const DataToUpdate = {
+          android_token:android_token,
+          is_android:true,
+          role_id:userData.role_id
+        }
+        await UserTokenService.CreateOrUpdateUserToken(userData.user_id,DataToUpdate)
+      }
       if (userData?.first_time_login == true) {
         const getBonusData = await BonusMasterService.getBonusMasterDataByCategoryStatus(BONUS_MASTER.WELCOME_BONUS_ID, STATUS_MASTER.ACTIVE)
         if (getBonusData.length > 0) {

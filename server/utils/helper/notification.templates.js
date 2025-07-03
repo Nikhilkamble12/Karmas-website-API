@@ -7,7 +7,18 @@ const notificationTemplates = {
   requestInitiated: ({ ngoName, requestName }) => ({
     title: "Request Submitted",
     description: `Your request '${requestName}' has been submitted by ${ngoName}.`
+  }), 
+  newRequestForNgo: ({ requestName, requesterName }) => ({
+  title: "New Request Received",
+  description: `You have received a new request titled '${requestName}' from ${requesterName}.`
   }),
+  requestReceivedForEvaluation: ({ requestName }) => ({
+    title: "Request Received",
+    description: `We have received your request '${requestName}' and it is currently being evaluated.`
+  }),requestRejected: ({ ngoName, requestName }) => ({
+  title: "Request Rejected",
+  description: `${ngoName} has rejected your request '${requestName}'.`
+}),
 
   requestCompleted: ({ requestName, requestID }) => ({
     title: "Request Completed",
@@ -37,6 +48,10 @@ const notificationTemplates = {
   friendRequestSent: ({ username }) => ({
     title: "Friend Request Sent",
     description: `You sent a friend request to ${username}.`
+  }),
+  followRequestReceived: ({ username }) => ({
+    title: "New Follow Request",
+    description: `${username} wants to follow you.`
   }),
 
   friendRequestAccepted: ({ username }) => ({

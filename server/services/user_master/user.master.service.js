@@ -52,6 +52,12 @@ const UserMasterService = {
         }catch(error){
             throw error
         }
+    },getUserByNgoId:async(ngo_id)=>{
+        try{
+            return await UserMasterDAL.getUserByNgoIdByView(ngo_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default UserMasterService

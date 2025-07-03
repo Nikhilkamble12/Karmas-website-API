@@ -58,6 +58,12 @@ const UserTokenService = {
         }catch(error){
             throw error
         }
+    },getTokenByRoleId:async(role_id)=>{
+        try{
+            return await UserTokenDAL.getTokenByRoleId(role_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 

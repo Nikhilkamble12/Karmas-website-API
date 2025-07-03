@@ -1,9 +1,9 @@
-import NotificationsController from "./notifications.controller.js";
+import NotificationHistoryController from "./notification.history.controller.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 const {express,verifyToken,basePathRoute} = commonPath
 
 // Define the base path for routes
-const basePath=`${basePathRoute}/notifications`
+const basePath=`${basePathRoute}/notification_history`
 const router = express.Router()
 // Route to create a new record
 
@@ -11,32 +11,31 @@ const router = express.Router()
 router.post(
     `${basePath}/create`,
     verifyToken,
-    NotificationsController.create
+    NotificationHistoryController.create
 )
 // Route to update an existing record by ID
 router.put(
     `${basePath}/update`,
     verifyToken,
-    NotificationsController.update
+    NotificationHistoryController.update
 )
 // Route to retrieve all records
 router.get(
     `${basePath}`,
     verifyToken,
-    NotificationsController.getAllByView
+    NotificationHistoryController.getAllByView
 )
 // Route to retrieve a record by ID
 router.get(
     `${basePath}/getById`,
     verifyToken,
-    NotificationsController.getByIdByView
+    NotificationHistoryController.getByIdByView
 )
 // Route to delete a record by ID
 router.delete(
     `${basePath}/delete`,
     verifyToken,
-    NotificationsController.deleteData
+    NotificationHistoryController.deleteData
 )
 
-// Export the router for use in other parts of the application
 export default router

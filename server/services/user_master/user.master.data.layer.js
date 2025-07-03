@@ -107,6 +107,13 @@ const UserMasterDAL = {
         } catch (error) {
             throw error
         }
+    },getUserByNgoIdByView:async(ngo_id)=>{
+        try{
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.USER_MASTER_FIELDS} where ngo_id = ${ngo_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getAllData
+        }catch(error){
+            throw error
+        }
     }
 }
 

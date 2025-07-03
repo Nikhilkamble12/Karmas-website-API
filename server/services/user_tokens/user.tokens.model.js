@@ -9,7 +9,10 @@ const UserTokenModel = (sequelize)=>{
         }, user_id:{
             type:DataTypes.INTEGER,
             allowNull:true
-        }, android_token:{
+        },role_id:{
+            type:DataTypes.INTEGER,
+            allowNull:true
+        },android_token:{
             type:DataTypes.STRING(255),
             allowNull:true
         }, web_token:{

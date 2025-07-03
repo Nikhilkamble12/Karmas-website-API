@@ -1,28 +1,34 @@
 import { DataTypes } from "sequelize";
 
-const NotificationModel = (sequelize)=>{
-    return sequelize.define("notifications",{
-        notification_id:{
+const NotificationHistoryModel = (sequelize)=>{
+    return sequelize.define("notification_history",{
+        notification_history_id:{
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true
+        }, token_id:{
+            type:DataTypes.STRING(255),
+            allowNull:true
         }, user_id:{
             type:DataTypes.INTEGER,
             allowNull:true
-        }, title:{
-            type:DataTypes.STRING(50),
+        }, ngo_id:{
+        type:DataTypes.INTEGER,
             allowNull:true
-        }, description:{
+        }, request_id:{
+            type:DataTypes.INTEGER,
+            allowNull:true
+        }, post_id:{
+            type:DataTypes.INTEGER,
+            allowNull:true
+        }, notification_details:{
             type:DataTypes.TEXT,
             allowNull:true
-        }, type:{
-            type:DataTypes.STRING(50),
+        }, notification_type:{
+            type:DataTypes.STRING(150),
             allowNull:true
-        }, metadata:{
-            type:DataTypes.JSON,
-            allowNull:true
-        }, is_read:{
-            type:DataTypes.TINYINT(1),
+        }, is_viewed:{
+            type:DataTypes.INTEGER,
             allowNull:true
         }, is_active: {
             type: DataTypes.BOOLEAN,
@@ -54,7 +60,7 @@ const NotificationModel = (sequelize)=>{
             allowNull: true
         }
     },{
-        tableName: "notifications",
+        tableName: "notification_history",
         paranoid: true,
         timestamps: false,
         defaultScope: {
@@ -73,4 +79,4 @@ const NotificationModel = (sequelize)=>{
     })
 }
 
-export default NotificationModel
+export default NotificationHistoryModel

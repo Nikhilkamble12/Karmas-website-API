@@ -6,6 +6,9 @@ import RequestNgoService from "../request_ngo/request.ngo.service.js";
 import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 import RequestMediaService from "../request_media/request.media.service.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
+import notificationTemplates from "../../utils/helper/notification.templates.js";
+import UserTokenService from "../user_tokens/user.tokens.service.js";
+import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const RequestsController = {
@@ -24,15 +27,19 @@ const RequestsController = {
                 const totalRequest = parseInt(getUserActivityData[0].total_requests_no) + 1
                 const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_requests_no:totalRequest})
             }
+            const template = notificationTemplates.requestReceivedForEvaluation({requestName:data.RequestName})
             data.status_id = STATUS_MASTER.REQUEST_INSIATED
             const createData = await RequestService.createService(data);
             if (createData) {
+                const getUserById = await UserTokenService.GetTokensByUserIds(data.request_user_id)
+                const sendNotifiction = await sendTemplateNotification({templateKey:"Request-Notification",templateData:template,userIds:getUserById,metaData:{request_id:createData.dataValues.RequestId,created_by:tokenData(req,res)}})
                 return res
                     .status(responseCode.CREATED)
                     .send(
                         commonResponse(
                             responseCode.CREATED,
-                            responseConst.SUCCESS_ADDING_RECORD
+                            responseConst.SUCCESS_ADDING_RECORD,
+                            createData
                         )
                     );
             } else {

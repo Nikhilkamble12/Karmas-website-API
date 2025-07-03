@@ -1,6 +1,7 @@
 import PostService from "./posts.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import PostMediaService from "../PostMedia/postmedia.service.js";
+import UserFollowingService from "../user_following/user.following.service.js";
 
 const { commonResponse,responseCode, responseConst, logger,tokenData, currentTime,addMetaDataWhileCreateUpdate } = commonPath;
 
@@ -14,7 +15,10 @@ const PostController = {
       // data.created_by=1,
       // data.created_at = new Date()
       // Create the record using ORM
+      
       const createdData = await PostService.createSerive(data);
+      const getFollowerUserIdOnly = await UserFollowingService.getOnlyUserIdOfFollowAndBlocked( )
+      const getUserFollower = await UserFollowingService.getDataByFollowingUserId()
       if (createdData) {
         return res
           .status(responseCode.CREATED)

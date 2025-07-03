@@ -64,6 +64,12 @@ const UserFollowingService = {
         }catch(error){
             throw error
         }
+    },getOnlyUserIdOfFollowAndBlocked:async(user_id)=>{
+        try{
+            return await UserFollowingDAL.getOnlyFollowAndBlockedUserByUserId(user_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 

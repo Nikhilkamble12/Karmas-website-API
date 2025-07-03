@@ -2,11 +2,14 @@ import RequestNgoService from "./request.ngo.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import RequestService from "../requests/requests.service.js";
 import BonusMasterService from "../bonus_master/bonus.master.service.js";
-import { BONUS_MASTER, STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
+import { BONUS_MASTER, ROLE_MASTER, STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 import UserMasterService from "../user_master/user.master.service.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
 import ScoreHistoryService from "../score_history/score.history.service.js";
 import RequestMediaService from "../request_media/request.media.service.js";
+import notificationTemplates from "../../utils/helper/notification.templates.js";
+import UserTokenService from "../user_tokens/user.tokens.service.js";
+import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const RequestNgoController = {
@@ -299,8 +302,18 @@ const RequestNgoController = {
                 }else{
                     await addMetaDataWhileCreateUpdate(currentData, req, res, false);
                     currentData.status_id = STATUS_MASTER.REQUEST_APPROVAL_PENDINNG
+                    
                     const createRequestNgo = await RequestNgoService.createService(currentData)
+
                     if(createRequestNgo){
+                        const getOlderData = await RequestNgoService.getServiceById(createRequestNgo.dataValues.Request_Ngo_Id) 
+                        const template = await notificationTemplates.newRequestForNgo({requestName :getOlderData.RequestName,requesterName:getOlderData.user_name})
+                        const getUserByNgoId = await UserMasterService.getUserByNgoId(getOlderData.ngo_id)
+                        const userIds = getUserByNgoId.map(user => user.user_id);
+                        const getAllUserToken = await UserTokenService.GetTokensByUserIds(userIds)
+                        const getTokenByRole = await UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN)
+                        const allToken =[...getAllUserToken,...getTokenByRole]
+                        await sendTemplateNotification({templateKey:"Request-Ngo", templateData:template, userIds:allToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId}})
                         request_saved = true
                     }else{
                         request_error = true
@@ -349,7 +362,7 @@ const RequestNgoController = {
             const getDataByNgoRequest = await RequestNgoService.getServiceById(Request_Ngo_Id)
             let dataToStore = {}
                 dataToStore.status_id = req.body.status_id
-            if(requestDetails.status_id!==STATUS_MASTER.REQUEST_APPROVED){
+            if(parseInt(requestDetails.status_id)==STATUS_MASTER.REQUEST_APPROVED){
                 let userActivityData = {}
                 const getUserDataByUserId = await UserActivtyService.getDataByUserId(requestDetails[0].request_user_id)
                 await addMetaDataWhileCreateUpdate(dataToStore, req, res, true);
@@ -391,6 +404,41 @@ const RequestNgoController = {
                             )
                         );
                 }
+                const getOlderData = await RequestNgoService.getServiceById(Request_Ngo_Id)
+                const template = await notificationTemplates.requestApproved({ngoName:getOlderData.ngo_name, requestName:getOlderData.RequestName})
+                const userToken = await UserTokenService.GetTokensByUserIds(requestDetails.request_user_id)
+                const AdminUserToken = await UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN)
+                const allUserToken = [...userToken,...AdminUserToken]
+                await sendTemplateNotification({templateKey:"Request-Rejected", templateData:template, userIds:allUserToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId}})
+                return res
+                    .status(responseCode.CREATED)
+                    .send(
+                        commonResponse(
+                            responseCode.CREATED,
+                            responseConst.SUCCESS_UPDATING_RECORD
+                        )
+                    );
+            }else if(requestDetails.status_id!==STATUS_MASTER.REQUEST_REJECTED){
+                let dataToStore = {}
+                dataToStore.status_id = req.body.status_id
+                await addMetaDataWhileCreateUpdate(dataToStore, req, res, true);
+                const updateData = await RequestNgoService.updateService(Request_Ngo_Id,dataToStore)
+                if (updateData === 0) {
+                    return res
+                        .status(responseCode.BAD_REQUEST)
+                        .send(
+                            commonResponse(
+                                responseCode.BAD_REQUEST,
+                                responseConst.ERROR_UPDATING_RECORD,
+                                null,
+                                true
+                            )
+                        );
+                }
+                const getOlderData = await RequestNgoService.getServiceById(Request_Ngo_Id)
+                const template = await notificationTemplates.requestRejected({ngoName:getOlderData.ngo_name, requestName:getOlderData.RequestName})
+                const UserToken = await UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN)
+                await sendTemplateNotification({templateKey:"Request-Rejected", templateData:template, userIds:UserToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId}})
                 return res
                     .status(responseCode.CREATED)
                     .send(

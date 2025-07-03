@@ -1,9 +1,9 @@
-import NotificationService from "./notifications.service.js";
+import NotificationHistoryService from "./notification.history.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
 
-const NotificationsController = {
-     // Create A new Record 
+const NotificationHistoryController = {
+    // Create A new Record 
     create: async (req, res) => {
         try {
             const data = req.body;
@@ -12,7 +12,7 @@ const NotificationsController = {
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
-            const createData = await NotificationService.createService(data);
+            const createData = await NotificationHistoryService.createService(data);
             if (createData) {
                 return res
                     .status(responseCode.CREATED)
@@ -35,7 +35,7 @@ const NotificationsController = {
                     );
             }
         } catch (error) {
-            console.log("error",error)
+            console.log("error", error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -48,7 +48,7 @@ const NotificationsController = {
                     )
                 );
         }
-    }, 
+    },
     // update Record Into Db
     update: async (req, res) => {
         try {
@@ -58,9 +58,9 @@ const NotificationsController = {
             await addMetaDataWhileCreateUpdate(data, req, res, true);
 
             // Update the record using ORM
-            const updatedRowsCount = await NotificationService.updateService(id, data);
+            const updatedRowsCount = await NotificationHistoryService.updateService(id, data);
             // if (updatedRowsCount > 0) {
-            //     const newData = await NotificationService.getServiceById(id);
+            //     const newData = await NotificationHistoryService.getServiceById(id);
             //     // Update the JSON data in the file
             //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
             // }
@@ -118,12 +118,12 @@ const NotificationsController = {
             //     }
             //   }
             // Fetch data from the database if JSON is empty
-            const getAll = await NotificationService.getAllService()
+            const getAll = await NotificationHistoryService.getAllService()
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await NotificationService.getAllService()
+            //   const DataToSave=await NotificationHistoryService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -184,12 +184,12 @@ const NotificationsController = {
             // }
 
             // If not found in JSON, fetch data from the database
-            const getDataByid = await NotificationService.getServiceById(Id)
+            const getDataByid = await NotificationHistoryService.getServiceById(Id)
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await NotificationService.getAllService()
+            //   const DataToSave=await NotificationHistoryService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -236,7 +236,7 @@ const NotificationsController = {
         try {
             const id = req.query.id
             // Delete data from the database
-            const deleteData = await NotificationService.deleteByid(id, req, res)
+            const deleteData = await NotificationHistoryService.deleteByid(id, req, res)
             // Also delete data from the JSON file
             // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
             if (deleteData === 0) {
@@ -273,7 +273,45 @@ const NotificationsController = {
                     )
                 );
         }
+    }, getNotificationDataByUserId: async (req,res) => {
+        try {
+            const user_id = req.query.user_id
+            const getData = await NotificationHistoryService.getDataByUserIdByView(user_id)
+            if (getData.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getData
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
     }
 }
-
-export default NotificationsController
+export default NotificationHistoryController
