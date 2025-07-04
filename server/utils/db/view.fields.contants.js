@@ -14,7 +14,7 @@ const ViewFieldTableWise = {
     COUPON_MASTER_FIELDS : ` SELECT coupon_id, coupon_code, rate, amount, company_name, active_date, expires_date, distributed_status, active_status, created_at FROM ${VIEW_NAME.GET_ALL_COUPON_MASTER} `,
     COMMENTS_FIELDS :` SELECT comment_id, user_id, post_id, comment_text, parent_id, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_COMMENTS} `,
     COMPANY_MASTER_FIELDS :` SELECT company_id, company_name, company_email, company_logo, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_COMPANY_MASTER} `,
-    COUPONS_FIELDS: `SELECT coupon_id, coupon_code, gift_master_id, gift_name, gift_amount, status_id, status_name, redeem_date, redeem_time, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_COUPONS}`,
+    COUPONS_FIELDS: `SELECT coupon_id, coupon_code, expiry_date, gift_master_id, gift_name, gift_amount, status_id, status_name, redeem_date, redeem_time, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_COUPONS}`,
 
     // -------> D
     DESIGNATION_MASTER_FIELDS:` SELECT designation_id, table_id, table_name, designation_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_DESIGNATION_MASTER} `,
