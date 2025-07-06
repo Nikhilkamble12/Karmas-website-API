@@ -45,5 +45,7 @@ GET_ALL_GIFT_MASTER:"v_gift_master",
 GET_ALL_COUPONS:"v_coupons",
 GET_ALL_USER_TOKEN:"v_user_token",
 GET_ALL_NOTIFICATION_HISTORY:"v_notification_history",
+GET_ALL_BLACKLIST_NGO:"v_blacklist_ngo_master",
+GET_ALL_BLACKLISTER_USER:"v_blacklisted_user"
 }
 export default VIEW_NAME
