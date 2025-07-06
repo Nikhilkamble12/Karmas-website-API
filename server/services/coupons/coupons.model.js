@@ -17,6 +17,10 @@ const CouponsModel = (sequelize) => {
         type: DataTypes.STRING(45),
         allowNull: false,
       },
+      expiry_date: {
+        type: DataTypes.DATEONLY,
+        allowNull: true,
+      },
       status_id: {
         type: DataTypes.INTEGER,
         allowNull: true,
