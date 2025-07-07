@@ -1,8 +1,8 @@
-import RoleMasterService from "./role.master.service.js";
-import commonPath from "../../middleware/comman_path/comman.path.js";
+import PageService from "./page.service.js";
+import commonPath from "../../../middleware/comman_path/comman.path.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
-const RoleMasterController = {
+const PageController = {
     // Create A new Record 
     create: async (req, res) => {
         try {
@@ -12,7 +12,7 @@ const RoleMasterController = {
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
-            const createData = await RoleMasterService.createService(data);
+            const createData = await PageService.createService(data);
             if (createData) {
                 return res
                     .status(responseCode.CREATED)
@@ -58,9 +58,9 @@ const RoleMasterController = {
             await addMetaDataWhileCreateUpdate(data, req, res, true);
 
             // Update the record using ORM
-            const updatedRowsCount = await RoleMasterService.updateService(id, data);
+            const updatedRowsCount = await PageService.updateService(id, data);
             // if (updatedRowsCount > 0) {
-            //     const newData = await RoleMasterService.getServiceById(id);
+            //     const newData = await PageService.getServiceById(id);
             //     // Update the JSON data in the file
             //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
             // }
@@ -118,12 +118,12 @@ const RoleMasterController = {
             //     }
             //   }
             // Fetch data from the database if JSON is empty
-            const getAll = await RoleMasterService.getAllService()
+            const getAll = await PageService.getAllService()
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await RoleMasterService.getAllService()
+            //   const DataToSave=await PageService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -152,7 +152,6 @@ const RoleMasterController = {
                     );
             }
         } catch (error) {
-            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -185,12 +184,12 @@ const RoleMasterController = {
             // }
 
             // If not found in JSON, fetch data from the database
-            const getDataByid = await RoleMasterService.getServiceById(Id)
+            const getDataByid = await PageService.getServiceById(Id)
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await RoleMasterService.getAllService()
+            //   const DataToSave=await PageService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -237,7 +236,7 @@ const RoleMasterController = {
         try {
             const id = req.query.id
             // Delete data from the database
-            const deleteData = await RoleMasterService.deleteByid(id, req, res)
+            const deleteData = await PageService.deleteByid(id, req, res)
             // Also delete data from the JSON file
             // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
             if (deleteData === 0) {
@@ -277,4 +276,4 @@ const RoleMasterController = {
     }
 }
 
-export default RoleMasterController
+export default PageController

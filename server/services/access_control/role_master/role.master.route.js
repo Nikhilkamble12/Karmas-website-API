@@ -1,5 +1,5 @@
 import RoleMasterController from "./role.master.controller.js";
-import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
+import commonPath from "../../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 const {express,verifyToken,basePathRoute} = commonPath
 
 // Define the base path for routes

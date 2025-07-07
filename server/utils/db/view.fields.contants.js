@@ -22,13 +22,18 @@ const ViewFieldTableWise = {
     
     //-------> G
     GIFT_MASTER_FIELDS:` SELECT gift_master_id, company_id, gift_name, gift_logo, gift_score_required, gift_amount, gift_t_c, how_to_redeem, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_GIFT_MASTER} `,
+    GROUP_ROLE_PAGE_PERMISSION_FIELDS:` SELECT role_page_permission_id, role_id, role_name, page_id, page_name, page_url, mobile_url, interface, module_name, permission, description FROM ${VIEW_NAME.GET_ALL_GROUP_ROLE_PAGE_PERMISSION} `,
 
     // -------> L
     LIKES_FIELDS:` SELECT like_id, user_id, post_id, is_liked, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_LIKES} `,
 
+    // 📘----> M
+    MENU_FIELDS:` SELECT menu_id, menu, role_type, ip_address, city_cordinates, created_by, created_at, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_MENU} `,
+    
+
     // -------> N
     NGO_FIELD_FIELDS:` SELECT ngo_field_id, field_name, field_description, is_active, created_by, created_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_FIELDS} `,
-    NGO_MASTER_FIELDS:` SELECT ngo_id, unique_id, darpan_reg_date, ngo_name, ngo_type, ngo_type_name, registration_no, act_name, city_of_registration_id, city_of_registration_name, state_of_registration_id, state_of_registration_name, country_of_registration_id, country_of_registration_name, date_of_registration, address, city_id, city_name, state_id, state_name, country_id, country_name, telephone, mobile_no, website_url, email, ngo_logo, ngo_logo_path, pan_cad_file_name, pan_card_file_url, crs_regis_file_name, crs_regis_file_path, is_active, total_request_assigned, total_request_completed, total_request_rejected FROM ${VIEW_NAME.GET_ALL_NGO_MASTER} `,
+    NGO_MASTER_FIELDS:` SELECT ngo_id, unique_id, darpan_reg_date, ngo_name, ngo_type, ngo_type_name, registration_no, act_name, city_of_registration_id, city_of_registration_name, state_of_registration_id, state_of_registration_name, country_of_registration_id, country_of_registration_name, date_of_registration, address, city_id, city_name, state_id, state_name, country_id, country_name, telephone, mobile_no, website_url, email, ngo_logo, ngo_logo_path, pan_cad_file_name, pan_card_file_url, crs_regis_file_name, crs_regis_file_path, is_active, total_request_assigned, total_request_completed, total_request_rejected, remarks, total_ngo_likes FROM ${VIEW_NAME.GET_ALL_NGO_MASTER} `,
     NGO_FUNDS_DETAILS_FIELDS:` SELECT ngo_funds_id, ngo_id, department_name, source, financial_year, amount_sanctioned, purpose, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_FUNDS_DETAILS} `,
     NGO_BEARERS_FIELDS:` SELECT bearer_id, ngo_id, name, designation_id, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_OFFICE_BEARRRS} `,
     NGO_STATE_DISTRICT_MAPPING_FILDS:` SELECT ngo_state_district_mapping_id, ngo_id, ngo_name, unique_id, darpan_reg_date, ngo_type, registration_no, email, mobile_no, state_id, state_name, district_id, district_name, city_id, city_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_STATE_DISTING_MAPPING_VIEW} `,
@@ -39,11 +44,16 @@ const ViewFieldTableWise = {
     NGO_MEDIA_FIELDS:` SELECT ngo_media_id, ngo_id, ngo_name, ngo_type, media_type, media_url, sequence, created_at, is_active FROM ${VIEW_NAME.GET_ALL_NGO_MEDIA} `,
     NGO_MEDIA_LIKES_FIELDS:` SELECT like_id, ngo_media_id, user_id, user_name, is_liked, created_at FROM ${VIEW_NAME.GET_ALL_NGO_MEDIA_LIKES} `,
     NGO_MEDIA_COMMENTS_FIELDS:` SELECT comment_id, ngo_media_id, user_id, file_path, user_name, comment_text, total_comment, parent_id, parent_comment_text, created_at FROM ${VIEW_NAME.GET_ALL_NGO_MEDIA_COMMENTS} `,
+    NGO_LIKES_FIELDS:` SELECT like_id, ngo_id, ngo_name, user_id, user_name, file_path, is_liked, created_at FROM ${VIEW_NAME.GET_ALL_NGO_LIKES} `,
 
     // -------> P
     POSTS_FIELDS:` SELECT post_id, user_id, description, created_at, total_likes, total_comments, user_name, full_name, role_id, role_name, file_path, is_active, is_blacklist, created_by, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_POSTS} `,
     POST_MEDIA_FIELDS:` SELECT media_id, post_id, sequence, media_type, media_url, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_POST_MEDIA} `,
     POST_COMMENT_LIKES:` SELECT like_id, user_id, comment_text, post_cmt_id, is_liked, created_at, is_active FROM ${VIEW_NAME.GET_ALL_POST_COMMENT_LIKE} `,
+    PAGE_FIELDS:` SELECT page_id, parent_id, page_name, page_url, mobile_url, interface, module_name  FROM ${VIEW_NAME.GET_ALL_PAGE} `,
+    PERMISSION_FIELDS:` SELECT permission_id, permission_values, permission FROM ${VIEW_NAME.GET_ALL_PERMISSION} `,
+    PAGE_PERMISSION_FIELDS:` SELECT page_permission_id, page_id, page_name, permission_id, permission_values, permission FROM ${VIEW_NAME.GET_ALL_PAGE_PERMISSION} `,
+
 
     //  ------> R 
     REQUEST_FIELDS:` SELECT RequestId, request_user_id, request_user_name, request_user_file_path, UserName, RequestName, Age, Gender, SahaykaPhoneNo, SahaykaEmailID, Category, Address, Pincode, Remark, Story, Problem, Solution, MessageToSahayak, RejectRemark, AssignedNGO, AssignedNGOName, CityId, City, DistrictId, District, StateId, State, CountryId, Country, status_id, Status, request_type_id, request_type_name, is_active, is_blacklist, created_by, created_at, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_REQUEST} `,

@@ -23,7 +23,7 @@ import BonusHistoryModel from "./bonus_history/bonus.history.model.js";
 import CouponMasterModel from "./coupon_master/coupon.master.model.js";
 import ScoreHistoryModel from "./score_history/score.history.model.js";
 import ScoreEligibilityMapping from "./score_eligibility_mapping/score.eligibility.mapping.model.js";
-import RoleMasterModel from "./role_master/role.master.model.js";
+import RoleMasterModel from "./access_control/role_master/role.master.model.js";
 import ScoreCategoryModel from "./score_category/score.category.model.js";
 import PostsModel from "./Posts/posts.model.js";
 import PostMediaModel from "./PostMedia/postmedia.model.js";
@@ -36,6 +36,8 @@ import UserTokenModel from "./user_tokens/user.tokens.model.js";
 // import NotificationModel from "./notifications/notifications.model.js";
 import NotificationHistoryModel from "./notification_history/notification.history.model.js";
 import NgoMediaModel from "./ngo_media/ngo.media.model.js";
+import NgolikesModel from "./ngo_likes/ngo.likes.model.js";
+import PagePermissionModel from "./access_control/page_permission/page.permission.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -101,6 +103,8 @@ db.NgoTypesModel = NgoTypesModel(sequelize,Sequelize);
 db.UserTokenModel = UserTokenModel(sequelize,Sequelize);
 db.NotificationHistoryModel = NotificationHistoryModel(sequelize,Sequelize);
 db.NgoMediaModel = NgoMediaModel(sequelize,Sequelize);
+db.NgolikesModel = NgolikesModel(sequelize,Sequelize);
+db.PagePermissionModel = PagePermissionModel(sequelize,Sequelize);
 
 
 export default db

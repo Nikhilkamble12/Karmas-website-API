@@ -232,8 +232,8 @@ Promise.all(
         await import(route);
         app.use(routeModule);
       } else {
-        console.error(`❌ Route ${routeFile} does not export a function.`);
-        logger.error(`Error in Server File ---> ${route} does not export a function.`);
+        console.error(`❌ Route ${routeModule} does not export a function.`);
+        logger.error(`Error in Server File ---> ${routeModule} does not export a function.`);
       }
     } catch (error) {
       console.log("error",error)
