@@ -52,7 +52,8 @@ const RESPONSE_CONSTANTS = {
     KINDLY_REGENRATE_OTP:"OTP has not been generated yet. Kindly Regenerate.",
     SOS_USER_LIMIT_EXCEEDED:"User Limit Has Been Exceeded.",
     SOS_NOT_YET_CREATED:"Sos Not Yet Created.",
-    USER_HAS_BLOCKED_YOU:"User has Blocaked You."
+    USER_HAS_BLOCKED_YOU:"You Have Been Blocked By Admin.",
+    USER_IS_BLACKLISTED:"Account Has Been Blacklisted.",
   };
   
   export default RESPONSE_CONSTANTS;

@@ -83,7 +83,28 @@ const NgoMasterModel = (sequelize)=>{
         }, crs_regis_file_path:{
             type:DataTypes.STRING(350),
             allowNull:true
-        }, is_active: {
+        },is_blacklist:{
+            type:DataTypes.TINYINT(1),
+            allowNull:true,
+            defaultValue: false
+        },total_request_assigned:{
+            type:DataTypes.INTEGER,
+            allowNull:true,
+            defaultValue: 0
+        },total_request_completed:{
+            type:DataTypes.INTEGER,
+            allowNull:true,
+            defaultValue: 0
+        },total_request_rejected:{
+            type:DataTypes.INTEGER,
+            allowNull:true,
+            defaultValue: 0
+        },
+        blacklist_reason:{
+            type:DataTypes.TEXT,
+            allowNull:true
+        },
+         is_active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
         },

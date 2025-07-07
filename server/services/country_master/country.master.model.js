@@ -12,7 +12,7 @@ const CountryMasterModel = (sequelize)=>{
         }, is_active:{
             type:DataTypes.TINYINT(1),
             allowNull:false,
-            DefaultValue:true
+            defaultValue:true
         },created_by:{
             type:DataTypes.INTEGER,
             allowNull:false

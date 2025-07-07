@@ -46,6 +46,18 @@ const NgoMasterService = {
         }catch(error){
             throw error
         }
+    },getAllBlackListedNgo:async()=>{
+        try{
+            return await NgoMasterDAL.getAllBlacKlistedNgo()
+        }catch(error){
+            throw error
+        }
+    },getTotalSumOfData:async()=>{
+        try{
+            return await NgoMasterDAL.getAllSumByNgo()
+        }catch(error){
+            throw error
+        }
     }
 }
 export default NgoMasterService

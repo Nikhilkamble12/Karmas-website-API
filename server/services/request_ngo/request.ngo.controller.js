@@ -10,6 +10,7 @@ import RequestMediaService from "../request_media/request.media.service.js";
 import notificationTemplates from "../../utils/helper/notification.templates.js";
 import UserTokenService from "../user_tokens/user.tokens.service.js";
 import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
+import NgoMasterService from "../ngo_master/ngo.master.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const RequestNgoController = {
@@ -291,6 +292,8 @@ const RequestNgoController = {
             for(let i = 0 ;i<data.requestNgoList.length;i++){
                 const currentData = data.requestNgoList[i]
                 const requestNgoMapping = await RequestNgoService.getRequestAndNGoData(currentData.ngo_id,currentData.RequestId)
+                const GetNgoDetails = await NgoMasterService.getServiceById(currentData.ngo_id)
+                let Total_request_Assigned = parseInt(GetNgoDetails.total_request_assigned) ?? 0
                 if(requestNgoMapping && requestNgoMapping.length>0){
                     await addMetaDataWhileCreateUpdate(currentData, req, res, true);
                     const updateRequestNgo = await RequestNgoService.updateService(requestNgoMapping[0].Request_Ngo_Id,currentData)
@@ -304,8 +307,12 @@ const RequestNgoController = {
                     currentData.status_id = STATUS_MASTER.REQUEST_APPROVAL_PENDINNG
                     
                     const createRequestNgo = await RequestNgoService.createService(currentData)
-
                     if(createRequestNgo){
+                        Total_request_Assigned += 1
+                        const NgoMasterData = {
+                            total_request_assigned:Total_request_Assigned
+                        }
+                        const updateNgo = await NgoMasterService.updateService(currentData.ngo_id,NgoMasterData)
                         const getOlderData = await RequestNgoService.getServiceById(createRequestNgo.dataValues.Request_Ngo_Id) 
                         const template = await notificationTemplates.newRequestForNgo({requestName :getOlderData.RequestName,requesterName:getOlderData.user_name})
                         const getUserByNgoId = await UserMasterService.getUserByNgoId(getOlderData.ngo_id)
@@ -361,9 +368,12 @@ const RequestNgoController = {
             const requestDetails = await RequestService.getServiceById(RequestId)
             const getDataByNgoRequest = await RequestNgoService.getServiceById(Request_Ngo_Id)
             let dataToStore = {}
-                dataToStore.status_id = req.body.status_id
+            dataToStore.status_id = req.body.status_id
+            const getNgoData = await NgoMasterService.getServiceById(getDataByNgoRequest.ngo_id)
+             total_request_assigned, total_request_completed, total_request_rejected    
             if(parseInt(requestDetails.status_id)==STATUS_MASTER.REQUEST_APPROVED){
                 let userActivityData = {}
+                const ngoRequestCompleted = parseInt(getNgoData.total_request_completed) ?? 0 
                 const getUserDataByUserId = await UserActivtyService.getDataByUserId(requestDetails[0].request_user_id)
                 await addMetaDataWhileCreateUpdate(dataToStore, req, res, true);
                 let total_bonus = 0
@@ -376,7 +386,7 @@ const RequestNgoController = {
                     userActivityData.total_scores_no = parseFloat(getUserDataByUserId[0].total_scores_no)
                 }
                 await addMetaDataWhileCreateUpdate(userActivityData, req, res, true);
-                if(req.body.status_id==STATUS_MASTER.REQUEST_APPROVED){
+                if(parseInt(req.body.status_id)==STATUS_MASTER.REQUEST_APPROVED){
                     const updaterequest = await RequestService.updateService(RequestId,{status_id:8,AssignedNGO:getDataByNgoRequest.ngo_id})
                     const updateUserActivity = await UserActivtyService.updateService(getUserDataByUserId[0].user_activity_id,userActivityData)
                     const gitScoreHistory = {
@@ -404,6 +414,10 @@ const RequestNgoController = {
                             )
                         );
                 }
+                const NgoMasterData = {
+                    total_request_completed:(parseInt(ngoRequestCompleted) + 1 )
+                }
+                const updateNgo = await NgoMasterService.updateService(currentData.ngo_id,NgoMasterData)
                 const getOlderData = await RequestNgoService.getServiceById(Request_Ngo_Id)
                 const template = await notificationTemplates.requestApproved({ngoName:getOlderData.ngo_name, requestName:getOlderData.RequestName})
                 const userToken = await UserTokenService.GetTokensByUserIds(requestDetails.request_user_id)
@@ -419,6 +433,7 @@ const RequestNgoController = {
                         )
                     );
             }else if(requestDetails.status_id!==STATUS_MASTER.REQUEST_REJECTED){
+                let ngoRequestRejected = getNgoData.total_request_rejected
                 let dataToStore = {}
                 dataToStore.status_id = req.body.status_id
                 await addMetaDataWhileCreateUpdate(dataToStore, req, res, true);
@@ -436,6 +451,10 @@ const RequestNgoController = {
                         );
                 }
                 const getOlderData = await RequestNgoService.getServiceById(Request_Ngo_Id)
+                const NgoMasterData = {
+                    total_request_rejected:(parseInt(ngoRequestRejected) + 1 )
+                }
+                const updateNgo = await NgoMasterService.updateService(currentData.ngo_id,NgoMasterData)
                 const template = await notificationTemplates.requestRejected({ngoName:getOlderData.ngo_name, requestName:getOlderData.RequestName})
                 const UserToken = await UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN)
                 await sendTemplateNotification({templateKey:"Request-Rejected", templateData:template, userIds:UserToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId}})

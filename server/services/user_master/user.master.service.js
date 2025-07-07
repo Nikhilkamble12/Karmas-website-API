@@ -58,6 +58,18 @@ const UserMasterService = {
         }catch(error){
             throw error
         }
+    },BlockAllUserAccoringToNgo:async(ngo_id,data)=>{
+        try{
+            return await UserMasterDAL.BlockUserByNgoId(ngo_id,data)
+        }catch(error){
+            throw error
+        }
+    },getAllBlocakedUsed:async()=>{
+        try{
+            return await UserMasterDAL.getAllBlocakedUsed()
+        }catch(error){
+            throw error
+        }
     }
 }
 export default UserMasterService

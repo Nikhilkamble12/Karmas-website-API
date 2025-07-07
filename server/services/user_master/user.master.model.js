@@ -22,7 +22,7 @@ const UserMasterModel = (sequelize) => {
             allowNull: false
         },is_account_public:{
             type:DataTypes.TINYINT(1),
-            DefaultValue: true
+            defaultValue: true
         },
          email_id: {
             type: DataTypes.STRING(200),
@@ -38,11 +38,11 @@ const UserMasterModel = (sequelize) => {
         ngo_id: {
             type: DataTypes.INTEGER,
             allowNull: true,
-            DefaultValue: null
+            defaultValue: null
         },first_time_login:{
             type:DataTypes.TINYINT(1),
             allowNull:true,
-            DefaultValue: true
+            defaultValue: true
         },
         file_name:{
             type:DataTypes.STRING(300),
@@ -59,11 +59,15 @@ const UserMasterModel = (sequelize) => {
         reset_otp_expiry:{
             type:DataTypes.DATE,
             allowNull:true
+        },is_blacklisted:{
+            type:DataTypes.TINYINT,
+            allowNull:true,
+            defaultValue:false
         },
         is_active: {
             type: DataTypes.TINYINT(1),
             allowNull: false,
-            DefaultValue: true
+            defaultValue: true
         }, created_by: {
             type: DataTypes.INTEGER,
             allowNull: false

@@ -1,57 +1,52 @@
-import UserMasterController from "./user.master.controller.js";
+import NgoMediaLikesController from "./ngo.media.likes.controller.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 const {express,verifyToken,basePathRoute} = commonPath
 
 // Define the base path for routes
-const basePath=`${basePathRoute}/user_master`
+const basePath=`${basePathRoute}/ngo_media_likes`
 const router = express.Router()
 // Route to create a new record
 
+
 router.post(
     `${basePath}/create`,
-    // verifyToken,
-    UserMasterController.create
+    verifyToken,
+    NgoMediaLikesController.create
 )
 // Route to update an existing record by ID
 router.put(
     `${basePath}/update`,
     verifyToken,
-    UserMasterController.update
+    NgoMediaLikesController.update
 )
 // Route to retrieve all records
 router.get(
     `${basePath}`,
     verifyToken,
-    UserMasterController.getAllByView
+    NgoMediaLikesController.getAllByView
 )
 // Route to retrieve a record by ID
 router.get(
     `${basePath}/getById`,
     verifyToken,
-    UserMasterController.getByIdByView
+    NgoMediaLikesController.getByIdByView
 )
 // Route to delete a record by ID
 router.delete(
-    `${basePath}/:id`,
+    `${basePath}/delete`,
     verifyToken,
-    UserMasterController.deleteData
+    NgoMediaLikesController.deleteData
 )
-// get User And Activity Data 
+
 router.get(
-    `${basePath}/getUserData/Activity`,
+    `${basePath}/getBy/NgoMediaId`,
     verifyToken,
-    UserMasterController.getuserDataAndActivity
+    NgoMediaLikesController.getNGoMediaLikeByNgoMediaId
 )
-router.get(
-    `${basePath}/search/user`,
+router.post(
+    `${basePath}/create/update`,
     verifyToken,
-    UserMasterController.getUserDataByUserName
-)
-// Block A User 
-router.put(
-    `${basePath}/block/User`,
-    verifyToken,
-    UserMasterController.blockAndUnblockUser
+    NgoMediaLikesController.createOrUpdateNgoMediaLike
 )
 
 // Export the router for use in other parts of the application

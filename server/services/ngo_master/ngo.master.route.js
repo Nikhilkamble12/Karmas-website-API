@@ -48,6 +48,17 @@ router.get(
     verifyToken,
     NgoMasterController.getNgoMasterData
 )
+// Blacklist Ngo 
+router.put(
+    `${basePath}/blacklist/Ngo`,
+    verifyToken,
+    NgoMasterController.blacklistNgo
+)
 
+router.get(
+    `${basePath}/getBlackist/getAll`,
+    verifyToken,
+    NgoMasterController.getAllBlacklisedNgo
+)
 // Export the router for use in other parts of the application
 export default router

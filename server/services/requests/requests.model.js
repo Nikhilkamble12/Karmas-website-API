@@ -87,6 +87,10 @@ const RequestModel = (sequelize) => {
             type: DataTypes.INTEGER,
             allowNull: true
         },
+        is_blacklist:{
+            type:DataTypes.TINYINT(1),
+            allowNull:true
+        },
         created_at: {
             type: DataTypes.DATE,
             allowNull: true,

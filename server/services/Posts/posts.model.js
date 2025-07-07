@@ -32,6 +32,10 @@ const PostsModel = (sequelize) => {
         allowNull: false,
         defaultValue : 0
       },
+      is_blacklist:{
+        type:DataTypes.BOOLEAN,
+        allowNull:true
+      },
       is_active: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

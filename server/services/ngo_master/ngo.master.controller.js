@@ -711,6 +711,94 @@ const NgoMasterController = {
                     )
                 );
         }
+    },blacklistNgo:async(req,res)=>{
+        try{
+            const ngo_id = req.query.ngo_id
+            const UpdateNgo = {
+                is_blacklist:req.body.is_blacklist,
+                blacklist_reason:req.body.blacklist_reason
+            }
+            if(req.body.also_block_user){
+                const UserUpdate = {
+                    is_blacklisted : req.body.is_blacklist,
+                    blacklist_reason : req.body.blacklist_reason
+                }
+                await addMetaDataWhileCreateUpdate(UserUpdate, req, res, true);
+                const updateUser = await UserMasterService.BlockAllUserAccoringToNgo(ngo_id,UserUpdate)
+            }
+            await addMetaDataWhileCreateUpdate(UpdateNgo, req, res, true);
+            const BlackistNgo = await NgoMasterService.updateService(ngo_id,UpdateNgo)
+            if (BlackistNgo === 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_UPDATING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+            return res
+                .status(responseCode.CREATED)
+                .send(
+                    commonResponse(
+                        responseCode.CREATED,
+                        responseConst.SUCCESS_UPDATING_RECORD
+                    )
+                );
+        }catch(error){
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    },getAllBlacklisedNgo:async(req,res)=>{
+        try{
+            const getAll = await NgoMasterService.getAllBlackListedNgo()
+            if (getAll.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getAll
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        }catch(error){
+           logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                ); 
+        }
     }
 }
 export default NgoMasterController

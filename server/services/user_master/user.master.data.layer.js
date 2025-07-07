@@ -25,7 +25,7 @@ const UserMasterDAL = {
     // Method to retrieve all records by view
     getAllDataByView: async () => {
         try {
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.USER_MASTER_FIELDS}`, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.USER_MASTER_FIELDS} where is_blacklisted = false`, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
@@ -73,33 +73,39 @@ const UserMasterDAL = {
         }catch(error){
             throw error
         }
-    },checkWetherUserIsPresent:async(user_name,limit,offset)=>{
-        try{
-            const query = `
+    },checkWetherUserIsPresent: async (user_name, limit, offset) => {
+    try {
+        let query = `
             ${ViewFieldTableVise.USER_MASTER_FIELDS}
-            WHERE user_name LIKE :search
-                OR full_name LIKE :search
-            `;
-            // Add LIMIT and OFFSET only if both are present and valid numbers
-            if (limit && offset && limit!=="null" && offset!=="null"  && typeof limit === 'number' && typeof offset === 'number') {
-                query += ` LIMIT :limit OFFSET :offset`;
-            }
-             const replacements = { search: `%${user_name}%` };
+            WHERE (user_name LIKE :search OR full_name LIKE :search)
+              AND is_blacklisted = false
+        `;
 
-            // Include limit and offset in replacements only if added in query
-            if (query.includes('LIMIT')) {
-                replacements.limit = limit;
-                replacements.offset = offset;
-            }
-            const getData = await db.sequelize.query(query, {
+        const replacements = { search: `%${user_name}%` };
+
+        // Add LIMIT and OFFSET if both are valid numbers
+        if (
+            typeof limit === 'number' &&
+            typeof offset === 'number' &&
+            !isNaN(limit) &&
+            !isNaN(offset)
+        ) {
+            query += ` LIMIT :limit OFFSET :offset`;
+            replacements.limit = limit;
+            replacements.offset = offset;
+        }
+
+        const getData = await db.sequelize.query(query, {
             replacements,
             type: db.Sequelize.QueryTypes.SELECT,
-            });
-            return getData
-        }catch(error){
-            throw error
-        }
-    }, checkIfUserNameIsPresentByGoogleId: async (google_id) => {
+        });
+
+        return getData;
+    } catch (error) {
+        throw error;
+    }
+}
+, checkIfUserNameIsPresentByGoogleId: async (google_id) => {
         try {
             console.log('google_id', google_id)
             const getData = await db.sequelize.query(`${ViewFieldTableVise.USER_MASTER_FIELDS} where google_id = '${google_id}'`, { type: db.Sequelize.QueryTypes.SELECT })
@@ -111,6 +117,20 @@ const UserMasterDAL = {
         try{
             const getAllData = await db.sequelize.query(`${ViewFieldTableVise.USER_MASTER_FIELDS} where ngo_id = ${ngo_id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData
+        }catch(error){
+            throw error
+        }
+    },BlockUserByNgoId:async(ngo_id,data)=>{
+        try{
+            const updateData = await UserMasterModel(db.sequelize).update(data, { where: { ngo_id: ngo_id } })
+            return updateData 
+        }catch(error){
+            throw error
+        }
+    },getAllBlocakedUsed:async()=>{
+        try{
+            const getAll = await db.sequelize.query(` SELECT ${ViewFieldTableVise.BLACK_LISTED_USER_FIELDS} `,{type:db.Sequelize.QueryTypes.SELECT})
+            return getAll
         }catch(error){
             throw error
         }

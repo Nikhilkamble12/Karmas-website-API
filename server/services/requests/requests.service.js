@@ -52,6 +52,12 @@ const RequestService = {
         }catch(error){
             throw error
         }
+    },getCountOfTotalRequest:async()=>{
+        try{
+            return await RequestDAL.getSumOfTotalRequest()
+        }catch(error){
+            throw error
+        }
     }
 }
 

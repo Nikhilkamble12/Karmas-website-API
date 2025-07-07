@@ -120,6 +120,7 @@ const PostDAL = {
           AND uf.is_following = 1
           AND uf.is_active = 1
           AND vp.is_active = 1
+          AND vp.is_blacklist = 0
           AND vp.user_id NOT IN (
               SELECT ub.user_id 
               FROM user_blacklist ub 
@@ -142,6 +143,7 @@ const PostDAL = {
               FROM user_blacklist 
               WHERE blacklisted_user_id = :user_id AND is_active = 1
           )
+          AND vp.is_blacklist = 0
           AND vp.is_active = 1
           ${exclusionClause}
         ORDER BY RAND()

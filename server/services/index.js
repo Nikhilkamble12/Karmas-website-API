@@ -35,6 +35,7 @@ import NgoTypesModel from "./ngo_type/ngo.type.model.js";
 import UserTokenModel from "./user_tokens/user.tokens.model.js";
 // import NotificationModel from "./notifications/notifications.model.js";
 import NotificationHistoryModel from "./notification_history/notification.history.model.js";
+import NgoMediaModel from "./ngo_media/ngo.media.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -99,6 +100,7 @@ db.UserBlackListModel = UserBlackListModel(sequelize,Sequelize);
 db.NgoTypesModel = NgoTypesModel(sequelize,Sequelize);
 db.UserTokenModel = UserTokenModel(sequelize,Sequelize);
 db.NotificationHistoryModel = NotificationHistoryModel(sequelize,Sequelize);
+db.NgoMediaModel = NgoMediaModel(sequelize,Sequelize);
 
 
 export default db

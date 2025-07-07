@@ -1,5 +1,7 @@
 import RequestModel from "./requests.model.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
+import VIEW_NAME from "../../utils/db/view.constants.js";
+import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessary components from commonPath
 
 const RequestDAL = {
@@ -100,6 +102,7 @@ const RequestDAL = {
             AND uf.is_following = 1
             AND uf.is_active = 1
             AND r.is_active = 1
+            AND r.is_blacklist = 0
             AND r.request_user_id NOT IN (
               SELECT ub.user_id FROM user_blacklist ub WHERE ub.blacklisted_user_id = :user_id AND ub.is_active = 1
             )
@@ -115,6 +118,7 @@ const RequestDAL = {
             AND r.request_user_id NOT IN (
               SELECT user_id FROM user_blacklist WHERE blacklisted_user_id = :user_id AND is_active = 1
             )
+            AND r.is_blacklist = 0
             AND r.is_active = 1
             ${exclusionClause}
           ORDER BY RAND()
@@ -133,6 +137,22 @@ const RequestDAL = {
     return results ?? [];
   } catch (error) {
     throw error;
+  }
+},getSumOfTotalRequest:async()=>{
+  try{
+    const getData = await db.sequelize.query(
+  `SELECT 
+    COUNT(RequestId) AS total_request,
+    SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_INSIATED} THEN 1 ELSE 0 END) AS total_request_insiated_status,
+    SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
+    SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected
+  FROM ${VIEW_NAME.GET_ALL_REQUEST}
+  `,
+  { type: db.Sequelize.QueryTypes.SELECT }
+);
+    return getData
+  }catch(error){
+    throw error
   }
 }
 

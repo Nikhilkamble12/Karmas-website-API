@@ -43,6 +43,18 @@ let AuthController = {
             )
           );
       }
+      if(userData.is_blacklisted){
+        return res
+          .status(responseCode.UNAUTHORIZED)
+          .send(
+            commonResponse(
+              responseCode.UNAUTHORIZED,
+              responseConst.INVALID_PASSWORD,
+              null,
+              true
+            )
+          );
+      }
       
       if(!google_id) {
         if (password.trim() !== userData.password) {

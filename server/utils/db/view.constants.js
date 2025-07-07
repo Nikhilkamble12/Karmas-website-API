@@ -46,6 +46,9 @@ GET_ALL_COUPONS:"v_coupons",
 GET_ALL_USER_TOKEN:"v_user_token",
 GET_ALL_NOTIFICATION_HISTORY:"v_notification_history",
 GET_ALL_BLACKLIST_NGO:"v_blacklist_ngo_master",
-GET_ALL_BLACKLISTER_USER:"v_blacklisted_user"
+GET_ALL_BLACKLISTER_USER:"v_blacklisted_user",
+GET_ALL_NGO_MEDIA:"v_ngo_media_details",
+GET_ALL_NGO_MEDIA_LIKES:"v_ngo_media_likes",
+GET_ALL_NGO_MEDIA_COMMENTS:"v_ngo_media_comments",
 }
 export default VIEW_NAME

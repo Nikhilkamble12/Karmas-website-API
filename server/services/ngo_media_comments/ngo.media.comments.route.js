@@ -1,57 +1,53 @@
-import UserMasterController from "./user.master.controller.js";
+import NgoMediaCommentsController from "./ngo.media.comments.controller.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 const {express,verifyToken,basePathRoute} = commonPath
 
 // Define the base path for routes
-const basePath=`${basePathRoute}/user_master`
+const basePath=`${basePathRoute}/ngo_media_comments`
 const router = express.Router()
 // Route to create a new record
 
 router.post(
     `${basePath}/create`,
-    // verifyToken,
-    UserMasterController.create
+    verifyToken,
+    NgoMediaCommentsController.create
 )
 // Route to update an existing record by ID
 router.put(
     `${basePath}/update`,
     verifyToken,
-    UserMasterController.update
+    NgoMediaCommentsController.update
 )
 // Route to retrieve all records
 router.get(
     `${basePath}`,
     verifyToken,
-    UserMasterController.getAllByView
+    NgoMediaCommentsController.getAllByView
 )
 // Route to retrieve a record by ID
 router.get(
     `${basePath}/getById`,
     verifyToken,
-    UserMasterController.getByIdByView
+    NgoMediaCommentsController.getByIdByView
 )
 // Route to delete a record by ID
 router.delete(
-    `${basePath}/:id`,
+    `${basePath}/delete`,
     verifyToken,
-    UserMasterController.deleteData
+    NgoMediaCommentsController.deleteData
 )
-// get User And Activity Data 
+// Router to get Ngo Media Comment Only Parent 
+
 router.get(
-    `${basePath}/getUserData/Activity`,
+    `${basePath}/getData/Parent`,
     verifyToken,
-    UserMasterController.getuserDataAndActivity
+    NgoMediaCommentsController.getByNgoMediaOnlyParentId
 )
+// Router to get Ngo Media Comment By Parent Id and Media Id
 router.get(
-    `${basePath}/search/user`,
+    `${basePath}/getData/mediaAnd/Parent`,
     verifyToken,
-    UserMasterController.getUserDataByUserName
-)
-// Block A User 
-router.put(
-    `${basePath}/block/User`,
-    verifyToken,
-    UserMasterController.blockAndUnblockUser
+    NgoMediaCommentsController.getNgoMediaByNgoMediaIdAndParentId
 )
 
 // Export the router for use in other parts of the application

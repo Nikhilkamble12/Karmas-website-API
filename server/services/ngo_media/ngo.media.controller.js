@@ -1,12 +1,10 @@
-import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
-import getBase64FromFile from "../../utils/helper/base64.retrive.data.js";
-import saveBase64ToFile from "../../utils/helper/base64ToFile.js";
-import UserActivtyService from "../user_activity/user.activity.service.js";
-import UserBlackListService from "../user_blacklist/user.blacklist.service.js";
-import UserMasterService from "./user.master.service.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+import ngoMediaService from "./ngo.media.service.js";
+import commonPath from "../../middleware/comman_path/comman.path.js";
+import uploadFileToS3 from "../../utils/helper/s3.common.code.js";
+const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate, fs } = commonPath
 
-const UserMasterController = {
+
+const NgoMediaController = {
     // Create A new Record 
     create: async (req, res) => {
         try {
@@ -16,35 +14,7 @@ const UserMasterController = {
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
-            data.first_time_login = true
-            const createData = await UserMasterService.createService(data);
-            if(createData){
-            if(data.Base64File!==null && data.Base64File!=="" && data.Base64File!==0 && data.Base64File!==undefined){
-                const user_id = createData.dataValues.user_id
-                await saveBase64ToFile(
-                    data.Base64File,
-                    "user_master/" + user_id ,
-                    currentTime().replace(/ /g, "_").replace(/:/g, "-") +
-                      "_" +
-                      data.file_name
-                  );
-                  const upload_page_1 = data.file_name
-                  ? `user_master/${user_id}/${currentTime()
-                      .replace(/ /g, "_")
-                      .replace(/:/g, "-")}_${data.file_name}`
-                  : null;
-                   const updateUserMaster = await UserMasterService.updateService(createData.dataValues.user_id,{file_path:upload_page_1})
-                }
-            }
-            if(createData){
-                const user_id = createData.dataValues.user_id
-                const userActvityCreate = {
-                    user_id:user_id,
-                }
-                await addMetaDataWhileCreateUpdate(userActvityCreate, req, res, false);
-                const UserActivity = await UserActivtyService.createService(userActvityCreate)
-
-            }
+            const createData = await ngoMediaService.createService(data);
             if (createData) {
                 return res
                     .status(responseCode.CREATED)
@@ -67,7 +37,7 @@ const UserMasterController = {
                     );
             }
         } catch (error) {
-            console.log("error",error)
+            console.log("error", error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -80,7 +50,7 @@ const UserMasterController = {
                     )
                 );
         }
-    }, 
+    },
     // update Record Into Db
     update: async (req, res) => {
         try {
@@ -88,26 +58,11 @@ const UserMasterController = {
             const data = req.body
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, true);
-            if(data.Base64File!==null && data.Base64File!=="" && data.Base64File!==0 && data.Base64File!==undefined){
-                await saveBase64ToFile(
-                    data.Base64File,
-                    "user_master/" + id ,
-                    currentTime().replace(/ /g, "_").replace(/:/g, "-") +
-                      "_" +
-                      data.file_name
-                  );
-                  const upload_page_1 = data.file_name
-                  ? `user_master/${id}/${currentTime()
-                      .replace(/ /g, "_")
-                      .replace(/:/g, "-")}_${data.file_name}`
-                  : null;
-                  data.file_path = upload_page_1
-                delete data.Base64File
-                }
+
             // Update the record using ORM
-            const updatedRowsCount = await UserMasterService.updateService(id, data);
+            const updatedRowsCount = await ngoMediaService.updateService(id, data);
             // if (updatedRowsCount > 0) {
-            //     const newData = await UserMasterService.getServiceById(id);
+            //     const newData = await ngoMediaService.getServiceById(id);
             //     // Update the JSON data in the file
             //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
             // }
@@ -133,7 +88,6 @@ const UserMasterController = {
                     )
                 );
         } catch (error) {
-            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -166,12 +120,12 @@ const UserMasterController = {
             //     }
             //   }
             // Fetch data from the database if JSON is empty
-            const getAll = await UserMasterService.getAllService()
+            const getAll = await ngoMediaService.getAllService()
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await UserMasterService.getAllService()
+            //   const DataToSave=await ngoMediaService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -232,12 +186,12 @@ const UserMasterController = {
             // }
 
             // If not found in JSON, fetch data from the database
-            const getDataByid = await UserMasterService.getServiceById(Id)
+            const getDataByid = await ngoMediaService.getServiceById(Id)
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await UserMasterService.getAllService()
+            //   const DataToSave=await ngoMediaService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -266,7 +220,6 @@ const UserMasterController = {
                     );
             }
         } catch (error) {
-            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -283,9 +236,9 @@ const UserMasterController = {
     // Delete A Record 
     deleteData: async (req, res) => {
         try {
-            const id = req.params.id
+            const id = req.query.id
             // Delete data from the database
-            const deleteData = await UserMasterService.deleteByid(id, req, res)
+            const deleteData = await ngoMediaService.deleteByid(id, req, res)
             // Also delete data from the JSON file
             // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
             if (deleteData === 0) {
@@ -322,58 +275,159 @@ const UserMasterController = {
                     )
                 );
         }
-    },getuserDataAndActivity:async(req,res)=>{
-        try{
-            const token_user = tokenData(req,res)
-            const Id = req.query.id
-            if(Id !== token_user){
-                const checkWetherBlocked = await UserBlackListService.getDataByUserIdAndBackListUser(token_user,Id)
-                if(checkWetherBlocked && checkWetherBlocked.length>0){
-                    return res
+    }, BulkCreateorUpdatengoMedia: async (req, res) => {
+        try {
+            function deleteFile(filePath) {
+                // Use fs.unlink to remove the file at the specified file path
+                fs.unlink(filePath, (err) => {
+                    if (err) {
+                        console.log("error while deleting file --->", err)
+                        // If an error occurs while deleting the file, log it
+                        console.error(`Error deleting file: ${filePath}`, err);
+                    } else {
+                        // If the file is successfully deleted, log the success
+                        console.log(`Local file deleted: ${filePath}`);
+                    }
+                });
+            }
+
+            const data = req.body
+            const fileType = req.file.mimetype;
+            const folderType = 'ngo_media';
+            const filePath = req.file.path;  // Multer stores the file temporarily here
+            const fileName = req.file.filename;
+            if (!req.file) {
+                return res.status(400).send({ error: 'No file uploaded' });
+            }
+            console.log("data", data)
+            console.log("data.post_id", data.ngo_id)
+            if (data.ngo_id == "" || data.ngo_id == "undefined" || data.ngo_id == '0' || data.ngo_id == 0 || data.ngo_id == undefined) {
+                deleteFile(filePath)
+                return res
                     .status(responseCode.BAD_REQUEST)
                     .send(
                         commonResponse(
                             responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
+                            responseConst.NGO_ID_REQUIRED,
                             null,
                             true
                         )
-                    );
-                }
+                    )
             }
-            // If not found in JSON, fetch data from the database
-            const getDataByid = await UserMasterService.getServiceById(Id)
-            const getActivity = await UserActivtyService.getDataByUserId(Id)
-            if (getDataByid.length !== 0) {
-                getDataByid.getActivity = getActivity[0]
-                if(getDataByid.file_path && getDataByid.file_path!=="" && getDataByid.file_path!==0){
-                getDataByid.Base64File = await getBase64FromFile(getDataByid.file_path)
-                }else{
-                    getDataByid.Base64File = null 
-                }
+            if (data.sequence == "" || data.sequence == "undefined" || data.sequence == "0" || data.sequence == 0 || data.sequence == undefined) {
+                deleteFile(filePath)
                 return res
-                    .status(responseCode.OK)
+                    .status(responseCode.BAD_REQUEST)
                     .send(
                         commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            getDataByid
+                            responseCode.BAD_REQUEST,
+                            responseConst.SEQUENCE_ID_IS_REQUIRED,
+                            null,
+                            true
                         )
-                    );
+                    )
+            }
+            // File name on the server
+            console.log("fileType", fileType)
+            console.log("folderType", folderType)
+            console.log("fileName", fileName)
+            if (data.ngo_media_id) {
+                // You can dynamically decide where to store the file, for example, 'post' or 'request'
+                // For example, 'post', 'request', etc.
+                const s3BucketFileDynamic = `${folderType}/${data.ngo_id}/${data.sequence}/${fileName}`
+                // Upload the file to S3
+                const fileUrl = await uploadFileToS3(s3BucketFileDynamic, filePath, fileType);
+                if (fileUrl.success) {
+
+                    // If the upload was successful, return the file URL or save it to the database
+                    const fileUrlData = fileUrl.url;
+                    const dataToStore = {
+                        media_url: fileUrlData,
+                        media_type: data.media_type,
+                        sequence: data.sequence,
+                        ngo_id: data.ngo_id,
+                    }
+                    await addMetaDataWhileCreateUpdate(dataToStore, req, res, true);
+                    const update = await ngoMediaService.updateService(data.ngo_media_id, dataToStore)
+                    // Save to DB or perform further actions as needed
+                    // Example: await saveMediaToDatabase(fileUrl, data);  // This is a placeholder function
+                    deleteFile(filePath)
+                    if (update === 0) {
+                        return res
+                            .status(responseCode.BAD_REQUEST)
+                            .send(
+                                commonResponse(
+                                    responseCode.BAD_REQUEST,
+                                    responseConst.ERROR_UPDATING_RECORD,
+                                    null,
+                                    true
+                                )
+                            );
+                    } else {
+                        return res
+                            .status(responseCode.OK)
+                            .send(
+                                commonResponse(
+                                    responseCode.OK,
+                                    responseConst.SUCCESS_UPDATING_RECORD,
+
+                                )
+                            );
+                    }
+                } else {
+                    deleteFile(filePath)
+                    // If the upload failed
+                    return res.status(500).send({
+                        error: 'File upload failed!'
+                    });
+                }
             } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
+                const s3BucketFileDynamic = `${folderType}/${data.ngo_id}/${data.sequence}/${fileName}`
+                // Upload the file to S3
+                const fileUrl = await uploadFileToS3(s3BucketFileDynamic, filePath, fileType);
+                console.log("fileUrl", fileUrl)
+                if (fileUrl.success) {
+                    const fileUrlData = fileUrl.url;
+                    const dataToStore = {
+                        media_url: fileUrlData,
+                        media_type: data.media_type,
+                        sequence: data.sequence,
+                        ngo_id: data.ngo_id,
+                    }
+                    await addMetaDataWhileCreateUpdate(dataToStore, req, res, false);
+                    const createData = await ngoMediaService.createService(dataToStore)
+                    deleteFile(filePath)
+                    if (createData) {
+                        return res
+                            .status(responseCode.CREATED)
+                            .send(
+                                commonResponse(
+                                    responseCode.CREATED,
+                                    responseConst.SUCCESS_ADDING_RECORD
+                                )
+                            );
+                    } else {
+                        return res
+                            .status(responseCode.BAD_REQUEST)
+                            .send(
+                                commonResponse(
+                                    responseCode.BAD_REQUEST,
+                                    responseConst.ERROR_ADDING_RECORD,
+                                    null,
+                                    true
+                                )
+                            )
+                    }
+                } else {
+                    deleteFile(filePath)
+                    return res.status(500).send({
+                        error: 'File upload failed!'
+                    });
+                }
+
             }
-        }catch(error){
-            console.log("error",error)
+        } catch (error) {
+            console.log("error", error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -386,28 +440,18 @@ const UserMasterController = {
                     )
                 );
         }
-    },getUserDataByUserName:async(req,res)=>{
-        try{
-            const user_name = req.query.user_name
-            const limit = req.query.limit
-            const offset = req.query.offset
-            const FindUserBySearchQuery = await UserMasterService.findUserByFulNameAndUseName(user_name,limit,offset)
-            if (FindUserBySearchQuery.length !== 0) {
-                for(let i = 0;i<FindUserBySearchQuery.length;i++){
-                    const currentuserData = FindUserBySearchQuery[i]
-                if(currentuserData.file_path && currentuserData.file_path!=="" && currentuserData.file_path!==0){
-                currentuserData.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentuserData.file_path}`
-                }else{
-                    currentuserData.file_path = null 
-                }
-                }
+    }, getDataByNgoId: async (req, res) => {
+        try {
+            const getMediaByNgoId = req.query.ngo_id
+            const getData = await ngoMediaService.getDataByNgoId(getMediaByNgoId)
+            if (getData.length !== 0) {
                 return res
                     .status(responseCode.OK)
                     .send(
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            FindUserBySearchQuery
+                            getData
                         )
                     );
             } else {
@@ -422,8 +466,7 @@ const UserMasterController = {
                         )
                     );
             }
-        }catch(error){
-            console.log("error",error)
+        } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -435,93 +478,8 @@ const UserMasterController = {
                         true
                     )
                 );
-        }
-    },blockAndUnblockUser:async(req,res)=>{
-        try{
-            const user_id = req.query.user_id
-            const DataToUpdate = {
-                is_blacklisted : req.body.is_blacklisted,
-                blacklist_reason:req.body.blacklist_reason
-            }
-            await addMetaDataWhileCreateUpdate(DataToUpdate, req, res, true);
-            const updatedRowsCount = await UserMasterService.updateService(user_id, DataToUpdate);
-            // if (updatedRowsCount > 0) {
-            //     const newData = await UserMasterService.getServiceById(id);
-            //     // Update the JSON data in the file
-            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
-            // }
-            // Handle case where no records were updated
-            if (updatedRowsCount === 0) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_UPDATING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-            return res
-                .status(responseCode.CREATED)
-                .send(
-                    commonResponse(
-                        responseCode.CREATED,
-                        responseConst.SUCCESS_UPDATING_RECORD
-                    )
-                );
-        }catch(error){
-           logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                ); 
-        }
-    },getAllBlockedUser:async(req,res)=>{
-        try{
-            const getAll = await UserMasterService.getAllBlocakedUsed()
-            if (getAll.length !== 0) {
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            getAll
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
-            }
-        }catch(error){
-           logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );  
         }
     }
 }
-export default UserMasterController
+
+export default NgoMediaController

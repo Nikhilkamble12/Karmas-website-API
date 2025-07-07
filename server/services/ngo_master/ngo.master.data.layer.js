@@ -66,6 +66,20 @@ const NgoMasterDAL = {
         }catch(error){
             throw error
         }
+    },getAllBlacKlistedNgo:async()=>{
+        try{
+            const getAllBlackListedNgo = await db.sequelize.query(` ${ViewFieldTableVise.BLACK_LISTED_NGO_FIELDS} `,{type:db.Sequelize.QueryTypes.SELECT})
+            return getAllBlackListedNgo
+        }catch(error){
+            throw error
+        }
+    },getAllSumByNgo:async()=>{
+        try{
+            const getAllSum = await db.sequelize.query( ` SELECT count(ngo_id) as total_ngo,sum(total_request_assigned) as total_request , sum(total_request_completed) as total_ngo_request_completed , sum(total_request_rejected) as total_ngo_request_rejected FROM ngo_master where is_active = true and is_blacklist = false `,{type:db.Sequelize.QueryTypes.SELECT})
+            return getAllSum
+        }catch(error){
+            throw error
+        }
     }
 }
 export default NgoMasterDAL
