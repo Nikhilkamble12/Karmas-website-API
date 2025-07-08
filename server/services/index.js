@@ -38,6 +38,7 @@ import NotificationHistoryModel from "./notification_history/notification.histor
 import NgoMediaModel from "./ngo_media/ngo.media.model.js";
 import NgolikesModel from "./ngo_likes/ngo.likes.model.js";
 import PagePermissionModel from "./access_control/page_permission/page.permission.model.js";
+import GroupRolePagePermissionModel from "./access_control/group_role_page_permission/group.role.page.permission.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -105,6 +106,7 @@ db.NotificationHistoryModel = NotificationHistoryModel(sequelize,Sequelize);
 db.NgoMediaModel = NgoMediaModel(sequelize,Sequelize);
 db.NgolikesModel = NgolikesModel(sequelize,Sequelize);
 db.PagePermissionModel = PagePermissionModel(sequelize,Sequelize);
+db.GroupRolePagePermissionModel = GroupRolePagePermissionModel(sequelize,Sequelize);
 
 
 export default db

@@ -40,7 +40,19 @@ const PagePermissionService = {
         } catch (error) {
             throw error
         }
-    }
+    },checkPagePermissionByPageIdAndPermissionId:async(page_id,permission_id)=>{
+        try{
+            return await PagePermissionDAL.getDataByPageIdAndPermissionId(page_id,permission_id)
+        }catch(error){
+            throw error
+        }
+    },getDataBypageId:async(page_id)=>{
+        try{
+            return await PagePermissionDAL.getDataByPageId(page_id)
+        }catch(error){
+            throw error
+        }
+    },
 }
 
 export default PagePermissionService

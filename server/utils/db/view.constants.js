@@ -55,6 +55,6 @@ GET_ALL_MENU:"v_menu",
 GET_ALL_PAGE:"V_page",
 GET_ALL_PERMISSION:"V_permission",
 GET_ALL_PAGE_PERMISSION:"V_page_permission",
-GET_ALL_GROUP_ROLE_PAGE_PERMISSION:"V_group_role_page_permission"
+GET_ALL_GROUP_ROLE_PAGE_PERMISSION:"V_group_role_page_permission",
 }
 export default VIEW_NAME

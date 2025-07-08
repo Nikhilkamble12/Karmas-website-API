@@ -51,6 +51,20 @@ const PagePermissionDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
+    },getDataByPageId:async(page_id)=>{
+        try{
+            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.PAGE_PERMISSION_FIELDS} where page_id = ${page_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getAllData
+        }catch(error){
+            throw error
+        }
+    },getDataByPageIdAndPermissionId:async(page_id,permission_id)=>{
+        try{
+           const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.PAGE_PERMISSION_FIELDS} where page_id = ${page_id} and permission_id = ${permission_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getAllData 
+        }catch(error){
+            throw error
+        }
     }
 }
 
