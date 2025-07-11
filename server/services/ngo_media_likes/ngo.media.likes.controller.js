@@ -11,11 +11,34 @@ const NgoMediaLikesController = {
             const data = req.body;
             // Add metadata for creation (created by, created at)
             await addMetaDataWhileCreateUpdate(data, req, res, false);
+            const user_id = await tokenData(req,res)
+            const getDataByNgoMediaAndUserId = await NgoMediaLikesService.getDataByNgoMediaIdAndUserId(data.ngo_media_id,user_id)
+            if(getDataByNgoMediaAndUserId && getDataByNgoMediaAndUserId.length>0){
+                if(getDataByNgoMediaAndUserId && getDataByNgoMediaAndUserId[0].is_like==false){
+                    if(data.is_like == true){
+                        const getNgoData = await ngoMediaService.getServiceById(data.ngo_media_id)
+                        const total_likesCount = parseInt(getNgoData.total_likes ?? 0) + 1
+                        const updateNgo = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:total_likesCount})
+                    }
+                }else if(getDataByNgoMediaAndUserId && getDataByNgoMediaAndUserId[0].is_like==true){
+                    if(data.is_like==false){
+                        const getNgoData = await ngoMediaService.getServiceById(data.ngo_media_id)
+                        const total_likesCount = parseInt(getNgoData.total_likes ?? 0) - 1
+                        const updateNgo = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:total_likesCount}) 
+                    }
+                }
+                const updateNgoLikes = await NgoMediaLikesService.updateService(getDataByNgoMediaAndUserId[0].like_id,data)
+            }
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
             const createData = await NgoMediaLikesService.createService(data);
             if (createData) {
+                if(data.is_like == true){
+                    const getNgoMediaData = await ngoMediaService.getServiceById(data.ngo_media_id)
+                    const total_likesCount = parseInt(getNgoMediaData.total_likes ?? 0) + 1
+                    const updateNgo = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:total_likesCount})
+                }
                 return res
                     .status(responseCode.CREATED)
                     .send(
@@ -58,7 +81,20 @@ const NgoMediaLikesController = {
             const data = req.body
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, true);
-
+            const getOlderData = await NgoMediaLikesService.getServiceById(id)
+            if(getOlderData && getOlderData.is_like==false){
+                    if(data.is_like == true){
+                        const getNgoData = await ngoMediaService.getServiceById(data.ngo_media_id)
+                        const total_likesCount = parseInt(getNgoData.total_likes ?? 0) + 1
+                        const updateNgo = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:total_likesCount})
+                    }
+                }else if(getOlderData && getOlderData.is_like==true){
+                    if(data.is_like==false){
+                        const getNgoData = await ngoMediaService.getServiceById(data.ngo_media_id)
+                        const total_likesCount = parseInt(getNgoData.total_likes ?? 0) - 1
+                        const updateNgo = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:total_likesCount}) 
+                    }
+                }
             // Update the record using ORM
             const updatedRowsCount = await NgoMediaLikesService.updateService(id, data);
             // if (updatedRowsCount > 0) {

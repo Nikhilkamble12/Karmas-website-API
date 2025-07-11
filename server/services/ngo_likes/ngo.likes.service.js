@@ -40,6 +40,12 @@ const NgolikesService = {
         } catch (error) {
             throw error
         }
+    },getDataByUserId:async(user_id,ngo_id)=>{
+        try{
+            return await NgoLikesDAL
+        }catch(error){
+            throw error
+        }
     }
 }
 

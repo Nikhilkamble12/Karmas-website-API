@@ -1,5 +1,6 @@
 import NgolikesService from "./ngo.likes.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
+import NgoMasterService from "../ngo_master/ngo.master.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const NgoLikesController = {
@@ -7,13 +8,37 @@ const NgoLikesController = {
     create: async (req, res) => {
         try {
             const data = req.body;
+             data.user_id = await tokenData(req,res);
+            const CheckWetherItisLiked = await NgolikesService.getDataByUserId(user_id,data.ngo_id)
+            if(CheckWetherItisLiked && CheckWetherItisLiked.length>0){
+                if(CheckWetherItisLiked && CheckWetherItisLiked[0].is_like==false){
+                    if(data.is_like == true){
+                        const getNgoData = await NgoMasterService.getServiceById(data.ngo_id)
+                        const total_likesCount = parseInt(getNgoData.total_ngo_likes ?? 0) + 1 
+                        const updateNgo = await NgoMasterService.updateService(data.ngo_id,{total_ngo_likes:total_likesCount})
+                    }
+                }else if(CheckWetherItisLiked && CheckWetherItisLiked[0].is_like==true){
+                    if(data.is_like==false){
+                       const getNgoData = await NgoMasterService.getServiceById(data.ngo_id)
+                        const total_likesCount = parseInt(getNgoData.total_ngo_likes ?? 0) - 1 
+                        const updateNgo = await NgoMasterService.updateService(data.ngo_id,{total_ngo_likes:total_likesCount}) 
+                    }
+                }
+                const updateNgoLikes = await NgolikesService.updateService(CheckWetherItisLiked[0].like_id,data)
+            }
             // Add metadata for creation (created by, created at)
             await addMetaDataWhileCreateUpdate(data, req, res, false);
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
+            
             const createData = await NgolikesService.createService(data);
             if (createData) {
+                 if(data.is_like == true){
+                    const getNgoData = await NgoMasterService.getServiceById(data.ngo_id)
+                    const total_likesCount = parseInt(getNgoData.total_ngo_likes ?? 0) + 1 
+                    const updateNgo = await NgoMasterService.updateService(data.ngo_id,{total_ngo_likes:total_likesCount})
+                }
                 return res
                     .status(responseCode.CREATED)
                     .send(
@@ -56,7 +81,20 @@ const NgoLikesController = {
             const data = req.body
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, true);
-
+            const getOlderData = await NgolikesService.getServiceById(id)
+            if(getOlderData && getOlderData.is_like==false){
+                if(data.is_like == true){
+                    const getNgoData = await NgoMasterService.getServiceById(data.ngo_id)
+                    const total_likesCount = parseInt(getNgoData.total_ngo_likes ?? 0) + 1 
+                    const updateNgo = await NgoMasterService.updateService(data.ngo_id,{total_ngo_likes:total_likesCount})
+                }
+            }else if(getOlderData && getOlderData.is_like==true){
+                if(data.is_like==false){
+                    const getNgoData = await NgoMasterService.getServiceById(data.ngo_id)
+                    const total_likesCount = parseInt(getNgoData.total_ngo_likes ?? 0) - 1 
+                    const updateNgo = await NgoMasterService.updateService(data.ngo_id,{total_ngo_likes:total_likesCount}) 
+                }
+            }
             // Update the record using ORM
             const updatedRowsCount = await NgolikesService.updateService(id, data);
             // if (updatedRowsCount > 0) {
@@ -237,6 +275,7 @@ const NgoLikesController = {
             const id = req.query.id
             // Delete data from the database
             const deleteData = await NgolikesService.deleteByid(id, req, res)
+            
             // Also delete data from the JSON file
             // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
             if (deleteData === 0) {
@@ -251,7 +290,9 @@ const NgoLikesController = {
                         )
                     );
             }
-
+            const getNgoData = await NgoMasterService.getServiceById(data.ngo_id)
+            const total_likesCount = parseInt(getNgoData.total_ngo_likes ?? 0) - 1
+            const updateNgo = await NgoMasterService.updateService(data.ngo_id,{total_ngo_likes:total_likesCount}) 
             return res
                 .status(responseCode.CREATED)
                 .send(

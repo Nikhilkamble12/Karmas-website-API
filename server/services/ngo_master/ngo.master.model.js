@@ -99,6 +99,9 @@ const NgoMasterModel = (sequelize)=>{
             type:DataTypes.INTEGER,
             allowNull:true,
             defaultValue: 0
+        },total_ngo_likes:{
+            type:DataTypes.BIGINT,
+            allowNull:true
         },
         blacklist_reason:{
             type:DataTypes.TEXT,

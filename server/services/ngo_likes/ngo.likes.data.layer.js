@@ -51,6 +51,13 @@ const NgoLikesDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
+    },getDataByUserIdAndNgoId:async(user_id,ngo_id)=>{
+        try{
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_LIKES_FIELDS} where user_id = ${user_id} and ngo_id = ${ngo_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getAllData
+        }catch(error){
+            throw error
+        }
     }
 }
 
