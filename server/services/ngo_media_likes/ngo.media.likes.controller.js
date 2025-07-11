@@ -289,11 +289,9 @@ const NgoMediaLikesController = {
                         )
                     );
             }
-
             const getNgoData = await ngoMediaService.getServiceById(data.ngo_media_id)
             const total_likesCount = parseInt(getNgoData.total_likes ?? 0) - 1
             const updateNgo = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:total_likesCount})
-
             return res
                 .status(responseCode.CREATED)
                 .send(
@@ -367,6 +365,10 @@ const NgoMediaLikesController = {
                     if(data.is_like == true){
                        media_total_likes += 1 
                     }
+                }else if(checkWetherDataIsPresent[0].is_liked==false){
+                    if(data.is_like == false){
+                        media_total_likes -= 1 
+                    }
                 }
             await addMetaDataWhileCreateUpdate(data, req, res, true);
                 const UpdateData = await NgoMediaLikesService.updateService(checkWetherDataIsPresent[0].like_id,data)
@@ -395,6 +397,9 @@ const NgoMediaLikesController = {
             await addMetaDataWhileCreateUpdate(data, req, res, false);
                 const createData = await NgoMediaLikesService.createService(data)
                 if (createData) {
+                if(data.is_like == true){
+                    media_total_likes += 1 
+                }
                 const updateNgoMedia = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:media_total_likes})
                 return res
                     .status(responseCode.CREATED)
@@ -429,6 +434,46 @@ const NgoMediaLikesController = {
                         true
                     )
                 );  
+        }
+    },getNgoMediaLikeByUserIdAndMediaId:async(req,res)=>{
+        try{
+            const ngo_media_id = req.query.ngo_media_id
+            const user_id = await tokenData(req,res)
+            const getDataByNgoMediaIdAndUserId = await NgoMediaLikesService.getDataByNgoMediaIdAndUserId(ngo_media_id,user_id)
+             if (getDataByNgoMediaIdAndUserId.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getDataByNgoMediaIdAndUserId
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        }catch(error){
+            logger.error(`Error ---> ${error}`);
+            return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
         }
     }
 }

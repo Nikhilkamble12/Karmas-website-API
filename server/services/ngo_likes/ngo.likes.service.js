@@ -42,7 +42,13 @@ const NgolikesService = {
         }
     },getDataByUserId:async(user_id,ngo_id)=>{
         try{
-            return await NgoLikesDAL
+            return await NgoLikesDAL.getDataByUserIdAndNgoId(user_id,ngo_id)
+        }catch(error){
+            throw error
+        }
+    },getDataByNgoId:async(ngo_id)=>{
+        try{
+            return await NgoLikesDAL.getDataByNgoIdByView(ngo_id)
         }catch(error){
             throw error
         }

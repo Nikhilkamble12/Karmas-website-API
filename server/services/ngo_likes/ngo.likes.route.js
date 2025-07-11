@@ -37,6 +37,24 @@ router.delete(
     verifyToken,
     NgoLikesController.deleteData
 )
+// Get Data By Ngo Id 
+router.get(
+    `${basePath}/getData/ByNgoId`,
+    verifyToken,
+    NgoLikesController.getDataByNgoIdlike
+)
+// Get Data By User Id And Ngo Id
+router.get(
+    `${basePath}/getData/ByUserAndNgo`,
+    verifyToken,
+    NgoLikesController
+)
+// Get Data By Ngo Id And User Id 
+router.get(
+    `${basePath}/getData/byNgoUser`,
+    verifyToken,
+    NgoLikesController.getNgoDataByNgoIdAndUserId
+)
 
 
 // Export the router for use in other parts of the application

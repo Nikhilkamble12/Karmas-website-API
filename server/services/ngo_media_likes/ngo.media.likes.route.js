@@ -48,6 +48,11 @@ router.post(
     verifyToken,
     NgoMediaLikesController.createOrUpdateNgoMediaLike
 )
+router.get(
+    `${basePath}/checkWether/userLiked`,
+    verifyToken,
+    NgoMediaLikesController.getNgoMediaLikeByUserIdAndMediaId
+)
 
 // Export the router for use in other parts of the application
 export default router
