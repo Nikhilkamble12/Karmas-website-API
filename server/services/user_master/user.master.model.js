@@ -56,11 +56,13 @@ const UserMasterModel = (sequelize) => {
         file_path:{
             type:DataTypes.STRING(500), 
            allowNull:true
-        }, background_image : {
-            type: DataTypes.STRING(500),
+        }, bg_image : {
+            type: DataTypes.STRING(300),
             allowNull: true
-        },
-        reset_otp:{
+        }, bg_image_path : {
+            type: DataTypes.STRING(500),    
+            allowNull: true
+        },  reset_otp:{
             type:DataTypes.STRING(20),
             allowNull:true
         },

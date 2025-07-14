@@ -19,6 +19,7 @@ const UserMasterController = {
             data.first_time_login = true
             const createData = await UserMasterService.createService(data);
             if(createData){
+            let file_path = null , bg_image_path = null;
             if(data.Base64File!==null && data.Base64File!=="" && data.Base64File!==0 && data.Base64File!==undefined){
                 const user_id = createData.dataValues.user_id
                 await saveBase64ToFile(
@@ -33,8 +34,34 @@ const UserMasterController = {
                       .replace(/ /g, "_")
                       .replace(/:/g, "-")}_${data.file_name}`
                   : null;
-                   const updateUserMaster = await UserMasterService.updateService(createData.dataValues.user_id,{file_path:upload_page_1})
+                  file_path = upload_page_1
+                //    const updateUserMaster = await UserMasterService.updateService(createData.dataValues.user_id,{file_path:upload_page_1})
                 }
+
+                if(data.bg_image_file !==null && data.bg_image_file!=="" && data.bg_image_file!==0 && data.bg_image_file!==undefined){
+                    await saveBase64ToFile(
+                        data.bg_image_file,
+                        "user_master/" + createData.dataValues.user_id + "/bg_image",
+                        currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                          "_" +
+                          data.bg_image
+                      );
+                      const upload_page_2 = data.bg_image
+                      ? `user_master/${createData.dataValues.user_id}/bg_image/${currentTime()
+                          .replace(/ /g, "_")
+                          .replace(/:/g, "-")}_${data.bg_image}`
+                      : null;
+                      bg_image_path = upload_page_2
+                    //    const updateUserMaster = await UserMasterService.updateService(createData.dataValues.user_id,{bg_image_path:upload_page_2})
+                }
+
+                const updateData = {
+                    file_path: file_path,
+                    bg_image: data.bg_image,
+                    bg_image_path: bg_image_path
+                };
+                //console.log("updateData",updateData)
+                const updateUserMaster = await UserMasterService.updateService(createData.dataValues.user_id, updateData);
             }
             if(createData){
                 const user_id = createData.dataValues.user_id
@@ -103,6 +130,21 @@ const UserMasterController = {
                   : null;
                   data.file_path = upload_page_1
                 delete data.Base64File
+                }
+                if(data.bg_image_file !==null && data.bg_image_file!=="" && data.bg_image_file!==0 && data.bg_image_file!==undefined){
+                    await saveBase64ToFile(
+                        data.bg_image_file,
+                        "user_master/" + id + "/bg_image",
+                        currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                        data.bg_image
+                      );    
+                    const upload_page_2 = data.bg_image
+                    ? `user_master/${id}/bg_image/${currentTime()
+                        .replace(/ /g, "_")
+                        .replace(/:/g, "-")}_${data.bg_image}`
+                    : null;
+                    data.bg_image_path = upload_page_2
+                    delete data.bg_image_file
                 }
             // Update the record using ORM
             const updatedRowsCount = await UserMasterService.updateService(id, data);
