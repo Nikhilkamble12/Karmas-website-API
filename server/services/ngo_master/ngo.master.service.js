@@ -25,6 +25,14 @@ const NgoMasterService = {
             throw error
         }
     },
+
+    getAllServiceWithLimit: async (limit, offset) => {  
+        try {
+            return await NgoMasterDAL.getAllDataByViewWithLimit(limit, offset)
+        } catch (error) {
+            
+        }
+    },
     // Method to retrieve a specific record by its ID 
     getServiceById: async (ngo_id) => {
         try {
