@@ -76,7 +76,7 @@ const UserMasterDAL = {
     },checkWetherUserIsPresent: async (user_name, limit, offset) => {
     try {
         let query = `
-            ${ViewFieldTableVise.USER_MASTER_FIELDS}
+            SELECT user_id, user_name, full_name, role_id, role, is_account_public, email_id, mobile_no, gender, bio, enrolling_date, ngo_id, ngo_name, ngo_unique_id, file_name, file_path, bg_image, bg_image_path, reset_otp, reset_otp_expiry, google_id, is_active, first_time_login, is_blacklisted, blacklist_reason
             WHERE (user_name LIKE :search OR full_name LIKE :search)
               AND is_blacklisted = false
         `;
