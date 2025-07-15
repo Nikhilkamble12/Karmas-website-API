@@ -107,7 +107,10 @@ const NgoMasterModel = (sequelize)=>{
             type:DataTypes.TEXT,
             allowNull:true
         },
-         is_active: {
+        remarks:{
+            type: DataTypes.STRING(500),
+            allowNull: true
+        }, is_active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
         },

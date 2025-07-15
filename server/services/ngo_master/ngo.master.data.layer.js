@@ -30,6 +30,22 @@ const NgoMasterDAL = {
             throw error // Throw error for handling in the controller
         }
     },
+
+    getAllDataByViewWithLimit: async (limit, offset) => {
+        try {
+            const getAllData = await db.sequelize.query(
+            `${ViewFieldTableVise.NGO_MASTER_FIELDS} LIMIT :limit OFFSET :offset`,
+            {
+                type: db.Sequelize.QueryTypes.SELECT,
+                replacements: { limit: Number(limit), offset: Number(offset) }
+            }
+        );
+        return getAllData;
+        } catch (error) {
+            throw error;
+        }
+    },
+    
     // Method to retrieve a specific record by its ID
     getDataByIdByView: async (ngo_id) => {
         try {

@@ -24,6 +24,12 @@ router.get(
     verifyToken,
     NgoMasterController.getAllByView
 )
+// Route to retrive all records with limit
+router.get(
+    `${basePath}/getData`,
+    verifyToken,
+    NgoMasterController.getAllByViewWithLimit
+)
 // Route to retrieve a record by ID
 router.get(
     `${basePath}/getById`,

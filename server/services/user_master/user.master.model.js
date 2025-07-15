@@ -27,11 +27,16 @@ const UserMasterModel = (sequelize) => {
          email_id: {
             type: DataTypes.STRING(200),
             allowNull: false
+        }, mobile_no: {
+            type: DataTypes.STRING(20),
+            allowNull: true
         }, gender: {
             type: DataTypes.STRING(100),
             allowNull: true,
-        },
-        enrolling_date: {
+        }, bio: {
+            type: DataTypes.STRING(1000),
+            allowNull: true
+        }, enrolling_date: {
             type: DataTypes.DATE,
             allowNull: true,
         },
@@ -51,8 +56,13 @@ const UserMasterModel = (sequelize) => {
         file_path:{
             type:DataTypes.STRING(500), 
            allowNull:true
-        },
-        reset_otp:{
+        }, bg_image : {
+            type: DataTypes.STRING(300),
+            allowNull: true
+        }, bg_image_path : {
+            type: DataTypes.STRING(500),    
+            allowNull: true
+        },  reset_otp:{
             type:DataTypes.STRING(20),
             allowNull:true
         },
