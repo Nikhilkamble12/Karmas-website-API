@@ -20,7 +20,7 @@ const UserMasterController = {
             const createData = await UserMasterService.createService(data);
             if(createData){
             let file_path = null , bg_image_path = null;
-            if(data.Base64File!==null && data.Base64File!=="" && data.Base64File!==0 && data.Base64File!==undefined){
+            if(data.Base64File!==null && data.Base64File!=="" && data.Base64File!==0 && data.Base64File!==undefined && data.file_name && data.file_name!=="" && data.file_name!==0){
                 const user_id = createData.dataValues.user_id
                 await saveBase64ToFile(
                     data.Base64File,
@@ -38,7 +38,7 @@ const UserMasterController = {
                 //    const updateUserMaster = await UserMasterService.updateService(createData.dataValues.user_id,{file_path:upload_page_1})
                 }
 
-                if(data.bg_image_file !==null && data.bg_image_file!=="" && data.bg_image_file!==0 && data.bg_image_file!==undefined){
+                if(data.bg_image_file !==null && data.bg_image_file!=="" && data.bg_image_file!==0 && data.bg_image_file!==undefined && data.bg_image && data.bg_image!=="" && bg_image!==0){
                     await saveBase64ToFile(
                         data.bg_image_file,
                         "user_master/" + createData.dataValues.user_id + "/bg_image",
@@ -114,7 +114,7 @@ const UserMasterController = {
             const data = req.body
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, true);
-            if(data.Base64File!==null && data.Base64File!=="" && data.Base64File!==0 && data.Base64File!==undefined){
+            if(data.Base64File!==null && data.Base64File!=="" && data.Base64File!==0 && data.Base64File!==undefined && data.file_name && data.file_name!=="" && data.file_name!==0){
                 await saveBase64ToFile(
                     data.Base64File,
                     "user_master/" + id ,
@@ -130,7 +130,7 @@ const UserMasterController = {
                   data.file_path = upload_page_1
                 delete data.Base64File
                 }
-                if(data.bg_image_file !==null && data.bg_image_file!=="" && data.bg_image_file!==0 && data.bg_image_file!==undefined){
+                if(data.bg_image_file !==null && data.bg_image_file!=="" && data.bg_image_file!==0 && data.bg_image_file!==undefined && data.bg_image && data.bg_image!=="" && data.bg_image!==0){
                     await saveBase64ToFile(
                         data.bg_image_file,
                         "user_master/" + id + "/bg_image",
