@@ -43,12 +43,6 @@ router.get(
     verifyToken,
     NgoLikesController.getDataByNgoIdlike
 )
-// Get Data By User Id And Ngo Id
-router.get(
-    `${basePath}/getData/ByUserAndNgo`,
-    verifyToken,
-    NgoLikesController
-)
 // Get Data By Ngo Id And User Id 
 router.get(
     `${basePath}/getData/byNgoUser`,

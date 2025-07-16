@@ -303,6 +303,7 @@ const RequestMediaController = {
     }
     try{
       if (!req.file) {
+        deleteFile(filePath)
         return res.status(400).send({ error: 'No file uploaded' });
       }
       console.log("data.RequestId",data.RequestId)

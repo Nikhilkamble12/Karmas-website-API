@@ -2,6 +2,18 @@ import RequestMediaController from "./request.media.controller.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 const {express,verifyToken,basePathRoute,multer,path,fs,fileURLToPath} = commonPath
 
+
+async function deleteFile(filePath) {
+      console.log("Inside delete function:", filePath);
+      try {
+        await fs.access(filePath); // Check if file exists
+        await fs.unlink(filePath); // Delete it
+        console.log(`✅ File deleted: ${filePath}`);
+      } catch (err) {
+        console.error(`❌ Failed to delete file: ${filePath}`, err.message);
+      }
+    }
+
 // Define the base path for routes
 const basePath=`${basePathRoute}/request_media`
 const router = express.Router()
@@ -71,10 +83,16 @@ const validateVideoFile = (file) => {
   const maxVideoSize = 50 * 1024 * 1024; // 50MB
 
   if (!allowedVideoTypes.includes(file.mimetype)) {
+     if (req.file && req.file.path) {
+      deleteFile(req.file.path);
+    }
     throw new Error('Unsupported video format');
   }
 
   if (file.size > maxVideoSize) {
+     if (req.file && req.file.path) {
+      deleteFile(req.file.path);
+    }
     throw new Error('Video file too large (max 50MB)');
   }
 
