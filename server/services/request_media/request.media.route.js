@@ -122,11 +122,6 @@ router.post(
     upload.single('mediaFile'), 
     RequestMediaController.createOrUpdateMulitileRequestMedia
 )
-// Router to get Request media By User id
-// router.get(
-//     `${basePath}/getBy/UserId`,
-//     verifyToken,
-// )
 
 router.get(
   `${basePath}/getMedia/byRequest`,
