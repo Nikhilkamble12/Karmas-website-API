@@ -57,7 +57,6 @@ const UserMasterController = {
 
                 const updateData = {
                     file_path: file_path,
-                    bg_image: data.bg_image,
                     bg_image_path: bg_image_path
                 };
                 //console.log("updateData",updateData)
@@ -136,6 +135,7 @@ const UserMasterController = {
                         data.bg_image_file,
                         "user_master/" + id + "/bg_image",
                         currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                        "_" +
                         data.bg_image
                       );    
                     const upload_page_2 = data.bg_image
@@ -391,7 +391,12 @@ const UserMasterController = {
                 if(getDataByid.file_path && getDataByid.file_path!=="" && getDataByid.file_path!==0){
                 getDataByid.Base64File = await getBase64FromFile(getDataByid.file_path)
                 }else{
-                    getDataByid.Base64File = null 
+                getDataByid.Base64File = null 
+                }
+                if(getDataByid.bg_image_path && getDataByid.bg_image_path!=="" && getDataByid.bg_image_path!==0){
+                getDataByid.Bg_Base64File = await getBase64FromFile(getDataByid.bg_image_path)
+                }else{
+                getDataByid.Bg_Base64File = null 
                 }
                 return res
                     .status(responseCode.OK)
