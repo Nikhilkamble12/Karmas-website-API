@@ -3,15 +3,15 @@ import commonPath from "../../middleware/comman_path/comman.path.js"; // Import 
 const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessary components from commonPath
 
 const ScoreHistoryDAL = {
-     // Method to create a new record in the database
-     CreateData: async (data) => {
+    // Method to create a new record in the database
+    CreateData: async (data) => {
         try {
             const createdData = await ScoreHistoryModel(db.sequelize).create(data)
             return createdData // Return the created data
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    }, 
+    },
     // Method to update an existing record by its ID
     UpdateData: async (sr_no, data) => {
         try {
@@ -20,7 +20,7 @@ const ScoreHistoryDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    }, 
+    },
     // Method to retrieve all records by view
     getAllDataByView: async () => {
         try {
@@ -38,7 +38,7 @@ const ScoreHistoryDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    }, 
+    },
     // Method to mark a record as deleted (soft delete)
     deleteDataById: async (sr_no, req, res) => {
         try {
@@ -51,92 +51,78 @@ const ScoreHistoryDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    },getSimpleScoreHistoryByUserId:async(user_id)=>{
-        try{
+    }, getSimpleScoreHistoryByUserId: async (user_id) => {
+        try {
             const getDataByuserId = await db.sequelize.query(` ${ViewFieldTableVise.SIMPLE_SCORE_HISTORY_FIELDS} where user_id  = ${user_id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getDataByuserId
-        }catch(error){
+        } catch (error) {
             throw error
         }
-    },getScoreDashBoardDataByLimit:async(limit)=>{
-        try{
+    }, getScoreDashBoardDataByLimit: async (limit) => {
+        try {
             const replacements = { limit: parseInt(limit) };
 
             // Fetch Top Scorers (highest cumulative total score)
             const topScorers = await db.sequelize.query(
-              `SELECT * FROM v_weekly_user_scores ORDER BY total_score DESC LIMIT :limit`,
-              { replacements, type: db.Sequelize.QueryTypes.SELECT }
+                `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference, rank FROM v_weekly_user_scores ORDER BY total_score DESC LIMIT :limit`,
+                { replacements, type: db.Sequelize.QueryTypes.SELECT }
             );
-      
+            topScorers.sort((a, b) => a.rank - b.rank);
             // Fetch Top Gainers (highest positive difference between total score and last week's score)
             const topGainers = await db.sequelize.query(
-              `SELECT * FROM v_weekly_user_scores ORDER BY difference DESC LIMIT :limit`,
-              { replacements, type: db.Sequelize.QueryTypes.SELECT }
+                `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference, rank FROM v_weekly_user_scores ORDER BY difference DESC LIMIT :limit`,
+                { replacements, type: db.Sequelize.QueryTypes.SELECT }
             );
-      
+
             // Fetch Top Losers (highest negative difference between total score and last week's score)
             const topLosers = await db.sequelize.query(
-              `SELECT * FROM v_weekly_user_scores ORDER BY difference ASC LIMIT :limit`,
-              { replacements, type: db.Sequelize.QueryTypes.SELECT }
+                `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference, rank FROM v_weekly_user_scores ORDER BY difference ASC LIMIT :limit`,
+                { replacements, type: db.Sequelize.QueryTypes.SELECT }
             );
-      
+
             return { topScorers, topGainers, topLosers };
-      
-        }catch(error){
+
+        } catch (error) {
             throw error
         }
-    },getUserRankByUseriD:async(user_id)=>{
-        try{
+    }, getUserRankByUseriD: async (user_id) => {
+        try {
 
-     const getUserScore = await db.sequelize.query(`
-        WITH ranked_users AS (
-        SELECT *,
-                ROW_NUMBER() OVER (ORDER BY total_score DESC) AS row_num
-        FROM massom.v_weekly_user_scores
-        ),
-        target_rank AS (
-        SELECT row_num
-        FROM ranked_users
-        WHERE user_id = 1
-        ),
-        bounds AS (
-        SELECT 
-            GREATEST(CAST(row_num AS SIGNED) - 2, 1) AS lower_bound,
-            CAST(row_num AS SIGNED) + 2 AS upper_bound
-        FROM target_rank
-        )
-        SELECT *
-        FROM ranked_users, bounds
-        WHERE ranked_users.row_num BETWEEN bounds.lower_bound AND bounds.upper_bound
-        ORDER BY ranked_users.row_num;
-
-        `, {
-        replacements: { userId: user_id },
-        type: db.Sequelize.QueryTypes.SELECT
-        });
-        const updatedUsers = getUserScore.map(user => {
-        return {
-            ...user,
-            current_user: user.user_id === user_id
-        };
-        });
-        return updatedUsers
-        }catch(error){
+            const getUserScore = await db.sequelize.query(
+              `
+          SELECT *, 
+          ROW_NUMBER() OVER (ORDER BY total_score DESC) AS row_num
+          FROM massom.v_weekly_user_scores
+          WHERE user_id = :userId
+          `,
+              {
+                replacements: { userId: user_id },
+                type: db.Sequelize.QueryTypes.SELECT,
+              }
+            );
+            const updatedUsers = getUserScore.map(user => {
+                return {
+                    ...user,
+                    current_user: user.user_id === user_id
+                };
+            });
+            return updatedUsers
+        } catch (error) {
             throw error
         }
-    },getAllScoreHistoryByUserIdByLimit:async(user_id,limit,offset)=>{
-        try{
+    }, getAllScoreHistoryByUserIdByLimit: async (user_id, limit, offset) => {
+        try {
             const getUserData = await db.sequelize.query(`
       ${ViewFieldTableVise.SIMPLE_SCORE_HISTORY_FIELDS}
       WHERE user_id = :user_id
       ORDER BY date DESC
       LIMIT :limit OFFSET :offset
     `, {
-      replacements: { user_id,limit: Number(limit),offset: Number(offset) },
-      type: db.Sequelize.QueryTypes.SELECT
-    });            
-    return getUserData
-        }catch(error){
+                replacements: { user_id, limit: Number(limit), offset: Number(offset) },
+                type: db.Sequelize.QueryTypes.SELECT
+            });
+            return getUserData
+        } catch (error) {
             throw error
         }
     }

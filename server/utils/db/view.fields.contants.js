@@ -45,6 +45,7 @@ const ViewFieldTableWise = {
     NGO_MEDIA_LIKES_FIELDS:` SELECT like_id, ngo_media_id, user_id, user_name, is_liked, created_at FROM ${VIEW_NAME.GET_ALL_NGO_MEDIA_LIKES} `,
     NGO_MEDIA_COMMENTS_FIELDS:` SELECT comment_id, ngo_media_id, user_id, file_path, user_name, comment_text, total_comment, parent_id, parent_comment_text, created_at FROM ${VIEW_NAME.GET_ALL_NGO_MEDIA_COMMENTS} `,
     NGO_LIKES_FIELDS:` SELECT like_id, ngo_id, ngo_name, user_id, user_name, file_path, is_liked, created_at FROM ${VIEW_NAME.GET_ALL_NGO_LIKES} `,
+    NGO_LEVELS_FIELDS:` SELECT ngo_level_id, level_name, description, total_modules, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_NGO_LEVEL} `,
 
     // -------> P
     POSTS_FIELDS:` SELECT post_id, user_id, description, created_at, total_likes, total_comments, user_name, full_name, role_id, role_name, file_path, is_active, is_blacklist, created_by, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_POSTS} `,
