@@ -72,6 +72,13 @@ const GroupRolePagePermissionDAL = {
         }catch(error){
             throw error
         }
+    },getDataByRoleAndNgoLevelId:async(role_id,ngo_level_id)=>{
+        try{
+          const getAllData = await db.sequelize.query(`${ViewFieldTableVise.GROUP_ROLE_PAGE_PERMISSION_FIELDS} where  role_id = ${role_id} and ngo_level_id = ${ngo_level_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getAllData
+        }catch{
+            throw error
+        }
     }
 }
 

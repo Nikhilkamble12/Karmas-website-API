@@ -9,7 +9,11 @@ const RoleMasterModel = (sequelize)=>{
         }, role:{
             type:DataTypes.STRING(100),
             allowNull:false
-        }, is_active: {
+        },menu_id:{
+           type:DataTypes.INTEGER,
+           allowNull:true
+        },
+        is_active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
         },

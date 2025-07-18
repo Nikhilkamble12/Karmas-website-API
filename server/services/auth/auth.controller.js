@@ -9,6 +9,9 @@ import CommonEmailtemplate from "../../utils/helper/common.email.templates.js";
 import sendEmail from "../../utils/helper/comman.email.function.js";
 import RESPONSE_CONSTANTS from "../../utils/constants/response/response.constant.js";
 import UserTokenService from "../user_tokens/user.tokens.service.js";
+import GroupRolePagePermissionService from "../access_control/group_role_page_permission/group.role.page.permission.service.js";
+import MenuService from "../access_control/menu/menu.service.js";
+import RoleMasterService from "../access_control/role_master/role.master.service.js";
 // import RoleService from "../access_control/role/role.service.js";
 const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate, JWT } = commonPath
 
@@ -86,6 +89,12 @@ let AuthController = {
         }
         await UserTokenService.CreateOrUpdateUserToken(userData.user_id,DataToUpdate)
       }
+      let levelGroupRolePagePermission = []
+          if(userData.ngo_level_id && userData.ngo_level_id!==null && userData.ngo_level_id!=="" && userData.ngo_level_id!==0){
+           levelGroupRolePagePermission = await GroupRolePagePermissionService.getByRoleIdAndNgoLevelId(userData.role_id,userData.ngo_level_id)
+          }
+      const getMenuByRoleId = await RoleMasterService.getServiceById(userData.role_id)
+      const CommonGroupRolePagePermission = await GroupRolePagePermissionService.getDataByRoleId(userData.role_id)
       if (userData?.first_time_login == true) {
         const getBonusData = await BonusMasterService.getBonusMasterDataByCategoryStatus(BONUS_MASTER.WELCOME_BONUS_ID, STATUS_MASTER.ACTIVE)
         if (getBonusData.length > 0) {
@@ -129,6 +138,11 @@ let AuthController = {
           role: userData.role
         },
         token: token,
+        permission:{
+          normal_permission:CommonGroupRolePagePermission,
+          specail_permission:levelGroupRolePagePermission,
+        },
+        menu:getMenuByRoleId?.menu ?? []
       };
       if (token) {
         return res
