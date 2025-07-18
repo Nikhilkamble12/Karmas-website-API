@@ -312,6 +312,124 @@ const GroupRolePagePermissionController = {
                     )
                 ); 
         }
+    },createOrUpdateGroupRolePagePermission:async(req,res)=>{
+        try{
+           const data = req.body
+           if(data.ngo_level_id && data.ngo_level_id!=="" && data.ngo_level_id!==0){
+            const getDataByRolePageAndNgoLevelId = await GroupRolePagePermissionService.getDataByRoleIdAndPageIdAndNgoLevelId(data.role_id,data.page_id,data.ngo_level_id)
+            if(getDataByRolePageAndNgoLevelId && getDataByRolePageAndNgoLevelId.length>0){
+               await addMetaDataWhileCreateUpdate(data, req, res, true);
+               const updateData = await GroupRolePagePermissionService.updateService(getDataByRolePageAndNgoLevelId[0].role_page_permission_id)
+               if (updateData === 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_UPDATING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+            return res
+                .status(responseCode.CREATED)
+                .send(
+                    commonResponse(
+                        responseCode.CREATED,
+                        responseConst.SUCCESS_UPDATING_RECORD
+                    )
+                );
+
+            }else{
+               await addMetaDataWhileCreateUpdate(data, req, res, false);
+               const createData = await GroupRolePagePermissionService.createService(data)
+               if (createData) {
+                return res
+                    .status(responseCode.CREATED)
+                    .send(
+                        commonResponse(
+                            responseCode.CREATED,
+                            responseConst.SUCCESS_ADDING_RECORD
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_ADDING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+            }
+           }else{
+            const GetDataByRoleAndPage = await GroupRolePagePermissionService.getDataByRoleIdAndPageId(data.role_id,data.page_id)
+            if(GetDataByRoleAndPage && GetDataByRoleAndPage.length>0){
+               await addMetaDataWhileCreateUpdate(data, req, res, true);
+               const updateData = await GroupRolePagePermissionService.updateService(GetDataByRoleAndPage[0].role_page_permission_id,data)
+               if (updateData === 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_UPDATING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+            return res
+                .status(responseCode.CREATED)
+                .send(
+                    commonResponse(
+                        responseCode.CREATED,
+                        responseConst.SUCCESS_UPDATING_RECORD
+                    )
+                );
+            }else{
+               await addMetaDataWhileCreateUpdate(data, req, res, false);
+               const createData = await GroupRolePagePermissionService.createService(data)
+               if (createData) {
+                return res
+                    .status(responseCode.CREATED)
+                    .send(
+                        commonResponse(
+                            responseCode.CREATED,
+                            responseConst.SUCCESS_ADDING_RECORD
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_ADDING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+            }
+           }
+        }catch(error){
+           logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );  
+        }
     }
 }
 

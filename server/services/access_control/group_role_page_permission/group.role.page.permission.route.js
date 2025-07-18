@@ -43,6 +43,11 @@ router.get(
     verifyToken,
     GroupRolePagePermissionController.getDataByRoleId
   )
+router.put(
+    `${basePath}/create/update/groupRole`,
+    verifyToken,
+    GroupRolePagePermissionController.createOrUpdateGroupRolePagePermission
+)
 
 // Export the router for use in other parts of the application
 export default router

@@ -46,6 +46,18 @@ const GroupRolePagePermissionService = {
         }catch(error){
             throw error
         }
+    },getDataByRoleIdAndPageId:async(role_id,page_id)=>{
+        try{
+            return await GroupRolePagePermissionDAL.getDataByRoleIdAndPageId(role_id,page_id)
+        }catch(error){
+            throw error
+        }
+    },getDataByRoleIdAndPageIdAndNgoLevelId:async(role_id,page_id,ngo_level_id)=>{
+        try{
+            return await GroupRolePagePermissionDAL.getDataByRoleIdAndPageIdAndNgoLevelId(role_id,page_id,ngo_level_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 
