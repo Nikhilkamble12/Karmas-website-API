@@ -242,11 +242,10 @@ async function getAllByField(relativePath, field, value) {
       }
       // Ensure `value` is an array and return it
         // Check if `parsed.value` is an object and return its properties
-
     const remainingMs = parsed.expiresAt ? parsed.expiresAt - Date.now() : null;
     if (parsed.value && typeof parsed.value === 'object') {
         return {
-            ...parsed.value,
+            data:parsed.value,
             createdAt: formatDate(parsed.createdAt),
             updatedAt: formatDate(parsed.updatedAt),
             expiresAt: formatDate(parsed.expiresAt),

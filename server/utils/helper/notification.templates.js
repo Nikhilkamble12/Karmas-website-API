@@ -72,6 +72,10 @@ const notificationTemplates = {
   sosIncoming: ({ username }) => ({
     title: `Emergency Alert from ${username}`,
     description: `${username} has activated SOS. Tap to view their location on the map.`
+  }),
+  sosLocationUpdateRequest:({})=>({
+    title: `Send Live Location`,
+    description: `Send Live Location it more than 40 secs`
   })
 };
 

@@ -398,7 +398,6 @@ const SosUserListController = {
                 }
             }
             const checkWetherDataIsPresent = await SosUserListService.getDataByUserIdAndContactUserId(data.user_id,data.contact_user_id)
-            gfhjh
             if(checkWetherDataIsPresent && checkWetherDataIsPresent.length>0){
                 await addMetaDataWhileCreateUpdate(data, req, res, true);
                 if(checkWetherDataIsPresent && checkWetherDataIsPresent[0].is_currently_active==false && data.is_currently_active == true){

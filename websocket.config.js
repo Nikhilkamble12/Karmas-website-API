@@ -1,9 +1,9 @@
 
 // import WebSocket from 'ws';
-// import { WebSocketServer } from 'ws';
+import { WebSocketServer } from 'ws';
 
-import ws from 'ws';
-const WebSocketServer = ws.Server;
+// import ws from 'ws';
+// const WebSocketServer = ws.Server;
 
 import jwt from 'jsonwebtoken';
 import url from 'url';
@@ -59,6 +59,7 @@ async function setupWebSocket(server) {
       wss.handleUpgrade(req, socket, head, (ws) => {
         ws.user = decoded;
         wss.emit('connection', ws, req);
+        return
       });
     });
     }catch(error){
@@ -86,7 +87,7 @@ async function setupWebSocket(server) {
         } else {
           handler = wsRoutes.get(event);
         }        
-        console.log("handler",handler)
+        // console.log("handler",handler)
 
         if (handler) {
           const wsRequest = {
@@ -102,6 +103,7 @@ async function setupWebSocket(server) {
           ws.send(JSON.stringify({ event: 'error', data: `Unknown event: ${event}` }));
         }
       } catch (err) {
+        console.log("ërr",err)
         ws.send(JSON.stringify({ event: 'error', data: 'Invalid JSON format' }));
       }
     });   

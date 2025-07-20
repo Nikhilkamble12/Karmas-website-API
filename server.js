@@ -232,7 +232,7 @@ Promise.all(
         await import(route);
         app.use(routeModule);
       } else {
-        console.error(`❌ Route ${routeModule} does not export a function.`);
+        console.error(`❌ Route ${route} and ${routeModule} does not export a function.`);
         logger.error(`Error in Server File ---> ${routeModule} does not export a function.`);
       }
     } catch (error) {

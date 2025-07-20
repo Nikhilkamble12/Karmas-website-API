@@ -63,21 +63,23 @@ const ScoreHistoryDAL = {
             const replacements = { limit: parseInt(limit) };
 
             // Fetch Top Scorers (highest cumulative total score)
+           // Fetch Top Scorers (highest cumulative total score)
             const topScorers = await db.sequelize.query(
-                `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference, rank FROM v_weekly_user_scores ORDER BY total_score DESC LIMIT :limit`,
-                { replacements, type: db.Sequelize.QueryTypes.SELECT }
+            `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference,` + "`rank`" + ` FROM v_weekly_user_scores ORDER BY total_score DESC LIMIT :limit`,
+            { replacements, type: db.Sequelize.QueryTypes.SELECT }
             );
-            topScorers.sort((a, b) => a.rank - b.rank);
+            topScorers.sort((a, b) => a.rank - b.rank); // Note: Assuming 'rank' property will exist after fix
+
             // Fetch Top Gainers (highest positive difference between total score and last week's score)
             const topGainers = await db.sequelize.query(
-                `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference, rank FROM v_weekly_user_scores ORDER BY difference DESC LIMIT :limit`,
-                { replacements, type: db.Sequelize.QueryTypes.SELECT }
+            `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference,` + "`rank`" + ` FROM v_weekly_user_scores ORDER BY difference DESC LIMIT :limit`,
+            { replacements, type: db.Sequelize.QueryTypes.SELECT }
             );
 
             // Fetch Top Losers (highest negative difference between total score and last week's score)
             const topLosers = await db.sequelize.query(
-                `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference, rank FROM v_weekly_user_scores ORDER BY difference ASC LIMIT :limit`,
-                { replacements, type: db.Sequelize.QueryTypes.SELECT }
+            `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference, ` + "`rank`" + ` FROM v_weekly_user_scores ORDER BY difference ASC LIMIT :limit`,
+            { replacements, type: db.Sequelize.QueryTypes.SELECT }
             );
 
             return { topScorers, topGainers, topLosers };
