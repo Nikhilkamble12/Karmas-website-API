@@ -98,6 +98,6 @@ export default async function defineRoutes(wsRouter, activeConnections) {
   setInterval(async () => {
     console.log("Checking SOS users for location updates...");
     await checkSosUsers();
-  }, 15 * 1000); // Run the check every 10 seconds
+  }, 30 * 1000); // Run the check every 30 seconds
 
 }
