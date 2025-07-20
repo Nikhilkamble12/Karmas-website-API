@@ -38,7 +38,7 @@ export default async function defineRoutes(wsRouter, activeConnections) {
       const currentTime = getCurrentIndianTime(); // Current timestamp in IST
       const reminderThreshold = 40 * 1000; // 40 seconds in milliseconds
       const checkThreshold = 10 * 1000; // Check every 10 seconds
-
+        if(getAllActiveSosUser && getAllActiveSosUser.data && getAllActiveSosUser.data.length>0){
       for (const user of getAllActiveSosUser.data) {
         console.log()
         if (user.is_active) {
@@ -88,6 +88,7 @@ export default async function defineRoutes(wsRouter, activeConnections) {
           }
         }
       }
+    }
     } catch (error) {
       console.error("Error in checking SOS users:", error);
     }
