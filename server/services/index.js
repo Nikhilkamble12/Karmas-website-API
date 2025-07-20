@@ -53,12 +53,13 @@ const sequelize = new Sequelize(config.DB, config.USER, config.PASSWORD, {
   dialect: config.DIALECT,
   port: config.PORT ?? 3306,
   operatorsAliases: 0,
+  // benchmark: true,
   pool: {
     max: config.pool.max,
     min: config.pool.min,
     acquire: config.pool.acquire,
     idle: config.pool.idle,
-  },
+  }
 });
 // sequelize.authenticate()
 //   .then(() => {

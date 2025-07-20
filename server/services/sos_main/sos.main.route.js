@@ -36,6 +36,17 @@ router.delete(
     verifyToken,
     SosMainController.deleteData
 )
+router.put(
+    `${basePath}/create/update`,
+    verifyToken,
+    SosMainController.CreateOrUpdateSosMain
+);
+
+router.get(
+    `${basePath}/getBy/User`,
+    verifyToken,
+    SosMainController.getOnlyActiveByUserId
+);
 
 // Export the router for use in other parts of the application
 export default router

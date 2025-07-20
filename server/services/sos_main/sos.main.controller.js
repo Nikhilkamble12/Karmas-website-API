@@ -2,7 +2,8 @@ import SosMainService from "./sos.main.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import LocalJsonHelper from "../../utils/helper/local.json.helper.js";
 import SosHistoryService from "../sos_history/sos.history.service.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
+const SOS_ACTIVE_JSON = "Sos/sos.active.json"
 
 const SosMainController = {
     // Create A new Record 
@@ -37,7 +38,7 @@ const SosMainController = {
                     );
             }
         } catch (error) {
-            console.log("error",error)
+            console.log("error", error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -50,7 +51,7 @@ const SosMainController = {
                     )
                 );
         }
-    }, 
+    },
     // update Record Into Db
     update: async (req, res) => {
         try {
@@ -275,12 +276,12 @@ const SosMainController = {
                     )
                 );
         }
-    },getAllByUserId:async(req,res)=>{
-        try{
+    }, getAllByUserId: async (req, res) => {
+        try {
             const user_id = req.query.user_id
             const getDataById = await SosMainService.getDataByUserIdByView(user_id)
             if (getDataById.length !== 0) {
-                for(let i = 0;i<getDataById.length;i++){
+                for (let i = 0; i < getDataById.length; i++) {
                     let currentData = getDataById[i]
                     const getHistoryData = await SosHistoryService.getDataBySosId(currentData.sos_id)
                     currentData.history_data = getHistoryData ?? []
@@ -306,65 +307,157 @@ const SosMainController = {
                         )
                     );
             }
-        }catch(error){
+        } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
-            .status(responseCode.INTERNAL_SERVER_ERROR)
-            .send(
-                commonResponse(
-                    responseCode.INTERNAL_SERVER_ERROR,
-                    responseConst.INTERNAL_SERVER_ERROR,
-                    null,
-                    true
-                )
-            );
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
         }
-    },CreateOrUpdateSosMain:async(req,res)=>{
-        try{
+    }, CreateOrUpdateSosMain: async (req, res) => {
+        try {
             const data = req.body
-            const user_id = tokenData(req,res)
+            const user_id = tokenData(req, res)
+            data.user_id = user_id
             const checkWhoseSosIsOn = await SosMainService.getByUserIdOnlyActive(user_id)
-            if(checkWhoseSosIsOn && checkWhoseSosIsOn.length>0){
-                if(!data.is_sos_on){
+            if (checkWhoseSosIsOn && checkWhoseSosIsOn.length > 0) {
+                if (!data.is_sos_on) {
                     data.end_time = currentTime()
                 }
-                const updateData = await SosMainService.updateService(checkWhoseSosIsOn[0].sos_id,data)
+                const updateData = await SosMainService.updateService(checkWhoseSosIsOn[0].sos_id, data)
                 const getOlderData = await SosMainService.getServiceById(checkWhoseSosIsOn[0].sos_id)
-                if(!getOlderData.is_sos_on){
-
+                if (!getOlderData.is_sos_on) {
+                    const getAllActive = await SosMainService.getAllActiveSos()
+                    await LocalJsonHelper.deleteFullFile(SOS_ACTIVE_JSON)
+                    await LocalJsonHelper.set(SOS_ACTIVE_JSON, null, getAllActive, null)
+                    return res
+                        .status(responseCode.CREATED)
+                        .send(
+                            commonResponse(
+                                responseCode.CREATED,
+                                responseConst.SUCCESS_UPDATING_RECORD
+                            )
+                        );
                 }
-            }else{
-                if(data.is_sos_on){
-                  data.start_time = currentTime()
-                  await addMetaDataWhileCreateUpdate(data, req, res, false);
-                  data.end_time = null
-                  const createData = await SosMainService.createService(data)
-                  
-                }else{
-                  return res
+                if (updateData === 0) {
+                return res
                     .status(responseCode.BAD_REQUEST)
                     .send(
                         commonResponse(
                             responseCode.BAD_REQUEST,
-                            responseConst.SOS_NOT_YET_CREATED,
+                            responseConst.ERROR_UPDATING_RECORD,
                             null,
                             true
                         )
-                    );  
+                    );
+            }
+            return res
+                .status(responseCode.CREATED)
+                .send(
+                    commonResponse(
+                        responseCode.CREATED,
+                        responseConst.SUCCESS_UPDATING_RECORD
+                    )
+                );
+            } else {
+                if (data.is_sos_on){
+                    data.start_time = currentTime()
+                    await addMetaDataWhileCreateUpdate(data, req, res, false);
+                    data.end_time = null
+                    const createData = await SosMainService.createService(data)
+                    if (createData) {
+                        const checkWhoseSosIsOn = await SosMainService.getByUserIdOnlyActive(user_id)
+                        await LocalJsonHelper.set(SOS_ACTIVE_JSON, "sos_id", checkWhoseSosIsOn[0], null)
+                        return res
+                            .status(responseCode.CREATED)
+                            .send(
+                                commonResponse(
+                                    responseCode.CREATED,
+                                    responseConst.SUCCESS_ADDING_RECORD
+                                )
+                            );
+                    } else {
+                        return res
+                            .status(responseCode.BAD_REQUEST)
+                            .send(
+                                commonResponse(
+                                    responseCode.BAD_REQUEST,
+                                    responseConst.ERROR_ADDING_RECORD,
+                                    null,
+                                    true
+                                )
+                            );
+                    }
+                } else {
+                    return res
+                        .status(responseCode.BAD_REQUEST)
+                        .send(
+                            commonResponse(
+                                responseCode.BAD_REQUEST,
+                                responseConst.SOS_NOT_YET_CREATED,
+                                null,
+                                true
+                            )
+                        );
                 }
+            }
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    },getOnlyActiveByUserId:async(req,res)=>{
+        try{
+            const user_id = await tokenData(req,res)
+            const getDataByUser = await SosMainService.getByUserIdOnlyActive(user_id)
+            if (getDataByUser.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getDataByUser
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
             }
         }catch(error){
             logger.error(`Error ---> ${error}`);
             return res
-            .status(responseCode.INTERNAL_SERVER_ERROR)
-            .send(
-                commonResponse(
-                    responseCode.INTERNAL_SERVER_ERROR,
-                    responseConst.INTERNAL_SERVER_ERROR,
-                    null,
-                    true
-                )
-            );
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
         }
     }
 }
