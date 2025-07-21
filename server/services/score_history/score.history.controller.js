@@ -326,10 +326,8 @@ const ScoreHistoryController = {
             const localData = await LocalJsonHelper.getAll(fileName, 'get');
             const cachedData = localData.data
             const getUserrank = await ScoreHistoryService.getUserRankByUserId(user_id)
-            console.log("getUserrank",getUserrank)
-            cachedData.user_rank = getUserrank
-
             if (cachedData && cachedData.length!==0) {
+                cachedData.user_rank = getUserrank
                 return res
                     .status(responseCode.OK)
                     .send(
