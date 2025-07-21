@@ -9,7 +9,7 @@ const NgoLikesController = {
         try {
             const data = req.body;
              data.user_id = await tokenData(req,res);
-            const CheckWetherItisLiked = await NgolikesService.getDataByUserId(user_id,data.ngo_id)
+            const CheckWetherItisLiked = await NgolikesService.getDataByUserId(data.user_id,data.ngo_id)
             if(CheckWetherItisLiked && CheckWetherItisLiked.length>0){
                 if(CheckWetherItisLiked && CheckWetherItisLiked[0].is_like==false){
                     if(data.is_like == true){
@@ -274,6 +274,20 @@ const NgoLikesController = {
         try {
             const id = req.query.id
             // Delete data from the database
+            const likeData = await NgolikesService.getServiceById(id);
+            if (!likeData) {
+                return res
+                    .status(responseCode.NOT_FOUND)
+                    .send(
+                        commonResponse(
+                            responseCode.NOT_FOUND,
+                            "Like record not found.",
+                            null,
+                            true
+                        )
+                    );
+            }
+            console.log("likeData",likeData)
             const deleteData = await NgolikesService.deleteByid(id, req, res)
             
             // Also delete data from the JSON file
@@ -290,9 +304,9 @@ const NgoLikesController = {
                         )
                     );
             }
-            const getNgoData = await NgoMasterService.getServiceById(data.ngo_id)
+            const getNgoData = await NgoMasterService.getServiceById(likeData.ngo_id)
             const total_likesCount = parseInt(getNgoData.total_ngo_likes ?? 0) - 1
-            const updateNgo = await NgoMasterService.updateService(data.ngo_id,{total_ngo_likes:total_likesCount}) 
+            const updateNgo = await NgoMasterService.updateService(likeData.ngo_id,{total_ngo_likes:total_likesCount}) 
             return res
                 .status(responseCode.CREATED)
                 .send(
