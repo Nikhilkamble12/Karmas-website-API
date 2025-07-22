@@ -327,6 +327,7 @@ const ScoreHistoryController = {
             const cachedData = localData.data
             const getUserrank = await ScoreHistoryService.getUserRankByUserId(user_id)
             if (cachedData && cachedData.length!==0) {
+                cachedData.topScorers.sort((a, b) => a.rank - b.rank);
                 cachedData.user_rank = getUserrank
                 return res
                     .status(responseCode.OK)
