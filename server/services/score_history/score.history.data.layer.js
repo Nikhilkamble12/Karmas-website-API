@@ -65,7 +65,7 @@ const ScoreHistoryDAL = {
             // Fetch Top Scorers (highest cumulative total score)
            // Fetch Top Scorers (highest cumulative total score)
             const topScorers = await db.sequelize.query(
-            `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference,` + "`rank`" + ` FROM v_weekly_user_scores ORDER BY total_score DESC LIMIT :limit`,
+            `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference,` + "`rank`" + ` FROM v_weekly_user_scores ORDER BY rank DESC LIMIT :limit`,
             { replacements, type: db.Sequelize.QueryTypes.SELECT }
             );
             topScorers.sort((a, b) => a.rank - b.rank); // Note: Assuming 'rank' property will exist after fix
