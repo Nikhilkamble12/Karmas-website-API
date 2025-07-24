@@ -6,6 +6,7 @@ import NgoStateDistrictMappingService from "../ngo_state_district_mapping/ngo.st
 import NgoFieldsMappingService from "../ngo_field_mapping/ngo.field.mapping.service.js";
 import { ROLE_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 import UserMasterService from "../user_master/user.master.service.js";
+import ngoMediaService from "../ngo_media/ngo.media.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const NgoMasterController = {
@@ -741,9 +742,11 @@ const NgoMasterController = {
             const getNgoOfficeBerrares = await NgoOfficeBearersService.getDataByNgoId(ngo_id)
             const ngoFundsDetails = await NgoFundSDetailsService.getDataByIdNgoId(ngo_id)
             const ngoStateDistrictMapping = await NgoStateDistrictMappingService.getDataByNgoId(ngo_id)
+            const getNgoMedia = await ngoMediaService.getDataByNgoId(ngo_id)
             getNgomaster.office_berears_list = getNgoOfficeBerrares
             getNgomaster.ngo_funds_details = ngoFundsDetails
             getNgomaster.ngo_state_district_mapping_list = ngoStateDistrictMapping
+            getNgomaster.ngo_media = getNgoMedia
             if (getNgomaster.length !== 0) {
                 return res
                     .status(responseCode.OK)
