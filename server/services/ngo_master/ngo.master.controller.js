@@ -318,6 +318,15 @@ const NgoMasterController = {
             const offset = req.query.offset;
             // Fetch data from the database if JSON is empty
             const getAll = await NgoMasterService.getAllServiceWithLimit(limit, offset)
+            // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
+            // // Store the data in JSON for future retrieval
+            // if(fileStatus==false){
+            //   const DataToSave=await NgoMasterService.getAllService()
+            //   if(DataToSave.length!==0){
+            //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
+            //   }
+            // }
+            // Return fetched data or handle case where no data is found
             if(getAll.length !== 0){
                 for(let i = 0; i < getAll.length; i++) {
                     let currentData = getAll[i];
@@ -345,16 +354,6 @@ const NgoMasterController = {
                         )
                     );
             }
-
-            // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
-            // // Store the data in JSON for future retrieval
-            // if(fileStatus==false){
-            //   const DataToSave=await NgoMasterService.getAllService()
-            //   if(DataToSave.length!==0){
-            //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
-            //   }
-            // }
-            // Return fetched data or handle case where no data is found
         } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res

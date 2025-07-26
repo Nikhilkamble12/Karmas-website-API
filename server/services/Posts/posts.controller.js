@@ -17,8 +17,9 @@ const PostController = {
       // Create the record using ORM
       
       const createdData = await PostService.createSerive(data);
-      const getFollowerUserIdOnly = await UserFollowingService.getOnlyUserIdOfFollowAndBlocked( )
-      const getUserFollower = await UserFollowingService.getDataByFollowingUserId()
+      const user_id = tokenData(req, res);
+      const getFollowerUserIdOnly = await UserFollowingService.getOnlyUserIdOfFollowAndBlocked(user_id)
+      const getUserFollower = await UserFollowingService.getDataByFollowingUserId(user_id)
       if (createdData) {
         return res
           .status(responseCode.CREATED)
