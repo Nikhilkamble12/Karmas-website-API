@@ -317,7 +317,12 @@ const RequestNgoController = {
                         const template = await notificationTemplates.newRequestForNgo({requestName :getOlderData.RequestName,requesterName:getOlderData.user_name})
                         const getUserByNgoId = await UserMasterService.getUserByNgoId(getOlderData.ngo_id)
                         const userIds = getUserByNgoId.map(user => user.user_id);
-                        const getAllUserToken = await UserTokenService.GetTokensByUserIds(userIds)
+                        console.log("userIds",userIds)
+                        let getAllUserToken = []
+                        if(userIds.length>0){
+                          getAllUserToken = await UserTokenService.GetTokensByUserIds(userIds)
+                        }
+                        
                         const getTokenByRole = await UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN)
                         const allToken =[...getAllUserToken,...getTokenByRole]
                         await sendTemplateNotification({templateKey:"Request-Ngo", templateData:template, userIds:allToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId}})
