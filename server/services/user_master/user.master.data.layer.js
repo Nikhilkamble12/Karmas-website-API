@@ -134,6 +134,14 @@ const UserMasterDAL = {
         }catch(error){
             throw error
         }
+    },checkIfEmailIsPresent:async(email_id)=>{
+        try{
+            console.log('email_id',email_id)
+            const getData =await db.sequelize.query(`${ViewFieldTableVise.USER_MASTER_FIELDS} where email_id = '${email_id}'`,{type:db.Sequelize.QueryTypes.SELECT})
+            return getData[0] ?? []
+        }catch(error){
+            throw error
+        }
     }
 }
 

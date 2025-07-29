@@ -17,6 +17,7 @@ async function sendEmail({
     html, 
     attachments = [], 
 }) {
+    console.log("smtpConfig",smtpConfig)
     try {
         // Ensure the 'to' field can handle both string and array of recipients
         const recipients = Array.isArray(to) ? to.join(', ') : to;

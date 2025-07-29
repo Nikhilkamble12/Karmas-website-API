@@ -197,9 +197,8 @@ let AuthController = {
   }, sendResetOtp: async (req, res) => {
     try {
       const { email } = req.body;
-      const user = await AuthService.checkWetherUserIsPresent(email.trim());
-
-      if (!user || user.length === 0) {
+      const user = await AuthService.checkWetherEmailIsPresent(email.trim());
+      if (!user || user.length == 0) {
         return res.status(404).send(
           commonResponse(
             responseCode.NOT_FOUND,
@@ -222,9 +221,8 @@ let AuthController = {
         username: user.username || user.fullname || email,
         otp: otp,
         validity: "20 minutes"
-      });
-
-      await sendEmail(user.email_id, subject, null, html, null);
+      }); 
+      await sendEmail({to:user.email_id, subject:subject, text:null, html:html, attachments:null});
 
       return res
         .status(200)
@@ -247,7 +245,7 @@ let AuthController = {
   }, resetPassword: async (req, res) => {
     try {
       const { email, otp, newPassword } = req.body;
-      const user = await AuthService.checkWetherUserIsPresent(email.trim());
+      const user = await AuthService.checkWetherEmailIsPresent(email.trim());
 
       if (!user || user.length === 0) {
         return res.status(404).send(
@@ -307,7 +305,8 @@ let AuthController = {
         username: user.username || user.fullname || email
       });
 
-      await sendEmail(user.email_id,subject,null,html,null);
+
+      await sendEmail({to:user.email_id,subject:subject,text:null,html:html,attachments:null});
 
       return res
         .status(200)

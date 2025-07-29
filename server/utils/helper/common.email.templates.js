@@ -22,7 +22,7 @@ const CommonEmailtemplate = {
               <div style="background:#f0f6ff;border-left:6px solid #1d4ed8;padding:15px;font-size:22px;font-weight:bold;text-align:center;color:#1d4ed8;margin:25px 0;">${otp}</div>
               <p>This code will expire in <strong>${validity}</strong>.</p>
               <p>If you didn’t request this, you can safely ignore this email.</p>
-              <p>Best regards,<br><strong>Your App Team</strong></p>
+              <p>Best regards,<br><strong>Karmas Team</strong></p>
             </div>
             ${emailFooter}
           </div>
@@ -44,7 +44,7 @@ const CommonEmailtemplate = {
             <div style="padding:30px;">
               <p>Hello <strong>${username}</strong>,</p>
               <p>Your password has been successfully updated. If this wasn’t you, please contact our support team immediately.</p>
-              <p>Best regards,<br><strong>Your App Team</strong></p>
+              <p>Best regards,<br><strong>Karmas Team</strong></p>
             </div>
             ${emailFooter}
           </div>
