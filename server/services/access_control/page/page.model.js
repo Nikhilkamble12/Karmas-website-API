@@ -1,30 +1,30 @@
 import { DataTypes } from "sequelize";
 
-const PageModel = (sequelize)=>{
-    return sequelize.define("page",{
-        page_id:{
-            ype: DataTypes.INTEGER,
+const PageModel = (sequelize) => {
+    return sequelize.define("page", {
+        page_id: {
+            type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true
-        }, parent_id:{
-            type:DataTypes.INTEGER,
-            allowNull:true
-        }, page_name:{
-            type:DataTypes.STRING(100),
-            allowNull:true
-        }, page_url:{
-            type:DataTypes.STRING(150),
-            allowNull:true
-        }, mobile_url:{
-            type:DataTypes.STRING(150),
-            allowNull:true
-        }, interface:{
-            type:DataTypes.STRING(150),
-            allowNull:true
-        }, module_name:{
-            type:DataTypes.STRING(50),
-            allowNull:true
-        },is_active: {
+        }, parent_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }, page_name: {
+            type: DataTypes.STRING(100),
+            allowNull: true
+        }, page_url: {
+            type: DataTypes.STRING(150),
+            allowNull: true
+        }, mobile_url: {
+            type: DataTypes.STRING(150),
+            allowNull: true
+        }, interface: {
+            type: DataTypes.STRING(150),
+            allowNull: true
+        }, module_name: {
+            type: DataTypes.STRING(50),
+            allowNull: true
+        }, is_active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
         },
@@ -52,8 +52,8 @@ const PageModel = (sequelize)=>{
         deleted_at: {
             type: DataTypes.DATE,
             allowNull: true
-        } 
-        },{
+        }
+    }, {
         tableName: "page",
         paranoid: true,
         timestamps: false,
