@@ -15,7 +15,7 @@ const UserMasterController = {
             // await addMetaDataWhileCreateUpdate(data, req, res, false);
             const accessToken = req.get("x-access-token");
 
-            if (accessToken && accessToken !== "null") {
+            if (accessToken && accessToken !== "null" && accessToken!=="") {
             const tokenUser = await tokenData(req, res);
             data.created_by = tokenUser;
             } else {
