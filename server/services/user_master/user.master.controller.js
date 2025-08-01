@@ -590,6 +590,46 @@ const UserMasterController = {
                     )
                 );
         }
+    },checkWetherUsernamePresent:async(req,res)=>{
+        try{
+            const user_name =  req.query.user_name
+            const checkUserNamePresnt = await UserMasterService.getUserDataByUserName(user_name)
+            if(checkUserNamePresnt.length>0){
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.USERNAME_ALREADY_IN_USE,
+                            null,
+                            true
+                        )
+                    );
+            }else{
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.USERNAME_IS_READY_TO_USE,
+                            null,
+                            false
+                        )
+                    );
+            }
+        }catch(error){
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
     }
 }
 export default UserMasterController

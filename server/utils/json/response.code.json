@@ -165,6 +165,12 @@
     },{
       "code":"3.0010",
       "message":"A record with this unique constraint already exists."
+    },{
+      "code":"1.0027",
+      "message":"User Name Already In Use."
+    },{
+      "code":"1.0028",
+      "message":"User Name Ready To Use."
     }
   ]
 }

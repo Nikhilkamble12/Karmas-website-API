@@ -53,6 +53,12 @@ router.put(
     verifyToken,
     UserMasterController.blockAndUnblockUser
 )
+// check wether Username Already in Use
+router.get(
+    `${basePath}/username/alreadyUsed`,
+    // verifyToken,
+    UserMasterController.checkWetherUsernamePresent
+)
 
 // Export the router for use in other parts of the application
 export default router
