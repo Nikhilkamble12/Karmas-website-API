@@ -129,8 +129,8 @@ const NgoMasterController = {
             // Update the record using ORM
             const updatedRowsCount = await NgoMasterService.updateService(id, data);
 
-            if(createData){
-                const ngo_id = createData.dataValues.ngo_id
+            if(updatedRowsCount > 0){
+                const ngo_id = id
                 let pan_file_path_name = null , ngo_logo_path_name = null , crs_regis_path_name = null ;
                 if(data.pan_file!==null && data.pan_file!=="" && data.pan_file!==0 && data.pan_file!==undefined){
                 await saveBase64ToFile(
