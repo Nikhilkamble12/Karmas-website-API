@@ -1,6 +1,7 @@
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 import getBase64FromFile from "../../utils/helper/base64.retrive.data.js";
 import saveBase64ToFile from "../../utils/helper/base64ToFile.js";
+import getCurrentIndianTime from "../../utils/helper/get.current.time.ist.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
 import UserBlackListService from "../user_blacklist/user.blacklist.service.js";
 import UserMasterService from "./user.master.service.js";
@@ -11,6 +12,7 @@ const UserMasterController = {
     create: async (req, res) => {
         try {
             const data = req.body;
+            const currentTime = await getCurrentIndianTime()
             // Add metadata for creation (created by, created at)
             // await addMetaDataWhileCreateUpdate(data, req, res, false);
             const accessToken = req.get("x-access-token");
@@ -18,8 +20,10 @@ const UserMasterController = {
             if (accessToken && accessToken !== "null" && accessToken!=="") {
             const tokenUser = await tokenData(req, res);
             data.created_by = tokenUser;
+            data.created_at = currentTime
             } else {
             data.created_by = 1;
+            data.created_at = currentTime
             }
 
             // data.created_by=1,
@@ -87,8 +91,10 @@ const UserMasterController = {
                 const user_id = createData.dataValues.user_id
                 const userActvityCreate = {
                     user_id: user_id,
+                    created_by:user_id,
+                    created_at :currentTime
                 }
-                await addMetaDataWhileCreateUpdate(userActvityCreate, req, res, false);
+                // await addMetaDataWhileCreateUpdate(userActvityCreate, req, res, false);
                 const UserActivity = await UserActivtyService.createService(userActvityCreate)
 
             }
