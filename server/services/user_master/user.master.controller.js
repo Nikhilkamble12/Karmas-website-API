@@ -175,6 +175,18 @@ const UserMasterController = {
             }
             // Update the record using ORM
             const updatedRowsCount = await UserMasterService.updateService(id, data);
+            if(updatedRowsCount?.success==false){
+                 return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.UNIQUE_CONSTRANTS_FAILED,
+                            updatedRowsCount.error,
+                            true
+                        )
+                    );
+            }
             // if (updatedRowsCount > 0) {
             //     const newData = await UserMasterService.getServiceById(id);
             //     // Update the JSON data in the file
