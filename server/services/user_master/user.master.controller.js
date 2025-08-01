@@ -27,6 +27,18 @@ const UserMasterController = {
             // Create the record using ORM
             data.first_time_login = true
             const createData = await UserMasterService.createService(data);
+            if(createData?.success==false){
+                 return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.UNIQUE_CONSTRANTS_FAILED,
+                            createData.error,
+                            true
+                        )
+                    );
+            }
             if (createData) {
                 let file_path = null, bg_image_path = null;
                 if (data.Base64File !== null && data.Base64File !== "" && data.Base64File !== 0 && data.Base64File !== undefined && data.file_name && data.file_name !== "" && data.file_name !== 0) {

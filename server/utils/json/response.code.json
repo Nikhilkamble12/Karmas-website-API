@@ -157,11 +157,14 @@
       "code":"1.0026",
       "message":"Sos Not Yet Created."
     },{
-      "code":"3.008",
+      "code":"3.0008",
       "message":"You Have Been Blocked By Admin."
     },{
-      "code":"3.009",
+      "code":"3.0009",
       "message":"Account Has Been Blacklisted."
+    },{
+      "code":"3.0010",
+      "message":"A record with this unique constraint already exists."
     }
   ]
 }
