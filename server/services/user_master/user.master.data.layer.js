@@ -11,10 +11,11 @@ const UserMasterDAL = {
             return createdData // Return the created data
         } catch (error) {
             if(error.name=="SequelizeUniqueConstraintError"){
+                const cleanedErrors = error.errors.map(({ instance, ...rest }) => rest);
                  return {
                 success: false,
                 message: "Duplicate entry. Data with this unique value already exists.",
-                error: error.errors, // Include validation error details
+                error: cleanedErrors, // Include validation error details
             };
             }
             throw error // Throw error for handling in the controller
