@@ -1,3 +1,4 @@
+import { all } from "axios";
 import { DataTypes } from "sequelize";
 
 const UserMasterModel = (sequelize) => {
@@ -73,8 +74,13 @@ const UserMasterModel = (sequelize) => {
             type:DataTypes.TINYINT,
             allowNull:true,
             defaultValue:false
-        },
-        is_active: {
+        }, ngo_level_id : {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }, blacklist_reason: {
+            type: DataTypes.STRING(500),
+            allowNull: true
+        }, is_active: {
             type: DataTypes.TINYINT(1),
             allowNull: false,
             defaultValue: true
