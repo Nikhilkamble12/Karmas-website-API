@@ -37,5 +37,11 @@ router.delete(
     verifyToken,
     NotificationHistoryController.deleteData
 )
+// Router To Notification By User Id
+router.get(
+    `${basePath}/get/Notification`,
+    verifyToken,
+    NotificationHistoryController.getNotificationDataByUserId
+)
 
 export default router

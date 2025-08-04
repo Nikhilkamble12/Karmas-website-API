@@ -9,6 +9,7 @@ function mapTokenResults(results) {
       tokens.push({
         userTokenId: row.user_token_id,
         userId: row.user_id,
+        user_id:row.user_id,
         platform: "android",
         token: row.android_token,
         updatedAt: row.updated_at
@@ -19,6 +20,7 @@ function mapTokenResults(results) {
       tokens.push({
         userTokenId: row.user_token_id,
         userId: row.user_id,
+        user_id:row.user_id,
         platform: "web",
         token: row.web_token,
         updatedAt: row.updated_at
