@@ -93,10 +93,10 @@ const PostDAL = {
   try {
     const replacements = { user_id, limit: Number(limit) };
     let exclusionClause = '';
-    if (already_viewed.trim().startsWith('[')) {
+    if (already_viewed && already_viewed =="string" && already_viewed.trim().startsWith('[')) {
       // JSON-style string: "[174860345,174860346]"
       already_viewed = JSON.parse(already_viewed);
-    } else {
+    } else if (already_viewed && already_viewed =="string"){
       // Comma-separated string: "174860345,174860346"
       already_viewed = already_viewed
         .split(',')
