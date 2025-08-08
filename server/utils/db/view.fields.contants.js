@@ -40,7 +40,7 @@ const ViewFieldTableWise = {
     NGO_FIELD_MAPPING_FIELDS:` SELECT * FROM ${VIEW_NAME.GET_ALL_NGO_FIELD_MAPPING} `,
     NGO_REQUEST_MAPPING_FIELDS:` SELECT Request_Ngo_Id, RequestId, RequestName, request_user_id, user_name, ngo_id, ngo_name, status_id, status_name, Reason, AssignedDate, ApprovalDate FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} `,
     NGO_TYPE_FIELDS:` SELECT ngo_type_id, ngo_type, is_active, created_by, created_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_TYPE} `,
-    NOTIFICATION_HISTORY_FIELDS:` SELECT notification_id, user_id, user_name, user_email, title, description, type, metadata, is_read, is_active, created_at, modified_at FROM ${VIEW_NAME.GET_ALL_NOTIFICATION_HISTORY} `,
+    NOTIFICATION_HISTORY_FIELDS:` SELECT notification_history_id, token_id, user_id, ngo_id, request_id, post_id,notification_details, notification_type, is_viewed, is_active, created_by, created_at, modified_by, modified_at  FROM ${VIEW_NAME.GET_ALL_NOTIFICATION_HISTORY} `,
     NGO_MEDIA_FIELDS:` SELECT ngo_media_id, ngo_id, ngo_name, ngo_type, media_type, media_url, sequence, created_at, is_active FROM ${VIEW_NAME.GET_ALL_NGO_MEDIA} `,
     NGO_MEDIA_LIKES_FIELDS:` SELECT like_id, ngo_media_id, user_id, user_name, is_liked, created_at FROM ${VIEW_NAME.GET_ALL_NGO_MEDIA_LIKES} `,
     NGO_MEDIA_COMMENTS_FIELDS:` SELECT comment_id, ngo_media_id, user_id, file_path, user_name, comment_text, total_comment, parent_id, parent_comment_text, created_at FROM ${VIEW_NAME.GET_ALL_NGO_MEDIA_COMMENTS} `,
