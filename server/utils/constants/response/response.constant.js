@@ -28,6 +28,7 @@ const RESPONSE_CONSTANTS = {
     ENTER_A_VALID_EMAIL:"Enter a Valid Email.",
     INVALID_OTP_KINDLY_RECHECK:"Invalid Otp Kindly Recheck.",
     OTP_HAS_EXPIRED:"OTP HAS EXPIRED.",
+    OTP_VERIFIED_SUCCESSFULLY : "OTP Verified Successfully.",
     AGENT_CONTRACT_NOT_FOUND:"Agent Contract Not Found.",
     ONLY_JPG_AND_PDF_FORMAT_ALLOWED:"Only JPG,PDF Format Allowed.",
     EMAIL_IS_MANDATORY:"Email Id Is Mandatory.",

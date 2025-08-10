@@ -12,7 +12,11 @@ router.post(
   AuthController.sendResetOtp
 )
 router.post(
-  `${basePath}/validate/otp/password`,
+  `${basePath}/validate/otp`,
+  AuthController.validateOtp
+)
+router.post(
+  `${basePath}/resetPassword`,
   AuthController.resetPassword
 )
 // console.log("router",router)

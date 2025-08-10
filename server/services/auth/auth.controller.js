@@ -194,23 +194,157 @@ let AuthController = {
           )
         );
     }
-  }, sendResetOtp: async (req, res) => {
+  }, 
+  // sendResetOtp: async (req, res) => {
+  //   try {
+  //     const { email } = req.body;
+  //     const user = await AuthService.checkWetherEmailIsPresent(email.trim());
+  //     if (!user || user.length == 0) {
+  //       return res.status(404).send(
+  //         commonResponse(
+  //           responseCode.NOT_FOUND,
+  //           responseConst.USER_NOT_FOUND,
+  //           null,
+  //           true
+  //         )
+  //       );
+  //     }
+
+  //     const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+  //     const expiry = new Date(Date.now() + 20 * 60000); // 20 minutes from now
+
+  //     await UserMasterService.updateService(user.user_id, {
+  //       reset_otp: otp,
+  //       reset_otp_expiry: expiry
+  //     });
+
+  //     const { subject, html } = await CommonEmailtemplate.PasswordResetMail({
+  //       username: user.username || user.fullname || email,
+  //       otp: otp,
+  //       validity: "20 minutes"
+  //     }); 
+  //     await sendEmail({to:user.email_id, subject:subject, text:null, html:html, attachments:null});
+
+  //     return res
+  //       .status(200)
+  //       .send(commonResponse(
+  //         responseCode.OK,
+  //         responseConst.OTP_GENERATED_SUCCESSFULLY,
+  //         null
+  //       ));
+  //   } catch (error) {
+  //     console.log("error", error);
+  //     return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+  //       commonResponse(
+  //         responseCode.INTERNAL_SERVER_ERROR,
+  //         responseConst.INTERNAL_SERVER_ERROR,
+  //         null,
+  //         true
+  //       )
+  //     );
+  //   }
+  // }, 
+  // resetPassword: async (req, res) => {
+  //   try {
+  //     const { email, otp, newPassword } = req.body;
+  //     const user = await AuthService.checkWetherEmailIsPresent(email.trim());
+
+  //     if (!user || user.length === 0) {
+  //       return res.status(404).send(
+  //         commonResponse(
+  //           responseCode.NOT_FOUND,
+  //           responseConst.USER_NOT_FOUND,
+  //           null,
+  //           true
+  //         )
+  //       );
+  //     }
+  //     if (!user.reset_otp || !user.reset_otp_expiry) {
+  //       return res.status(400).send(
+  //         commonResponse(
+  //           responseCode.BAD_REQUEST,
+  //           RESPONSE_CONSTANTS.KINDLY_REGENRATE_OTP,
+  //           null,
+  //           true
+  //         )
+  //       );
+  //     }
+
+  //     if (user.reset_otp !== otp) {
+  //       return res.status(400).send(
+  //         commonResponse(
+  //           responseCode.BAD_REQUEST,
+  //           RESPONSE_CONSTANTS.INVALID_OTP_KINDLY_RECHECK,
+  //           null,
+  //           true
+  //         )
+  //       );
+  //     }
+      
+  //     if (new Date() > new Date(user.reset_otp_expiry)) {
+  //       await UserMasterService.updateService(user.user_id, {
+  //         reset_otp: null,
+  //         reset_otp_expiry: null
+  //       });
+  //       return res.status(400).send(
+  //         commonResponse(
+  //           responseCode.BAD_REQUEST,
+  //           RESPONSE_CONSTANTS.OTP_HAS_EXPIRED,
+  //           null,
+  //           true
+  //         )
+  //       );
+  //     }
+      
+
+  //     await UserMasterService.updateService(user.user_id, {
+  //       password: newPassword,
+  //       reset_otp: null,
+  //       reset_otp_expiry: null
+  //     });
+
+  //     const { subject, html } = await CommonEmailtemplate.PasswordHasBeenUpdatedSuccessfully({
+  //       username: user.username || user.fullname || email
+  //     });
+
+
+  //     await sendEmail({to:user.email_id,subject:subject,text:null,html:html,attachments:null});
+
+  //     return res
+  //       .status(200)
+  //       .send(commonResponse(
+  //         responseCode.OK,
+  //         RESPONSE_CONSTANTS.PASSWORD_UPDATED_SUCCESSFULLY,
+  //          null
+  //         ));
+  //   } catch (error) {
+  //     console.log("error", error);
+  //     return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+  //       commonResponse(
+  //         responseCode.INTERNAL_SERVER_ERROR,
+  //         responseConst.INTERNAL_SERVER_ERROR,
+  //         null,
+  //         true
+  //       )
+  //     );
+  //   }
+  // },
+  sendResetOtp: async (req, res) => {
     try {
       const { email } = req.body;
       const user = await AuthService.checkWetherEmailIsPresent(email.trim());
-      if (!user || user.length == 0) {
-        return res.status(404).send(
-          commonResponse(
-            responseCode.NOT_FOUND,
-            responseConst.USER_NOT_FOUND,
-            null,
-            true
-          )
-        );
+
+      if (!user || user.length === 0) {
+        return res.status(404).send(commonResponse(
+          responseCode.NOT_FOUND,
+          responseConst.USER_NOT_FOUND,
+          null,
+          true
+        ));
       }
 
-      const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
-      const expiry = new Date(Date.now() + 20 * 60000); // 20 minutes from now
+      const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+      const expiry = new Date(Date.now() + 20 * 60000); // 20 minutes validity
 
       await UserMasterService.updateService(user.user_id, {
         reset_otp: otp,
@@ -219,113 +353,153 @@ let AuthController = {
 
       const { subject, html } = await CommonEmailtemplate.PasswordResetMail({
         username: user.username || user.fullname || email,
-        otp: otp,
+        otp,
         validity: "20 minutes"
-      }); 
-      await sendEmail({to:user.email_id, subject:subject, text:null, html:html, attachments:null});
+      });
 
-      return res
-        .status(200)
-        .send(commonResponse(
-          responseCode.OK,
-          responseConst.OTP_GENERATED_SUCCESSFULLY,
-          null
-        ));
+      await sendEmail({ to: user.email_id, subject, html });
+
+      return res.status(200).send(commonResponse(
+        responseCode.OK,
+        responseConst.OTP_GENERATED_SUCCESSFULLY,
+        null
+      ));
+
     } catch (error) {
-      console.log("error", error);
-      return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
-        commonResponse(
-          responseCode.INTERNAL_SERVER_ERROR,
-          responseConst.INTERNAL_SERVER_ERROR,
-          null,
-          true
-        )
-      );
+      console.error("sendPassword error:", error);
+      return res.status(responseCode.INTERNAL_SERVER_ERROR).send(commonResponse(
+        responseCode.INTERNAL_SERVER_ERROR,
+        responseConst.INTERNAL_SERVER_ERROR,
+        null,
+        true
+      ));
     }
-  }, resetPassword: async (req, res) => {
+  },
+  validateOtp: async (req, res) => {
     try {
-      const { email, otp, newPassword } = req.body;
+      const { email, otp } = req.body;
       const user = await AuthService.checkWetherEmailIsPresent(email.trim());
 
       if (!user || user.length === 0) {
-        return res.status(404).send(
-          commonResponse(
-            responseCode.NOT_FOUND,
-            responseConst.USER_NOT_FOUND,
-            null,
-            true
-          )
-        );
+        return res.status(404).send(commonResponse(
+          responseCode.NOT_FOUND,
+          responseConst.USER_NOT_FOUND,
+          null,
+          true
+        ));
       }
+
       if (!user.reset_otp || !user.reset_otp_expiry) {
-        return res.status(400).send(
-          commonResponse(
-            responseCode.BAD_REQUEST,
-            RESPONSE_CONSTANTS.KINDLY_REGENRATE_OTP,
-            null,
-            true
-          )
-        );
+        return res.status(400).send(commonResponse(
+          responseCode.BAD_REQUEST,
+          RESPONSE_CONSTANTS.KINDLY_REGENRATE_OTP,
+          null,
+          true
+        ));
       }
 
       if (user.reset_otp !== otp) {
-        return res.status(400).send(
-          commonResponse(
-            responseCode.BAD_REQUEST,
-            RESPONSE_CONSTANTS.INVALID_OTP_KINDLY_RECHECK,
-            null,
-            true
-          )
-        );
+        return res.status(400).send(commonResponse(
+          responseCode.BAD_REQUEST,
+          RESPONSE_CONSTANTS.INVALID_OTP_KINDLY_RECHECK,
+          null,
+          true
+        ));
       }
-      
+
       if (new Date() > new Date(user.reset_otp_expiry)) {
         await UserMasterService.updateService(user.user_id, {
           reset_otp: null,
           reset_otp_expiry: null
         });
-        return res.status(400).send(
-          commonResponse(
-            responseCode.BAD_REQUEST,
-            RESPONSE_CONSTANTS.OTP_HAS_EXPIRED,
-            null,
-            true
-          )
-        );
+        return res.status(400).send(commonResponse(
+          responseCode.BAD_REQUEST,
+          RESPONSE_CONSTANTS.OTP_HAS_EXPIRED,
+          null,
+          true
+        ));
       }
-      
 
+      // ✅ OTP is valid
+      return res.status(200).send(commonResponse(
+        responseCode.OK,
+        RESPONSE_CONSTANTS.OTP_VERIFIED_SUCCESSFULLY,
+        null
+      ));
+
+    } catch (error) {
+      console.error("verifyOtp error:", error);
+      return res.status(responseCode.INTERNAL_SERVER_ERROR).send(commonResponse(
+        responseCode.INTERNAL_SERVER_ERROR,
+        responseConst.INTERNAL_SERVER_ERROR,
+        null,
+        true
+      ));
+    }
+  },
+  resetPassword: async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+    const user = await AuthService.checkWetherEmailIsPresent(email.trim());
+
+    if (!user || user.length === 0) {
+      return res.status(404).send(commonResponse(
+        responseCode.NOT_FOUND,
+        responseConst.USER_NOT_FOUND,
+        null,
+        true
+      ));
+    }
+
+    if (user.reset_otp !== otp) {
+      return res.status(400).send(commonResponse(
+        responseCode.BAD_REQUEST,
+        RESPONSE_CONSTANTS.INVALID_OTP_KINDLY_RECHECK,
+        null,
+        true
+      ));
+    }
+
+    if (new Date() > new Date(user.reset_otp_expiry)) {
       await UserMasterService.updateService(user.user_id, {
-        password: newPassword,
         reset_otp: null,
         reset_otp_expiry: null
       });
-
-      const { subject, html } = await CommonEmailtemplate.PasswordHasBeenUpdatedSuccessfully({
-        username: user.username || user.fullname || email
-      });
-
-
-      await sendEmail({to:user.email_id,subject:subject,text:null,html:html,attachments:null});
-
-      return res
-        .status(200)
-        .send(commonResponse(
-          responseCode.OK,
-          RESPONSE_CONSTANTS.PASSWORD_UPDATED_SUCCESSFULLY,
-           null
-          ));
-    } catch (error) {
-      console.log("error", error);
-      return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
-        commonResponse(
-          responseCode.INTERNAL_SERVER_ERROR,
-          responseConst.INTERNAL_SERVER_ERROR,
-          null,
-          true
-        )
-      );
+      return res.status(400).send(commonResponse(
+        responseCode.BAD_REQUEST,
+        RESPONSE_CONSTANTS.OTP_HAS_EXPIRED,
+        null,
+        true
+      ));
     }
+
+    await UserMasterService.updateService(user.user_id, {
+      password: newPassword, 
+      reset_otp: null,
+      reset_otp_expiry: null
+    });
+
+    const { subject, html } = await CommonEmailtemplate.PasswordHasBeenUpdatedSuccessfully({
+      username: user.username || user.fullname || email
+    });
+
+    await sendEmail({ to: user.email_id, subject, html });
+
+    return res.status(200).send(commonResponse(
+      responseCode.OK,
+      RESPONSE_CONSTANTS.PASSWORD_UPDATED_SUCCESSFULLY,
+      null
+    ));
+
+  } catch (error) {
+    console.error("resetPassword error:", error);
+    return res.status(responseCode.INTERNAL_SERVER_ERROR).send(commonResponse(
+      responseCode.INTERNAL_SERVER_ERROR,
+      responseConst.INTERNAL_SERVER_ERROR,
+      null,
+      true
+    ));
+  }
   },
   googleAuthCallback: async (req, res) => {
     try {
