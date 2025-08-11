@@ -9,9 +9,9 @@ const RequestNgoModel = (sequelize)=>{
         }, RequestId:{
             type:DataTypes.INTEGER,
             allowNull:true
-        }, NgoId:{
+        }, ngo_id:{
             type:DataTypes.INTEGER,
-            allowNull:true
+            allowNull:false
         }, status_id:{
             type:DataTypes.INTEGER,
             allowNull:true
