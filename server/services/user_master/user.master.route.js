@@ -59,6 +59,12 @@ router.get(
     // verifyToken,
     UserMasterController.checkWetherUsernamePresent
 )
+// Get Blocaked Users By User Id
+router.get(
+    `${basePath}/getBlockedUsers/getById`,
+    verifyToken,
+    UserMasterController.getBlockedUsersByUserId
+)
 
 // Export the router for use in other parts of the application
 export default router

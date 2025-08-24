@@ -25,6 +25,10 @@ const CouponsModel = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
+      user_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+      },
       redeem_date: {
         type: DataTypes.DATEONLY,
         allowNull: true,

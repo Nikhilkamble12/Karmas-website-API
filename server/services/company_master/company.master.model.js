@@ -18,7 +18,11 @@ const CompanyMasterModel = (sequelize) => {
         allowNull: true,
       },
       company_logo: {
-        type: DataTypes.STRING(255),
+        type: DataTypes.STRING(300),
+        allowNull: true,
+      },
+      company_logo_path: {
+        type: DataTypes.STRING(500),
         allowNull: true,
       },
       is_active: {

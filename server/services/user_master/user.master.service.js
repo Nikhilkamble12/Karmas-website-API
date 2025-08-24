@@ -70,6 +70,12 @@ const UserMasterService = {
         }catch(error){
             throw error
         }
+    }, getBlockedUsersByUserId: async (user_id) => {
+        try {
+            return await UserMasterDAL.getBlockedUsersByUserId(user_id)
+        } catch (error) {
+            throw error
+        }
     }
 }
 export default UserMasterService

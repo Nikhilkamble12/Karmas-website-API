@@ -1,5 +1,7 @@
 import GiftMasterService from "./gift.master.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
+import CouponsService from "../coupons/coupons.service.js";
+import UserActivtyService from "../user_activity/user.activity.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const GiftMasterController = {
@@ -13,6 +15,25 @@ const GiftMasterController = {
             // data.created_at = new Date()
             // Create the record using ORM
             const createData = await GiftMasterService.createService(data);
+            if(createData) {
+                let gift_logo_path = null;
+                if (data.gift_logo_file !== null && data.gift_logo_file !== "" && data.gift_logo_file !== 0 && data.gift_logo_file !== undefined && data.gift_logo && data.gift_logo !== "" && data.gift_logo !== 0) {
+                    await saveBase64ToFile(
+                        data.gift_logo_file,
+                        "gift_master/" + createData.dataValues.gift_master_id + "/gift_logo",
+                        currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                        "_" +
+                        data.gift_logo
+                    )
+                    const upload_page_1 = data.gift_logo
+                        ? `gift_master/${createData.dataValues.user_id}/gift_logo/${currentTime()
+                            .replace(/ /g, "_")
+                            .replace(/:/g, "-")}_${data.gift_logo}`
+                        : null;
+                    gift_logo_path = upload_page_1;
+                    await GiftMasterService.updateService(createData.dataValues.gift_master_id, { gift_logo: upload_page_1 });
+                }
+            }
             if (createData) {
                 return res
                     .status(responseCode.CREATED)
@@ -274,7 +295,75 @@ const GiftMasterController = {
                     )
                 );
         }
-    }
+    }, 
+    // get all gifts by user_id 
+    getAllGiftsbyUserId: async (req, res) => {
+        try {
+            const user_id = tokenData(req, res);
+            console.log("user_id", user_id);
+            
+            const [userScores, allGifts, userCoupons] = await Promise.all([
+                UserActivtyService.getDataByUserId(user_id),
+                GiftMasterService.getAllService(),
+                CouponsService.getCouponsByUserId(user_id),
+            ]);
+
+            if (!userScores || userScores.length === 0) {
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
+            }
+
+            const userScore = userScores[0].total_scores_no ?? 0;
+
+            const giftResponse = allGifts.map((gift) => {
+                const userCoupon = userCoupons.find(
+                    (coupon) => coupon.gift_master_id === gift.gift_master_id
+                );
+                
+                const progressValue = Math.min(
+                    (userScore / gift.gift_score_required) * 100,
+                    100
+                );
+
+                return {
+                        ...gift,
+                        progress: parseFloat(progressValue.toFixed(2)), // number e.g. 85.32
+                        hasCoupon: !!userCoupon,
+                        couponCode: userCoupon?.coupon_code ?? null,
+                    };
+                }
+            );
+           
+            return res
+            .status(responseCode.OK)
+            .send(
+                commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    giftResponse
+                )
+            );
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(
+                responseCode.INTERNAL_SERVER_ERROR,
+                responseConst.INTERNAL_SERVER_ERROR,
+                null,
+                true
+            )
+            );
+        }
+    },
+
 }
 
 export default GiftMasterController

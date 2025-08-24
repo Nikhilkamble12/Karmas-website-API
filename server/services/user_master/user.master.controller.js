@@ -63,7 +63,7 @@ const UserMasterController = {
                     //    const updateUserMaster = await UserMasterService.updateService(createData.dataValues.user_id,{file_path:upload_page_1})
                 }
 
-                if (data.bg_image_file !== null && data.bg_image_file !== "" && data.bg_image_file !== 0 && data.bg_image_file !== undefined && data.bg_image && data.bg_image !== "" && bg_image !== 0) {
+                if (data.bg_image_file !== null && data.bg_image_file !== "" && data.bg_image_file !== 0 && data.bg_image_file !== undefined && data.bg_image && data.bg_image !== "" && data.bg_image !== 0) {
                     await saveBase64ToFile(
                         data.bg_image_file,
                         "user_master/" + createData.dataValues.user_id + "/bg_image",
@@ -525,9 +525,11 @@ const UserMasterController = {
     }, blockAndUnblockUser: async (req, res) => {
         try {
             const user_id = req.query.user_id
+            const tokenUser = await tokenData(req, res);
             const DataToUpdate = {
                 is_blacklisted: req.body.is_blacklisted,
-                blacklist_reason: req.body.blacklist_reason
+                blacklist_reason: req.body.blacklist_reason,
+                blacklisted_by : tokenUser
             }
             await addMetaDataWhileCreateUpdate(DataToUpdate, req, res, true);
             const updatedRowsCount = await UserMasterService.updateService(user_id, DataToUpdate);
@@ -648,6 +650,46 @@ const UserMasterController = {
                     )
                 );
         }
+    }, getBlockedUsersByUserId: async (req, res) => {
+        try {
+            const user_id = req.query.user_id
+            const blockedUsers = await UserMasterService.getBlockedUsersByUserId(user_id)
+            if (blockedUsers.length > 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            blockedUsers
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+
     }
 }
 export default UserMasterController

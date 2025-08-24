@@ -13,6 +13,25 @@ const CompanyMasterController = {
             // data.created_at = new Date()
             // Create the record using ORM
             const createData = await CompanyMasterService.createService(data);
+            if(createData) {
+                let company_logo_path = null;
+                if(data.company_logo_file !== null && data.company_logo_file !== "" && data.company_logo_file !== 0 && data.company_logo_file !== undefined && data.company_logo && data.company_logo !== "" && data.company_logo !== 0) {
+                    await saveBase64ToFile(
+                        data.company_logo_file,
+                        "company_master/" + createData.dataValues.company_id + "/company_logo",
+                        currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                        "_" +
+                        data.company_logo
+                    );
+                    const upload_page_1 = data.company_logo
+                        ? `company_master/${createData.dataValues.user_id}/company_logo/${currentTime()
+                            .replace(/ /g, "_")
+                            .replace(/:/g, "-")}_${data.company_logo}`
+                        : null;
+                    company_logo_path = upload_page_1;
+                    await CompanyMasterService.updateService(createData.dataValues.company_id, { company_logo: upload_page_1 });
+                }
+            }
             if (createData) {
                 return res
                     .status(responseCode.CREATED)

@@ -55,6 +55,8 @@ const RESPONSE_CONSTANTS = {
     SOS_NOT_YET_CREATED:"Sos Not Yet Created.",
     USER_HAS_BLOCKED_YOU:"You Have Been Blocked By Admin.",
     USER_IS_BLACKLISTED:"Account Has Been Blacklisted.",
+    COUPON_ALREADY_REDEEMED:"You have already redeemed this coupon.",
+    NO_COUPONS_AVAILABLE:"No coupons are currently available for this gift"
   };
   
   export default RESPONSE_CONSTANTS;

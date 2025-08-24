@@ -18,7 +18,11 @@ const GiftMasterModel = (sequelize) => {
         allowNull: false,
       },
       gift_logo:{
-        type: DataTypes.STRING(255),
+        type: DataTypes.STRING(300),
+        allowNull: true,
+      },
+      gift_logo_path:{
+        type: DataTypes.STRING(500),
         allowNull: true,
       },
       gift_score_required: {

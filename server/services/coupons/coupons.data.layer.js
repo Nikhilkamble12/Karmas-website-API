@@ -60,6 +60,31 @@ const CouponsDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    }
+    },
+    // Method to retrieve coupons by user ID
+    getCouponsByUserId: async (user_id) => {
+        try {
+            const getCouponsByUserId = await db.sequelize.query(` ${ViewFieldTableVise.COUPONS_FIELDS} where user_id  = ${user_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getCouponsByUserId // Return the retrieved coupons
+        } catch (error) {
+            throw error // Throw error for handling in the controller
+        }
+    },
+    getCouponAndRedeem : async (user_id, gift_master_id) => {
+        try {
+            const getCouponAndRedeem = await db.sequelize.query(` ${ViewFieldTableVise.COUPONS_FIELDS} where user_id  = ${user_id} AND gift_master_id = ${gift_master_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getCouponAndRedeem[0] ?? [] // Return the retrieved coupon
+        } catch (error) {
+            throw error // Throw error for handling in the controller
+        }
+    },
+    getNewCoupon : async (gift_master_id) => {
+        try {
+            const newCoupon = await db.sequelize.query(` ${ViewFieldTableVise.COUPONS_FIELDS} where gift_master_id = ${gift_master_id} AND user_id IS NULL` , { type: db.Sequelize.QueryTypes.SELECT })
+            return newCoupon[0] ?? [] // Return the retrieved coupon
+        } catch (error) {
+            throw error // Throw error for handling in the controller
+        }
+    },
 }
 export default CouponsDAL

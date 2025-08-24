@@ -49,5 +49,27 @@ const CouponsService = {
             throw error
         }
     },
+    getCouponsByUserId: async (user_id) => {
+        try {
+            return await CouponsDAL.getCouponsByUserId(user_id)
+        } catch (error) {
+            throw error
+        }
+    },
+    getCouponAndRedeemService: async (user_id, gift_master_id) => {
+        try {
+            return await CouponsDAL.getCouponAndRedeem(user_id, gift_master_id)
+        } catch (error) {
+            throw error
+        }
+    },
+    getNewCoupon : async (gift_master_id) => {
+        try {
+            const newCoupon = await CouponsDAL.getNewCoupon(gift_master_id)
+            return newCoupon // Return the retrieved coupon
+        } catch (error) {
+            throw error // Throw error for handling in the controller
+        }
+    }
 }
 export default CouponsService

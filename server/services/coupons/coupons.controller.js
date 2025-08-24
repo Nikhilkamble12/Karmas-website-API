@@ -341,6 +341,73 @@ const CouponsController = {
           )
         );
     }
-  },
+  }, 
+  // Get coupon by user id and gift_master_id
+  getCouponAndRedeem: async (req, res) => {
+    try {
+      const user_id = req.query.user_id;
+      const gift_master_id = req.query.gift_master_id;
+
+      const existingCoupon = await CouponsService.getCouponAndRedeemService(user_id, gift_master_id);
+      console.log("getCoupon", getCoupon);
+      if(existingCoupon){
+        return res
+          .status(responseCode.CONFLICT)
+          .send(
+            commonResponse(
+              responseCode.CONFLICT,
+              responseConst.COUPON_ALREADY_REDEEMED,
+              existingCoupon
+            )
+          );
+      } 
+      // Assign Coupon to user
+      const getNewCoupon = await CouponsService.getNewCoupon(gift_master_id);
+
+      if(!getNewCoupon) {
+         return res
+         .status(responseCode.NOT_FOUND)
+         .send(
+            commonResponse(
+              responseCode.NOT_FOUND,
+              responseConst.NO_COUPONS_AVAILABLE,
+              null,
+              true
+          )
+      );
+      }
+
+      const assignCoupon = await CouponsService.updateService(getNewCoupon.coupon_id,
+          { 
+            user_id: user_id, 
+            status_id: 18, 
+            redeem_date: currentTime().date, 
+            redeem_time: currentTime().time 
+          }
+        );
+      
+      return res
+        .status(responseCode.OK)
+        .send(
+          commonResponse(
+            responseCode.OK,
+            responseConst.DATA_RETRIEVE_SUCCESS,
+            assignCoupon
+          )
+      );
+    } catch (error) {
+      logger.error(`Error ---> ${error}`);
+      return res
+        .status(responseCode.INTERNAL_SERVER_ERROR)
+        .send(
+          commonResponse(
+            responseCode.INTERNAL_SERVER_ERROR,
+            responseConst.INTERNAL_SERVER_ERROR,
+            null,
+            true
+          )
+        );
+    }
+  }
 };
 export default CouponsController;

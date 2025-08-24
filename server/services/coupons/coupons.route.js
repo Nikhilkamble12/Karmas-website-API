@@ -42,6 +42,12 @@ router.post(
     verifyToken,
     CouponsController.bulkCreateOrUpdateCoupons
 )
+// Route to get coupon by user id and gift_master_id
+router.get(
+    `${basePath}/getCoupon/redeem`,
+    verifyToken,
+    CouponsController.getCouponAndRedeem
+)   
 
 // Export the router for use in other parts of the application
 export default router

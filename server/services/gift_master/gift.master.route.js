@@ -36,6 +36,11 @@ router.delete(
     verifyToken,
     GiftMasterController.deleteData
 )
-
+// Route to get all gifts by user id
+router.get(
+    `${basePath}/rewards/gifts`,
+    verifyToken,
+    GiftMasterController.getAllGiftsbyUserId
+)
 // Export the router for use in other parts of the application
 export default router
