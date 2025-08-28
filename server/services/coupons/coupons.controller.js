@@ -349,7 +349,7 @@ const CouponsController = {
       const gift_master_id = req.query.gift_master_id;
 
       const existingCoupon = await CouponsService.getCouponAndRedeemService(user_id, gift_master_id);
-      console.log("getCoupon", getCoupon);
+      // If user has already redeemed a coupon for the given gift_master_id
       if(existingCoupon){
         return res
           .status(responseCode.CONFLICT)
