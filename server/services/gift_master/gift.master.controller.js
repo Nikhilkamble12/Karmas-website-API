@@ -16,7 +16,6 @@ const GiftMasterController = {
             // Create the record using ORM
             const createData = await GiftMasterService.createService(data);
             if(createData) {
-                let gift_logo_path = null;
                 if (data.gift_logo_file !== null && data.gift_logo_file !== "" && data.gift_logo_file !== 0 && data.gift_logo_file !== undefined && data.gift_logo && data.gift_logo !== "" && data.gift_logo !== 0) {
                     await saveBase64ToFile(
                         data.gift_logo_file,
@@ -26,12 +25,12 @@ const GiftMasterController = {
                         data.gift_logo
                     )
                     const upload_page_1 = data.gift_logo
-                        ? `gift_master/${createData.dataValues.user_id}/gift_logo/${currentTime()
+                        ? `gift_master/${createData.dataValues.gift_master_id}/gift_logo/${currentTime()
                             .replace(/ /g, "_")
                             .replace(/:/g, "-")}_${data.gift_logo}`
                         : null;
-                    gift_logo_path = upload_page_1;
-                    await GiftMasterService.updateService(createData.dataValues.gift_master_id, { gift_logo: upload_page_1 });
+
+                    const updateGiftMaster = await GiftMasterService.updateService(createData.dataValues.gift_master_id, { gift_logo_path: upload_page_1 });
                 }
             }
             if (createData) {
@@ -77,7 +76,22 @@ const GiftMasterController = {
             const data = req.body
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, true);
-
+            if (data.gift_logo_file !== null && data.gift_logo_file !== "" && data.gift_logo_file !== 0 && data.gift_logo_file !== undefined && data.gift_logo && data.gift_logo !== "" && data.gift_logo !== 0) {
+                    await saveBase64ToFile(
+                        data.gift_logo_file,
+                        "gift_master/" + createData.dataValues.gift_master_id + "/gift_logo",
+                        currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                        "_" +
+                        data.gift_logo
+                    )
+                    const upload_page_1 = data.gift_logo
+                        ? `gift_master/${createData.dataValues.gift_master_id}/gift_logo/${currentTime()
+                            .replace(/ /g, "_")
+                            .replace(/:/g, "-")}_${data.gift_logo}`
+                        : null;
+                    data.gift_logo_path = upload_page_1
+                    delete data.gift_logo_file
+                }
             // Update the record using ORM
             const updatedRowsCount = await GiftMasterService.updateService(id, data);
             // if (updatedRowsCount > 0) {
