@@ -63,10 +63,18 @@ const CouponsService = {
             throw error
         }
     },
-    getNewCoupon : async (gift_master_id) => {
+    getNewCoupon: async (gift_master_id) => {
         try {
             const newCoupon = await CouponsDAL.getNewCoupon(gift_master_id)
             return newCoupon // Return the retrieved coupon
+        } catch (error) {
+            throw error // Throw error for handling in the controller
+        }
+    },
+    assignCouponToUser: async (coupon_id, data) => {
+        try {
+            const assignCoupon = await CouponsDAL.assignCouponToUser(coupon_id, data)
+            return assignCoupon // Return the result of the update operation
         } catch (error) {
             throw error // Throw error for handling in the controller
         }

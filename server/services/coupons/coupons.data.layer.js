@@ -73,7 +73,7 @@ const CouponsDAL = {
     getCouponAndRedeem : async (user_id, gift_master_id) => {
         try {
             const getCouponAndRedeem = await db.sequelize.query(` ${ViewFieldTableVise.COUPONS_FIELDS} where user_id  = ${user_id} AND gift_master_id = ${gift_master_id} `, { type: db.Sequelize.QueryTypes.SELECT })
-            return getCouponAndRedeem[0] ?? [] // Return the retrieved coupon
+            return getCouponAndRedeem[0] || null // Return the retrieved coupon
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
@@ -86,5 +86,20 @@ const CouponsDAL = {
             throw error // Throw error for handling in the controller
         }
     },
+    assignCouponToUser: async (coupon_id, data) => {
+        try {
+            await CouponsModel(db.sequelize).update(data, { where: { coupon_id } });
+            const [assignCoupon] = await db.sequelize.query(
+            `${ViewFieldTableVise.COUPONS_FIELDS} WHERE coupon_id = :coupon_id`,
+            {
+                replacements: { coupon_id },
+                type: db.Sequelize.QueryTypes.SELECT
+            }
+            );
+            return assignCoupon || null;
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 export default CouponsDAL

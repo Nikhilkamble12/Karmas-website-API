@@ -350,6 +350,7 @@ const CouponsController = {
 
       const existingCoupon = await CouponsService.getCouponAndRedeemService(user_id, gift_master_id);
       // If user has already redeemed a coupon for the given gift_master_id
+      //console.log("existingCoupon", existingCoupon);
       if(existingCoupon){
         return res
           .status(responseCode.CONFLICT)
@@ -377,7 +378,7 @@ const CouponsController = {
       );
       }
 
-      const assignCoupon = await CouponsService.updateService(getNewCoupon.coupon_id,
+      const assignCoupon = await CouponsService.assignCouponToUser(getNewCoupon.coupon_id,
           { 
             user_id: user_id, 
             status_id: 18, 
