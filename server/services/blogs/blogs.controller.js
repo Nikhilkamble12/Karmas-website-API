@@ -1,10 +1,8 @@
-import GiftMasterService from "./gift.master.service.js";
+import BlogsService from "./blogs.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
-import CouponsService from "../coupons/coupons.service.js";
-import UserActivtyService from "../user_activity/user.activity.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
-const GiftMasterController = {
+const BlogsController = {
     // Create A new Record 
     create: async (req, res) => {
         try {
@@ -14,25 +12,7 @@ const GiftMasterController = {
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
-            const createData = await GiftMasterService.createService(data);
-            if(createData) {
-                if (data.gift_logo_file !== null && data.gift_logo_file !== "" && data.gift_logo_file !== 0 && data.gift_logo_file !== undefined && data.gift_logo && data.gift_logo !== "" && data.gift_logo !== 0) {
-                    await saveBase64ToFile(
-                        data.gift_logo_file,
-                        "gift_master/" + createData.dataValues.gift_master_id + "/gift_logo",
-                        currentTime().replace(/ /g, "_").replace(/:/g, "-") +
-                        "_" +
-                        data.gift_logo
-                    )
-                    const upload_page_1 = data.gift_logo
-                        ? `gift_master/${createData.dataValues.gift_master_id}/gift_logo/${currentTime()
-                            .replace(/ /g, "_")
-                            .replace(/:/g, "-")}_${data.gift_logo}`
-                        : null;
-
-                    const updateGiftMaster = await GiftMasterService.updateService(createData.dataValues.gift_master_id, { gift_logo_path: upload_page_1 });
-                }
-            }
+            const createData = await BlogsService.createService(data);
             if (createData) {
                 return res
                     .status(responseCode.CREATED)
@@ -76,26 +56,11 @@ const GiftMasterController = {
             const data = req.body
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, true);
-            if (data.gift_logo_file !== null && data.gift_logo_file !== "" && data.gift_logo_file !== 0 && data.gift_logo_file !== undefined && data.gift_logo && data.gift_logo !== "" && data.gift_logo !== 0) {
-                    await saveBase64ToFile(
-                        data.gift_logo_file,
-                        "gift_master/" + createData.dataValues.gift_master_id + "/gift_logo",
-                        currentTime().replace(/ /g, "_").replace(/:/g, "-") +
-                        "_" +
-                        data.gift_logo
-                    )
-                    const upload_page_1 = data.gift_logo
-                        ? `gift_master/${createData.dataValues.gift_master_id}/gift_logo/${currentTime()
-                            .replace(/ /g, "_")
-                            .replace(/:/g, "-")}_${data.gift_logo}`
-                        : null;
-                    data.gift_logo_path = upload_page_1
-                    delete data.gift_logo_file
-                }
+
             // Update the record using ORM
-            const updatedRowsCount = await GiftMasterService.updateService(id, data);
+            const updatedRowsCount = await BlogsService.updateService(id, data);
             // if (updatedRowsCount > 0) {
-            //     const newData = await GiftMasterService.getServiceById(id);
+            //     const newData = await BlogsService.getServiceById(id);
             //     // Update the JSON data in the file
             //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
             // }
@@ -153,12 +118,12 @@ const GiftMasterController = {
             //     }
             //   }
             // Fetch data from the database if JSON is empty
-            const getAll = await GiftMasterService.getAllService()
+            const getAll = await BlogsService.getAllService()
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await GiftMasterService.getAllService()
+            //   const DataToSave=await BlogsService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -219,12 +184,12 @@ const GiftMasterController = {
             // }
 
             // If not found in JSON, fetch data from the database
-            const getDataByid = await GiftMasterService.getServiceById(Id)
+            const getDataByid = await BlogsService.getServiceById(Id)
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await GiftMasterService.getAllService()
+            //   const DataToSave=await BlogsService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -253,7 +218,6 @@ const GiftMasterController = {
                     );
             }
         } catch (error) {
-            onsole.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -272,7 +236,7 @@ const GiftMasterController = {
         try {
             const id = req.query.id
             // Delete data from the database
-            const deleteData = await GiftMasterService.deleteByid(id, req, res)
+            const deleteData = await BlogsService.deleteByid(id, req, res)
             // Also delete data from the JSON file
             // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
             if (deleteData === 0) {
@@ -309,75 +273,6 @@ const GiftMasterController = {
                     )
                 );
         }
-    }, 
-    // get all gifts by user_id 
-    getAllGiftsbyUserId: async (req, res) => {
-        try {
-            const user_id = tokenData(req, res);
-            console.log("user_id", user_id);
-            
-            const [userScores, allGifts, userCoupons] = await Promise.all([
-                UserActivtyService.getDataByUserId(user_id),
-                GiftMasterService.getAllService(),
-                CouponsService.getCouponsByUserId(user_id),
-            ]);
-
-            if (!userScores || userScores.length === 0) {
-            return res
-                .status(responseCode.BAD_REQUEST)
-                .send(
-                    commonResponse(
-                        responseCode.BAD_REQUEST,
-                        responseConst.DATA_NOT_FOUND,
-                        null,
-                        true
-                    )
-                );
-            }
-
-            const userScore = userScores[0].total_scores_no ?? 0;
-
-            const giftResponse = allGifts.map((gift) => {
-                const userCoupon = userCoupons.find(
-                    (coupon) => coupon.gift_master_id === gift.gift_master_id
-                );
-                
-                const progressValue = Math.min(
-                    (userScore / gift.gift_score_required) * 100,
-                    100
-                );
-
-                return {
-                        ...gift,
-                        progress: parseFloat(progressValue.toFixed(2)), // number e.g. 85.32
-                        hasCoupon: !!userCoupon,
-                        couponCode: userCoupon?.coupon_code ?? null,
-                    };
-                }
-            );
-           
-            return res
-            .status(responseCode.OK)
-            .send(
-                commonResponse(
-                    responseCode.OK,
-                    responseConst.DATA_RETRIEVE_SUCCESS,
-                    giftResponse
-                )
-            );
-        } catch (error) {
-            logger.error(`Error ---> ${error}`);
-            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
-            commonResponse(
-                responseCode.INTERNAL_SERVER_ERROR,
-                responseConst.INTERNAL_SERVER_ERROR,
-                null,
-                true
-            )
-            );
-        }
-    },
-
+    }
 }
-
-export default GiftMasterController
+export default BlogsController

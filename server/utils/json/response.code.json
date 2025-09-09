@@ -171,6 +171,12 @@
     },{
       "code":"1.0028",
       "message":"User Name Ready To Use."
+    },{
+      "code":"1.0029",
+      "message":"You have already redeemed this coupon."
+    },{
+      "code":"1.0030",
+      "message":"No coupons are currently available for this gift"
     }
   ]
 }

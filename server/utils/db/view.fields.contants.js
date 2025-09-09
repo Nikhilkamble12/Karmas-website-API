@@ -3,6 +3,7 @@ import VIEW_NAME from "./view.constants.js";
 const ViewFieldTableWise = {
     // -------> A
     // -------> B
+    BLOG_FIELDS : ` SELECT blog_id, user_id, title, content, created_at, total_likes, total_comments, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_BLOGS} `,
     BONUS_MASTER_FIELDS:` SELECT bonus_id, create_score, start_date, end_date, score_category_id, score_category_name, status_id, status_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_BONUS_MASTER} `,
     BONUS_HISTORY_FIELDS:` SELECT history_id, bonus_id, previous_create_score, new_create_score, change_date, score_category_id, score_category_name, changed_by, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_BONUS_HISTORY} `,
     BLACK_LISTED_NGO_FIELDS:` SELECT ngo_id, ngo_name, unique_id, darpan_reg_date, ngo_type, registration_no, act_name, city_of_registration_id, state_of_registration_id, country_of_registration_id, date_of_registration, address, city_id, state_id, country_id, telephone, mobile_no, website_url, email, ngo_logo, ngo_logo_path, pan_cad_file_name, pan_card_file_url, crs_regis_file_name, crs_regis_file_path, is_blacklist, blacklist_reason FROM ${VIEW_NAME.GET_ALL_BLACKLIST_NGO} `,
@@ -13,15 +14,15 @@ const ViewFieldTableWise = {
     COUNTRY_MASTER_FIELDS :` SELECT country_id, country_name, is_active FROM ${VIEW_NAME.GET_ALL_COUNTRY_MASTER} `,
     COUPON_MASTER_FIELDS : ` SELECT coupon_id, coupon_code, rate, amount, company_name, active_date, expires_date, distributed_status, active_status, created_at FROM ${VIEW_NAME.GET_ALL_COUPON_MASTER} `,
     COMMENTS_FIELDS :` SELECT comment_id, user_id, post_id, comment_text, parent_id, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_COMMENTS} `,
-    COMPANY_MASTER_FIELDS :` SELECT company_id, company_name, company_email, company_logo, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_COMPANY_MASTER} `,
-    COUPONS_FIELDS: `SELECT coupon_id, coupon_code, expiry_date, gift_master_id, gift_name, gift_amount, status_id, status_name, redeem_date, redeem_time, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_COUPONS}`,
+    COMPANY_MASTER_FIELDS :` SELECT company_id, company_name, company_email, company_logo, company_logo_path, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_COMPANY_MASTER} `,
+    COUPONS_FIELDS: `SELECT coupon_id, coupon_code, expiry_date, gift_master_id, gift_name, gift_amount, status_id, user_id, status_name, redeem_date, redeem_time, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_COUPONS}`,
 
     // -------> D
     DESIGNATION_MASTER_FIELDS:` SELECT designation_id, table_id, table_name, designation_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_DESIGNATION_MASTER} `,
     DISTRICT_MASTER_FIELDS:` SELECT district_id, district_name, state_id, state_name, country_id, country_name, district_is_active, district_created_by, district_created_at, district_modified_by, district_modified_at, district_deleted_by, district_deleted_at, state_is_active, country_is_active FROM ${VIEW_NAME.GET_ALL_DISTRICT} `,
     
     //-------> G
-    GIFT_MASTER_FIELDS:` SELECT gift_master_id, company_id, gift_name, gift_logo, gift_score_required, gift_amount, gift_t_c, how_to_redeem, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_GIFT_MASTER} `,
+    GIFT_MASTER_FIELDS:` SELECT gift_master_id, company_id, gift_name, gift_logo, gift_logo_path, gift_score_required, gift_amount, gift_t_c, how_to_redeem, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_GIFT_MASTER} `,
     GROUP_ROLE_PAGE_PERMISSION_FIELDS:` SELECT role_page_permission_id, role_id, role_name, page_id, page_name, page_url, mobile_url, interface, module_name, permission, ngo_level_id, level_name, description FROM ${VIEW_NAME.GET_ALL_GROUP_ROLE_PAGE_PERMISSION} `,
 
     // -------> L
@@ -80,7 +81,8 @@ const ViewFieldTableWise = {
     TABLE_MASTER_FIELDS: ` SELECT table_id, table_name, is_active FROM ${VIEW_NAME.GET_ALL_TABLE_MASTER}  `,
 
     //  ------> U
-    USER_MASTER_FIELDS :` SELECT  user_id, user_name, password, full_name, role_id, role, is_account_public, email_id, mobile_no, gender, bio, enrolling_date, ngo_id, ngo_name, ngo_unique_id, file_name, file_path, bg_image, bg_image_path, reset_otp, reset_otp_expiry, google_id, is_active, first_time_login, is_blacklisted FROM ${VIEW_NAME.GET_ALL_USER_MASTER} `,
+    USER_MASTER_FIELDS :` SELECT  user_id, user_name, password, full_name, role_id, role, is_account_public, email_id, mobile_no, gender, bio, enrolling_date, ngo_id, ngo_name, ngo_unique_id, file_name, file_path, bg_image, bg_image_path, reset_otp, reset_otp_expiry, google_id, is_active, first_time_login, is_blacklisted,
+    ngo_level_id, blacklist_reason, blacklisted_by FROM ${VIEW_NAME.GET_ALL_USER_MASTER} `,
     USER_ACTIVITY_FIELDS :` SELECT user_id, user_name, email_id, enrolling_date, user_activity_id, follower_no, following_no, total_reports_no, total_scores_no, total_requests_no, total_rewards_no, total_likes_no, total_comments_no, total_post_comment_likes_no, total_request_like_no, total_request_comment_no, total_request_comment_likes_no, total_shares_no, total_blacklist_user, total_refer_and_earn_no, show_user_chats_history, show_user_posts_history, screen_time, last_active_at FROM ${VIEW_NAME.GET_ALL_USER_ACTIVITY} `,
     USER_FOLLOWING_FIELDS:` SELECT follow_id, user_id, user_name, user_file_name, user_file_path, following_user_id, following_user_name, following_user_file_name, following_user_file_path, followed_at, is_following FROM ${VIEW_NAME.GET_ALL_USER_FOLLOWING} `,
     USER_BLACKLIST_FIELDS:` SELECT blacklist_id, user_id, user_name, blacklisted_user_id, blacklisted_user_name, reason, blacklisted_at, is_active  FROM ${VIEW_NAME.GET_ALL_USER_BLACKLIST} `,

@@ -1,55 +1,49 @@
 import { DataTypes } from "sequelize";
 
-const CouponsModel = (sequelize) => {
+const BlogsModel = (sequelize) => {
   return sequelize.define(
-    "coupons",
+    "blogs",
     {
-      coupon_id: {
+      blog_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
-      },
-      gift_master_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      coupon_code: {
-        type: DataTypes.STRING(45),
-        allowNull: false,
-      },
-      expiry_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: true,
-      },
-      status_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
       },
       user_id: {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
-      redeem_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: true,
-      },
-      redeem_time: {
-        type: DataTypes.TIME,
-        allowNull: true,
-      },
-      is_active: {
-        type: DataTypes.BOOLEAN,
+      title: {
+        type: DataTypes.STRING(255),
         allowNull: false,
-        defaultValue: true,
       },
-      created_by: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
+      content: {
+        type: DataTypes.TEXT,
+        allowNull: false,
       },
       created_at: {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,
+      },
+      total_likes: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0
+      },
+      total_comments: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue : 0
+      },
+      is_active: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue : 1
+      },
+      created_by: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
       modified_by: {
         type: DataTypes.INTEGER,
@@ -69,7 +63,7 @@ const CouponsModel = (sequelize) => {
       },
     },
     {
-      tableName: "coupons",
+      tableName: "blogs",
       paranoid: true,
       timestamps: false,
       defaultScope: {
@@ -89,4 +83,4 @@ const CouponsModel = (sequelize) => {
   );
 };
 
-export default CouponsModel;
+export default BlogsModel;

@@ -81,6 +81,9 @@ const UserMasterModel = (sequelize) => {
         }, blacklist_reason: {
             type: DataTypes.STRING(500),
             allowNull: true
+        }, blacklisted_by : {
+            type: DataTypes.INTEGER,
+            allowNull: true
         }, is_active: {
             type: DataTypes.TINYINT(1),
             allowNull: false,

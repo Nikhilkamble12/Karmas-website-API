@@ -13,6 +13,24 @@ const CompanyMasterController = {
             // data.created_at = new Date()
             // Create the record using ORM
             const createData = await CompanyMasterService.createService(data);
+            if(createData) {
+                if(data.company_logo_file !== null && data.company_logo_file !== "" && data.company_logo_file !== 0 && data.company_logo_file !== undefined && data.company_logo && data.company_logo !== "" && data.company_logo !== 0) {
+                    await saveBase64ToFile(
+                        data.company_logo_file,
+                        "company_master/" + createData.dataValues.company_id + "/company_logo",
+                        currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                        "_" +
+                        data.company_logo
+                    );
+                    const upload_page_1 = data.company_logo
+                        ? `company_master/${createData.dataValues.company_id}/company_logo/${currentTime()
+                            .replace(/ /g, "_")
+                            .replace(/:/g, "-")}_${data.company_logo}`
+                        : null;
+        
+                    const updateCompanyMaster = await CompanyMasterService.updateService(createData.dataValues.company_id, { company_logo_path: upload_page_1 });
+                }
+            }
             if (createData) {
                 return res
                     .status(responseCode.CREATED)
@@ -56,7 +74,22 @@ const CompanyMasterController = {
             const data = req.body
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, true);
-
+            if(data.company_logo_file !== null && data.company_logo_file !== "" && data.company_logo_file !== 0 && data.company_logo_file !== undefined && data.company_logo && data.company_logo !== "" && data.company_logo !== 0) {
+                    await saveBase64ToFile(
+                        data.company_logo_file,
+                        "company_master/" + createData.dataValues.company_id + "/company_logo",
+                        currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                        "_" +
+                        data.company_logo
+                    );
+                    const upload_page_1 = data.company_logo
+                        ? `company_master/${createData.dataValues.company_id}/company_logo/${currentTime()
+                            .replace(/ /g, "_")
+                            .replace(/:/g, "-")}_${data.company_logo}`
+                        : null;
+                    data.company_logo_path = upload_page_1
+                    delete data.company_logo_file
+                }
             // Update the record using ORM
             const updatedRowsCount = await CompanyMasterService.updateService(id, data);
             // if (updatedRowsCount > 0) {

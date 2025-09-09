@@ -1,46 +1,41 @@
-import GiftMasterController from "./gift.master.controller.js";
+import BlogsController from "./blogs.controller.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 const {express,verifyToken,basePathRoute} = commonPath
 
 // Define the base path for routes
-const basePath=`${basePathRoute}/gift_master`
+const basePath=`${basePathRoute}/blogs`
 const router = express.Router()
 // Route to create a new record
 
 router.post(
     `${basePath}/create`,
-    // verifyToken,
-    GiftMasterController.create
+    verifyToken,
+    BlogsController.create
 )
 // Route to update an existing record by ID
 router.put(
     `${basePath}/update`,
     verifyToken,
-    GiftMasterController.update
+    BlogsController.update
 )
 // Route to retrieve all records
 router.get(
     `${basePath}`,
     verifyToken,
-    GiftMasterController.getAllByView
+    BlogsController.getAllByView
 )
 // Route to retrieve a record by ID
 router.get(
     `${basePath}/getById`,
     verifyToken,
-    GiftMasterController.getByIdByView
+    BlogsController.getByIdByView
 )
 // Route to delete a record by ID
 router.delete(
     `${basePath}/delete`,
     verifyToken,
-    GiftMasterController.deleteData
+    BlogsController.deleteData
 )
-// Route to get all gifts by user id
-router.get(
-    `${basePath}/rewards/gifts`,
-    verifyToken,
-    GiftMasterController.getAllGiftsbyUserId
-)
+
 // Export the router for use in other parts of the application
 export default router

@@ -166,6 +166,16 @@ const UserMasterDAL = {
         }catch(error){
             throw error
         }
+    }, getBlockedUsersByUserId: async (user_id) => {
+            try {
+                const getData = await db.sequelize.query(
+                    `${ViewFieldTableVise.USER_MASTER_FIELDS} WHERE blacklisted_by = ${user_id}`,
+                    { type: db.Sequelize.QueryTypes.SELECT }
+                );
+                return getData;
+            } catch (error) {
+                throw error
+            }
     }
 }
 
