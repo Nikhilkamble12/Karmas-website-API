@@ -38,7 +38,7 @@ const UserMasterController = {
                         commonResponse(
                             responseCode.BAD_REQUEST,
                             responseConst.UNIQUE_CONSTRANTS_FAILED,
-                            createData.error,
+                            createData.message,
                             true
                         )
                     );
@@ -182,7 +182,7 @@ const UserMasterController = {
                         commonResponse(
                             responseCode.BAD_REQUEST,
                             responseConst.UNIQUE_CONSTRANTS_FAILED,
-                            updatedRowsCount.error,
+                            updatedRowsCount.message,
                             true
                         )
                     );

@@ -27,7 +27,8 @@ const UserMasterModel = (sequelize) => {
         },
          email_id: {
             type: DataTypes.STRING(200),
-            allowNull: false
+            allowNull: false,
+            unique: true
         }, mobile_no: {
             type: DataTypes.STRING(20),
             allowNull: true

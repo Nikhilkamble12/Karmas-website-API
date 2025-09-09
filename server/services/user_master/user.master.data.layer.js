@@ -10,13 +10,17 @@ const UserMasterDAL = {
             const createdData = await UserMasterModel(db.sequelize).create(data)
             return createdData // Return the created data
         } catch (error) {
-            if(error.name=="SequelizeUniqueConstraintError"){
+            if (error.name === "SequelizeUniqueConstraintError") {
                 const cleanedErrors = error.errors.map(({ instance, ...rest }) => rest);
-                 return {
-                success: false,
-                message: "Duplicate entry. Data with this unique value already exists.",
-                error: cleanedErrors, // Include validation error details
-            };
+
+                // Collect duplicate field info
+                const duplicates = cleanedErrors.map(e => `${e.path} = "${e.value}"`);
+
+                return {
+                    success: false,
+                    message: `Duplicate entry. ${duplicates.join(" and ")} already exists.`,
+                    error: cleanedErrors, // detailed info if you need it
+                };
             }
             throw error // Throw error for handling in the controller
         }
@@ -27,13 +31,17 @@ const UserMasterDAL = {
             const updateData = await UserMasterModel(db.sequelize).update(data, { where: { user_id: user_id } })
             return updateData // Return the result of the update operation
         } catch (error) {
-            if(error.name=="SequelizeUniqueConstraintError"){
+            if (error.name === "SequelizeUniqueConstraintError") {
                 const cleanedErrors = error.errors.map(({ instance, ...rest }) => rest);
-                 return {
-                success: false,
-                message: "Duplicate entry. Data with this unique value already exists.",
-                error: cleanedErrors, // Include validation error details
-            };
+
+                // Collect duplicate field info
+                const duplicates = cleanedErrors.map(e => `${e.path} = "${e.value}"`);
+
+                return {
+                    success: false,
+                    message: `Duplicate entry. ${duplicates.join(" and ")} already exists.`,
+                    error: cleanedErrors, // detailed info if you need it
+                };
             }
             throw error // Throw error for handling in the controller
         }
