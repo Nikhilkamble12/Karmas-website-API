@@ -355,6 +355,22 @@ const GiftMasterController = {
                     };
                 }
             );
+
+            const updatedResponse = await Promise.all(giftResponse.map(async (currentData) => {
+                // Normalize file path
+                if (
+                    currentData.company_logo_path &&
+                    currentData.company_logo_path !== "null" &&
+                    currentData.company_logo_path !== ""
+                ) {
+                    currentData.company_logo_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.company_logo_path}`;
+                } else {
+                    currentData.company_logo_path = null;
+                }
+
+                return currentData;
+
+                }));
            
             return res
             .status(responseCode.OK)
@@ -362,7 +378,7 @@ const GiftMasterController = {
                 commonResponse(
                     responseCode.OK,
                     responseConst.DATA_RETRIEVE_SUCCESS,
-                    giftResponse
+                    updatedResponse
                 )
             );
         } catch (error) {

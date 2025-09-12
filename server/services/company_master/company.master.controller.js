@@ -1,5 +1,7 @@
 import CompanyMasterService from "./company.master.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
+import getBase64FromFile from "../../utils/helper/base64.retrive.data.js";
+import saveBase64ToFile from "../../utils/helper/base64ToFile.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const CompanyMasterController = {
@@ -77,13 +79,13 @@ const CompanyMasterController = {
             if(data.company_logo_file !== null && data.company_logo_file !== "" && data.company_logo_file !== 0 && data.company_logo_file !== undefined && data.company_logo && data.company_logo !== "" && data.company_logo !== 0) {
                     await saveBase64ToFile(
                         data.company_logo_file,
-                        "company_master/" + createData.dataValues.company_id + "/company_logo",
+                        "company_master/" + id + "/company_logo",
                         currentTime().replace(/ /g, "_").replace(/:/g, "-") +
                         "_" +
                         data.company_logo
                     );
                     const upload_page_1 = data.company_logo
-                        ? `company_master/${createData.dataValues.company_id}/company_logo/${currentTime()
+                        ? `company_master/${id}/company_logo/${currentTime()
                             .replace(/ /g, "_")
                             .replace(/:/g, "-")}_${data.company_logo}`
                         : null;
@@ -162,6 +164,22 @@ const CompanyMasterController = {
             //   }
             // }
             // Return fetched data or handle case where no data is found
+         const updatedCompanyData = await Promise.all(getAll.map(async (currentData) => {
+                // Normalize file path
+                if (
+                    currentData.company_logo_path &&
+                    currentData.company_logo_path !== "null" &&
+                    currentData.company_logo_path !== ""
+                ) {
+                    currentData.company_logo_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.company_logo_path}`;
+                } else {
+                    currentData.company_logo_path = null;
+                }
+
+                return currentData;
+
+                }));
+
             if (getAll.length !== 0) {
                 return res
                     .status(responseCode.OK)
@@ -169,7 +187,7 @@ const CompanyMasterController = {
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            getAll
+                            updatedCompanyData
                         )
                     );
             } else {
@@ -184,6 +202,7 @@ const CompanyMasterController = {
                         )
                     );
             }
+            
         } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
