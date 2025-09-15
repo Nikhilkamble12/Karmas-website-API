@@ -89,9 +89,36 @@ const NgoMasterDAL = {
         }catch(error){
             throw error
         }
-    },getAllSumByNgo:async()=>{
+    },getAllSumByNgoDashBoard:async()=>{
         try{
-            const getAllSum = await db.sequelize.query( ` SELECT count(ngo_id) as total_ngo,sum(total_request_assigned) as total_request , sum(total_request_completed) as total_ngo_request_completed , sum(total_request_rejected) as total_ngo_request_rejected FROM ngo_master where is_active = true and is_blacklist = false `,{type:db.Sequelize.QueryTypes.SELECT})
+            const getAllSum = await db.sequelize.query(`
+            SELECT 
+                COUNT(ngo_id) AS total_ngo,
+                SUM(total_request_assigned) AS total_request,
+                SUM(total_request_completed) AS total_ngo_request_completed,
+                SUM(total_request_rejected) AS total_ngo_request_rejected,
+
+                SUM(CASE WHEN is_blacklist = TRUE THEN 1 ELSE 0 END) AS total_ngo_blacklisted,
+                SUM(CASE WHEN is_blacklist = FALSE THEN 1 ELSE 0 END) AS total_ngo_non_blacklisted_ngo,
+
+                SUM(CASE 
+                    WHEN unique_id IS NULL 
+                        OR TRIM(unique_id) = '' 
+                        OR LOWER(TRIM(unique_id)) = 'null' 
+                    THEN 1 ELSE 0 END) AS total_ngo_non_darpan_registered,
+
+                SUM(CASE 
+                    WHEN unique_id IS NOT NULL 
+                        AND TRIM(unique_id) <> '' 
+                        AND LOWER(TRIM(unique_id)) <> 'null'
+                    THEN 1 ELSE 0 END) AS total_ngo_darpan_registered
+
+            FROM ngo_master
+            WHERE is_active = TRUE
+            `, {
+            type: db.Sequelize.QueryTypes.SELECT
+            });
+
             return getAllSum
         }catch(error){
             throw error

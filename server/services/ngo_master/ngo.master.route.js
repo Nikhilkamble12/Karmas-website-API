@@ -67,4 +67,10 @@ router.get(
     NgoMasterController.getAllBlacklisedNgo
 )
 // Export the router for use in other parts of the application
+
+router.get(
+    `${basePath}/getngo/Dashboard/count`,
+    verifyToken,
+    NgoMasterController.ngoDashBoardCount
+)
 export default router

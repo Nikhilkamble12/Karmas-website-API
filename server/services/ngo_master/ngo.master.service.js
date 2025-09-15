@@ -62,7 +62,7 @@ const NgoMasterService = {
         }
     },getTotalSumOfData:async()=>{
         try{
-            return await NgoMasterDAL.getAllSumByNgo()
+            return await NgoMasterDAL.getAllSumByNgoDashBoard()
         }catch(error){
             throw error
         }
