@@ -153,7 +153,14 @@ const RequestDAL = {
   }catch(error){
     throw error
   }
-}
+},getRecentHundredRequestDesc: async () => {
+        try {
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.REQUEST_FIELDS} order by RequestId DESC LIMIT 100 `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getAllData // Return the retrieved data
+        } catch (error) {
+            throw error // Throw error for handling in the controller
+        }
+    }
 
 }
 export default RequestDAL

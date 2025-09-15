@@ -8,9 +8,12 @@ webDashBoardData:async(req,res)=>{
     try{
         const NgoCount = await  NgoMasterService.getTotalSumOfData()
         const RequestCount = await RequestService.getCountOfTotalRequest()
+        const recentRequestAll = await RequestService.getRecentHundredRequestDesc()
+        console.log("RequestCount",RequestCount)
         const mergedData = {
             ...NgoCount[0],
-            ...RequestCount[0]
+            ...RequestCount[0],
+            recentRequestAll:recentRequestAll
         }
         if (mergedData.length !== 0) {
                 return res

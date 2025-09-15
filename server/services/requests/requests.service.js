@@ -58,6 +58,12 @@ const RequestService = {
         }catch(error){
             throw error
         }
+    },getRecentHundredRequestDesc:async()=>{
+        try{
+            return await RequestDAL.getRecentHundredRequestDesc()
+        }catch(error){
+            throw error
+        }
     }
 }
 
