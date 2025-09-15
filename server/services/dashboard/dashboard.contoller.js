@@ -13,7 +13,6 @@ webDashBoardData:async(req,res)=>{
         const recentRequestAll = await RequestService.getRecentHundredRequestDesc()
         const userCount = await UserMasterService.getUserMasterDashBoardCount()
         const ScoreCount = await ScoreHistoryService.ScoreDashBoardCount()
-        console.log("RequestCount",RequestCount)
         const mergedData = {
             ...NgoCount[0],
             ...RequestCount[0],
