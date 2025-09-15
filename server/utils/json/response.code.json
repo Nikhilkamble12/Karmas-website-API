@@ -177,6 +177,9 @@
     },{
       "code":"1.0030",
       "message":"No coupons are currently available for this gift"
+    },{
+      "code":"1.0031",
+      "message":"User is Already Block."
     }
   ]
 }

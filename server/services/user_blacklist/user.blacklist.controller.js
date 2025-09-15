@@ -10,8 +10,20 @@ const UserBlackListController = {
             const data = req.body;
             // Add metadata for creation (created by, created at)
             const getserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
-            const total_blocked_user = parseInt(getserActivityData[0].total_blacklist_user) ?? 0
+            let total_blocked_user = parseInt(getserActivityData[0].total_blacklist_user) ?? 0
             const getDataByUserId = await UserBlackListService.getDataByUserIdAndBackListUser(tokenData(req,res),data.blacklisted_user_id)
+            if(getDataByUserId && getDataByUserId.length>0){
+                return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.USER_IS_ALREADY_BLOCKED,
+                        null,
+                        true
+                    )
+                );
+            }
             await addMetaDataWhileCreateUpdate(data, req, res, false);
             // data.created_by=1,
             // data.created_at = new Date()
