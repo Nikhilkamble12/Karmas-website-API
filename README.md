@@ -45,12 +45,15 @@ The API handles **authentication, posts, events, donations, chat, and more**, en
 ```bash
 git clone https://github.com/your-username/Karmas-Mobile-API.git
 cd Karmas-Mobile-API
+```
 
 2️⃣ Install dependencies
+```
 npm install
+```
 
 3️⃣ Configure Environment Variables
-
+```
 Create a .env file in the root directory:
 # 🌐 Common Environment Variables
 NODE_ENV=development
@@ -80,13 +83,17 @@ EMAIL_FROM=karmasotp@gmail.com
 EMAIL_USER=karmasotp@gmail.com
 EMAIL_PASS=your_email_password
 EMAIL_SERVICE=gmail
-
+```
 ## 🔥 Firebase Setup
-For Firebase configuration, follow the instructions here:  
-📂 [server/middleware/external_documents/firebase/read.md](https://github.com/Nikhilkamble12/Karmas-website-API/blob/main/server/middleware/external_documents/firebase/read.md)
-This file explains how to obtain `karmas.firebase.json` and where to store it.
+```
+For Firebase configuration and setup instructions, please refer to:  
+> 👉 This file explains how to obtain `karmas.firebase.json` and where to store it.
+```
+📂 [server/middleware/external_documents/firebase/read.md](server/middleware/external_documents/firebase/read.md)
+
 
 4️⃣ Run the server
+```
 npm start
 ```
 ---
