@@ -19,21 +19,24 @@ The API handles **authentication, posts, events, donations, chat, and more**, en
 | 📸 Media Sharing | Upload & fetch images/videos |
 | 📝 Posts & Feeds | Create, like, comment & share posts |
 | 📅 Events | NGO & community events with RSVP support |
-| 💬 Real-time Chat | One-to-one & group messaging (Socket.io support) |
-| 💳 Donations | Integrated donation API for NGOs |
+| 🚨 SOS for Girls | Emergency SOS trigger with real-time WebSocket alerts |
+| 🔔 Notifications | Push & in-app notifications for posts, events, and SOS alerts |
 | 📊 Analytics | Engagement tracking & reporting |
-| 🌍 Multi-language Support | API designed for internationalization |
 
 ---
 
 ## 🛠️ Tech Stack
 
-- **Backend Framework**: [Node.js](https://nodejs.org) + [Express.js](https://expressjs.com)  
-- **Database**: MySQL / MariaDB  
-- **ORM**: Sequelize  
-- **Authentication**: JWT (JSON Web Tokens)  
-- **File Storage**: AWS S3 / Local  
-- **Real-time**: Socket.io  
+| Layer | Technology |
+|-------|-------------|
+| ⚙️ **Backend Framework** | ![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white) + ![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white) |
+| 🗄️ **Database** | ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white) / ![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white) |
+| 🔄 **ORM** | ![Sequelize](https://img.shields.io/badge/Sequelize-52B0E7?style=for-the-badge&logo=sequelize&logoColor=white) |
+| 🔑 **Authentication** | ![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=jsonwebtokens&logoColor=white) |
+| 🗂️ **File Storage** | ![AWS S3](https://img.shields.io/badge/AWS%20S3-569A31?style=for-the-badge&logo=amazons3&logoColor=white) / Local Storage |
+| ⚡ **Real-time** | ![WebSocket](https://img.shields.io/badge/WebSocket-000000?style=for-the-badge&logo=socketdotio&logoColor=white) |
+| 🔔 **Notifications** | ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black) |
+
 
 ---
 
