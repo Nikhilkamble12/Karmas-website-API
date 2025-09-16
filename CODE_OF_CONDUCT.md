@@ -50,7 +50,7 @@ This Code of Conduct applies:
 
 ## 🚨 Enforcement
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the maintainers:  
-📧 **[your-team@email.com]**  
+📧 **[nikhilkamble096@gmail.com]**  
 
 All complaints will be reviewed and investigated **promptly and fairly**.  
 
