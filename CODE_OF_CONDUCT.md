@@ -1,32 +1,61 @@
-# Contributor Code of Conduct
+# 🤝 Contributor Code of Conduct
 
-## Our Pledge
-We as contributors and maintainers pledge to make participation in this project a respectful and harassment-free experience for everyone, regardless of age, body size, disability, ethnicity, gender identity and expression, level of experience, nationality, personal appearance, race, religion, or sexual identity and orientation.
+## 🌟 Our Pledge
+We, as contributors and maintainers, pledge to foster a **respectful, harassment-free, and welcoming** community for everyone, regardless of:  
 
-## Our Standards
-Examples of behavior that contributes to creating a positive environment include:
-- Using welcoming and inclusive language
-- Being respectful of differing viewpoints and experiences
-- Gracefully accepting constructive criticism
-- Focusing on what is best for the team and project
-- Showing empathy toward other contributors
+- Age  
+- Body size  
+- Disability  
+- Ethnicity  
+- Gender identity & expression  
+- Level of experience  
+- Nationality  
+- Personal appearance  
+- Race  
+- Religion  
+- Sexual identity & orientation  
 
-Examples of unacceptable behavior include:
-- Use of sexualized language or imagery
-- Personal attacks, trolling, or insulting comments
-- Public or private harassment
-- Publishing private information without permission
-- Any behavior that could be considered inappropriate in a professional setting
+---
 
-## Our Responsibilities
-Project maintainers are responsible for clarifying the standards of acceptable behavior and are expected to take appropriate and fair corrective action in response to any behavior they deem inappropriate.
+## ✅ Our Standards
+**Examples of positive behavior include:**  
+- 💬 Using welcoming and inclusive language  
+- 🙏 Respecting differing viewpoints and experiences  
+- 🤝 Gracefully accepting constructive criticism  
+- 🎯 Focusing on the success of the project and team  
+- 💙 Showing empathy toward other contributors  
 
-## Scope
-This Code of Conduct applies within project spaces (GitHub Issues, Pull Requests, Discussions, etc.) and in public spaces when an individual is representing the project or its community.
+**Unacceptable behavior includes:**  
+- ❌ Sexualized language, imagery, or advances  
+- ❌ Personal attacks, trolling, or insulting comments  
+- ❌ Public or private harassment  
+- ❌ Publishing private information without permission  
+- ❌ Any behavior inappropriate in a professional setting  
 
-## Enforcement
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the maintainers directly (replace with your team email: **[your-team@email.com]**).  
-All complaints will be reviewed and investigated promptly and fairly.
+---
 
-## Attribution
-This Code of Conduct is adapted from the [Contributor Covenant](https://www.contributor-covenant.org/), version 2.0.
+## 🛡️ Our Responsibilities
+Project maintainers are responsible for:  
+- Clarifying standards of acceptable behavior  
+- Taking fair and corrective action for inappropriate conduct  
+
+---
+
+## 🌍 Scope
+This Code of Conduct applies:  
+- Within all **project spaces** (Issues, PRs, Discussions, etc.)  
+- In **public spaces** when an individual represents the project or community  
+
+---
+
+## 🚨 Enforcement
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported by contacting the maintainers:  
+📧 **[your-team@email.com]**  
+
+All complaints will be reviewed and investigated **promptly and fairly**.  
+
+---
+
+## 📖 Attribution
+This Code of Conduct is adapted from the  
+[**Contributor Covenant**](https://www.contributor-covenant.org/) (v2.0).  
