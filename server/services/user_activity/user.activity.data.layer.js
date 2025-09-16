@@ -25,8 +25,20 @@ const UserActivityDAL = {
     // Method to retrieve all records by view
     getAllDataByView: async () => {
         try {
-            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.USER_ACTIVITY_FIELDS} `, { type: db.Sequelize.QueryTypes.SELECT })
-            return getAllData // Return the retrieved data
+            let getAllData = await db.sequelize.query(` ${ViewFieldTableVise.USER_ACTIVITY_FIELDS} `, { type: db.Sequelize.QueryTypes.SELECT })
+            let fullData = []
+            if(getAllData && getAllData.length>0){
+            fullData = getAllData.map(row => ({
+            ...row, // keep all existing columns
+            file_path:
+                row.file_path &&
+                row.file_path !== 'null' &&
+                row.file_path.trim() !== ''
+                ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.file_path}`
+                : null
+            }));
+        }
+            return fullData // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
@@ -35,7 +47,16 @@ const UserActivityDAL = {
     getDataByIdByView: async (user_activity_id) => {
         try {
             const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.USER_ACTIVITY_FIELDS} where user_activity_id  = ${user_activity_id} `, { type: db.Sequelize.QueryTypes.SELECT })
-            return getDataById[0] ?? [] // Return the retrieved data
+            const resultWithImages = getDataById.map(row => ({
+            ...row, // keep all existing columns
+            file_path:
+                row.file_path &&
+                row.file_path !== 'null' &&
+                row.file_path.trim() !== ''
+                ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.file_path}`
+                : null
+            }));
+            return resultWithImages[0] ?? [] // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
@@ -55,7 +76,16 @@ const UserActivityDAL = {
     },getDataByUserId : async(user_id)=>{
         try{
             const getData = await db.sequelize.query(` ${ViewFieldTableVise.USER_ACTIVITY_FIELDS} where user_id = ${user_id} `,{type:db.Sequelize.QueryTypes.SELECT})
-            return getData
+            const resultWithImages = getData.map(row => ({
+            ...row, // keep all existing columns
+            file_path:
+                row.file_path &&
+                row.file_path !== 'null' &&
+                row.file_path.trim() !== ''
+                ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.file_path}`
+                : null
+            }));
+            return resultWithImages
         }catch(error){
             throw error
         }

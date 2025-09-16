@@ -52,6 +52,12 @@ const RequestMediaService = {
     }catch(error){
       throw error
     }
+  },getDataByRequestAndSequence:async(request_id,sequence)=>{
+    try{
+      return await RequestMediaDAL.getRequestByIdAndSequenceId(request_id,sequence)
+    }catch(error){
+      throw error
+    }
   }
 };
 

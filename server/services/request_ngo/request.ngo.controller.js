@@ -296,6 +296,7 @@ const RequestNgoController = {
                 let Total_request_Assigned = parseInt(GetNgoDetails.total_request_assigned) ?? 0
                 if(requestNgoMapping && requestNgoMapping.length>0){
                     await addMetaDataWhileCreateUpdate(currentData, req, res, true);
+                    currentData.Request_Ngo_Id = requestNgoMapping[0].Request_Ngo_Id
                     const updateRequestNgo = await RequestNgoService.updateService(requestNgoMapping[0].Request_Ngo_Id,currentData)
                     if(updateRequestNgo>0){
                         request_saved = true
@@ -325,7 +326,9 @@ const RequestNgoController = {
                         
                         const getTokenByRole = await UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN)
                         const allToken =[...getAllUserToken,...getTokenByRole]
-                        await sendTemplateNotification({templateKey:"Request-Ngo", templateData:template, userIds:allToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId}})
+                        const getRequestMedia = await RequestMediaService.getDataByRequestAndSequence(getOlderData.RequestId,1)
+                        const notification_template = {created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId}
+                        await sendTemplateNotification({templateKey:"Request-Ngo", templateData:template, userIds:allToken, metaData:notification_template,request_media:getRequestMedia[0].media_url ?? null})
                         request_saved = true
                     }else{
                         request_error = true
@@ -429,7 +432,7 @@ const RequestNgoController = {
                 const userToken = await UserTokenService.GetTokensByUserIds(requestDetails.request_user_id)
                 const AdminUserToken = await UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN)
                 const allUserToken = [...userToken,...AdminUserToken]
-                await sendTemplateNotification({templateKey:"Request-Rejected", templateData:template, userIds:allUserToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId}})
+                await sendTemplateNotification({templateKey:"Request-Rejected", templateData:template, userIds:allUserToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId,ngo_logo_image:getDataByNgoRequest.ngo_logo_path}})
                 return res
                     .status(responseCode.CREATED)
                     .send(
@@ -463,7 +466,7 @@ const RequestNgoController = {
                 const updateNgo = await NgoMasterService.updateService(currentData.ngo_id,NgoMasterData)
                 const template = await notificationTemplates.requestRejected({ngoName:getOlderData.ngo_name, requestName:getOlderData.RequestName})
                 const UserToken = await UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN)
-                await sendTemplateNotification({templateKey:"Request-Rejected", templateData:template, userIds:UserToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId}})
+                await sendTemplateNotification({templateKey:"Request-Rejected", templateData:template, userIds:UserToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId,ngo_logo_path:getDataByNgoRequest.ngo_logo_path}})
                 return res
                     .status(responseCode.CREATED)
                     .send(
