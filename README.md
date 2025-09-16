@@ -37,7 +37,6 @@ The API handles **authentication, posts, events, donations, chat, and more**, en
 | ⚡ **Real-time** | ![WebSocket](https://img.shields.io/badge/WebSocket-000000?style=for-the-badge&logo=socketdotio&logoColor=white) |
 | 🔔 **Notifications** | ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black) |
 
-
 ---
 
 ## 🚀 Getting Started
@@ -46,3 +45,68 @@ The API handles **authentication, posts, events, donations, chat, and more**, en
 ```bash
 git clone https://github.com/your-username/Karmas-Mobile-API.git
 cd Karmas-Mobile-API
+
+2️⃣ Install dependencies
+npm install
+
+3️⃣ Configure Environment Variables
+
+Create a .env file in the root directory:
+# 🌐 Common Environment Variables
+NODE_ENV=development
+JWT_SECRET=your_jwt_secret_here
+
+# 🔐 Encryption/Decryption Configuration
+ENCRYPTION_SECRET_KEY=your_encryption_secret_key
+ENCRYPTION_IV=your_initialization_vector
+
+# 🛠️ Local (Development/Testing) Database Configuration
+DEV_DB_USER=your_db_user
+DEV_DB_PASSWORD=your_db_password
+DEV_DB_NAME=your_db_name
+DEV_DB_HOST=localhost
+DEV_DB_DIALECT=mysql
+DEV_DB_PORT=3306
+
+# ☁️ Amazon S3 Configuration
+AMAZON_ACCESS_KEY_ID_S3=your_aws_access_key
+AMAZON_SECRET_KEY_ID_S3=your_aws_secret_key
+
+# 🌍 Live Server URL
+GET_LIVE_CURRENT_URL=http://localhost:3000
+
+# 📧 Email Setup
+EMAIL_FROM=karmasotp@gmail.com
+EMAIL_USER=karmasotp@gmail.com
+EMAIL_PASS=your_email_password
+EMAIL_SERVICE=gmail
+
+4️⃣ Run the server
+npm start
+```
+---
+
+## 📬 Contact / Maintainers  
+
+### 👨‍💻 Maintainer: Nishant More  
+- 📧 **Email**: [nishantmore228@gmail.com](mailto:nishantmore228@gmail.com)  
+- 🐙 **GitHub**: [github.com/nishantmore9](https://github.com/nishantmore9)  
+- 🐦 **Twitter (X)**: [x.com/nishantmore228](https://x.com/nishantmore228)  
+- 📸 **Instagram**: [instagram.com/nishantmore77](https://www.instagram.com/nishantmore77/)  
+
+![Email](https://img.shields.io/badge/Email-nishantmore228%40gmail.com-red?logo=gmail&logoColor=white)  
+![GitHub](https://img.shields.io/badge/GitHub-nishantmore9-black?logo=github)
+![Twitter](https://img.shields.io/badge/Twitter-%40nishantmore228-1DA1F2?logo=twitter&logoColor=white)  
+![Instagram](https://img.shields.io/badge/Instagram-%40nishantmore77-E4405F?logo=instagram&logoColor=white)  
+
+---
+
+### 👑 Owner: Nikhil Kamble  
+- 📧 **Email**: [nikhilkamble096@gmail.com](mailto:nikhilkamble096@gmail.com)  
+- 🐙 **GitHub**: [github.com/Nikhilkamble12](https://github.com/Nikhilkamble12)  
+
+![Email](https://img.shields.io/badge/Email-nikhilkamble096%40gmail.com-red?logo=gmail&logoColor=white)  
+![GitHub](https://img.shields.io/badge/GitHub-Nikhilkamble12-black?logo=github)  
+
+
+---
