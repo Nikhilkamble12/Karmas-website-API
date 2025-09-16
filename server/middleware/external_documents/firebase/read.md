@@ -1,4 +1,3 @@
-.
 
 🔥 Firebase Setup Guide for Developers
 📍 Where to Find Firebase Config (if it already exists)
