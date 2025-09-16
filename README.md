@@ -81,6 +81,11 @@ EMAIL_USER=karmasotp@gmail.com
 EMAIL_PASS=your_email_password
 EMAIL_SERVICE=gmail
 
+## 🔥 Firebase Setup
+For Firebase configuration, follow the instructions here:  
+📂 [server/middleware/external_documents/firebase/read.md](https://github.com/Nikhilkamble12/Karmas-website-API/blob/main/server/middleware/external_documents/firebase/read.md)
+This file explains how to obtain `karmas.firebase.json` and where to store it.
+
 4️⃣ Run the server
 npm start
 ```
