@@ -52,7 +52,7 @@ let AuthController = {
           .send(
             commonResponse(
               responseCode.UNAUTHORIZED,
-              responseConst.INVALID_PASSWORD,
+              responseConst.USER_HAS_BLOCKED_YOU,
               null,
               true
             )

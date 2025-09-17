@@ -12,6 +12,9 @@ const NotificationHistoryModel = (sequelize)=>{
         }, user_id:{
             type:DataTypes.INTEGER,
             allowNull:true
+        },user_image:{
+            type:DataTypes.STRING(1000),
+            allowNull:true
         }, ngo_id:{
         type:DataTypes.INTEGER,
             allowNull:true
@@ -27,7 +30,11 @@ const NotificationHistoryModel = (sequelize)=>{
         }, notification_type:{
             type:DataTypes.STRING(150),
             allowNull:true
-        }, is_viewed:{
+        },image_object:{
+            type:DataTypes.JSON,
+            allowNull:true
+        },
+         is_viewed:{
             type:DataTypes.INTEGER,
             allowNull:true
         }, is_active: {

@@ -92,6 +92,16 @@ const RequestMediaDAL = {
     }catch(error){
       throw error
     }
+  },getRequestByIdAndSequenceId:async(requestId,sequence)=>{
+    try{
+      const getDataByRequestId = await db.sequelize.query(
+        ` ${ViewFieldTableVise.REQUEST_MEDIA_FIELDS} where RequestId  = ${requestId} and sequence = ${sequence} `,
+        { type: db.Sequelize.QueryTypes.SELECT }
+      )
+      return getDataByRequestId
+    }catch(error){
+      throw error
+    }
   }
 };
 

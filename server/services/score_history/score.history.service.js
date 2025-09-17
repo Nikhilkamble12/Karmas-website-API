@@ -64,6 +64,12 @@ const ScoreHistoryService = {
         }catch(error){
             throw error
         }
+    },ScoreDashBoardCount:async()=>{
+        try{
+            return await ScoreHistoryDAL.ScoreDashBoardCount()
+        }catch(error){
+            throw error
+        }
     }
 }
 export default ScoreHistoryService 

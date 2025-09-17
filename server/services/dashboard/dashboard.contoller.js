@@ -1,6 +1,8 @@
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import RequestService from "../requests/requests.service.js";
 import NgoMasterService from "../ngo_master/ngo.master.service.js";
+import UserMasterService from "../user_master/user.master.service.js";
+import ScoreHistoryService from "../score_history/score.history.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const DashBoardController = {
@@ -8,9 +10,15 @@ webDashBoardData:async(req,res)=>{
     try{
         const NgoCount = await  NgoMasterService.getTotalSumOfData()
         const RequestCount = await RequestService.getCountOfTotalRequest()
+        const recentRequestAll = await RequestService.getRecentHundredRequestDesc()
+        const userCount = await UserMasterService.getUserMasterDashBoardCount()
+        const ScoreCount = await ScoreHistoryService.ScoreDashBoardCount()
         const mergedData = {
             ...NgoCount[0],
-            ...RequestCount[0]
+            ...RequestCount[0],
+            ...userCount[0],
+            ...ScoreCount[0],
+            recentRequestAll:recentRequestAll
         }
         if (mergedData.length !== 0) {
                 return res

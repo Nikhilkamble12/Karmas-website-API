@@ -15,6 +15,8 @@ const RequestNgoDAL = {
     // Method to update an existing record by its ID
     UpdateData: async (Request_Ngo_Id, data) => {
         try {
+            delete data.Request_Ngo_Id
+
             const updateData = await RequestNgoModel(db.sequelize).update(data, { where: { Request_Ngo_Id: Request_Ngo_Id } })
             return updateData // Return the result of the update operation
         } catch (error) {
@@ -24,8 +26,20 @@ const RequestNgoDAL = {
     // Method to retrieve all records by view
     getAllDataByView: async () => {
         try {
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS}`, { type: db.Sequelize.QueryTypes.SELECT })
-            return getAllData // Return the retrieved data
+            let getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS}`, { type: db.Sequelize.QueryTypes.SELECT })
+            let fulldata = []
+            if(getAllData && getAllData.length>0){
+            fulldata = getAllData.map(row => ({
+            ...row, // keep all existing columns
+            ngo_logo_path:
+                row.ngo_logo_path &&
+                row.ngo_logo_path !== 'null' &&
+                row.ngo_logo_path.trim() !== ''
+                ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.ngo_logo_path}`
+                : null
+            }));
+            }
+            return fulldata // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
@@ -34,7 +48,16 @@ const RequestNgoDAL = {
     getDataByIdByView: async (Request_Ngo_Id) => {
         try {
             const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS} where Request_Ngo_Id  = ${Request_Ngo_Id} `, { type: db.Sequelize.QueryTypes.SELECT })
-            return getDataById[0] ?? [] // Return the retrieved data
+            const resultWithImages = getDataById.map(row => ({
+            ...row, // keep all existing columns
+            ngo_logo_path:
+                row.ngo_logo_path &&
+                row.ngo_logo_path !== 'null' &&
+                row.ngo_logo_path.trim() !== ''
+                ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.ngo_logo_path}`
+                : null
+            }));
+            return resultWithImages[0] ?? [] // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
         }

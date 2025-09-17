@@ -76,6 +76,12 @@ const UserMasterService = {
         } catch (error) {
             throw error
         }
+    },getUserMasterDashBoardCount:async()=>{
+        try{
+            return await UserMasterDAL.getUserDashBordCount()
+        }catch(error){
+            throw error
+        }
     }
 }
 export default UserMasterService

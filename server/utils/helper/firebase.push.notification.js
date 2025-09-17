@@ -107,6 +107,7 @@
 
 
 import admin from 'firebase-admin';
+
 import fs from "fs"
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -123,16 +124,17 @@ import NotificationHistoryDAL from '../../services/notification_history/notifica
 // const SERVICE_ACCOUNT_PATH = '../../middleware/external_documents/firebase/karmas.firebase.json';
 const serviceAccountPath = path.resolve(__dirname, '../../middleware/external_documents/firebase/karmas.firebase.json');
 
-    const serviceAccountRaw = fs.readFileSync(serviceAccountPath, 'utf-8');
-    const serviceAccount = JSON.parse(serviceAccountRaw);
+const serviceAccountRaw = fs.readFileSync(serviceAccountPath, 'utf-8');
+const serviceAccount = JSON.parse(serviceAccountRaw);
 // Initialize Firebase Admin SDK if not already initialized
 if (!admin.apps.length) {
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount)
     });
 }
+import { getMessaging } from 'firebase-admin/messaging';
+const messaging = getMessaging();
 
-console.log("Firebase Admin SDK Initialized.");
 
 // Helper to safely get nested values from metadata
 const getMetaValue = (metaData, key) => {
@@ -190,108 +192,108 @@ const sendTemplateNotification = async ({
             };
         }
 
-        // Extract just the tokens for FCM multicast
-        const tokens = userIds.map(user => user.token);
-        
-        const batchSize = 500; // FCM limit for multicast is 500 tokens per request
-        const tokenBatches = chunkArray(tokens, batchSize);
+        // // Extract just the tokens for FCM multicast
+        // const tokens = userIds.map(user => user.token);
 
-        console.log(`Sending notifications to ${tokens.length} tokens in ${tokenBatches.length} batches...`);
+        // const tokenBatches = chunkArray(tokens, batchSize);
 
+        // console.log(`Sending notifications to ${tokens.length} tokens in ${tokenBatches.length} batches...`);
+
+
+        // Build an array of per-user messages:
+        const messages = userIds.map(user => ({
+            token: user.token,
+            notification: {
+                title,
+                body: description,
+                image: user.user_image || undefined // image per user
+            },
+            data: {
+                user_image: user.user_image ?? '',
+                bg_image: user.bg_image ?? '',
+                type: templateKey,
+                ...convertObjectValuesToString(metaData),
+            }
+        }));
+
+        // Break into batches of 500 (FCM max)
+        const batchSize = 500;
         let totalSuccessCount = 0;
         let totalFailureCount = 0;
-        const allFailedTokensDetails = []; // To store details of all failed tokens
+        const allFailedTokensDetails = [];
 
-        for (let i = 0; i < tokenBatches.length; i++) {
-            const batch = tokenBatches[i];
-            console.log(`Processing batch ${i + 1}/${tokenBatches.length} with ${batch.length} tokens.`);
-
-            const message = {
-                notification: {
-                    title,
-                    body: description
-                },
-                data: {
-                    type: templateKey,
-                    // Add any global metadata here
-                    ...convertObjectValuesToString(metaData),
-                },
-                tokens: batch, // The array of tokens for this batch
-                // Optional: set a high priority for urgent messages
-                // apns: { payload: { aps: { contentAvailable: true, priority: 'high' } } },
-                // android: { priority: 'high' },
-                // webpush: { headers: { 'Urgency': 'high' } }
-            };
-            console.log("message",message)
+        for (let i = 0; i < messages.length; i += batchSize) {
+            const batchMessages = messages.slice(i, i + batchSize);
+            console.log(`Processing batch ${i / batchSize + 1}/${Math.ceil(messages.length / batchSize)} with ${batchMessages.length} messages.`);
+            console.log("batchMessages",batchMessages)
             try {
-                // Use sendEachForMulticast for sending the same message to multiple tokens
-                const response = await admin.messaging().sendEachForMulticast(message);
-                console.log(`Batch ${i + 1} send successful: ${response.successCount} succeeded, ${response.failureCount} failed.`);
+                // sendAll takes an array of messages with individual tokens
+                const response = await messaging.sendEach(batchMessages);
 
                 totalSuccessCount += response.successCount;
                 totalFailureCount += response.failureCount;
 
+                // Handle per-message failures
                 if (response.failureCount > 0) {
                     response.responses.forEach((resp, index) => {
                         if (!resp.success) {
-                            const failedToken = batch[index]; // Get the token from the current batch
-                            const originalUserIdEntry = userIds.find(u => u.token === failedToken); // Find original user_id
-                            
-                            allFailedTokensDetails.push({ 
-                                token: failedToken, 
+                            const failedMsg = batchMessages[index];
+                            const originalUserIdEntry = userIds.find(u => u.token === failedMsg.token);
+                            allFailedTokensDetails.push({
+                                token: failedMsg.token,
                                 user_id: originalUserIdEntry ? originalUserIdEntry.user_id : 'unknown',
-                                error: resp.error.message,
-                                errorCode: resp.error.code
+                                error: resp.error?.message,
+                                errorCode: resp.error?.code
                             });
-                            console.error(`Failed to send to token ${failedToken} (User ID: ${originalUserIdEntry ? originalUserIdEntry.user_id : 'unknown'}):`, resp.error.message);
-                            
-                            // IMPORTANT: Handle invalid tokens.
-                            // If the token is invalid or no longer exists, you should remove it from your database.
-                            if (resp.error.code === 'messaging/invalid-registration-token' || 
-                                resp.error.code === 'messaging/not-found' ||
-                                resp.error.code === 'messaging/registration-token-not-registered') {
-                                console.warn(`Consider removing invalid token from DB: ${failedToken}`);
-                                // TODO: Implement actual database removal logic here.
-                                // Example: await UserTokenService.RemoveToken(failedToken);
+
+                            // Example invalid token cleanup:
+                            if (['messaging/invalid-registration-token',
+                                'messaging/not-found',
+                                'messaging/registration-token-not-registered']
+                                .includes(resp.error?.code)) {
+                                console.warn(`Consider removing invalid token from DB: ${failedMsg.token}`);
                             }
                         }
                     });
                 }
-            } catch (error) {
-                console.error(`Error sending batch ${i + 1}:`, error);
-                // If the entire batch send request fails, all tokens in it are considered failed for this attempt
-                batch.forEach(token => {
-                    const originalUserIdEntry = userIds.find(u => u.token === token);
-                    allFailedTokensDetails.push({ 
-                        token: token, 
+
+                console.log(`Batch sent: ${response.successCount} succeeded, ${response.failureCount} failed.`);
+            } catch (err) {
+                console.error(`Error sending batch:`, err);
+                // if the entire batch fails:
+                batchMessages.forEach(msg => {
+                    const originalUserIdEntry = userIds.find(u => u.token === msg.token);
+                    allFailedTokensDetails.push({
+                        token: msg.token,
                         user_id: originalUserIdEntry ? originalUserIdEntry.user_id : 'unknown',
-                        error: error.message,
-                        errorCode: 'batch-send-error' // Custom error code for full batch failure
+                        error: err.message,
+                        errorCode: 'batch-send-error'
                     });
                 });
-                totalFailureCount += batch.length; 
+                totalFailureCount += batchMessages.length;
             }
         }
 
-        console.log(`\n--- Notification Send Summary ---`);
-        console.log(`Total tokens requested: ${tokens.length}`);
+        console.log(`--- Notification Send Summary ---`);
         console.log(`Total successful sends: ${totalSuccessCount}`);
         console.log(`Total failed sends: ${totalFailureCount}`);
-        if (allFailedTokensDetails.length > 0) {
-            console.log('Details of all failed tokens:', JSON.stringify(allFailedTokensDetails, null, 2));
-            // Log these to your error monitoring system or a dedicated table
+        if (allFailedTokensDetails.length) {
+            console.log('Failed tokens details:', JSON.stringify(allFailedTokensDetails, null, 2));
         }
+
 
         // Prepare notification history rows
         const notificationRows = userIds.map(tokenObj => ({
             token_id: tokenObj.token,
             user_id: tokenObj.user_id ?? null,
+            user_image:tokenObj.user_image ?? null,
             ngo_id: getMetaValue(metaData, 'ngo_id'),
             request_id: getMetaValue(metaData, 'request_id'),
             post_id: getMetaValue(metaData, 'post_id'),
             notification_title: title,
             notification_details: description,
             notification_type: templateKey,
+            image_object: JSON.stringify(metaData),
             is_viewed: 0,
             is_active: 1,
             created_by: getMetaValue(metaData, 'created_by'),
@@ -302,7 +304,7 @@ const sendTemplateNotification = async ({
         await NotificationHistoryDAL.CreateBulkData(notificationRows);
 
         return {
-            totalTokens: tokens.length,
+            totalTokens: userIds.length,
             successCount: totalSuccessCount,
             failureCount: totalFailureCount,
             failedTokens: allFailedTokensDetails // Return failed tokens for further processing if needed

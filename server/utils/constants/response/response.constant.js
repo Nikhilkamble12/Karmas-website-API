@@ -56,7 +56,8 @@ const RESPONSE_CONSTANTS = {
     USER_HAS_BLOCKED_YOU:"You Have Been Blocked By Admin.",
     USER_IS_BLACKLISTED:"Account Has Been Blacklisted.",
     COUPON_ALREADY_REDEEMED:"You have already redeemed this coupon.",
-    NO_COUPONS_AVAILABLE:"No coupons are currently available for this gift"
+    NO_COUPONS_AVAILABLE:"No coupons are currently available for this gift",
+    USER_IS_ALREADY_BLOCKED:"User is Already Block."
   };
   
   export default RESPONSE_CONSTANTS;

@@ -63,23 +63,23 @@ const ScoreHistoryDAL = {
             const replacements = { limit: parseInt(limit) };
 
             // Fetch Top Scorers (highest cumulative total score)
-           // Fetch Top Scorers (highest cumulative total score)
+            // Fetch Top Scorers (highest cumulative total score)
             const topScorers = await db.sequelize.query(
-            `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference,` + "`rank`" + ` FROM v_weekly_user_scores ORDER BY` + "`rank`" + ` ASC LIMIT :limit`,
-            { replacements, type: db.Sequelize.QueryTypes.SELECT }
+                `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference,` + "`rank`" + ` FROM v_weekly_user_scores ORDER BY` + "`rank`" + ` ASC LIMIT :limit`,
+                { replacements, type: db.Sequelize.QueryTypes.SELECT }
             );
             topScorers.sort((a, b) => a.rank - b.rank); // Note: Assuming 'rank' property will exist after fix
 
             // Fetch Top Gainers (highest positive difference between total score and last week's score)
             const topGainers = await db.sequelize.query(
-            `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference,` + "`rank`" + ` FROM v_weekly_user_scores ORDER BY difference DESC LIMIT :limit`,
-            { replacements, type: db.Sequelize.QueryTypes.SELECT }
+                `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference,` + "`rank`" + ` FROM v_weekly_user_scores ORDER BY difference DESC LIMIT :limit`,
+                { replacements, type: db.Sequelize.QueryTypes.SELECT }
             );
 
             // Fetch Top Losers (highest negative difference between total score and last week's score)
             const topLosers = await db.sequelize.query(
-            `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference, ` + "`rank`" + ` FROM v_weekly_user_scores ORDER BY difference ASC LIMIT :limit`,
-            { replacements, type: db.Sequelize.QueryTypes.SELECT }
+                `SELECT user_id, user_name, file_name, file_path, total_score, week1_score, week2_score, difference, ` + "`rank`" + ` FROM v_weekly_user_scores ORDER BY difference ASC LIMIT :limit`,
+                { replacements, type: db.Sequelize.QueryTypes.SELECT }
             );
 
             return { topScorers, topGainers, topLosers };
@@ -91,16 +91,16 @@ const ScoreHistoryDAL = {
         try {
 
             const getUserScore = await db.sequelize.query(
-              `
+                `
           SELECT *, 
           ROW_NUMBER() OVER (ORDER BY total_score DESC) AS row_num
           FROM massom.v_weekly_user_scores
           WHERE user_id = :userId
           `,
-              {
-                replacements: { userId: user_id },
-                type: db.Sequelize.QueryTypes.SELECT,
-              }
+                {
+                    replacements: { userId: user_id },
+                    type: db.Sequelize.QueryTypes.SELECT,
+                }
             );
             const updatedUsers = getUserScore.map(user => {
                 return {
@@ -124,6 +124,34 @@ const ScoreHistoryDAL = {
                 type: db.Sequelize.QueryTypes.SELECT
             });
             return getUserData
+        } catch (error) {
+            throw error
+        }
+    }, ScoreDashBoardCount: async () => {
+        try {
+            const getScoreHistory = await db.sequelize.query(
+                ` SELECT 
+            -- Losing scorers
+            SUM(CASE WHEN difference < 0 THEN 1 ELSE 0 END) AS score_losing_scorers_count,
+            -- Gaining scorers
+            SUM(CASE WHEN difference >= 0 THEN 1 ELSE 0 END) AS score_gaining_scorers_count,
+            -- Zero scorers this month (week1_score = 0)
+            SUM(CASE WHEN week1_score = 0 THEN 1 ELSE 0 END) AS score_zero_weekly_scorers_count,
+            SUM(CASE WHEN total_score = 0 THEN 1 ELSE 0 END) AS score_zero_total_scorers_count,
+            -- Top scorers this month (max week1_score)
+            (SELECT COUNT(*) 
+                FROM massom.v_weekly_user_scores v
+                WHERE v.week1_score = (SELECT MAX(week1_score) FROM massom.v_weekly_user_scores)
+            ) AS score_top_scorers_this_month,
+            -- Top active scorers (max total_score)
+            (SELECT COUNT(*) 
+                FROM massom.v_weekly_user_scores v
+                WHERE v.total_score = (SELECT MAX(total_score) FROM massom.v_weekly_user_scores)
+            ) AS score_top_active_scorers
+            FROM massom.v_weekly_user_scores;
+            `, { type: db.Sequelize.QueryTypes.SELECT }
+            )
+            return getScoreHistory
         } catch (error) {
             throw error
         }

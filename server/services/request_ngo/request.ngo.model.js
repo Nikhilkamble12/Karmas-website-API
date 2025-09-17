@@ -5,6 +5,7 @@ const RequestNgoModel = (sequelize)=>{
         Request_Ngo_Id:{
             type: DataTypes.INTEGER,
             primaryKey: true,
+            allowNull:true,
             autoIncrement: true
         }, RequestId:{
             type:DataTypes.INTEGER,
