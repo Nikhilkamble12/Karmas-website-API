@@ -501,89 +501,89 @@ let AuthController = {
     ));
   }
   },
-  googleAuthCallback: async (req, res) => {
-    try {
-      const user = req.user;
+  // googleAuthCallback: async (req, res) => {
+  //   try {
+  //     const user = req.user;
 
-      let userData = await AuthService.checkWetherUserIsPresent(user.user_name.trim())
+  //     let userData = await AuthService.checkWetherUserIsPresent(user.user_name.trim())
 
-      if (userData.length == 0) {
-        console.log("inside serData==null")
-        logger.error(`User with name ${user.user_name} not found`);
-        return res
-          .status(responseCode.UNAUTHORIZED)
-          .send(
-            commonResponse(
-              responseCode.UNAUTHORIZED,
-              responseConst.INVALID_USERNAME,
-              null,
-              true
-            )
-          );
-      }
+  //     if (userData.length == 0) {
+  //       console.log("inside serData==null")
+  //       logger.error(`User with name ${user.user_name} not found`);
+  //       return res
+  //         .status(responseCode.UNAUTHORIZED)
+  //         .send(
+  //           commonResponse(
+  //             responseCode.UNAUTHORIZED,
+  //             responseConst.INVALID_USERNAME,
+  //             null,
+  //             true
+  //           )
+  //         );
+  //     }
 
-      if (userData?.first_time_login == true) {
-        const getBonusData = await BonusMasterService.getBonusMasterDataByCategoryStatus(BONUS_MASTER.WELCOME_BONUS_ID, STATUS_MASTER.ACTIVE)
-        if (getBonusData.length > 0) {
-          let total_bonus_to_give = getBonusData[0].create_score ?? 0
-          const git_score = {
-            user_id: userData.user_id,
-            git_score: total_bonus_to_give,
-            request_id: null,
-            score_category_id: BONUS_MASTER.WELCOME_BONUS_ID,
-            description: `GOT BONUS FORFIRST LOGIN`,
-            date: currentTime()
-          }
-          await addMetaDataWhileCreateUpdate(git_score, req, res, false);
-          const createGitScore = await ScoreHistoryService.createService(git_score)
-          const getPreviousBonus = await UserActivtyService.getDataByUserId(userData.user_id)
-          let updateUserActivity = {}
-          const totalScore = parseFloat(getPreviousBonus[0].total_scores_no) + parseFloat(total_bonus_to_give)
-          updateUserActivity.total_scores_no = totalScore
-          await addMetaDataWhileCreateUpdate(updateUserActivity, req, res, true);
-          const updateUserActivityData = await UserActivtyService.updateService(getPreviousBonus[0].user_activity_id, updateUserActivity)
-          const updateuser = await UserMasterService.updateService(userData.user_id, { first_time_login: false })
-        }
-      }
+  //     if (userData?.first_time_login == true) {
+  //       const getBonusData = await BonusMasterService.getBonusMasterDataByCategoryStatus(BONUS_MASTER.WELCOME_BONUS_ID, STATUS_MASTER.ACTIVE)
+  //       if (getBonusData.length > 0) {
+  //         let total_bonus_to_give = getBonusData[0].create_score ?? 0
+  //         const git_score = {
+  //           user_id: userData.user_id,
+  //           git_score: total_bonus_to_give,
+  //           request_id: null,
+  //           score_category_id: BONUS_MASTER.WELCOME_BONUS_ID,
+  //           description: `GOT BONUS FORFIRST LOGIN`,
+  //           date: currentTime()
+  //         }
+  //         await addMetaDataWhileCreateUpdate(git_score, req, res, false);
+  //         const createGitScore = await ScoreHistoryService.createService(git_score)
+  //         const getPreviousBonus = await UserActivtyService.getDataByUserId(userData.user_id)
+  //         let updateUserActivity = {}
+  //         const totalScore = parseFloat(getPreviousBonus[0].total_scores_no) + parseFloat(total_bonus_to_give)
+  //         updateUserActivity.total_scores_no = totalScore
+  //         await addMetaDataWhileCreateUpdate(updateUserActivity, req, res, true);
+  //         const updateUserActivityData = await UserActivtyService.updateService(getPreviousBonus[0].user_activity_id, updateUserActivity)
+  //         const updateuser = await UserMasterService.updateService(userData.user_id, { first_time_login: false })
+  //       }
+  //     }
 
-      const token = JWT.sign(
-        {
-          user_id: user.user_id,
-          user_name: user.user_name
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "360d" }
-      );
+  //     const token = JWT.sign(
+  //       {
+  //         user_id: user.user_id,
+  //         user_name: user.user_name
+  //       },
+  //       process.env.JWT_SECRET,
+  //       { expiresIn: "360d" }
+  //     );
 
-      let jwtResponseData = {
-        userDetails: {
-          user_id: user.user_id,
-          user_name: user.user_name,
-          full_name: user.full_name,
-          role: user.role
-        },
-        token: token,
-      };
+  //     let jwtResponseData = {
+  //       userDetails: {
+  //         user_id: user.user_id,
+  //         user_name: user.user_name,
+  //         full_name: user.full_name,
+  //         role: user.role
+  //       },
+  //       token: token,
+  //     };
 
-      return res.status(responseCode.OK).send(
-        commonResponse(
-          responseCode.OK,
-          responseConst.LOGGED_IN_SUCCESFULLY,
-          jwtResponseData
-        )
-      );
-    } catch (error) {
-      console.error("Google Auth Callback Error:", error);
-      return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
-        commonResponse(
-          responseCode.INTERNAL_SERVER_ERROR,
-          responseConst.INTERNAL_SERVER_ERROR,
-          null,
-          true
-        )
-      );
-    }
-  }
+  //     return res.status(responseCode.OK).send(
+  //       commonResponse(
+  //         responseCode.OK,
+  //         responseConst.LOGGED_IN_SUCCESFULLY,
+  //         jwtResponseData
+  //       )
+  //     );
+  //   } catch (error) {
+  //     console.error("Google Auth Callback Error:", error);
+  //     return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+  //       commonResponse(
+  //         responseCode.INTERNAL_SERVER_ERROR,
+  //         responseConst.INTERNAL_SERVER_ERROR,
+  //         null,
+  //         true
+  //       )
+  //     );
+  //   }
+  // }
 }
 
 export default AuthController
