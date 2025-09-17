@@ -41,7 +41,7 @@ import PagePermissionModel from "./access_control/page_permission/page.permissio
 import GroupRolePagePermissionModel from "./access_control/group_role_page_permission/group.role.page.permission.model.js";
 import NgoLevelModel from "./access_control/ngo_level/ngo.level.model.js";
 import BlogsModel from "./blogs/blogs.model.js"; 
-
+import BlogMediaModel from "./blog_media/blog.media.model.js";
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
 
@@ -112,6 +112,7 @@ db.PagePermissionModel = PagePermissionModel(sequelize,Sequelize);
 db.GroupRolePagePermissionModel = GroupRolePagePermissionModel(sequelize,Sequelize);
 db.NgoLevelModel = NgoLevelModel(sequelize,Sequelize);
 db.BlogsModel = BlogsModel(sequelize,Sequelize);
+db.BlogMediaModel = BlogMediaModel(sequelize,Sequelize);
 
 
 export default db
