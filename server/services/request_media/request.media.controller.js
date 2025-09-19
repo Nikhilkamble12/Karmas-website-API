@@ -14,6 +14,9 @@ import fs from 'fs/promises'; // ✅ Correct for async/await usage
 import uploadFileToS3 from "../../utils/helper/s3.common.code.js";
 import RequestService from "../requests/requests.service.js";
 import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
+import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
+import notificationTemplates from "../../utils/helper/notification.templates.js";
+import UserTokenService from "../user_tokens/user.tokens.service.js";
 
 
 const RequestMediaController = {
@@ -326,6 +329,9 @@ const RequestMediaController = {
             )
       }
       const RequestData = await RequestService.getServiceById(data.RequestId)
+
+      console.log("RequestData",RequestData)
+
       if(RequestData && RequestData.length>0){
         deleteFile(filePath)
             return res 
@@ -374,7 +380,7 @@ const RequestMediaController = {
         }
         await addMetaDataWhileCreateUpdate(dataToStore, req, res, true);
         const update = await RequestMediaService.updateService(data.request_media_id,dataToStore)
-        if(RequestData.status_id == STATUS_MASTER.REQUEST_DRAFT){
+        if(parseInt(RequestData.status_id) == STATUS_MASTER.REQUEST_DRAFT){
           const getUserById = await UserTokenService.GetTokensByUserIds(RequestData.request_user_id)
           const template = notificationTemplates.requestReceivedForEvaluation({requestName:RequestData.RequestName})
           const sendNotifiction = await sendTemplateNotification({templateKey:"Request-Notification",templateData:template,userIds:getUserById,metaData:{request_id:data.RequestId,created_by:tokenData(req,res),request_media_url:fileUrlData}})
@@ -427,6 +433,12 @@ const RequestMediaController = {
       }
       await addMetaDataWhileCreateUpdate(dataToStore, req, res, false);
       const createData = await RequestMediaService.createSerive(dataToStore)
+      if(parseInt(RequestData.status_id) == STATUS_MASTER.REQUEST_DRAFT){
+          const getUserById = await UserTokenService.GetTokensByUserIds(RequestData.request_user_id)
+          const template = notificationTemplates.requestReceivedForEvaluation({requestName:RequestData.RequestName})
+          const sendNotifiction = await sendTemplateNotification({templateKey:"Request-Notification",templateData:template,userIds:getUserById,metaData:{request_id:data.RequestId,created_by:tokenData(req,res),request_media_url:fileUrlData}})
+          const updateRequestStatus = await RequestService.updateService(data.RequestId,{status_id:STATUS_MASTER.REQUEST_INSIATED})
+        }
       deleteFile(filePath)
       if(createData) {
         return res

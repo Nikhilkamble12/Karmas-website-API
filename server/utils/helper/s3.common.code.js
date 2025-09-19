@@ -6,8 +6,6 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 
-
-
 // Initialize the S3 client
 const s3 = new S3Client({
     region: 'ap-south-1',  // Specify your region
@@ -15,7 +13,7 @@ const s3 = new S3Client({
       accessKeyId: process.env.AMAZON_ACCESS_KEY_ID_S3,
       secretAccessKey: process.env.AMAZON_SECRET_KEY_ID_S3,
     },
-    logger: console
+    // logger: console
   });
   
   const uploadFileToS3 = async (s3FolderPath, localFilePath, fileType) => {
