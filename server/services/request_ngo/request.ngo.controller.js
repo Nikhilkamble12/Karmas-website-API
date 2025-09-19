@@ -374,7 +374,20 @@ const RequestNgoController = {
         try{
             const Request_Ngo_Id = req.query.Request_Ngo_Id
             const RequestId = req.body.RequestId
+            const data = req.body
             const requestDetails = await RequestService.getServiceById(RequestId)
+            if(requestDetails.status_id==STATUS_MASTER.REQUEST_DRAFT){
+                return res 
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                commonResponse(
+                    responseCode.BAD_REQUEST,
+                    responseConst.REQUEST_IS_INCOMPLETE,
+                    null,
+                    true
+                )
+                )  
+            }
             if(requestDetails.status_id==STATUS_MASTER.REQUEST_DRAFT){
                 return res 
                 .status(responseCode.BAD_REQUEST)
@@ -390,12 +403,11 @@ const RequestNgoController = {
             const getDataByNgoRequest = await RequestNgoService.getServiceById(Request_Ngo_Id)
             let dataToStore = {}
             dataToStore.status_id = req.body.status_id
-            const getNgoData = await NgoMasterService.getServiceById(getDataByNgoRequest.ngo_id)
-             total_request_assigned, total_request_completed, total_request_rejected    
-            if(parseInt(requestDetails.status_id)==STATUS_MASTER.REQUEST_APPROVED){
+            const getNgoData = await NgoMasterService.getServiceById(getDataByNgoRequest.ngo_id) 
+            if(parseInt(requestDetails.status_id)!==STATUS_MASTER.REQUEST_APPROVED && parseInt(data.status_id)==STATUS_MASTER.REQUEST_APPROVED){
                 let userActivityData = {}
                 const ngoRequestCompleted = parseInt(getNgoData.total_request_completed) ?? 0 
-                const getUserDataByUserId = await UserActivtyService.getDataByUserId(requestDetails[0].request_user_id)
+                const getUserDataByUserId = await UserActivtyService.getDataByUserId(requestDetails.request_user_id)
                 await addMetaDataWhileCreateUpdate(dataToStore, req, res, true);
                 let total_bonus = 0
                 const getTotalBonsRate = await BonusMasterService.getBonusMasterDataByCategoryStatus(BONUS_MASTER.REQUEST_ACCEPTED_ID,STATUS_MASTER.ACTIVE)
@@ -411,13 +423,13 @@ const RequestNgoController = {
                     const updaterequest = await RequestService.updateService(RequestId,{status_id:8,AssignedNGO:getDataByNgoRequest.ngo_id})
                     const updateUserActivity = await UserActivtyService.updateService(getUserDataByUserId[0].user_activity_id,userActivityData)
                     const gitScoreHistory = {
-                        user_id:request_user_id,
+                        user_id:requestDetails.request_user_id,
                         git_score:total_bonus,
                         request_id:RequestId,
                         score_category_id:getTotalBonsRate[0].score_category_id,
-                        description:`${getDataByNgoRequest[0].ngo_name} Accepted Your Request`,
+                        description:`${getDataByNgoRequest.ngo_name} Accepted Your Request`,
                         date:currentTime(),
-                        status_id:req.body.status_id
+                        status_id:parseInt(req.body.status_id)
                     }
                     await addMetaDataWhileCreateUpdate(userActivityData, req, res, false);
                     const createGitScore  = await ScoreHistoryService.createService(gitScoreHistory)
@@ -438,13 +450,14 @@ const RequestNgoController = {
                 const NgoMasterData = {
                     total_request_completed:(parseInt(ngoRequestCompleted) + 1 )
                 }
-                const updateNgo = await NgoMasterService.updateService(currentData.ngo_id,NgoMasterData)
+                const updateNgo = await NgoMasterService.updateService(getDataByNgoRequest.ngo_id,NgoMasterData)
                 const getOlderData = await RequestNgoService.getServiceById(Request_Ngo_Id)
                 const template = await notificationTemplates.requestApproved({ngoName:getOlderData.ngo_name, requestName:getOlderData.RequestName})
                 const userToken = await UserTokenService.GetTokensByUserIds(requestDetails.request_user_id)
                 const AdminUserToken = await UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN)
                 const allUserToken = [...userToken,...AdminUserToken]
-                await sendTemplateNotification({templateKey:"Request-Rejected", templateData:template, userIds:allUserToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId,ngo_logo_image:getDataByNgoRequest.ngo_logo_path}})
+                const getRequestImage = await RequestMediaService.getDataByRequestAndSequence(RequestId,1)
+                await sendTemplateNotification({templateKey:"Request-Rejected", templateData:template, userIds:allUserToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId,ngo_logo_image:getDataByNgoRequest?.ngo_logo_path ?? null,request_iamge_path:getRequestImage[0]?.media_url ?? null}})
                 return res
                     .status(responseCode.CREATED)
                     .send(
@@ -453,7 +466,7 @@ const RequestNgoController = {
                             responseConst.SUCCESS_UPDATING_RECORD
                         )
                     );
-            }else if(requestDetails.status_id!==STATUS_MASTER.REQUEST_REJECTED){
+            }else if(parseInt(requestDetails.status_id)!==STATUS_MASTER.REQUEST_REJECTED && parseInt(data.status_id)==STATUS_MASTER.REQUEST_REJECTED){
                 let ngoRequestRejected = getNgoData.total_request_rejected
                 let dataToStore = {}
                 dataToStore.status_id = req.body.status_id
@@ -500,6 +513,7 @@ const RequestNgoController = {
                     );
             }
         }catch(error){
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
