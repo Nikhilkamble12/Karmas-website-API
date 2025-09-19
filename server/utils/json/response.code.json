@@ -180,6 +180,9 @@
     },{
       "code":"1.0031",
       "message":"User is Already Block."
+    },{
+      "code":"1.0032",
+      "message":"Request not Yet Completed."
     }
   ]
 }

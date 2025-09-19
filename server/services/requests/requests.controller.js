@@ -27,12 +27,13 @@ const RequestsController = {
                 const totalRequest = parseInt(getUserActivityData[0].total_requests_no) + 1
                 const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_requests_no:totalRequest})
             }
-            const template = notificationTemplates.requestReceivedForEvaluation({requestName:data.RequestName})
-            data.status_id = STATUS_MASTER.REQUEST_INSIATED
+            // const template = notificationTemplates.requestReceivedForEvaluation({requestName:data.RequestName})
+            data.status_id = STATUS_MASTER.REQUEST_DRAFT
             const createData = await RequestService.createService(data);
+
             if (createData) {
-                const getUserById = await UserTokenService.GetTokensByUserIds(data.request_user_id)
-                const sendNotifiction = await sendTemplateNotification({templateKey:"Request-Notification",templateData:template,userIds:getUserById,metaData:{request_id:createData.dataValues.RequestId,created_by:tokenData(req,res)}})
+                // const getUserById = await UserTokenService.GetTokensByUserIds(data.request_user_id)
+                // const sendNotifiction = await sendTemplateNotification({templateKey:"Request-Notification",templateData:template,userIds:getUserById,metaData:{request_id:createData.dataValues.RequestId,created_by:tokenData(req,res)}})
                 return res
                     .status(responseCode.CREATED)
                     .send(
@@ -76,7 +77,19 @@ const RequestsController = {
             const data = req.body
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, true);
-
+            const getRequestById = await RequestService.getServiceById(id)
+            if(getRequestById.status_id==STATUS_MASTER.REQUEST_DRAFT && getRequestById.request_user_id !== tokenData(req,res)){
+                return res 
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                commonResponse(
+                    responseCode.BAD_REQUEST,
+                    responseConst.REQUEST_IS_INCOMPLETE,
+                    null,
+                    true
+                )
+            )
+            }
             // Update the record using ORM
             const updatedRowsCount = await RequestService.updateService(id, data);
             // if (updatedRowsCount > 0) {

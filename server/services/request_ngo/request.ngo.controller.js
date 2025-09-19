@@ -375,6 +375,18 @@ const RequestNgoController = {
             const Request_Ngo_Id = req.query.Request_Ngo_Id
             const RequestId = req.body.RequestId
             const requestDetails = await RequestService.getServiceById(RequestId)
+            if(requestDetails.status_id==STATUS_MASTER.REQUEST_DRAFT){
+                return res 
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                commonResponse(
+                    responseCode.BAD_REQUEST,
+                    responseConst.REQUEST_IS_INCOMPLETE,
+                    null,
+                    true
+                )
+                )  
+            }
             const getDataByNgoRequest = await RequestNgoService.getServiceById(Request_Ngo_Id)
             let dataToStore = {}
             dataToStore.status_id = req.body.status_id
