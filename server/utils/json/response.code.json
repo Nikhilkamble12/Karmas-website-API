@@ -183,6 +183,12 @@
     },{
       "code":"1.0032",
       "message":"Request not Yet Completed."
+    },{
+      "code":"1.0033",
+      "message":"Gift Not Found."
+    },{
+      "code":"1.0034",
+      "message":"User Is Not Eligible For Gift."
     }
   ]
 }

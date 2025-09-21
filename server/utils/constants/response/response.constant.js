@@ -58,7 +58,9 @@ const RESPONSE_CONSTANTS = {
     COUPON_ALREADY_REDEEMED:"You have already redeemed this coupon.",
     NO_COUPONS_AVAILABLE:"No coupons are currently available for this gift",
     USER_IS_ALREADY_BLOCKED:"User is Already Block.",
-    REQUEST_IS_INCOMPLETE:"Request not Yet Completed."
+    REQUEST_IS_INCOMPLETE:"Request not Yet Completed.",
+    GIFT_NOT_FOUND:"Gift Not Found.",
+    USER_NOT_ELIGIBLE_FOR_GIFT:"User Is Not Eligible For Gift."
   };
   
   export default RESPONSE_CONSTANTS;

@@ -1,5 +1,7 @@
 import CouponsService from "./coupons.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
+import GiftMasterService from "../gift_master/gift.master.service.js";
+import UserActivtyService from "../user_activity/user.activity.service.js";
 const {
   commonResponse,
   responseCode,
@@ -347,16 +349,42 @@ const CouponsController = {
     try {
       const user_id = req.query.user_id;
       const gift_master_id = req.query.gift_master_id;
-
+      const getGiftDetails  = await GiftMasterService.getServiceById(gift_master_id)
+      console.log("getGiftDetails",getGiftDetails)
+      if(getGiftDetails &&getGiftDetails.length==0){
+          return res
+         .status(responseCode.BAD_REQUEST)
+         .send(
+            commonResponse(
+              responseCode.BAD_REQUEST,
+              responseConst.GIFT_NOT_FOUND,
+              null,
+              true
+          )
+      );
+      }
+      const getUserTotalScore = await UserActivtyService.getDataByUserId(user_id)
+      if( getUserTotalScore.total_scores_no < getGiftDetails.gift_score_required){
+          return res
+         .status(responseCode.BAD_REQUEST)
+         .send(
+            commonResponse(
+              responseCode.BAD_REQUEST,
+              responseConst.USER_NOT_ELIGIBLE_FOR_GIFT,
+              null,
+              true
+          )
+      );
+      }
       const existingCoupon = await CouponsService.getCouponAndRedeemService(user_id, gift_master_id);
       // If user has already redeemed a coupon for the given gift_master_id
       //console.log("existingCoupon", existingCoupon);
       if(existingCoupon){
         return res
-          .status(responseCode.CONFLICT)
+          .status(responseCode.OK)
           .send(
             commonResponse(
-              responseCode.CONFLICT,
+              responseCode.OK,
               responseConst.COUPON_ALREADY_REDEEMED,
               existingCoupon
             )
@@ -365,12 +393,12 @@ const CouponsController = {
       // Assign Coupon to user
       const getNewCoupon = await CouponsService.getNewCoupon(gift_master_id);
 
-      if(!getNewCoupon) {
+      if(!getNewCoupon || getNewCoupon.length==0) {
          return res
-         .status(responseCode.NOT_FOUND)
+         .status(responseCode.BAD_REQUEST)
          .send(
             commonResponse(
-              responseCode.NOT_FOUND,
+              responseCode.BAD_REQUEST,
               responseConst.NO_COUPONS_AVAILABLE,
               null,
               true
