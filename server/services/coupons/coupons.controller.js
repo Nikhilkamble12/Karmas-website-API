@@ -350,7 +350,6 @@ const CouponsController = {
       const user_id = req.query.user_id;
       const gift_master_id = req.query.gift_master_id;
       const getGiftDetails  = await GiftMasterService.getServiceById(gift_master_id)
-      console.log("getGiftDetails",getGiftDetails)
       if(getGiftDetails &&getGiftDetails.length==0){
           return res
          .status(responseCode.BAD_REQUEST)
@@ -392,7 +391,6 @@ const CouponsController = {
       } 
       // Assign Coupon to user
       const getNewCoupon = await CouponsService.getNewCoupon(gift_master_id);
-
       if(!getNewCoupon || getNewCoupon.length==0) {
          return res
          .status(responseCode.BAD_REQUEST)

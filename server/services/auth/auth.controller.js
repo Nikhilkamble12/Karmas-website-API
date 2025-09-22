@@ -46,7 +46,7 @@ let AuthController = {
             )
           );
       }
-      if(userData.is_blacklisted){
+      if(userData.is_blacklisted == 1 || userData.is_blacklisted==true){
         return res
           .status(responseCode.UNAUTHORIZED)
           .send(
