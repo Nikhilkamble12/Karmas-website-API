@@ -65,6 +65,12 @@ router.get(
     verifyToken,
     UserMasterController.getBlockedUsersByUserId
 )
+// Get UserMaster By NgoId
+router.get(
+    `${basePath}/getData/ByNgoId`,
+    verifyToken,
+    UserMasterController.UserDataByNgoId
+)
 
 // Export the router for use in other parts of the application
 export default router

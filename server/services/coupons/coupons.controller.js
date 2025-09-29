@@ -24,6 +24,15 @@ const CouponsController = {
       // Create the record using ORM
       const createData = await CouponsService.createService(data);
       if (createData) {
+        const getDataById = await CouponsService.getServiceById(createData.dataValues.coupon_id)
+        if(getDataById && getDataById.length>0 &&  getDataById.user_id!==null && getDataById.user_id!==""){
+          const fetchUser = await UserActivtyService.getDataByUserId(getDataById.user_id)
+          const getCountOfTotalCupon = await CouponsService.getCouponsByUserId(getDataById.user_id)
+          if(getCountOfTotalCupon>=fetchUser){
+            constupdateUserActivity = await UserActivtyService.updateByuserId(getDataById.user_id,{total_reward_redeem:getCountOfTotalCupon.length})
+          }
+        }
+        
         return res
           .status(responseCode.CREATED)
           .send(
@@ -87,6 +96,14 @@ const CouponsController = {
             )
           );
       }
+      const getDataById = await CouponsService.getServiceById(id)
+        if(getDataById && getDataById.length>0 &&  getDataById.user_id!==null && getDataById.user_id!==""){
+          const fetchUser = await UserActivtyService.getDataByUserId(getDataById.user_id)
+          const getCountOfTotalCupon = await CouponsService.getCouponsByUserId(getDataById.user_id)
+          if(getCountOfTotalCupon>=fetchUser){
+            constupdateUserActivity = await UserActivtyService.updateByuserId(getDataById.user_id,{total_reward_redeem:getCountOfTotalCupon.length})
+          }
+        }
       return res
         .status(responseCode.CREATED)
         .send(
@@ -423,6 +440,45 @@ const CouponsController = {
           )
       );
     } catch (error) {
+      logger.error(`Error ---> ${error}`);
+      return res
+        .status(responseCode.INTERNAL_SERVER_ERROR)
+        .send(
+          commonResponse(
+            responseCode.INTERNAL_SERVER_ERROR,
+            responseConst.INTERNAL_SERVER_ERROR,
+            null,
+            true
+          )
+        );
+    }
+  },getCouponByUserId:async(req,res)=>{
+    try{
+      const user_id = req.query.user_id
+      const getDataByUserId = await CouponsService.getCouponsByUserId(user_id)
+      if (getDataByUserId.length !== 0) {
+        return res
+          .status(responseCode.OK)
+          .send(
+            commonResponse(
+              responseCode.OK,
+              responseConst.DATA_RETRIEVE_SUCCESS,
+              getDataByUserId
+            )
+          );
+      } else {
+        return res
+          .status(responseCode.BAD_REQUEST)
+          .send(
+            commonResponse(
+              responseCode.BAD_REQUEST,
+              responseConst.DATA_NOT_FOUND,
+              null,
+              true
+            )
+          );
+      }
+    }catch(error){
       logger.error(`Error ---> ${error}`);
       return res
         .status(responseCode.INTERNAL_SERVER_ERROR)

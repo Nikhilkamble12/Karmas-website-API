@@ -71,7 +71,14 @@ const UserMasterModel = (sequelize) => {
         reset_otp_expiry:{
             type:DataTypes.DATE,
             allowNull:true
-        },is_blacklisted:{
+        },total_follower:{
+            type:DataTypes.INTEGER,
+            allowNull:true
+        },total_score:{
+            type:DataTypes.INTEGER,
+            allowNull:true
+        },
+        is_blacklisted:{
             type:DataTypes.TINYINT,
             allowNull:true,
             defaultValue:false

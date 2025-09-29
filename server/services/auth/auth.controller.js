@@ -115,7 +115,7 @@ let AuthController = {
           updateUserActivity.total_scores_no = totalScore
           await addMetaDataWhileCreateUpdate(updateUserActivity, req, res, true);
           const updateUserActivityData = await UserActivtyService.updateService(getPreviousBonus[0].user_activity_id, updateUserActivity)
-          const updateuser = await UserMasterService.updateService(userData.user_id, { first_time_login: false })
+          const updateuser = await UserMasterService.updateService(userData.user_id, { first_time_login: false,total_score: totalScore})
         }
       }
 

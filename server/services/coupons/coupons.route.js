@@ -48,6 +48,12 @@ router.get(
     verifyToken,
     CouponsController.getCouponAndRedeem
 )   
+// Router to get Coupon By UserId
+router.get(
+    `${basePath}/getData/UserId`,
+    verifyToken,
+    CouponsController.getCouponByUserId
+)
 
 // Export the router for use in other parts of the application
 export default router

@@ -63,7 +63,10 @@ const UserActivityModel = (sequelize)=>{
         }, screen_time:{
             type:DataTypes.INTEGER,
             allowNull:true
-        }, last_active_at:{
+        }, total_reward_redeem:{
+            type:DataTypes.INTEGER,
+            allowNull:true
+        },last_active_at:{
             type:DataTypes.DATE,
             allowNull:true
         }, is_active: {

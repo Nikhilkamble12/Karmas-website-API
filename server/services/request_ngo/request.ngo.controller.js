@@ -406,6 +406,7 @@ const RequestNgoController = {
             const getNgoData = await NgoMasterService.getServiceById(getDataByNgoRequest.ngo_id) 
             if(parseInt(requestDetails.status_id)!==STATUS_MASTER.REQUEST_APPROVED && parseInt(data.status_id)==STATUS_MASTER.REQUEST_APPROVED){
                 let userActivityData = {}
+                let UserMasterData = {}
                 const ngoRequestCompleted = parseInt(getNgoData.total_request_completed) ?? 0 
                 const getUserDataByUserId = await UserActivtyService.getDataByUserId(requestDetails.request_user_id)
                 await addMetaDataWhileCreateUpdate(dataToStore, req, res, true);
@@ -415,8 +416,10 @@ const RequestNgoController = {
                     total_bonus = parseFloat(getTotalBonsRate[0].create_score)
                     userActivityData.total_rewards_no = parseInt(getUserDataByUserId[0].total_rewards_no) + 1
                     userActivityData.total_scores_no = parseFloat(getUserDataByUserId[0].total_scores_no) + parseFloat(total_bonus)
+                    UserMasterData.total_score = parseFloat(getUserDataByUserId[0].total_scores_no) + parseFloat(total_bonus)
                 }else{
                     userActivityData.total_scores_no = parseFloat(getUserDataByUserId[0].total_scores_no)
+                    UserMasterData.total_score = parseFloat(getUserDataByUserId[0].total_scores_no)
                 }
                 await addMetaDataWhileCreateUpdate(userActivityData, req, res, true);
                 if(parseInt(req.body.status_id)==STATUS_MASTER.REQUEST_APPROVED){

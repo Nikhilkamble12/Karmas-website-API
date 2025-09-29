@@ -4,6 +4,7 @@ import UserActivtyService from "../user_activity/user.activity.service.js";
 import UserTokenService from "../user_tokens/user.tokens.service.js";
 import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
 import { ROLE_MASTER } from "../../utils/constants/id_constant/id.constants.js";
+import UserMasterService from "../user_master/user.master.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate,notificationTemplates} = commonPath
 
 const UserFollowingController = {
@@ -39,6 +40,7 @@ const UserFollowingController = {
                 await addMetaDataWhileCreateUpdate(data, req, res, true);
                 const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
                 const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
+                const updateUserMaster = await UserMasterService.updateService(getUserActivityByFollowingId[0].user_id,{total_follower:total_followed_count})
                 const updateUserFollowing = await UserFollowingService.updateService(checkWetherItIsPresent[0].follow_id,data)
                 if(updateUserFollowing>0){
                     const getNewerData = await UserFollowingService.getServiceById(checkWetherItIsPresent[0].follow_id)
@@ -84,6 +86,7 @@ const UserFollowingController = {
             }
             const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
             const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
+            const updateUsermaster = await UserMasterService.updateService(getUserActivityByFollowingId[0].user_id,{total_follower:total_followed_count})
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
@@ -362,6 +365,7 @@ const UserFollowingController = {
             total_followed_count = total_followed_count - 1
             const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
             const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
+            const updateUserMaster = await UserMasterService.updateService(getUserActivityByFollowingId[0].user_id,{total_follower:total_followed_count})
             }
             const deleteData = await UserFollowingService.deleteByid(id, req, res)
             // Also delete data from the JSON file
@@ -496,6 +500,7 @@ const UserFollowingController = {
                     total_followed_count = total_followed_count  + 1
                     const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
                     const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
+                    const updateUpdateUser = await UserMasterService.updateService(getUserActivityByFollowingId[0].user_id,{total_follower:total_followed_count})
                     const templateData = await notificationTemplates.friendRequestAccepted(getData[0].following_user_name)
                     const userToken = await UserTokenService.GetTokensByUserIds(getData[0].user_id)
                     // const tokenByRole = await UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN)
