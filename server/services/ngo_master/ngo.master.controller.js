@@ -917,6 +917,15 @@ const NgoMasterController = {
             const ngo_name = req.query.ngo_name
             const getDataByFilter = await NgoMasterService.searchNgoByFilter(ngo_name)
             if (getDataByFilter.length !== 0) {
+                for(let i = 0;i<getDataByFilter.length;i++){
+                let currentData = getDataByFilter[i]
+                currentData.ngo_logo_path =
+                currentData.ngo_logo_path &&
+                currentData.ngo_logo_path !== 'null' &&
+                currentData.ngo_logo_path.trim() !== ''
+                ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.ngo_logo_path}`
+                : null
+                }
                 return res
                     .status(responseCode.OK)
                     .send(
