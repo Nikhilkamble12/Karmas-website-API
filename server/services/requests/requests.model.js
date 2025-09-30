@@ -74,6 +74,9 @@ const RequestModel = (sequelize) => {
         },request_type_id:{
             type:DataTypes.INTEGER,
             allowNull:true
+        },is_user_tagged:{
+            type:DataTypes.TINYINT(1),
+            allowNull:true
         },
          status_id: {
             type: DataTypes.INTEGER,

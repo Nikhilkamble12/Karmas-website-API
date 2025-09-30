@@ -50,16 +50,17 @@ const ViewFieldTableWise = {
     NGO_LEVELS_FIELDS:` SELECT ngo_level_id, level_name, description, total_modules, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_NGO_LEVEL} `,
 
     // -------> P
-    POSTS_FIELDS:` SELECT post_id, user_id, description, created_at, total_likes, total_comments, user_name, full_name, role_id, role_name, file_path, is_active, is_blacklist, created_by, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_POSTS} `,
+    POSTS_FIELDS:` SELECT post_id, user_id, description, created_at, total_likes, total_comments, user_name, full_name, role_id, role_name, file_path, is_active, is_blacklist, is_user_tagged, created_by, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_POSTS} `,
     POST_MEDIA_FIELDS:` SELECT media_id, post_id, sequence, media_type, media_url, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_POST_MEDIA} `,
     POST_COMMENT_LIKES:` SELECT like_id, user_id, comment_text, post_cmt_id, is_liked, created_at, is_active FROM ${VIEW_NAME.GET_ALL_POST_COMMENT_LIKE} `,
     PAGE_FIELDS:` SELECT page_id, parent_id, page_name, page_url, mobile_url, interface, module_name  FROM ${VIEW_NAME.GET_ALL_PAGE} `,
     PERMISSION_FIELDS:` SELECT permission_id, permission_values, permission FROM ${VIEW_NAME.GET_ALL_PERMISSION} `,
     PAGE_PERMISSION_FIELDS:` SELECT page_permission_id, page_id, page_name, permission_id, permission_values, permission FROM ${VIEW_NAME.GET_ALL_PAGE_PERMISSION} `,
+    POST_TAG_FIELDS:` SELECT post_tag_id, post_id, tagged_user_id, tagged_user_file_path, user_file_path, user_id, is_active FROM ${VIEW_NAME.GET_ALL_POST_TAG} `,
 
 
     //  ------> R 
-    REQUEST_FIELDS:` SELECT RequestId, request_user_id, request_user_name, request_user_file_path, UserName, RequestName, Age, Gender, SahaykaPhoneNo, SahaykaEmailID, Category, Address, Pincode, Remark, Story, Problem, Solution, MessageToSahayak, RejectRemark, AssignedNGO, AssignedNGOName, CityId, City, DistrictId, District, StateId, State, CountryId, Country, status_id, Status, request_type_id, request_type_name, is_active, is_blacklist, created_by, created_at, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_REQUEST} `,
+    REQUEST_FIELDS:` SELECT RequestId, request_user_id, request_user_name, request_user_file_path, UserName, RequestName, Age, Gender, SahaykaPhoneNo, SahaykaEmailID, Category, Address, Pincode, Remark, Story, Problem, Solution, MessageToSahayak, RejectRemark, AssignedNGO, AssignedNGOName, CityId, City, DistrictId, District, StateId, State, CountryId, Country, status_id, Status, request_type_id, request_type_name, is_user_tagged, is_active, is_blacklist, created_by, created_at, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_REQUEST} `,
     REQUEST_NGO_FIELDS:` SELECT Request_Ngo_Id, RequestId, RequestName, request_user_id, user_name, ngo_id, ngo_name, ngo_logo_path, status_id, status_name, Reason, AssignedDate, ApprovalDate FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} `,
     ROLE_MASTER_FIELDS:` SELECT role_id, role, menu_id, menu, is_active FROM ${VIEW_NAME.GET_ALL_ROLE_MASTER} `,
     REQUEST_MEDIA_FIELDS:` SELECT request_media_id, RequestId, img_name, media_url, media_type, sequence, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_REQUEST_MEDIA} `,
@@ -67,6 +68,7 @@ const ViewFieldTableWise = {
     REQUEST_COMMENTS:` SELECT comment_id, user_id, RequestName, request_id, comment_text, total_comment, parent_id, created_at, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_COMMENTS} `,
     REQUEST_LIKES:` SELECT like_id, user_id, RequestName, request_id, is_liked, created_at, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_LIKE} `,
     REQUEST_COMMENT_LIKES:` SELECT like_id, user_id, comment_text, request_cmt_id, is_liked, created_at, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_COMMENT_LIKE} `,
+    REQUEST_TAG_FIELDS:` SELECT request_tag_id, request_id, tagged_user_id, tagged_user_image_path, user_image_path, user_id, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_TAG} `,
 
     // -------> S
     STATE_MASTER_FIELDS :` SELECT state_id, state_name, country_id, country_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at  FROM ${VIEW_NAME.GET_ALL_STATE_MASTER} `,

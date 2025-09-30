@@ -36,6 +36,10 @@ const PostsModel = (sequelize) => {
         type:DataTypes.BOOLEAN,
         allowNull:true
       },
+      is_user_tagged:{
+        type:DataTypes.TINYINT(1),
+        allowNull:true
+      },
       is_active: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

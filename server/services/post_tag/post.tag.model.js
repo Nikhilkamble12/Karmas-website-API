@@ -1,31 +1,22 @@
 import { DataTypes } from "sequelize";
 
-const RequestNgoModel = (sequelize)=>{
-    return sequelize.define("request_ngo",{
-        Request_Ngo_Id:{
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            allowNull:true,
-            autoIncrement: true
-        }, RequestId:{
+const PostTagModel = (sequelize)=>{
+    return sequelize.define("post_tag",{
+        post_tag_id:{
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        allowNull:true,
+        autoIncrement: true
+        }, post_id:{
             type:DataTypes.INTEGER,
             allowNull:true
-        }, ngo_id:{
-            type:DataTypes.INTEGER,
-            allowNull:false
-        }, status_id:{
+        }, tagged_user_id:{
             type:DataTypes.INTEGER,
             allowNull:true
-        }, Reason:{
-            type:DataTypes.TEXT,
+        }, user_id:{
+            type:DataTypes.INTEGER,
             allowNull:true
-        }, AssignedDate:{
-            type:DataTypes.DATE,
-            allowNull:true
-        }, ApprovalDate:{
-            type:DataTypes.DATE,
-            allowNull:true
-        },is_active: {
+        }, is_active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
         },
@@ -55,7 +46,7 @@ const RequestNgoModel = (sequelize)=>{
             allowNull: true
         }
     },{
-        tableName: "request_ngo",
+        tableName: "post_tag",
         paranoid: true,
         timestamps: false,
         defaultScope: {
@@ -73,4 +64,5 @@ const RequestNgoModel = (sequelize)=>{
         },
     })
 }
-export default RequestNgoModel
+
+export default PostTagModel

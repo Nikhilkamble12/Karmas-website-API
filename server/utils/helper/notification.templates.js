@@ -76,6 +76,12 @@ const notificationTemplates = {
   sosLocationUpdateRequest:({})=>({
     title: `Send Live Location`,
     description: `Send Live Location it more than 40 secs`
+  }),UserHasTaggedYou:({ request})=>({
+     title: `User has Tagged You In Request`,
+    description: `Someone Just Tagged You In Request ${request}`
+  }),UserHasTaggedYouPost:({Post})=>({
+    title: `User has Tagged You In Post`,
+    description: `Someone Just Tagged You In Post ${Post}`
   })
 };
 
