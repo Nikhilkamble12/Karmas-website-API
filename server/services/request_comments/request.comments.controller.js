@@ -1,6 +1,12 @@
 import RequestCommentService from "./request.comments.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
+import UserMasterService from "../user_master/user.master.service.js";
+import notificationTemplates from "../../utils/helper/notification.templates.js";
+import RequestMediaService from "../request_media/request.media.service.js";
+import RequestService from "../requests/requests.service.js";
+import UserTokenService from "../user_tokens/user.tokens.service.js";
+import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const RequestCommentController = {
@@ -27,9 +33,27 @@ const RequestCommentController = {
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
-            
+            const currentData = await UserMasterService.getServiceById(data.user_id);
+            const template = notificationTemplates.requestComment({ username: currentData.user_name})
             const createData = await RequestCommentService.createService(data);
+            const requestMediaData = await RequestMediaService.getDataByRequestIdByView(data.request_id)
             if (createData) {
+                const requestData = await RequestService.getServiceById(data.request_id);
+                const getUserToken = await UserTokenService.GetTokensByUserIds(requestData.request_user_id);
+
+                if(requestData.request_user_id !== data.user_id && getUserToken.length!==0) {
+                    await sendTemplateNotification({templateKey:"Requestcomment-notification",
+                        templateData:template,
+                        userIds:getUserToken,
+                        metaData : {
+                            comment_id:createData.dataValues.request_comment_id,
+                            user_profile : currentData?.file_path,
+                            request_media_url : requestMediaData.length!==0 ? requestMediaData[0]?.media_url : null,
+                            created_by: tokenData(req,res)
+                        }
+                    })
+                }
+                
                 return res
                     .status(responseCode.CREATED)
                     .send(

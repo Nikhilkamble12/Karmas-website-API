@@ -78,10 +78,10 @@ const NotificationHistoryController = {
                     );
             }
             return res
-                .status(responseCode.CREATED)
+                .status(responseCode.OK)
                 .send(
                     commonResponse(
-                        responseCode.CREATED,
+                        responseCode.OK,
                         responseConst.SUCCESS_UPDATING_RECORD
                     )
                 );
@@ -253,10 +253,10 @@ const NotificationHistoryController = {
             }
 
             return res
-                .status(responseCode.CREATED)
+                .status(responseCode.OK)
                 .send(
                     commonResponse(
-                        responseCode.CREATED,
+                        responseCode.OK,
                         responseConst.SUCCESS_DELETING_RECORD
                     )
                 );

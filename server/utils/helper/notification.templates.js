@@ -30,6 +30,16 @@ const notificationTemplates = {
     description: `${ngoName} has accepted your request '${requestName}' and will take action soon.`
   }),
 
+  requestLiked: ({ username }) => ({
+    title: "Request Liked",
+    description: `Your request received a like from ${username}.`
+  }),
+
+  requestComment: ({ username }) => ({
+    title: "New Comment on Request",
+    description: `${username} commented on your request.`
+  }),
+
   postComment: ({ username }) => ({
     title: "New Comment",
     description: `${username} commented on your post.`

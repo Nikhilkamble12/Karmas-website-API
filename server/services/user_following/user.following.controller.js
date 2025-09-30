@@ -408,6 +408,21 @@ const UserFollowingController = {
         try{
             const user_id = req.query.user_id
             const getDatabyuserId = await UserFollowingService.getByUserId(user_id)
+            const updatedResponse = await Promise.all(getDatabyuserId.map(async (currentData) => {
+                // Normalize file path
+                if (
+                    currentData.user_file_path &&
+                    currentData.user_file_path !== "null" &&
+                    currentData.user_file_path !== ""
+                ) {
+                    currentData.user_file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.user_file_path}`;
+                } else {
+                    currentData.user_file_path = null;
+                }
+
+                return currentData;
+
+                }));
             if (getDatabyuserId.length !== 0) {
                 return res
                     .status(responseCode.OK)
@@ -415,7 +430,7 @@ const UserFollowingController = {
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            getDatabyuserId
+                            updatedResponse
                         )
                     );
             } else {
@@ -447,6 +462,21 @@ const UserFollowingController = {
         try{
             const following_user_id = req.query.following_user_id
             const getDataByFollowingUserId = await UserFollowingService.getDataByFollowingUserId(following_user_id)
+            const updatedResponse = await Promise.all(getDataByFollowingUserId.map(async (currentData) => {
+                // Normalize file path
+                if (
+                    currentData.user_file_path &&
+                    currentData.user_file_path !== "null" &&
+                    currentData.user_file_path !== ""
+                ) {
+                    currentData.user_file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.user_file_path}`;
+                } else {
+                    currentData.user_file_path = null;
+                }
+
+                return currentData;
+
+                }));
             if (getDataByFollowingUserId.length !== 0) {
                 return res
                     .status(responseCode.OK)
@@ -454,7 +484,7 @@ const UserFollowingController = {
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            getDataByFollowingUserId
+                            updatedResponse
                         )
                     );
             } else {
