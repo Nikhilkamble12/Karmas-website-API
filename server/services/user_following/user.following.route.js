@@ -41,6 +41,15 @@ router.put(
     verifyToken,
     UserFollowingController.acceptPrivateUserRequest
 )
-
+router.get(
+    `${basePath}/getFollowing/byUserId`,
+    verifyToken,    
+    UserFollowingController.getDataByUserIdByview
+)
+router.get(
+    `${basePath}/getFollowers/byUserId`,
+    verifyToken,    
+    UserFollowingController.getDatabyFollowingUserId
+)
 // Export the router for use in other parts of the application
 export default router

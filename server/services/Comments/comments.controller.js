@@ -2,6 +2,11 @@ import CommentService from "./comments.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import UserMasterService from "../user_master/user.master.service.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
+import notificationTemplates from "../../utils/helper/notification.templates.js";
+import PostService from "../Posts/posts.service.js";
+import UserTokenService from "../user_tokens/user.tokens.service.js";
+import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
+import PostMediaService from "../PostMedia/postmedia.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const CommentsController = {
@@ -28,9 +33,24 @@ const CommentsController = {
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
-
+            const currentUser = await UserMasterService.getServiceById(data.user_id);
+            const template = notificationTemplates.postComment({ username : currentUser.user_name });
             const createData = await CommentService.createService(data);
+            const postMediaData = await PostMediaService.getDatabyPostIdByView(data.post_id);
+            if(currentUser.file_path && currentUser.file_path!=="null" && currentUser.file_path!==""){
+                currentUser.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentUser.file_path}`;
+            } else {
+                currentUser.file_path = null;
+            }
             if (createData) {
+                const postData = await PostService.getServiceById(data.post_id);
+                const getUserToken = await UserTokenService.GetTokensByUserIds(postData.user_id);
+                if(getUserToken.length!==0 && data.user_id !== postData.user_id){
+                    await sendTemplateNotification({templateKey:"PostComment-Notification",templateData:template,userIds:getUserToken,metaData:{comment_id:createData.dataValues.post_id,
+                    post_image: postMediaData.length!==0 ? postMediaData[0]?.media_url : null,
+                    user_profile : currentUser?.file_path,
+                    created_by:tokenData(req,res)}})
+                }
                 return res
                     .status(responseCode.CREATED)
                     .send(

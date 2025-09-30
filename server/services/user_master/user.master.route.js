@@ -42,6 +42,7 @@ router.get(
     verifyToken,
     UserMasterController.getuserDataAndActivity
 )
+// Search user 
 router.get(
     `${basePath}/search/user`,
     verifyToken,

@@ -1,7 +1,12 @@
 import LikesService from "./likes.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
-
+import notificationTemplates from "../../utils/helper/notification.templates.js";
+import UserMasterService from "../user_master/user.master.service.js"
+import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
+import PostService from "../Posts/posts.service.js";
+import UserTokenService from "../user_tokens/user.tokens.service.js";
+import PostMediaService from "../PostMedia/postmedia.service.js";
 const {
   commonResponse,
   responseCode,
@@ -25,10 +30,29 @@ const LikesController = {
       if(data.is_liked){
       const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
       const total_likes = parseInt(getUserActivityData[0].total_likes_no) + 1
-      const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes:total_likes})
+      const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes_no:total_likes})
       }
+      const currentUser = await UserMasterService.getServiceById(data.user_id);
+      const template = notificationTemplates.postLiked({ username : currentUser.user_name })
       const createdData = await LikesService.createSerive(data);
+      const likeData = await LikesService.getServiceById(createdData.like_id);
+      if (likeData.file_path && likeData.file_path !== "null" && likeData.file_path !== "") {
+            likeData.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${likeData.file_path}`;
+          } else {
+            likeData.file_path = null;
+          }
+      const postMediaData = await PostMediaService.getDatabyPostIdByView(data.post_id);
+    
       if (createdData) {
+        const postData = await PostService.getServiceById(data.post_id)
+        const getUserToken = await UserTokenService.GetTokensByUserIds(postData.user_id)
+        
+        if(getUserToken.length!==0 && data.user_id !== postData.user_id){
+          await sendTemplateNotification({templateKey:"Postliked-Notification",templateData:template,userIds:getUserToken,metaData:{like_id:createdData.dataValues.like_id,
+            user_profile : likeData?.file_path,
+            post_image:  postMediaData.length!==0 ? postMediaData[0]?.media_url : null,
+            created_by: tokenData(req,res)}})
+        }
         return res
           .status(responseCode.CREATED)
           .send(
@@ -77,10 +101,10 @@ const LikesController = {
         const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
         if(data.is_liked){
           const total_likes = parseInt(getUserActivityData[0].total_likes_no) + 1
-          const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes:total_likes})
+          const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes_no:total_likes})
         }else{
           const total_likes = parseInt(getUserActivityData[0].total_likes_no) - 1
-          const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes:total_likes})
+          const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes_no:total_likes})
         }
       }
       // data.updated_by=1,
