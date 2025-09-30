@@ -2,6 +2,7 @@ import RequestModel from "./requests.model.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 import VIEW_NAME from "../../utils/db/view.constants.js";
 import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
+import RequestService from "./requests.service.js";
 const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessary components from commonPath
 
 const RequestDAL = {
@@ -160,6 +161,13 @@ const RequestDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
+    },getRequestByNgoId:async(ngo_id)=>{
+      try{
+        const getData = await db.sequelize.query(` ${ViewFieldTableVise.REQUEST_FIELDS} where AssignedNGO = ${ngo_id} `,{type:db.Sequelize.QueryTypes.SELECT})
+        return getData
+      }catch(error){
+        throw error
+      }
     }
 
 }

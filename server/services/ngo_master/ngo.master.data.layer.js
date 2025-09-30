@@ -123,6 +123,33 @@ const NgoMasterDAL = {
         }catch(error){
             throw error
         }
+    },searchNgoByFilter: async (search_query) => {
+    try {
+        // Define the query with a parameter placeholder :search_query
+        const getData = await db.sequelize.query(`
+            ${ViewFieldTableVise.NGO_MASTER_FIELDS}
+            WHERE
+                (ngo_name LIKE CONCAT('%', :search_query, '%') OR
+                 registration_no LIKE CONCAT('%', :search_query, '%') OR
+                 unique_id LIKE CONCAT('%', :search_query, '%') OR
+                 address LIKE CONCAT('%', :search_query, '%') OR
+                 city_name LIKE CONCAT('%', :search_query, '%') OR
+                 state_name LIKE CONCAT('%', :search_query, '%') OR
+                 country_name LIKE CONCAT('%', :search_query, '%') OR
+                 email LIKE CONCAT('%', :search_query, '%'))`,
+            {
+                replacements: { search_query }, // Bind the search_query value here
+                type: db.Sequelize.QueryTypes.SELECT
+            }
+        );
+        
+        // Return the fetched data
+        return getData;
+    } catch (error) {
+        console.error("Error while searching NGOs: ", error);
+        throw error;
     }
+}
+
 }
 export default NgoMasterDAL

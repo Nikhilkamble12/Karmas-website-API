@@ -51,6 +51,12 @@ router.get(
     verifyToken,
     RequestsController.getRequestDataByDescUserWise
 )
+// get AllRequest By NgoId
+router.get(
+    `${basePath}/getData/ByNgoId`,
+    verifyToken,
+    RequestsController.getRequestByNgoId
+)
 
 // Export the router for use in other parts of the application
 export default router

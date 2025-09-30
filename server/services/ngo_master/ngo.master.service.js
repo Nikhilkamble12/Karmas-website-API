@@ -66,6 +66,12 @@ const NgoMasterService = {
         }catch(error){
             throw error
         }
+    },searchNgoByFilter:async(ngo_name)=>{
+        try{
+            return await NgoMasterDAL.searchNgoByFilter(ngo_name)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default NgoMasterService

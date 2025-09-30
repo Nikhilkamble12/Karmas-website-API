@@ -73,4 +73,10 @@ router.get(
     verifyToken,
     NgoMasterController.ngoDashBoardCount
 )
+// Ngo Search Filter
+router.get(
+    `${basePath}/search/Filter`,
+    verifyToken,
+    NgoMasterController.SearchNgoByName
+)
 export default router

@@ -64,6 +64,12 @@ const RequestService = {
         }catch(error){
             throw error
         }
+    },GetRequestByNgoId:async(ngo_id)=>{
+        try{
+            return await RequestDAL.getRequestByNgoId(ngo_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 
