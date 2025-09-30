@@ -27,7 +27,7 @@ const ViewFieldTableWise = {
     GROUP_ROLE_PAGE_PERMISSION_FIELDS:` SELECT role_page_permission_id, role_id, role_name, page_id, page_name, page_url, mobile_url, interface, module_name, permission, ngo_level_id, level_name, description FROM ${VIEW_NAME.GET_ALL_GROUP_ROLE_PAGE_PERMISSION} `,
 
     // -------> L
-    LIKES_FIELDS:` SELECT like_id, user_id, post_id, is_liked, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_LIKES} `,
+    LIKES_FIELDS:` SELECT like_id, user_id, post_id, is_liked, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at, file_path, file_name FROM ${VIEW_NAME.GET_ALL_LIKES} `,
 
     // 📘----> M
     MENU_FIELDS:` SELECT menu_id, menu, role_type, ip_address, city_cordinates, created_by, created_at, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_MENU} `,
