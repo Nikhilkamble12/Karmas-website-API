@@ -22,15 +22,42 @@ const LikesController = {
   create: async (req, res) => {
     try {
       const data = req.body;
+      // Validate required fields
+      if (!data.post_id) {
+        return res
+          .status(responseCode.BAD_REQUEST)
+          .send(
+            commonResponse(
+              responseCode.BAD_REQUEST,
+              "post_id is required",
+              null,
+              true
+            )
+          );
+      }
+      // Set user_id from token if not provided
+      if (!data.user_id || data.user_id === "null" || data.user_id === "undefined" || data.user_id === 0) {
+        data.user_id = tokenData(req, res);
+      }
       // Add metadata to creation (created_by, created_at,)
       await addMetaDataWhileCreateUpdate(data, req, res, false);
       // data.created_by=1,
       // data.created_at = new Date()
       // Create the record using ORM
+      const postData = await PostService.getServiceById(data.post_id)
+
       if(data.is_liked){
-      const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
-      const total_likes = parseInt(getUserActivityData[0].total_likes_no) + 1
-      const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes_no:total_likes})
+        const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
+        const total_likes = parseInt(getUserActivityData[0].total_likes_no) + 1
+        const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes_no:total_likes})
+
+        if(postData) {
+          await PostService.updateService(data.post_id,
+            {
+              total_likes: parseInt(postData.total_likes || 0) + 1           
+            }
+          )
+        }
       }
       const currentUser = await UserMasterService.getServiceById(data.user_id);
       const template = notificationTemplates.postLiked({ username : currentUser.user_name })
@@ -44,9 +71,9 @@ const LikesController = {
       const postMediaData = await PostMediaService.getDatabyPostIdByView(data.post_id);
     
       if (createdData) {
-        const postData = await PostService.getServiceById(data.post_id)
+        // get user tokens
         const getUserToken = await UserTokenService.GetTokensByUserIds(postData.user_id)
-        
+        // send notification
         if(getUserToken.length!==0 && data.user_id !== postData.user_id){
           await sendTemplateNotification({templateKey:"Postliked-Notification",templateData:template,userIds:getUserToken,metaData:{like_id:createdData.dataValues.like_id,
             user_profile : likeData?.file_path,
@@ -99,12 +126,26 @@ const LikesController = {
       const getOlderData = await LikesService.getServiceById(id)
       if(data.is_liked !== getOlderData.is_liked){
         const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
+        const postData = await PostService.getServiceById(data.post_id)
         if(data.is_liked){
           const total_likes = parseInt(getUserActivityData[0].total_likes_no) + 1
           const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes_no:total_likes})
+          if(postData) {
+          await PostService.updateService(data.post_id,
+            {
+              total_likes: parseInt(postData.total_likes || 0) + 1           
+            }
+          )
+        }
         }else{
           const total_likes = parseInt(getUserActivityData[0].total_likes_no) - 1
           const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes_no:total_likes})
+
+           if(postData) {
+            await PostService.updateService(getOlderData.post_id, {
+              total_likes: Math.max(0, parseInt(post.total_likes || 0) - 1) // Ensure count doesn't go below 0
+            });
+          }
         }
       }
       // data.updated_by=1,
@@ -287,8 +328,20 @@ const LikesController = {
       const id = req.query.id;
       // Delete data from the database
       const deleteData = await LikesService.deleteById(id, req, res);
+
+      const likeData = await LikesService.getServiceById(id);
       // Also delete data from the JSON file
       // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
+      if (deleteData !== 0 && likeData && likeData.is_liked) {
+        // Update post total likes
+        const post = await PostService.getServiceById(likeData.post_id);
+        if(post) {
+          await PostService.updateService(likeData.post_id, {
+            total_likes: Math.max(0, parseInt(post.total_likes || 0) - 1)
+          });
+        }
+      }
+      
       if (deleteData === 0) {
         return res
           .status(responseCode.BAD_REQUEST)

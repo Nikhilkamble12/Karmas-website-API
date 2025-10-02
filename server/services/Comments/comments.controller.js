@@ -33,6 +33,10 @@ const CommentsController = {
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
+            const postData = await PostService.getServiceById(data.post_id);
+            if(postData) {
+                await PostService.updateService(postData.post_id,{total_comments:parseInt(postData.total_comments || 0) + 1})
+            }
             const currentUser = await UserMasterService.getServiceById(data.user_id);
             const template = notificationTemplates.postComment({ username : currentUser.user_name });
             const createData = await CommentService.createService(data);
@@ -43,7 +47,6 @@ const CommentsController = {
                 currentUser.file_path = null;
             }
             if (createData) {
-                const postData = await PostService.getServiceById(data.post_id);
                 const getUserToken = await UserTokenService.GetTokensByUserIds(postData.user_id);
                 if(getUserToken.length!==0 && data.user_id !== postData.user_id){
                     await sendTemplateNotification({templateKey:"PostComment-Notification",templateData:template,userIds:getUserToken,metaData:{comment_id:createData.dataValues.post_id,
@@ -291,6 +294,12 @@ const CommentsController = {
                 const total_comment = parseInt(getUserActivityData[0].total_comments_no) - 1
                 const userActivityUpdate = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_comments_no:total_comment})
             }
+            const postData = await PostService.getServiceById(getDataByCommentId.post_id);
+            if(postData) {
+            await PostService.updateService(getDataByCommentId.post_id, {
+                total_comments: Math.max(0, parseInt(postData.total_comments || 0) - 1)
+            });
+        }
             const deleteData = await CommentService.deleteByid(id, req, res)
             // Also delete data from the JSON file
             // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)

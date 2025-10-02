@@ -33,10 +33,17 @@ const RequestCommentController = {
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
-            const currentData = await UserMasterService.getServiceById(data.user_id);
-            const template = notificationTemplates.requestComment({ username: currentData.user_name})
+            const currentUser = await UserMasterService.getServiceById(data.user_id);
+            const template = notificationTemplates.requestComment({ username: currentUser.user_name})
             const createData = await RequestCommentService.createService(data);
             const requestMediaData = await RequestMediaService.getDataByRequestIdByView(data.request_id)
+
+            if(currentUser.file_path && currentUser.file_path!=="null" && currentUser.file_path!==""){
+                currentUser.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentUser.file_path}`;
+            } else {
+                currentUser.file_path = null;
+            }
+
             if (createData) {
                 const requestData = await RequestService.getServiceById(data.request_id);
                 const getUserToken = await UserTokenService.GetTokensByUserIds(requestData.request_user_id);
@@ -47,7 +54,7 @@ const RequestCommentController = {
                         userIds:getUserToken,
                         metaData : {
                             comment_id:createData.dataValues.request_comment_id,
-                            user_profile : currentData?.file_path,
+                            user_profile : currentUser?.file_path,
                             request_media_url : requestMediaData.length!==0 ? requestMediaData[0]?.media_url : null,
                             created_by: tokenData(req,res)
                         }

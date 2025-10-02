@@ -388,18 +388,6 @@ const RequestNgoController = {
                 )
                 )  
             }
-            if(requestDetails.status_id==STATUS_MASTER.REQUEST_DRAFT){
-                return res 
-                .status(responseCode.BAD_REQUEST)
-                .send(
-                commonResponse(
-                    responseCode.BAD_REQUEST,
-                    responseConst.REQUEST_IS_INCOMPLETE,
-                    null,
-                    true
-                )
-                )  
-            }
             const getDataByNgoRequest = await RequestNgoService.getServiceById(Request_Ngo_Id)
             let dataToStore = {}
             dataToStore.status_id = req.body.status_id
@@ -460,7 +448,7 @@ const RequestNgoController = {
                 const AdminUserToken = await UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN)
                 const allUserToken = [...userToken,...AdminUserToken]
                 const getRequestImage = await RequestMediaService.getDataByRequestAndSequence(RequestId,1)
-                await sendTemplateNotification({templateKey:"Request-Rejected", templateData:template, userIds:allUserToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId,ngo_logo_image:getDataByNgoRequest?.ngo_logo_path ?? null,request_iamge_path:getRequestImage[0]?.media_url ?? null}})
+                await sendTemplateNotification({templateKey:"Request-Approved", templateData:template, userIds:allUserToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId,ngo_logo_image:getDataByNgoRequest?.ngo_logo_path ?? null,request_media_url:getRequestImage[0]?.media_url ?? null}})
                 return res
                     .status(responseCode.CREATED)
                     .send(
@@ -491,10 +479,12 @@ const RequestNgoController = {
                 const NgoMasterData = {
                     total_request_rejected:(parseInt(ngoRequestRejected) + 1 )
                 }
-                const updateNgo = await NgoMasterService.updateService(currentData.ngo_id,NgoMasterData)
+                const updateNgo = await NgoMasterService.updateService(getDataByNgoRequest.ngo_id,NgoMasterData)
                 const template = await notificationTemplates.requestRejected({ngoName:getOlderData.ngo_name, requestName:getOlderData.RequestName})
                 const UserToken = await UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN)
-                await sendTemplateNotification({templateKey:"Request-Rejected", templateData:template, userIds:UserToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId,ngo_logo_path:getDataByNgoRequest.ngo_logo_path}})
+                const getRequestImage = await RequestMediaService.getDataByRequestAndSequence(RequestId,1)
+                await sendTemplateNotification({templateKey:"Request-Rejected", templateData:template, userIds:UserToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId,ngo_logo_path:getDataByNgoRequest.ngo_logo_path ?? null,
+                request_media_url:getRequestImage[0]?.media_url ?? null}})
                 return res
                     .status(responseCode.CREATED)
                     .send(

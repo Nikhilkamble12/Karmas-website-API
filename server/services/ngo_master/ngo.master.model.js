@@ -7,7 +7,7 @@ const NgoMasterModel = (sequelize)=>{
             primaryKey: true,
             autoIncrement: true
         },ngo_name:{
-            type:DataTypes.INTEGER,
+            type:DataTypes.STRING(150),
             allowNull:false
         },
         unique_id:{
@@ -110,7 +110,12 @@ const NgoMasterModel = (sequelize)=>{
         remarks:{
             type: DataTypes.STRING(500),
             allowNull: true
-        }, is_active: {
+        },
+        status_id : {
+            type: DataTypes.INTEGER,
+            allowNull: false
+        },
+        is_active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
         },
