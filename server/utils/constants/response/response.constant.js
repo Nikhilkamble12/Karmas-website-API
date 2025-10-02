@@ -60,7 +60,13 @@ const RESPONSE_CONSTANTS = {
     USER_IS_ALREADY_BLOCKED:"User is Already Block.",
     REQUEST_IS_INCOMPLETE:"Request not Yet Completed.",
     GIFT_NOT_FOUND:"Gift Not Found.",
-    USER_NOT_ELIGIBLE_FOR_GIFT:"User Is Not Eligible For Gift."
+    USER_NOT_ELIGIBLE_FOR_GIFT:"User Is Not Eligible For Gift.",
+    INVALID_INPUT_DATA:"Invalid input data provided.",
+    BLACKLISTED_USER_ID_REQUIRED:"Blacklisted user ID is required.",
+    INVALID_USER_ID:"Invalid user ID provided.",
+    USER_ACTIVITY_NOT_FOUND:"User activity data not found.",
+    TRANSACTION_FAILED:"Database transaction failed.",
+    CANNOT_BLOCK_YOURSELF:"You cannot block yourself."
   };
   
   export default RESPONSE_CONSTANTS;

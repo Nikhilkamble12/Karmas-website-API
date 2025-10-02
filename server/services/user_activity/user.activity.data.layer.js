@@ -14,14 +14,16 @@ const UserActivityDAL = {
         }
     }, 
     // Method to update an existing record by its ID
-    UpdateData: async (user_activity_id, data) => {
+    UpdateData: async (user_activity_id, data, transaction = null) => {
         try {
-            const updateData = await UserActivityModel(db.sequelize).update(data, { where: { user_activity_id: user_activity_id } })
+            const options = { where: { user_activity_id: user_activity_id } };
+            if (transaction) options.transaction = transaction;
+            const updateData = await UserActivityModel(db.sequelize).update(data, options)
             return updateData // Return the result of the update operation
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    }, 
+    },
     // Method to retrieve all records by view
     getAllDataByView: async () => {
         try {
