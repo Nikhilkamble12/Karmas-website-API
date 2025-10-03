@@ -305,7 +305,7 @@ const NgoLikesController = {
                     );
             }
             const getNgoData = await NgoMasterService.getServiceById(likeData.ngo_id)
-            const total_likesCount = parseInt(getNgoData.total_ngo_likes ?? 0) - 1
+            const total_likesCount = Math.max(parseInt(getNgoData.total_ngo_likes ?? 0) - 1)
             const updateNgo = await NgoMasterService.updateService(likeData.ngo_id,{total_ngo_likes:total_likesCount}) 
             return res
                 .status(responseCode.CREATED)
