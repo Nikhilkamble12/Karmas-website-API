@@ -79,8 +79,6 @@ const NgoMasterController = {
                             crs_regis_file_path:crs_regis_path_name,
                         } 
                         const updateNgomaster = await NgoMasterService.updateService(ngo_id,updateData)
-
-
             }
             if (createData) {
                 return res
@@ -485,18 +483,7 @@ const NgoMasterController = {
             let ngo_state_mappingData = false
             let ngo_master_saved = false
             let ngo_fields_mapping_saved = false
-            if(!data.email || !data.password){
-                return res
-                .status(responseCode.BAD_REQUEST)
-                .send(
-                    commonResponse(
-                        responseCode.BAD_REQUEST,
-                        responseConst.EMAIL_AND_PASSWORD_REQUIRED,
-                        null,
-                        true
-                    )
-                );
-            }
+            
 
             // Add metadata for creation (created by, created at)
             
@@ -510,7 +497,19 @@ const NgoMasterController = {
                     ngo_master_saved = true
                 }
                 ngoWalaId = data.ngo_id
-            }else{  
+            }else{
+            if(!data.email || !data.password){
+                return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.EMAIL_AND_PASSWORD_REQUIRED,
+                        null,
+                        true
+                    )
+                );
+            }
             await addMetaDataWhileCreateUpdate(data, req, res, false);
             const createData = await NgoMasterService.createService(data);
             if(createData){
