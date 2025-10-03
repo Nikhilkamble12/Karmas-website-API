@@ -498,11 +498,12 @@ const NgoMasterController = {
                 }
                 const getNgoMasterData = await NgoMasterService.getServiceById(data.ngo_id)
                 const getDataByEmail = await UserMasterService.getUserByEmailIdByView(getNgoMasterData.email)
-                if(getDataByEmail && getDataByEmail.length>0){
+                if(getDataByEmail && getDataByEmail.length!==0){
                     if(getDataByEmail.password !== data.password){
                     const updatePasswordData = {
                         password:data.password
                     }
+
                     const updateUser = await UserMasterService.updateService(getDataByEmail.user_id,updatePasswordData)
                     }
                 }
