@@ -486,9 +486,11 @@ const RequestsController = {
                 const matchedRequest = requestData.find(req => req.ngo_id === ngo.ngo_id);
                 if (matchedRequest) {
                     ngo.Request_Ngo_Id = matchedRequest.Request_Ngo_Id
+                    ngo.Reason = matchedRequest.Reason
                     ngo.status_id = matchedRequest.status_id; // Update status_id if found
                     ngo.status_name = matchedRequest.status_name
                 }else{
+                    ngo.Reason = matchedRequest.Reason
                     ngo.Request_Ngo_Id = null,
                     ngo.status_name = null
                 }

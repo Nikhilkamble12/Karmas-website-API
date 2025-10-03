@@ -617,12 +617,12 @@ const NgoMasterController = {
                 }else{
                     ngo_fund_saved_data = true
                 }
-                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0 && data.ngoOfficeBerrarsList){
-                    if(data.ngoOfficeBerrarsList && data.ngoOfficeBerrarsList.length == 0){
+                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0 && data.ngoOfficeBearersList){
+                    if(data.ngoOfficeBearersList && data.ngoOfficeBearersList.length == 0){
                         ngo_office_berrars = true
                     }
-                    for(let i =0 ;i<data.ngoOfficeBerrarsList.length;i++){
-                        let office_berars_current = data.ngoOfficeBerrarsList[i]
+                    for(let i =0 ;i<data.ngoOfficeBearersList.length;i++){
+                        let office_berars_current = data.ngoOfficeBearersList[i]
                         if(office_berars_current.bearer_id!=="" && office_berars_current.bearer_id!==null && office_berars_current.bearer_id!==undefined && office_berars_current.bearer_id!==0){
                             office_berars_current.modified_by = tokenData(req,res)
                             office_berars_current.modified_at = currentTime()
