@@ -79,8 +79,6 @@ const NgoMasterController = {
                             crs_regis_file_path:crs_regis_path_name,
                         } 
                         const updateNgomaster = await NgoMasterService.updateService(ngo_id,updateData)
-
-
             }
             if (createData) {
                 return res
@@ -485,6 +483,33 @@ const NgoMasterController = {
             let ngo_state_mappingData = false
             let ngo_master_saved = false
             let ngo_fields_mapping_saved = false
+            
+
+            // Add metadata for creation (created by, created at)
+            
+            // data.created_by=1,
+            // data.created_at = new Date()
+            // Create the record using ORM
+            if(data.ngo_id!==null && data.ngo_id!=="" && data.ngo_id!==0 && data.ngo_id!==undefined){
+                const getNgoMasterData = await NgoMasterService.getServiceById(data.ngo_id)
+                await addMetaDataWhileCreateUpdate(data, req, res, true);
+                const updateData = await NgoMasterService.updateService(data.ngo_id,data);
+                if(updateData>0){
+                    ngo_master_saved = true
+                }
+                const getDataByEmail = await UserMasterService.getUserByEmailIdByView(getNgoMasterData.email)
+                if(getDataByEmail && getDataByEmail.length!==0){
+                    if(getDataByEmail.password !== data.password){
+                    const updatePasswordData = {
+                        email_id:data.email_id,
+                        password:data.password
+                    }
+
+                    const updateUser = await UserMasterService.updateService(getDataByEmail.user_id,updatePasswordData)
+                    }
+                }
+                ngoWalaId = data.ngo_id
+            }else{
             if(!data.email || !data.password){
                 return res
                 .status(responseCode.BAD_REQUEST)
@@ -497,20 +522,6 @@ const NgoMasterController = {
                     )
                 );
             }
-
-            // Add metadata for creation (created by, created at)
-            
-            // data.created_by=1,
-            // data.created_at = new Date()
-            // Create the record using ORM
-            if(data.ngo_id!==null && data.ngo_id!=="" && data.ngo_id!==0 && data.ngo_id!==undefined){
-                await addMetaDataWhileCreateUpdate(data, req, res, true);
-                const updateData = await NgoMasterService.updateService(data.ngo_id,data);
-                if(updateData>0){
-                    ngo_master_saved = true
-                }
-                ngoWalaId = data.ngo_id
-            }else{  
             await addMetaDataWhileCreateUpdate(data, req, res, false);
             const createData = await NgoMasterService.createService(data);
             if(createData){
@@ -618,12 +629,12 @@ const NgoMasterController = {
                 }else{
                     ngo_fund_saved_data = true
                 }
-                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0 && data.ngoOfficeBerrarsList){
-                    if(data.ngoOfficeBerrarsList && data.ngoOfficeBerrarsList.length == 0){
+                if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0 && data.ngoOfficeBearersList){
+                    if(data.ngoOfficeBearersList && data.ngoOfficeBearersList.length == 0){
                         ngo_office_berrars = true
                     }
-                    for(let i =0 ;i<data.ngoOfficeBerrarsList.length;i++){
-                        let office_berars_current = data.ngoOfficeBerrarsList[i]
+                    for(let i =0 ;i<data.ngoOfficeBearersList.length;i++){
+                        let office_berars_current = data.ngoOfficeBearersList[i]
                         if(office_berars_current.bearer_id!=="" && office_berars_current.bearer_id!==null && office_berars_current.bearer_id!==undefined && office_berars_current.bearer_id!==0){
                             office_berars_current.modified_by = tokenData(req,res)
                             office_berars_current.modified_at = currentTime()
@@ -747,11 +758,13 @@ const NgoMasterController = {
             const ngoFundsDetails = await NgoFundSDetailsService.getDataByIdNgoId(ngo_id)
             const ngoStateDistrictMapping = await NgoStateDistrictMappingService.getDataByNgoId(ngo_id)
             const getNgoMedia = await ngoMediaService.getDataByNgoId(ngo_id)
+            const getUserDetails = await UserMasterService.getUserByEmailIdByView(getNgomaster.email)
             getNgomaster.office_berears_list = getNgoOfficeBerrares
             getNgomaster.ngo_funds_details = ngoFundsDetails
             getNgomaster.ngo_state_district_mapping_list = ngoStateDistrictMapping
             getNgomaster.ngo_media = getNgoMedia
             if (getNgomaster.length !== 0) {
+            getNgomaster.password = getUserDetails.password
                 return res
                     .status(responseCode.OK)
                     .send(

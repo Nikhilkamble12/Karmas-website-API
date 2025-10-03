@@ -82,6 +82,12 @@ const UserMasterService = {
         }catch(error){
             throw error
         }
+    },getUserByEmailIdByView:async(email_id)=>{
+        try{
+            return await UserMasterDAL.checkIfEmailIsPresent(email_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default UserMasterService
