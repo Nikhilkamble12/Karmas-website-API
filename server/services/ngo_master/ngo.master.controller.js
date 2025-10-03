@@ -650,12 +650,12 @@ const NgoMasterController = {
                             office_berars_current.ngo_id = ngoWalaId
                             const createNgoBerrares = await NgoOfficeBearersService.createService(office_berars_current)
                             if(createNgoBerrares){
-                                ngo_office_berrars = true
+                                ngo_office_berrars = true;
                             }
-                        }
+                        } 
                     }
-                }else{
-                    ngo_office_berrars = true
+                } else {
+                    ngo_office_berrars = true;
                 }
                 if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0 && data.ngoStateDistrictCityList){
                     if(data.ngoStateDistrictCityList &&  data.ngoStateDistrictCityList.length == 0){
