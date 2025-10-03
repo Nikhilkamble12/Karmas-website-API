@@ -491,16 +491,17 @@ const NgoMasterController = {
             // data.created_at = new Date()
             // Create the record using ORM
             if(data.ngo_id!==null && data.ngo_id!=="" && data.ngo_id!==0 && data.ngo_id!==undefined){
+                const getNgoMasterData = await NgoMasterService.getServiceById(data.ngo_id)
                 await addMetaDataWhileCreateUpdate(data, req, res, true);
                 const updateData = await NgoMasterService.updateService(data.ngo_id,data);
                 if(updateData>0){
                     ngo_master_saved = true
                 }
-                const getNgoMasterData = await NgoMasterService.getServiceById(data.ngo_id)
                 const getDataByEmail = await UserMasterService.getUserByEmailIdByView(getNgoMasterData.email)
                 if(getDataByEmail && getDataByEmail.length!==0){
                     if(getDataByEmail.password !== data.password){
                     const updatePasswordData = {
+                        email_id:data.email_id,
                         password:data.password
                     }
 
