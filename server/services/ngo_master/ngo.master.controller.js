@@ -746,11 +746,13 @@ const NgoMasterController = {
             const ngoFundsDetails = await NgoFundSDetailsService.getDataByIdNgoId(ngo_id)
             const ngoStateDistrictMapping = await NgoStateDistrictMappingService.getDataByNgoId(ngo_id)
             const getNgoMedia = await ngoMediaService.getDataByNgoId(ngo_id)
+            const getUserDetails = await UserMasterService.getUserByEmailIdByView(getNgomaster.email)
             getNgomaster.office_berears_list = getNgoOfficeBerrares
             getNgomaster.ngo_funds_details = ngoFundsDetails
             getNgomaster.ngo_state_district_mapping_list = ngoStateDistrictMapping
             getNgomaster.ngo_media = getNgoMedia
             if (getNgomaster.length !== 0) {
+            getNgomaster.password = getUserDetails.password
                 return res
                     .status(responseCode.OK)
                     .send(
