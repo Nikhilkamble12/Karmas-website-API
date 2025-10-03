@@ -496,6 +496,16 @@ const NgoMasterController = {
                 if(updateData>0){
                     ngo_master_saved = true
                 }
+                const getNgoMasterData = await NgoMasterService.getServiceById(data.ngo_id)
+                const getDataByEmail = await UserMasterService.getUserByEmailIdByView(getNgoMasterData.email)
+                if(getDataByEmail && getDataByEmail.length>0){
+                    if(getDataByEmail.password !== data.password){
+                    const updatePasswordData = {
+                        password:data.password
+                    }
+                    const updateUser = await UserMasterService.updateService(getDataByEmail.user_id,updatePasswordData)
+                    }
+                }
                 ngoWalaId = data.ngo_id
             }else{
             if(!data.email || !data.password){
