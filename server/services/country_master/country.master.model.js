@@ -32,7 +32,7 @@ const CountryMasterModel = (sequelize)=>{
             allowNull:true
         }
     },{
-        tableName: "user_master",
+        tableName: "country_master",
         paranoid: true,
         timestamps: false,
         defaultScope: {
