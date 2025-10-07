@@ -49,6 +49,8 @@ const BlogsController = {
                 );
         }
     }, 
+
+    
     // update Record Into Db
     update: async (req, res) => {
         try {
