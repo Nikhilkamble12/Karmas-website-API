@@ -8,6 +8,7 @@ import { ROLE_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 import UserMasterService from "../user_master/user.master.service.js";
 import ngoMediaService from "../ngo_media/ngo.media.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+import saveBase64ToFile from "../../utils/helper/base64ToFile.js";
 
 const NgoMasterController = {
      // Create A new Record 
@@ -22,17 +23,17 @@ const NgoMasterController = {
             const createData = await NgoMasterService.createService(data);
             if(createData){
                 const ngo_id = createData.dataValues.ngo_id
-                let pan_file_path_name = null , ngo_logo_path_name = null , crs_regis_path_name = null ;
+                let pan_file_path_name = null , ngo_logo_path_name = null , crs_regis_path_name = null , digital_signature_file_path_name = null , stamp_file_path_name = null ;
                 if(data.pan_file!==null && data.pan_file!=="" && data.pan_file!==0 && data.pan_file!==undefined){
                 await saveBase64ToFile(
                     data.pan_file,
-                    "ngo_master/" + ngo_id + `/"pan"`,
+                    "ngo_master/" + ngo_id + "/pan",
                     currentTime().replace(/ /g, "_").replace(/:/g, "-") +
                       "_" +
                       data.pan_cad_file_name
                   );
                   const upload_page_1 = data.pan_cad_file_name
-                  ? `ngo_master/${ngo_id}/"pan"/${currentTime()
+                  ? `ngo_master/${ngo_id}/pan/${currentTime()
                       .replace(/ /g, "_")
                       .replace(/:/g, "-")}_${data.pan_cad_file_name}`
                   : null;
@@ -42,13 +43,13 @@ const NgoMasterController = {
                 if(data.ngo_logo_file!==null && data.ngo_logo_file!=="" && data.ngo_logo_file!==0 && data.ngo_logo_file!==undefined){
                     await saveBase64ToFile(
                         data.ngo_logo_file,
-                        "ngo_master/" + ngo_id + `/"logo"`,
+                        "ngo_master/" + ngo_id + "/logo",
                         currentTime().replace(/ /g, "_").replace(/:/g, "-") +
                           "_" +
                           data.ngo_logo
                       );
                       const upload_page_1 = data.ngo_logo
-                      ? `ngo_master/${ngo_id}/"logo"/${currentTime()
+                      ? `ngo_master/${ngo_id}/logo/${currentTime()
                           .replace(/ /g, "_")
                           .replace(/:/g, "-")}_${data.ngo_logo}`
                       : null;
@@ -58,17 +59,49 @@ const NgoMasterController = {
                     if(data.crs_regis_file!==null && data.crs_regis_file!=="" && data.crs_regis_file!==0 && data.crs_regis_file!==undefined){
                         await saveBase64ToFile(
                             data.crs_regis_file,
-                            "ngo_master/" + ngo_id + `/"logo"`,
+                            "ngo_master/" + ngo_id + "/crs_regis",
                             currentTime().replace(/ /g, "_").replace(/:/g, "-") +
                               "_" +
                               data.crs_regis_file_name
                           );
                           const upload_page_1 = data.crs_regis_file_name
-                          ? `ngo_master/${ngo_id}/"logo"/${currentTime()
+                          ? `ngo_master/${ngo_id}/crs_regis/${currentTime()
                               .replace(/ /g, "_")
                               .replace(/:/g, "-")}_${data.crs_regis_file_name}`
                           : null;
                           crs_regis_path_name = upload_page_1
+                        }
+
+                        if(data.digital_signature_file!==null && data.digital_signature_file!=="" && data.digital_signature_file!==0 && data.digital_signature_file!==undefined){
+                            await saveBase64ToFile(
+                            data.digital_signature_file,
+                            "ngo_master/" + ngo_id + "/digital_signature",
+                            currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                              "_" +
+                              data.digital_signature_file_name
+                          );
+                          const upload_page_1 = data.digital_signature_file_name
+                          ? `ngo_master/${ngo_id}/digital_signature/${currentTime()
+                              .replace(/ /g, "_")
+                              .replace(/:/g, "-")}_${data.digital_signature_file_name}`
+                          : null;
+                          digital_signature_file_path_name = upload_page_1 
+                        }
+
+                        if(data.stamp_file!==null && data.stamp_file!=="" && data.stamp_file!==0 && data.stamp_file!==undefined){
+                           await saveBase64ToFile(
+                            data.stamp_file,
+                            "ngo_master/" + ngo_id + "/stamp",
+                            currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                              "_" +
+                              data.stamp_file_name
+                          );
+                          const upload_page_1 = data.stamp_file_name
+                          ? `ngo_master/${ngo_id}/stamp/${currentTime()
+                              .replace(/ /g, "_")
+                              .replace(/:/g, "-")}_${data.stamp_file_name}`
+                          : null;
+                          stamp_file_path_name = upload_page_1  
                         }
                         const updateData  ={
                             ngo_logo:data.ngo_logo,
@@ -77,6 +110,10 @@ const NgoMasterController = {
                             pan_card_file_url:pan_file_path_name,
                             crs_regis_file_name:data.crs_regis_file_name,
                             crs_regis_file_path:crs_regis_path_name,
+                            digital_signature_file_name:data.digital_signature_file_name,
+                            digital_signature_file_path:digital_signature_file_path_name,
+                            stamp_file_name:data.stamp_file_name,
+                            stamp_file_path:stamp_file_path_name
                         } 
                         const updateNgomaster = await NgoMasterService.updateService(ngo_id,updateData)
             }
@@ -121,73 +158,130 @@ const NgoMasterController = {
         try {
             const id = req.query.id
             const data = req.body
-            // Add metadata for modification (modified by, modified at)
-            await addMetaDataWhileCreateUpdate(data, req, res, true);
+            // Check if the record exists
+            const existingNgo = await NgoMasterService.getServiceById(id);
+            if (!existingNgo) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST, 
+                            "NGO not found", 
+                            null, 
+                            true
+                        ));
+            }
 
-            // Update the record using ORM
-            const updatedRowsCount = await NgoMasterService.updateService(id, data);
+            // Initialize update data with existing file paths
+            const updateData = {
+                ...data,
+                ngo_logo: existingNgo.ngo_logo,
+                ngo_logo_path: existingNgo.ngo_logo_path,
+                pan_cad_file_name: existingNgo.pan_cad_file_name,
+                pan_card_file_url: existingNgo.pan_card_file_url,
+                crs_regis_file_name: existingNgo.crs_regis_file_name,
+                crs_regis_file_path: existingNgo.crs_regis_file_path,
+                digital_signature_file_name: existingNgo.digital_signature_file_name,
+                digital_signature_file_path: existingNgo.digital_signature_file_path,
+                stamp_file_name: existingNgo.stamp_file_name,
+                stamp_file_path: existingNgo.stamp_file_path
+            };
+        
+                const ngo_id = id;
+                    if(data.pan_file!==null && data.pan_file!=="" && data.pan_file!==0 && data.pan_file!==undefined){
+                        await saveBase64ToFile(
+                            data.pan_file,
+                            "ngo_master/" + ngo_id + "/pan",
+                            currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                            "_" +
+                            data.pan_cad_file_name
+                        );
+                        const pan_file_path_name = data.pan_cad_file_name
+                        ? `ngo_master/${ngo_id}/pan/${currentTime()
+                            .replace(/ /g, "_")
+                            .replace(/:/g, "-")}_${data.pan_cad_file_name}`
+                        : null;
+                        
+                        updateData.pan_cad_file_name = data.pan_cad_file_name
+                        updateData.pan_card_file_url = pan_file_path_name
+                    }
 
-            if(updatedRowsCount > 0){
-                const ngo_id = id
-                let pan_file_path_name = null , ngo_logo_path_name = null , crs_regis_path_name = null ;
-                if(data.pan_file!==null && data.pan_file!=="" && data.pan_file!==0 && data.pan_file!==undefined){
-                await saveBase64ToFile(
-                    data.pan_file,
-                    "ngo_master/" + ngo_id + `/"pan"`,
-                    currentTime().replace(/ /g, "_").replace(/:/g, "-") +
-                      "_" +
-                      data.pan_cad_file_name
-                  );
-                  const upload_page_1 = data.pan_cad_file_name
-                  ? `ngo_master/${ngo_id}/"pan"/${currentTime()
-                      .replace(/ /g, "_")
-                      .replace(/:/g, "-")}_${data.pan_cad_file_name}`
-                  : null;
-                  pan_file_path_name = upload_page_1
-                }
-
-                if(data.ngo_logo_file!==null && data.ngo_logo_file!=="" && data.ngo_logo_file!==0 && data.ngo_logo_file!==undefined){
+                    if(data.ngo_logo_file!==null && data.ngo_logo_file!=="" && data.ngo_logo_file!==0 && data.ngo_logo_file!==undefined){
                     await saveBase64ToFile(
                         data.ngo_logo_file,
-                        "ngo_master/" + ngo_id + `/"logo"`,
+                        "ngo_master/" + ngo_id + "/logo",
                         currentTime().replace(/ /g, "_").replace(/:/g, "-") +
                           "_" +
                           data.ngo_logo
                       );
-                      const upload_page_1 = data.ngo_logo
-                      ? `ngo_master/${ngo_id}/"logo"/${currentTime()
+                      const ngo_logo_path_name = data.ngo_logo
+                      ? `ngo_master/${ngo_id}/logo/${currentTime()
                           .replace(/ /g, "_")
                           .replace(/:/g, "-")}_${data.ngo_logo}`
                       : null;
-                      ngo_logo_path_name = upload_page_1
+                      
+                      updateData.ngo_logo = data.ngo_logo
+                      updateData.ngo_logo_path = ngo_logo_path_name
                     }
 
                     if(data.crs_regis_file!==null && data.crs_regis_file!=="" && data.crs_regis_file!==0 && data.crs_regis_file!==undefined){
                         await saveBase64ToFile(
                             data.crs_regis_file,
-                            "ngo_master/" + ngo_id + `/"logo"`,
+                            "ngo_master/" + ngo_id + "/crs_regis",
                             currentTime().replace(/ /g, "_").replace(/:/g, "-") +
                               "_" +
                               data.crs_regis_file_name
                           );
-                          const upload_page_1 = data.crs_regis_file_name
-                          ? `ngo_master/${ngo_id}/"logo"/${currentTime()
+                          const crs_regis_path_name = data.crs_regis_file_name
+                          ? `ngo_master/${ngo_id}/crs_regis/${currentTime()
                               .replace(/ /g, "_")
                               .replace(/:/g, "-")}_${data.crs_regis_file_name}`
                           : null;
-                          crs_regis_path_name = upload_page_1
-                        }
-                        const updateData  ={
-                            ngo_logo:data.ngo_logo,
-                            ngo_logo_path:ngo_logo_path_name,
-                            pan_cad_file_name:data.pan_cad_file_name,
-                            pan_card_file_url:pan_file_path_name,
-                            crs_regis_file_name:data.crs_regis_file_name,
-                            crs_regis_file_path:crs_regis_path_name,
-                        } 
-                        const updateNgomaster = await NgoMasterService.updateService(ngo_id,updateData)
+                          
+                          updateData.crs_regis_file_name = data.crs_regis_file_name
+                          updateData.crs_regis_file_path = crs_regis_path_name
+                    }
 
-            }
+                    if(data.digital_signature_file!==null && data.digital_signature_file!=="" && data.digital_signature_file!==0 && data.digital_signature_file!==undefined){
+                        await saveBase64ToFile(
+                            data.digital_signature_file,
+                            "ngo_master/" + ngo_id + "/digital_signature",
+                            currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                             "_" +
+                            data.digital_signature_file_name
+                        );
+                        const digital_signature_file_path_name = data.digital_signature_file_name
+                        ? `ngo_master/${ngo_id}/digital_signature/${currentTime()
+                            .replace(/ /g, "_")
+                            .replace(/:/g, "-")}_${data.digital_signature_file_name}`
+                        : null;
+                        
+                        updateData.digital_signature_file_name = data.digital_signature_file_name
+                        updateData.digital_signature_file_path = digital_signature_file_path_name    
+                    }
+
+                    if(data.stamp_file!==null && data.stamp_file!=="" && data.stamp_file!==0 && data.stamp_file!==undefined){
+                        await saveBase64ToFile(
+                            data.stamp_file,
+                            "ngo_master/" + ngo_id + "/stamp",
+                            currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                            "_" +
+                            data.stamp_file_name
+                        );
+                        const stamp_file_path_name = data.stamp_file_name
+                        ? `ngo_master/${ngo_id}/stamp/${currentTime()
+                            .replace(/ /g, "_")
+                            .replace(/:/g, "-")}_${data.stamp_file_name}`
+                        : null;
+                        
+                        updateData.stamp_file_name = data.stamp_file_name
+                        updateData.stamp_file_path = stamp_file_path_name
+                    }
+            // Add metadata for modification (modified by, modified at)
+            await addMetaDataWhileCreateUpdate(data, req, res, true);
+
+            // Update the record using ORM
+            const updatedRowsCount = await NgoMasterService.updateService(id, updateData);
             // if (updatedRowsCount > 0) {
             //     const newData = await NgoMasterService.getServiceById(id);
             //     // Update the JSON data in the file
@@ -530,33 +624,34 @@ const NgoMasterController = {
              ngoWalaId = createData.dataValues.ngo_id
                 }
                 if(ngoWalaId!==null && ngoWalaId!==undefined && ngoWalaId!=="" && ngoWalaId!==0){
-                    let pan_file_path_name = null , ngo_logo_path_name = null , crs_regis_path_name = null ;
-                if(data.pan_file!==null && data.pan_file!=="" && data.pan_file!==0 && data.pan_file!==undefined){
-                await saveBase64ToFile(
-                    data.pan_file,
-                    "ngo_master/" + ngo_id + `/"pan"`,
-                    currentTime().replace(/ /g, "_").replace(/:/g, "-") +
-                      "_" +
-                      data.pan_cad_file_name
-                  );
-                  const upload_page_1 = data.pan_cad_file_name
-                  ? `ngo_master/${ngo_id}/"pan"/${currentTime()
-                      .replace(/ /g, "_")
-                      .replace(/:/g, "-")}_${data.pan_cad_file_name}`
-                  : null;
-                  pan_file_path_name = upload_page_1
-                }
+                    let pan_file_path_name = null , ngo_logo_path_name = null , crs_regis_path_name = null, digital_signature_file_path_name = null , stamp_file_path_name = null ;
 
-                if(data.ngo_logo_file!==null && data.ngo_logo_file!=="" && data.ngo_logo_file!==0 && data.ngo_logo_file!==undefined){
+                    if(data.pan_file!==null && data.pan_file!=="" && data.pan_file!==0 && data.pan_file!==undefined){
+                    await saveBase64ToFile(
+                        data.pan_file,
+                        "ngo_master/" + ngo_id + "/pan",
+                        currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                        "_" +
+                        data.pan_cad_file_name
+                    );
+                    const upload_page_1 = data.pan_cad_file_name
+                    ? `ngo_master/${ngo_id}/pan/${currentTime()
+                        .replace(/ /g, "_")
+                        .replace(/:/g, "-")}_${data.pan_cad_file_name}`
+                    : null;
+                    pan_file_path_name = upload_page_1
+                    }
+
+                    if(data.ngo_logo_file!==null && data.ngo_logo_file!=="" && data.ngo_logo_file!==0 && data.ngo_logo_file!==undefined){
                     await saveBase64ToFile(
                         data.ngo_logo_file,
-                        "ngo_master/" + ngo_id + `/"logo"`,
+                        "ngo_master/" + ngo_id + "/logo",
                         currentTime().replace(/ /g, "_").replace(/:/g, "-") +
                           "_" +
                           data.ngo_logo
                       );
                       const upload_page_1 = data.ngo_logo
-                      ? `ngo_master/${ngo_id}/"logo"/${currentTime()
+                      ? `ngo_master/${ngo_id}/logo/${currentTime()
                           .replace(/ /g, "_")
                           .replace(/:/g, "-")}_${data.ngo_logo}`
                       : null;
@@ -566,18 +661,50 @@ const NgoMasterController = {
                     if(data.crs_regis_file!==null && data.crs_regis_file!=="" && data.crs_regis_file!==0 && data.crs_regis_file!==undefined){
                         await saveBase64ToFile(
                             data.crs_regis_file,
-                            "ngo_master/" + ngo_id + `/"logo"`,
+                            "ngo_master/" + ngo_id + "/crs_regis",
                             currentTime().replace(/ /g, "_").replace(/:/g, "-") +
                               "_" +
                               data.crs_regis_file_name
                           );
                           const upload_page_1 = data.crs_regis_file_name
-                          ? `ngo_master/${ngo_id}/"logo"/${currentTime()
+                          ? `ngo_master/${ngo_id}/crs_regis/${currentTime()
                               .replace(/ /g, "_")
                               .replace(/:/g, "-")}_${data.crs_regis_file_name}`
                           : null;
                           crs_regis_path_name = upload_page_1
                         }
+
+                    if(data.digital_signature_file!==null && data.digital_signature_file!=="" && data.digital_signature_file!==0 && data.digital_signature_file!==undefined){
+                        await saveBase64ToFile(
+                            data.digital_signature_file,
+                            "ngo_master/" + ngo_id + "/digital_signature",
+                            currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                             "_" +
+                            data.digital_signature_file_name
+                        );
+                        const upload_page_1 = data.digital_signature_file_name
+                        ? `ngo_master/${ngo_id}/digital_signature/${currentTime()
+                            .replace(/ /g, "_")
+                            .replace(/:/g, "-")}_${data.digital_signature_file_name}`
+                        : null;
+                        digital_signature_file_path_name = upload_page_1    
+                    }
+
+                    if(data.stamp_file!==null && data.stamp_file!=="" && data.stamp_file!==0 && data.stamp_file!==undefined){
+                        await saveBase64ToFile(
+                            data.stamp_file,
+                            "ngo_master/" + ngo_id + "/stamp",
+                            currentTime().replace(/ /g, "_").replace(/:/g, "-") +
+                            "_" +
+                            data.stamp_file_name
+                        );
+                        const upload_page_1 = data.stamp_file_name
+                        ? `ngo_master/${ngo_id}/stamp/${currentTime()
+                            .replace(/ /g, "_")
+                            .replace(/:/g, "-")}_${data.stamp_file_name}`
+                        : null;
+                        stamp_file_path_name = upload_page_1
+                    }
                         const updateData  ={
                             ngo_logo:data.ngo_logo,
                             ngo_logo_path:ngo_logo_path_name,
@@ -585,6 +712,10 @@ const NgoMasterController = {
                             pan_card_file_url:pan_file_path_name,
                             crs_regis_file_name:data.crs_regis_file_name,
                             crs_regis_file_path:crs_regis_path_name,
+                            digital_signature_file_name:data.digital_signature_file_name,
+                            digital_signature_file_path:digital_signature_file_path_name,
+                            stamp_file_name:data.stamp_file_name,
+                            stamp_file_path:stamp_file_path_name
                         } 
                         const updateNgomaster = await NgoMasterService.updateService(ngoWalaId,updateData)
                         const createUserMaster = {
