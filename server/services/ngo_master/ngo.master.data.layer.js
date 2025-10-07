@@ -89,9 +89,10 @@ const NgoMasterDAL = {
         }catch(error){
             throw error
         }
-    },getAllSumByNgoDashBoard:async()=>{
-        try{
-            const getAllSum = await db.sequelize.query(`
+    },getAllSumByNgoDashBoard: async (ngo_id) => {
+    try {
+        // Base query
+        let query = `
             SELECT 
                 COUNT(ngo_id) AS total_ngo,
                 SUM(total_request_assigned) AS total_request,
@@ -115,15 +116,23 @@ const NgoMasterDAL = {
 
             FROM ngo_master
             WHERE is_active = TRUE
-            `, {
-            type: db.Sequelize.QueryTypes.SELECT
-            });
+        `;
 
-            return getAllSum
-        }catch(error){
-            throw error
+        // Add ngo_id conditionally
+        if (ngo_id && ngo_id!=="" && ngo_id!=="null") {
+            query += ` AND ngo_id = :ngo_id`;
         }
-    },searchNgoByFilter: async (search_query) => {
+
+        const getAllSum = await db.sequelize.query(query, {
+            type: db.Sequelize.QueryTypes.SELECT,
+            replacements: ngo_id ? { ngo_id } : {}
+        });
+
+        return getAllSum;
+    } catch (error) {
+        throw error;
+    }
+},searchNgoByFilter: async (search_query) => {
     try {
         // Define the query with a parameter placeholder :search_query
         const getData = await db.sequelize.query(`

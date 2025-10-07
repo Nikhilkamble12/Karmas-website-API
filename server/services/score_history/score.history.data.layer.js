@@ -155,6 +155,13 @@ const ScoreHistoryDAL = {
         } catch (error) {
             throw error
         }
+    },getDataBySearchFilter:async(user_name)=>{
+        try{
+            const getData = await db.sequelize.query(` SELECT * FROM v_weekly_user_scores where user_name like ${user_name} `,{type:db.Sequelize.QueryTypes.SELECT})
+            return getData
+        }catch(error){
+            throw error
+        }
     }
 }
 

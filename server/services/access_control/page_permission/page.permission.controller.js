@@ -275,7 +275,6 @@ const PagePermissionController = {
         }
     },bulkCreatePagePermission:async(req,res)=>{
       try{
-        console.log("inside")
         const data=req.body
         var is_saved = false
         var final_save = true

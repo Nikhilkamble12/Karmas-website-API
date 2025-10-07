@@ -54,6 +54,12 @@ router.get(
     verifyToken,
     ScoreHistoryController.SearchUserScoreByUserName
 )
+// Search By UserName
+router.get(
+    `${basePath}/Searchby/Username`,
+    verifyToken,
+    ScoreHistoryController.SearchUserScoreByUserName
+)
 
 // Export the router for use in other parts of the application
 export default router

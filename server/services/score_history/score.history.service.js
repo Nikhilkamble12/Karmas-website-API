@@ -70,6 +70,15 @@ const ScoreHistoryService = {
         }catch(error){
             throw error
         }
+    },SearchUserByName:async(user_name)=>{
+        try{
+            if (!user_name || typeof user_name !== 'string' || user_name.trim() === '') {
+            throw new Error('Invalid or missing user_name');
+        }
+            return await ScoreHistoryDAL.getDataBySearchFilter(user_name)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default ScoreHistoryService 

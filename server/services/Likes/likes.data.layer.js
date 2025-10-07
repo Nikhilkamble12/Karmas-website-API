@@ -15,7 +15,6 @@ const LikesDAL = {
   // Method to update an existing record by its ID
   UpdateData: async (like_id, data) => {
     try {
-      // console.log("data", data);
       const updateData = await LikesModel(db.sequelize).update(data, {
         where: { like_id: like_id },
       }); // Return the result of the update operation

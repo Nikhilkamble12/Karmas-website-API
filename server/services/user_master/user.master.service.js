@@ -88,6 +88,12 @@ const UserMasterService = {
         }catch(error){
             throw error
         }
+    },getUserMasterCountByNgoId:async(ngo_id)=>{
+        try{
+            return await UserMasterDAL.getUserDashBoardCountByNgoId(ngo_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default UserMasterService

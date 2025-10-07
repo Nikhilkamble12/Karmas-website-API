@@ -6,7 +6,6 @@ const CountryMasterDAL = {
     // Method to create a new record in the database
     CreateData: async (data) => {
         try {
-            console.log("data",data)
             const createdData = await CountryMasterModel(db.sequelize).create(data)
             return createdData // Return the created data
         } catch (error) {

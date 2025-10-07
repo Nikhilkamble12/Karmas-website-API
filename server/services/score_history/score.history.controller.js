@@ -381,7 +381,6 @@ const ScoreHistoryController = {
         }
     },getDataByUserIdScoreHistory:async(req,res)=>{
         try{
-	    console.log(">>> controller hit:", new Date());
             const user_id = tokenData(req, res)
             const limit = req.query.limit
             const offset = req.query.offset
@@ -484,7 +483,47 @@ const ScoreHistoryController = {
                     );
             }
         }catch(error){
-            console.log("error",error)
+        console.log("error",error)
+        logger.error(`Error ---> ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
+        }
+    },getScoreHistoryByName:async(req,res)=>{
+        try{
+            const user_name = req.query.user_name
+            const getData = await ScoreHistoryService.SearchUserByName(user_name)
+            if (getData.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getData
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        }catch(error){
+        console.log("error",error)
         logger.error(`Error ---> ${error}`);
         return res
             .status(responseCode.INTERNAL_SERVER_ERROR)

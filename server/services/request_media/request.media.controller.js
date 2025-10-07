@@ -311,12 +311,10 @@ const RequestMediaController = {
         deleteFile(filePath)
         return res.status(400).send({ error: 'No file uploaded' });
       }
-      console.log("data.RequestId",data.RequestId)
-      console.log("data.RequestId",data.RequestId)
+
       if(data.RequestId == "" ||  data.RequestId== "undefined" || data.RequestId== '0' || data.RequestId==0 || data.RequestId==undefined){
-        console.log("filePath",filePath)
         deleteFile(filePath)
-        console.log("after delete")
+
             return res 
             .status(responseCode.BAD_REQUEST)
             .send(
@@ -330,7 +328,6 @@ const RequestMediaController = {
       }
       const RequestData = await RequestService.getServiceById(data.RequestId)
 
-      console.log("RequestData",RequestData)
 
       if(RequestData && RequestData.length>0){
         deleteFile(filePath)

@@ -40,28 +40,27 @@ export default async function defineRoutes(wsRouter, activeConnections) {
       const checkThreshold = 10 * 1000; // Check every 10 seconds
         if(getAllActiveSosUser && getAllActiveSosUser.data && getAllActiveSosUser.data.length>0){
       for (const user of getAllActiveSosUser.data) {
-        console.log()
         if (user.is_active) {
         //   const userSosStatus = user; // Get user's SOS status
 
           // Get the user's SOS history to check the last captured time
           const userSosStatus = await LocalJsonHelper.getAllByField(saveCurrentUserSos, "sos_id",user.sos_id);
-            console.log("userSosStatus",userSosStatus)
+            // console.log("userSosStatus",userSosStatus)
           if (userSosStatus) {
             const lastCapturedTime = userSosStatus.values[0].captured_time;
-            console.log("lastCapturedTime",lastCapturedTime)
-            console.log("currentTime",currentTime)
+            // console.log("lastCapturedTime",lastCapturedTime)
+            // console.log("currentTime",currentTime)
             const timeDifference = getTimeDifference(currentTime, lastCapturedTime);
-            console.log("timeDifference",timeDifference)
-            console.log("reminderThreshold",reminderThreshold)
+            // console.log("timeDifference",timeDifference)
+            // console.log("reminderThreshold",reminderThreshold)
             // If the last update was more than 40 seconds ago, ask the user to resend the location
             if (timeDifference.timeDifferenceInMilliseconds >= reminderThreshold) {
-                console.log("user",user)
+                // console.log("user",user)
               const targetWs = activeConnections.get(user.user_id); // Get WebSocket by contact user_id
 
               // If WebSocket is active, ask the user to resend their location
               if (targetWs && targetWs.readyState === WebSocket.OPEN) {
-                console.log(`Requesting location update from user: ${user.contact_name}`);
+                // console.log(`Requesting location update from user: ${user.contact_name}`);
                 targetWs.send(JSON.stringify({
                   event: 'sos-location-update-request',
                   message: 'Please resend your current location.',
@@ -69,9 +68,7 @@ export default async function defineRoutes(wsRouter, activeConnections) {
                 }));
               } else {
                 // If WebSocket is not active, send a notification via Firebase
-                console.log(`Sending notification to user: ${user.contact_name}`);
                 const template = notificationTemplates.sosLocationUpdateRequest({ username: user.contact_name });
-                console.log("template",template)
                 const userTokens = await UserTokenService.GetTokensByUserIds([user.user_id]);
 
                 await sendTemplateNotification({

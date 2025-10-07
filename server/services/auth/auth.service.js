@@ -8,7 +8,6 @@ const AuthService={
             throw error
         }
     },checkWetherUserIsPresent:async(user_name)=>{
-        console.log("user_name",user_name)
         try{
             return await UserMasterDAL.checkIfUserNameIsPresent(user_name)
         }catch(error){

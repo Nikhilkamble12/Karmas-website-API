@@ -67,7 +67,6 @@ const NgoOfficeDistrictMappingDAL = {
         }
     },getNgoDataByDistrictId:async(district_id,ngoId)=>{
         try{
-            console.log("ngoId",ngoId)
             const ngoIdCondition = ngoId && ngoId.length > 0 ? `AND ngo_id NOT IN (${ngoId.join(",")})` : "";
             const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.NGO_STATE_DISTRICT_MAPPING_FILDS} where district_id = ${district_id} ${ngoIdCondition} `,{type:db.Sequelize.QueryTypes.SELECT})
             return getDataById 

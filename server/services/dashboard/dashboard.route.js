@@ -13,6 +13,21 @@ router.get(`${basePath}/getWeb/DashBoard`,
     verifyToken,
     DashBoardController.webDashBoardData
 )
+router.get(
+    `${basePath}/getNgoCount`,
+    verifyToken,
+    DashBoardController.getNgoCount
+)
+router.get(
+    `${basePath}/getRequestCount`,
+    verifyToken,
+    DashBoardController.getRequestCount
+)
+router.get(
+    `${basePath}/getUserCount`,
+    verifyToken,
+    DashBoardController.getUserCount
+)
 
 // Export the router for use in other parts of the application
 export default router

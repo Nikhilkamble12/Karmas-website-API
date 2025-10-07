@@ -75,7 +75,7 @@ const BonusMasterController = {
                         created_by:tokenData(req,res),
                         created_at:currentTime()
                     }
-                    console.log("createBonusHistoryData",createBonusHistoryData)
+                    // console.log("createBonusHistoryData",createBonusHistoryData)
                     const createBonusHistory = await BonusHistoryService.createService(createBonusHistoryData)
                 }
             }
