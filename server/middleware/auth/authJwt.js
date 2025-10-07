@@ -8,7 +8,6 @@ import commonResponse from "../../utils/helper/response.js";
 
 const authenticate = (req, res, next) => {
   let token = req.headers["x-access-token"];
-  console.log("token",token)
   if (!token) {
     return res
       .status(responseCode.UNAUTHORIZED)

@@ -18,7 +18,7 @@ const { commonResponse, responseCode, responseConst, logger, tokenData, currentT
 let AuthController = {
   loginUser: async (req, res) => {
     try {
-      console.log(req.body)
+
       const { user_name, password, google_id,web_token,android_token } = req.body;
 
       let userData;
@@ -33,7 +33,6 @@ let AuthController = {
       // const hash = await argon2Verify.hashArgon(password);
       // console.log("hash",hash)
       if (userData.length == 0) {
-        console.log("inside serData==null")
         logger.error(`User with name or Id ${user_name || google_id} not found`);
         return res
           .status(responseCode.UNAUTHORIZED)

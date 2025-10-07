@@ -86,5 +86,4 @@ router.post(
     PostMediaController.getPostMediaByPostId
   )
 
-// console.log("router",router)
 export default router

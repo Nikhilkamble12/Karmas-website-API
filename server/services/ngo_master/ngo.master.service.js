@@ -60,9 +60,9 @@ const NgoMasterService = {
         }catch(error){
             throw error
         }
-    },getTotalSumOfData:async()=>{
+    },getTotalSumOfData:async(ngo_id)=>{
         try{
-            return await NgoMasterDAL.getAllSumByNgoDashBoard()
+            return await NgoMasterDAL.getAllSumByNgoDashBoard(ngo_id)
         }catch(error){
             throw error
         }

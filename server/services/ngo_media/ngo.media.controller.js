@@ -299,8 +299,7 @@ const NgoMediaController = {
             if (!req.file) {
                 return res.status(400).send({ error: 'No file uploaded' });
             }
-            console.log("data", data)
-            console.log("data.post_id", data.ngo_id)
+
             if (data.ngo_id == "" || data.ngo_id == "undefined" || data.ngo_id == '0' || data.ngo_id == 0 || data.ngo_id == undefined) {
                 deleteFile(filePath)
                 return res
@@ -328,9 +327,9 @@ const NgoMediaController = {
                     )
             }
             // File name on the server
-            console.log("fileType", fileType)
-            console.log("folderType", folderType)
-            console.log("fileName", fileName)
+            // console.log("fileType", fileType)
+            // console.log("folderType", folderType)
+            // console.log("fileName", fileName)
             if (data.ngo_media_id) {
                 // You can dynamically decide where to store the file, for example, 'post' or 'request'
                 // For example, 'post', 'request', etc.

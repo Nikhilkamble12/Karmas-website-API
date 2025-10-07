@@ -64,6 +64,12 @@ const RequestNgoService = {
         }catch(error){
             throw error
         }
+    },getRequestNgoCountByNgo:async(ngo_id)=>{
+        try{
+            return await RequestNgoDAL.getRequestNgoCountById(ngo_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default RequestNgoService

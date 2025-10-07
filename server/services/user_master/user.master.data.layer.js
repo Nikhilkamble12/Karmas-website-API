@@ -198,6 +198,27 @@ const UserMasterDAL = {
             console.log("error",error)
             throw error
         }
+    },getUserDashBoardCountByNgoId:async(ngo_id)=>{
+        try{
+            const getData = await db.sequelize.query(
+            `
+            SELECT 
+                COUNT(*) AS user_total_count,
+                SUM(CASE WHEN is_blacklisted = 1 THEN 1 ELSE 0 END) AS user_total_blacklisted,
+                SUM(CASE WHEN is_blacklisted = 0 THEN 1 ELSE 0 END) AS user_total_active,
+                SUM(CASE WHEN MONTH(created_at) = MONTH(CURRENT_DATE())
+                        AND YEAR(created_at) = YEAR(CURRENT_DATE()) THEN 1 ELSE 0 END) AS user_new_month_user,
+                SUM(CASE WHEN MONTH(created_at) = MONTH(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH))
+                        AND YEAR(created_at) = YEAR(DATE_SUB(CURRENT_DATE(), INTERVAL 1 MONTH)) THEN 1 ELSE 0 END) AS user_previous_month_user
+            FROM ${VIEW_NAME.GET_ALL_USER_MASTER} where ngo_id = ${ngo_id}
+            `,
+            { type: db.Sequelize.QueryTypes.SELECT }
+            );
+            return getData
+        }catch(error){
+            throw error
+        }
+    
     }
 }
 

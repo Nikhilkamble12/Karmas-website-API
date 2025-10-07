@@ -287,7 +287,6 @@ const NgoLikesController = {
                         )
                     );
             }
-            console.log("likeData",likeData)
             const deleteData = await NgolikesService.deleteByid(id, req, res)
             
             // Also delete data from the JSON file

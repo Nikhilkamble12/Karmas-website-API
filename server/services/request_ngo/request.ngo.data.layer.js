@@ -1,5 +1,6 @@
 import RequestNgoModel from "./request.ngo.model.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
+import VIEW_NAME from "../../utils/db/view.constants.js";
 const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessary components from commonPath
 
 const RequestNgoDAL = {
@@ -122,6 +123,18 @@ const RequestNgoDAL = {
           return results ?? [];
         } catch (error) {
           throw error;
+        }
+      },getRequestNgoCountById:async(ngo_id)=>{
+        try{
+            const getData = await db.sequelize.query(` SELECT 
+            COUNT(RequestId) AS total_request,
+            SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_INSIATED} THEN 1 ELSE 0 END) AS total_request_insiated_status,
+            SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
+            SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected
+            FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} where ngo_id = ${ngo_id}`,{type:db.Sequelize.QueryTypes.SELECT})
+            return getData
+        }catch(error){
+            throw error
         }
       }
 }

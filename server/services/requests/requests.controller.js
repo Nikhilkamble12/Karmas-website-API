@@ -369,11 +369,8 @@ const RequestsController = {
 
             if(getRequestData.CityId){
             getDataByCityId = await NgoStateDistrictMappingService.getAllNgoDataByCityId(getRequestData.CityId)
-            console.log("getDataByCityId",getDataByCityId)
             if(getDataByCityId.length>0){
-                console.log("inside city if")
                 for(let i=0;i<getDataByCityId.length;i++){
-                    console.log("inside city for")
                     const CurrentData = getDataByCityId[i]
                     const NgoData = {
                         Request_Ngo_Id:null,
@@ -392,7 +389,6 @@ const RequestsController = {
                 }
             }
             }
-            console.log("ngoIds",ngoIds)
             if(getRequestData.districtId){
             getAllDataByDistrictid = await NgoStateDistrictMappingService.getAllNgoDataByDistrictId(getRequestData.districtId,ngoIds)
             if( getAllDataByDistrictid.length>0){
@@ -415,7 +411,6 @@ const RequestsController = {
                 }
             }
             }
-            console.log("ngoIds",ngoIds)
             if(getRequestData.StateId){
             getDataByStateId = await NgoStateDistrictMappingService.getAllNgoDataByStateId(getRequestData.StateId,ngoIds)
             if( getDataByStateId.length>0){
@@ -462,7 +457,6 @@ const RequestsController = {
             if(getFinalNgos.length>0){
                 for(let i=0;i<getFinalNgos.length;i++){
                     const CurrentData = getFinalNgos[i]
-                    console.log("CurrentData",CurrentData)
                     const NgoData = {
                         Request_Ngo_Id:null,
                         ngo_id:CurrentData.ngo_id,
@@ -490,8 +484,8 @@ const RequestsController = {
                     ngo.status_id = matchedRequest.status_id; // Update status_id if found
                     ngo.status_name = matchedRequest.status_name
                 }else{
-                    ngo.Reason = matchedRequest.Reason
-                    ngo.Request_Ngo_Id = null,
+                    ngo.Reason = null
+                    ngo.Request_Ngo_Id = null
                     ngo.status_name = null
                 }
             });
