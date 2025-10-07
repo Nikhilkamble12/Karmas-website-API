@@ -83,7 +83,19 @@ const NgoMasterModel = (sequelize)=>{
         }, crs_regis_file_path:{
             type:DataTypes.STRING(350),
             allowNull:true
-        },is_blacklist:{
+        }, digital_signature_file_name:{
+            type:DataTypes.STRING(150),
+            allowNull:true
+        }, digital_signature_file_path:{
+            type:DataTypes.STRING(350),
+            allowNull:true
+        }, stamp_file_name : {
+            type:DataTypes.STRING(150),
+            allowNull:true
+        }, stamp_file_path:{
+            type:DataTypes.STRING(350),
+            allowNull:true
+        }, is_blacklist:{
             type:DataTypes.TINYINT(1),
             allowNull:true,
             defaultValue: false
