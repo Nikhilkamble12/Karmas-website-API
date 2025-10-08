@@ -230,6 +230,10 @@ const GiftMasterController = {
             //   }
             // }
             // Return the fetched data or handle case where no data is found
+            const couponData = await CouponsService.getCouponAndRedeemService(tokenData(req, res), Id);
+            console.log("couponData", couponData);
+            getDataByid.status = couponData ? couponData.status_name : null;
+            getDataByid.couponData = couponData ? couponData : null;
             if (getDataByid.length !== 0) {
                 return res
                     .status(responseCode.OK)
@@ -352,6 +356,7 @@ const GiftMasterController = {
                         progress: parseFloat(progressValue.toFixed(2)), // number e.g. 85.32
                         hasCoupon: !!userCoupon,
                         couponCode: userCoupon?.coupon_code ?? null,
+                        status: userCoupon?.status_name ?? null
                     };
                 }
             );
