@@ -53,14 +53,14 @@ const UserFollowingDAL = {
         }
     },getByUserId:async(user_id)=>{
         try{
-            const getDatabyView = await db.sequelize.query( ` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where user_id = ${user_id} and is_following = true`,{type:db.Sequelize.QueryTypes.SELECT})
+            const getDatabyView = await db.sequelize.query( ` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where user_id = ${user_id} and is_following = true and is_rejected = 0`,{type:db.Sequelize.QueryTypes.SELECT})
             return getDatabyView
         }catch(error){
             throw error
         }
     },getDataByFollowed:async(following_user_id)=>{
         try{
-            const getDataById = await db.sequelize.query( ` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where following_user_id = ${following_user_id} and is_following = true`,{type:db.Sequelize.QueryTypes.SELECT})
+            const getDataById = await db.sequelize.query( ` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where following_user_id = ${following_user_id} and is_following = true and is_rejected = 0 `,{type:db.Sequelize.QueryTypes.SELECT})
             return getDataById
         }catch(error){
             throw error

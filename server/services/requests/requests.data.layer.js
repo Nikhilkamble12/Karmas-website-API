@@ -3,96 +3,121 @@ import commonPath from "../../middleware/comman_path/comman.path.js"; // Import 
 import VIEW_NAME from "../../utils/db/view.constants.js";
 import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 import RequestService from "./requests.service.js";
-const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessary components from commonPath
+const { db, ViewFieldTableVise, tokenData } = commonPath; // Destructure necessary components from commonPath
 
 const RequestDAL = {
-     // Method to create a new record in the database
-     CreateData: async (data) => {
-        try {
-            const createdData = await RequestModel(db.sequelize).create(data)
-            return createdData // Return the created data
-        } catch (error) {
-            throw error // Throw error for handling in the controller
-        }
-    }, 
-    // Method to update an existing record by its ID
-    UpdateData: async (RequestId, data) => {
-        try {
-            const updateData = await RequestModel(db.sequelize).update(data, { where: { RequestId: RequestId } })
-            return updateData // Return the result of the update operation
-        } catch (error) {
-            throw error // Throw error for handling in the controller
-        }
-    }, 
-    // Method to retrieve all records by view
-    getAllDataByView: async () => {
-        try {
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.REQUEST_FIELDS}`, { type: db.Sequelize.QueryTypes.SELECT })
-            return getAllData // Return the retrieved data
-        } catch (error) {
-            throw error // Throw error for handling in the controller
-        }
-    },
-    // Method to retrieve a specific record by its ID
-    getDataByIdByView: async (RequestId) => {
-        try {
-            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.REQUEST_FIELDS} where RequestId  = ${RequestId} `, { type: db.Sequelize.QueryTypes.SELECT })
-            return getDataById[0] ?? [] // Return the retrieved data
-        } catch (error) {
-            throw error // Throw error for handling in the controller
-        }
-    }, 
-    // Method to mark a record as deleted (soft delete)
-    deleteDataById: async (RequestId, req, res) => {
-        try {
-            const [deleteDataById] = await RequestModel(db.sequelize).update({ is_active: 0, deleted_by: tokenData(req, res), deleted_at: new Date() }, {
-                where: {
-                    RequestId: RequestId
-                }
-            })
-            return deleteDataById
-        } catch (error) {
-            throw error // Throw error for handling in the controller
-        }
-    },getUserByUserId:async(user_id,limit,offset)=>{
-        try{
-             // Start with the base query
-            let query = `${ViewFieldTableVise.REQUEST_FIELDS} WHERE created_by = ${user_id} order by RequestId desc`;
-
-            // Add LIMIT and OFFSET if they’re provided
-            if (limit && offset >= 0) {
-            query += ` LIMIT ${offset}, ${limit}`;
-            }
-
-            const getAllData = await db.sequelize.query(query, {
-            type: db.Sequelize.QueryTypes.SELECT
-            });
-            return getAllData
-        }catch(error){
-            throw error
-        }
-    },getRequestsForUserFeed: async (user_id, limit = 20, already_viewed) => {
-  try {
-    const replacements = { user_id, limit: Number(limit) };
-    
-    let exclusionClause = '';
-    if (already_viewed  && typeof already_viewed =="string" && already_viewed.trim().startsWith('[')) {
-      // JSON-style string: "[174860345,174860346]"
-      already_viewed = JSON.parse(already_viewed);
-    } else if(already_viewed  && typeof already_viewed =="string"){
-      // Comma-separated string: "174860345,174860346"
-      already_viewed = already_viewed
-        .split(',')
-        .map(id => parseInt(id.trim(), 10))
-        .filter(id => !isNaN(id));
+  // Method to create a new record in the database
+  CreateData: async (data) => {
+    try {
+      const createdData = await RequestModel(db.sequelize).create(data);
+      return createdData; // Return the created data
+    } catch (error) {
+      throw error; // Throw error for handling in the controller
     }
-    console.log(typeof(already_viewed))
-    if (already_viewed && Array.isArray(already_viewed) && already_viewed.length > 0) {
-      exclusionClause = `AND r.RequestId NOT IN (:already_viewed)`;
-      replacements.already_viewed = already_viewed;
+  },
+  // Method to update an existing record by its ID
+  UpdateData: async (RequestId, data) => {
+    try {
+      const updateData = await RequestModel(db.sequelize).update(data, {
+        where: { RequestId: RequestId },
+      });
+      return updateData; // Return the result of the update operation
+    } catch (error) {
+      throw error; // Throw error for handling in the controller
     }
+  },
+  // Method to retrieve all records by view
+  getAllDataByView: async () => {
+    try {
+      const getAllData = await db.sequelize.query(
+        `${ViewFieldTableVise.REQUEST_FIELDS}`,
+        { type: db.Sequelize.QueryTypes.SELECT }
+      );
+      return getAllData; // Return the retrieved data
+    } catch (error) {
+      throw error; // Throw error for handling in the controller
+    }
+  },
+  // Method to retrieve a specific record by its ID
+  getDataByIdByView: async (RequestId) => {
+    try {
+      const getDataById = await db.sequelize.query(
+        ` ${ViewFieldTableVise.REQUEST_FIELDS} where RequestId  = ${RequestId} `,
+        { type: db.Sequelize.QueryTypes.SELECT }
+      );
+      return getDataById[0] ?? []; // Return the retrieved data
+    } catch (error) {
+      throw error; // Throw error for handling in the controller
+    }
+  },
+  // Method to mark a record as deleted (soft delete)
+  deleteDataById: async (RequestId, req, res) => {
+    try {
+      const [deleteDataById] = await RequestModel(db.sequelize).update(
+        {
+          is_active: 0,
+          deleted_by: tokenData(req, res),
+          deleted_at: new Date(),
+        },
+        {
+          where: {
+            RequestId: RequestId,
+          },
+        }
+      );
+      return deleteDataById;
+    } catch (error) {
+      throw error; // Throw error for handling in the controller
+    }
+  },
+  getUserByUserId: async (user_id, limit, offset) => {
+    try {
+      // Start with the base query
+      let query = `${ViewFieldTableVise.REQUEST_FIELDS} WHERE created_by = ${user_id} order by RequestId desc`;
 
-    const query = `
+      // Add LIMIT and OFFSET if they’re provided
+      if (limit && offset >= 0) {
+        query += ` LIMIT ${offset}, ${limit}`;
+      }
+
+      const getAllData = await db.sequelize.query(query, {
+        type: db.Sequelize.QueryTypes.SELECT,
+      });
+      return getAllData;
+    } catch (error) {
+      throw error;
+    }
+  },
+  getRequestsForUserFeed: async (user_id, limit = 20, already_viewed) => {
+    try {
+      const replacements = { user_id, limit: Number(limit) };
+
+      let exclusionClause = "";
+      if (
+        already_viewed &&
+        typeof already_viewed == "string" &&
+        already_viewed.trim().startsWith("[")
+      ) {
+        // JSON-style string: "[174860345,174860346]"
+        already_viewed = JSON.parse(already_viewed);
+      } else if (already_viewed && typeof already_viewed == "string") {
+        // Comma-separated string: "174860345,174860346"
+        already_viewed = already_viewed
+          .split(",")
+          .map((id) => parseInt(id.trim(), 10))
+          .filter((id) => !isNaN(id));
+      }
+      console.log(typeof already_viewed);
+      if (
+        already_viewed &&
+        Array.isArray(already_viewed) &&
+        already_viewed.length > 0
+      ) {
+        exclusionClause = `AND r.RequestId NOT IN (:already_viewed)`;
+        replacements.already_viewed = already_viewed;
+      }
+
+      const query = `
       SELECT * FROM (
         (
           SELECT r.*
@@ -129,46 +154,72 @@ const RequestDAL = {
       LIMIT :limit;
     `;
 
-    const results = await db.sequelize.query(query, {
-      replacements,
-      type: db.Sequelize.QueryTypes.SELECT
-    });
+      const results = await db.sequelize.query(query, {
+        replacements,
+        type: db.Sequelize.QueryTypes.SELECT,
+      });
 
-    return results ?? [];
-  } catch (error) {
-    throw error;
-  }
-},getSumOfTotalRequest:async()=>{
-  try{
-    const getData = await db.sequelize.query(
-  `SELECT 
+      return results ?? [];
+    } catch (error) {
+      throw error;
+    }
+  },
+  getSumOfTotalRequest: async () => {
+    try {
+      const getData = await db.sequelize.query(
+        `SELECT 
     COUNT(RequestId) AS total_request,
     SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_INSIATED} THEN 1 ELSE 0 END) AS total_request_insiated_status,
     SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
     SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected
   FROM ${VIEW_NAME.GET_ALL_REQUEST}
   `,
-  { type: db.Sequelize.QueryTypes.SELECT }
-);
-    return getData
-  }catch(error){
-    throw error
-  }
-},getRecentHundredRequestDesc: async () => {
-        try {
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.REQUEST_FIELDS} order by RequestId DESC LIMIT 100 `, { type: db.Sequelize.QueryTypes.SELECT })
-            return getAllData // Return the retrieved data
-        } catch (error) {
-            throw error // Throw error for handling in the controller
-        }
-    },getRequestByNgoId:async(ngo_id)=>{
-      try{
-        const getData = await db.sequelize.query(` ${ViewFieldTableVise.REQUEST_FIELDS} where AssignedNGO = ${ngo_id} `,{type:db.Sequelize.QueryTypes.SELECT})
-        return getData
-      }catch(error){
-        throw error
-      }
+        { type: db.Sequelize.QueryTypes.SELECT }
+      );
+      return getData;
+    } catch (error) {
+      throw error;
     }
-
-}
-export default RequestDAL
+  },
+  getRecentHundredRequestDesc: async () => {
+    try {
+      const getAllData = await db.sequelize.query(
+        `${ViewFieldTableVise.REQUEST_FIELDS} order by RequestId DESC LIMIT 100 `,
+        { type: db.Sequelize.QueryTypes.SELECT }
+      );
+      return getAllData; // Return the retrieved data
+    } catch (error) {
+      throw error; // Throw error for handling in the controller
+    }
+  },
+  getRequestByNgoId: async (ngo_id) => {
+    try {
+      const getData = await db.sequelize.query(
+        ` ${ViewFieldTableVise.REQUEST_FIELDS} where AssignedNGO = ${ngo_id} `,
+        { type: db.Sequelize.QueryTypes.SELECT }
+      );
+      return getData;
+    } catch (error) {
+      throw error;
+    }
+  },
+  getSumOfTotalRequestByUserId: async (request_user_id) => {
+    try {
+      const getData = await db.sequelize.query(
+        `SELECT 
+            COUNT(RequestId) AS total_request,
+            SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_INSIATED} THEN 1 ELSE 0 END) AS total_request_insiated_status,
+            SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
+            SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected,
+            SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_DRAFT} THEN 1 ELSE 0 END) AS total_request_draft,
+          FROM ${VIEW_NAME.GET_ALL_REQUEST} request_user_id = ${request_user_id}
+        `,
+        { type: db.Sequelize.QueryTypes.SELECT }
+      );
+      return getData;
+    } catch (error) {
+      throw error;
+    }
+  },
+};
+export default RequestDAL;

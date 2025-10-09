@@ -66,7 +66,8 @@ const RESPONSE_CONSTANTS = {
     INVALID_USER_ID:"Invalid user ID provided.",
     USER_ACTIVITY_NOT_FOUND:"User activity data not found.",
     TRANSACTION_FAILED:"Database transaction failed.",
-    CANNOT_BLOCK_YOURSELF:"You cannot block yourself."
+    CANNOT_BLOCK_YOURSELF:"You cannot block yourself.",
+    THE_SPECIFIC_USER_ID_DOES_EXIST:"The specified user ID does not exist. Please verify and try again."
   };
   
   export default RESPONSE_CONSTANTS;

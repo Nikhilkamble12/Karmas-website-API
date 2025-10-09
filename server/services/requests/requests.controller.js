@@ -9,6 +9,7 @@ import UserActivtyService from "../user_activity/user.activity.service.js";
 import notificationTemplates from "../../utils/helper/notification.templates.js";
 import UserTokenService from "../user_tokens/user.tokens.service.js";
 import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
+import UserRequestStatsService from "../user_request_stats/user.request.stats.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const RequestsController = {
@@ -32,6 +33,7 @@ const RequestsController = {
             const createData = await RequestService.createService(data);
 
             if (createData) {
+               const UserReqest = await UserRequestStatsService.CreateOrUpdateData(data.request_user_id)
                 // const getUserById = await UserTokenService.GetTokensByUserIds(data.request_user_id)
                 // const sendNotifiction = await sendTemplateNotification({templateKey:"Request-Notification",templateData:template,userIds:getUserById,metaData:{request_id:createData.dataValues.RequestId,created_by:tokenData(req,res)}})
                 return res
@@ -642,7 +644,7 @@ const RequestsController = {
                 )
             );
         }
-    }
+    },
 
 }
 

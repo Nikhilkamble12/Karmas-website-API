@@ -90,6 +90,8 @@ const ViewFieldTableWise = {
     USER_FOLLOWING_FIELDS:` SELECT follow_id, user_id, user_name, user_file_name, user_file_path, following_user_id, following_user_name, following_user_file_name, following_user_file_path, followed_at, is_following FROM ${VIEW_NAME.GET_ALL_USER_FOLLOWING} `,
     USER_BLACKLIST_FIELDS:` SELECT blacklist_id, user_id, user_name, blacklisted_user_id, blacklisted_user_name, reason, blacklisted_at, is_active  FROM ${VIEW_NAME.GET_ALL_USER_BLACKLIST} `,
     USER_TOKEN_FIELDS:` SELECT user_token_id, user_id, file_path, bg_image_path, role_id, android_token, web_token, is_android, is_web, is_android_on, is_web_on, updated_at FROM ${VIEW_NAME.GET_ALL_USER_TOKEN} `,
+    USER_REQUEST_STATS_FIELDS:` SELECT request_stats_id, user_id, total_request, total_draft_request, total_insiated_request, total_rejected_request, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_USER_REQUEST_STATS} `,
+
     // -------> V
     VENDOR_COMPANY_MASTER_FIELDS :` SELECT company_id, company_name, company_photo_name, company_photo_path, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_VENDOR_COMPANY_MASTER} `,
 }

@@ -44,6 +44,8 @@ import BlogsModel from "./blogs/blogs.model.js";
 import BlogMediaModel from "./blog_media/blog.media.model.js";
 import RequestTagModel from "./request_tag/request.tag.model.js";
 import PostTagModel from "./post_tag/post.tag.model.js";
+import UserRequestStatsModel from "./user_request_stats/user.request.stats.model.js";
+
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
 
@@ -117,6 +119,7 @@ db.BlogsModel = BlogsModel(sequelize,Sequelize);
 db.BlogMediaModel = BlogMediaModel(sequelize,Sequelize);
 db.RequestTagModel = RequestTagModel(sequelize,Sequelize);
 db.PostTagModel = PostTagModel(sequelize,Sequelize);
+db.UserRequestStatsModel = UserRequestStatsModel(sequelize,Sequelize);
 
 
 export default db
