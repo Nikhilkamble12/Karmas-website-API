@@ -9,7 +9,7 @@ const StateMasterModel = (sequelize)=>{
         }, state_name:{
             type:DataTypes.STRING(200),
             allowNull:false
-        }, county_id:{
+        },country_id:{
             type:DataTypes.INTEGER,
             allowNull:true
         }, is_active: {
