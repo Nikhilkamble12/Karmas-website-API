@@ -211,8 +211,8 @@ const RequestDAL = {
             SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_INSIATED} THEN 1 ELSE 0 END) AS total_request_insiated_status,
             SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
             SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected,
-            SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_DRAFT} THEN 1 ELSE 0 END) AS total_request_draft,
-          FROM ${VIEW_NAME.GET_ALL_REQUEST} request_user_id = ${request_user_id}
+            SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_DRAFT} THEN 1 ELSE 0 END) AS total_request_draft
+          FROM ${VIEW_NAME.GET_ALL_REQUEST} WHERE request_user_id = ${request_user_id}
         `,
         { type: db.Sequelize.QueryTypes.SELECT }
       );
