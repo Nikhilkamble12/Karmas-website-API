@@ -189,6 +189,9 @@
     },{
       "code":"1.0034",
       "message":"User Is Not Eligible For Gift."
+    },{
+      "code":"1.0035",
+      "message":"The specified user ID does not exist. Please verify and try again."
     }
   ]
 }

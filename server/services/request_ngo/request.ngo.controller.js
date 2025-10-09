@@ -11,6 +11,7 @@ import notificationTemplates from "../../utils/helper/notification.templates.js"
 import UserTokenService from "../user_tokens/user.tokens.service.js";
 import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
 import NgoMasterService from "../ngo_master/ngo.master.service.js";
+import UserRequestStatsService from "../user_request_stats/user.request.stats.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const RequestNgoController = {
@@ -289,6 +290,7 @@ const RequestNgoController = {
             const data = req.body
             let request_saved = false
             let request_error = false
+
             for(let i = 0 ;i<data.requestNgoList.length;i++){
                 const currentData = data.requestNgoList[i]
                 const requestNgoMapping = await RequestNgoService.getRequestAndNGoData(currentData.ngo_id,currentData.RequestId)
@@ -334,6 +336,10 @@ const RequestNgoController = {
                         request_error = true
                     }
                 }
+            }
+            const getRequestData = await RequestService.getServiceById(data.requestNgoList[1].RequestId)
+            if(getRequestData && getRequestData.length!==0){
+                const updateData = await UserRequestStatsService.CreateOrUpdateData(getRequestData[0].request_user_id)
             }
             if (request_saved && !request_error) {
                 return res
@@ -449,6 +455,7 @@ const RequestNgoController = {
                 const allUserToken = [...userToken,...AdminUserToken]
                 const getRequestImage = await RequestMediaService.getDataByRequestAndSequence(RequestId,1)
                 await sendTemplateNotification({templateKey:"Request-Approved", templateData:template, userIds:allUserToken, metaData:{created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId,ngo_logo_image:getDataByNgoRequest?.ngo_logo_path ?? null,request_media_url:getRequestImage[0]?.media_url ?? null}})
+                const RequestupdateData = await UserRequestStatsService.CreateOrUpdateData(requestDetails.request_user_id)
                 return res
                     .status(responseCode.CREATED)
                     .send(
@@ -479,6 +486,7 @@ const RequestNgoController = {
                 const NgoMasterData = {
                     total_request_rejected:(parseInt(ngoRequestRejected) + 1 )
                 }
+                const RequestupdateData = await UserRequestStatsService.CreateOrUpdateData(requestDetails.request_user_id)
                 const updateNgo = await NgoMasterService.updateService(getDataByNgoRequest.ngo_id,NgoMasterData)
                 const template = await notificationTemplates.requestRejected({ngoName:getOlderData.ngo_name, requestName:getOlderData.RequestName})
                 const UserToken = await UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN)

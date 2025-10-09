@@ -70,6 +70,12 @@ const RequestService = {
         }catch(error){
             throw error
         }
+    },getSumOfTotalRequestByUserId:async(user_id)=>{
+        try{
+            return await RequestDAL.getSumOfTotalRequestByUserId(user_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 

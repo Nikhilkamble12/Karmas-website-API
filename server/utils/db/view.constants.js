@@ -60,6 +60,7 @@ GET_ALL_NGO_LEVEL:"v_ngo_levels",
 GET_ALL_BLOGS:"v_blogs",
 GET_ALL_BLOG_MEDIA:"v_blog_media",
 GET_ALL_REQUEST_TAG:"v_request_tag",
-GET_ALL_POST_TAG:"v_post_tag"
+GET_ALL_POST_TAG:"v_post_tag",
+GET_ALL_USER_REQUEST_STATS:"v_user_request_stats",
 }
 export default VIEW_NAME

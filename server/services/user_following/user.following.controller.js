@@ -16,6 +16,18 @@ const UserFollowingController = {
             let private_templateData = null
             const getUserActivityByUser = await UserActivtyService.getDataByUserId(data.user_id)
             const getUserActivityByFollowingId = await UserActivtyService.getDataByUserId(data.following_user_id)
+            if(!getUserActivityByFollowingId || getUserActivityByFollowingId.length==0){
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.THE_SPECIFIC_USER_ID_DOES_EXIST,
+                        null,
+                        true
+                    )
+                );
+            }
             let total_following_count = parseInt(getUserActivityByUser[0].following_no) ?? 0
             let total_followed_count = parseInt(getUserActivityByFollowingId[0].follower_no) ?? 0
             const checkWetherItIsPresent = await UserFollowingService.getDataByUserIdAndFollowId(data.user_id,data.following_user_id)
@@ -26,7 +38,7 @@ const UserFollowingController = {
                         total_followed_count = total_followed_count  + 1
                     }
                     templateData = await notificationTemplates.friendRequestAccepted(getUserActivityByFollowingId[0].user_name) 
-                }else if(checkWetherItIsPresent[0].is_following==false && getUserActivityByFollowingId[0].is_account_public == false){
+                }else if((checkWetherItIsPresent[0].is_following==false && getUserActivityByFollowingId[0].is_account_public == false) || checkWetherItIsPresent[0].is_rejected == 1){
                     templateData = await notificationTemplates.friendRequestSent(getUserActivityByFollowingId[0].user_name)
                     private_templateData = await notificationTemplates.followRequestReceived(getUserActivityByFollowingId[0].user_name)
                     data.is_following = false
@@ -38,11 +50,12 @@ const UserFollowingController = {
                 }
                  const userToken = await UserTokenService.GetTokensByUserIds(getUserActivityByUser[0].user_id)
                 await addMetaDataWhileCreateUpdate(data, req, res, true);
+
+                const updateUserFollowing = await UserFollowingService.updateService(checkWetherItIsPresent[0].follow_id,data)
+                if(updateUserFollowing>0){
                 const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
                 const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
                 const updateUserMaster = await UserMasterService.updateService(getUserActivityByFollowingId[0].user_id,{total_follower:total_followed_count})
-                const updateUserFollowing = await UserFollowingService.updateService(checkWetherItIsPresent[0].follow_id,data)
-                if(updateUserFollowing>0){
                     const getNewerData = await UserFollowingService.getServiceById(checkWetherItIsPresent[0].follow_id)
                     if(getNewerData.is_following && !checkWetherItIsPresent[0].is_following){
                 const sendNotification = await sendTemplateNotification({templateKey:"User-Follow",templateData:templateData,userIds:userToken,metaData:{created_by:tokenData(req,res),follow_user_id:data.following_user_id,current_user_image:getUserActivityByUser[0]?.file_path ?? null,following_user_image:getUserActivityByFollowingId[0]?.file_path ?? null}})
@@ -84,14 +97,15 @@ const UserFollowingController = {
             templateData = await notificationTemplates.friendRequestSent(getUserActivityByFollowingId[0].user_name)
             private_templateData = await notificationTemplates.followRequestReceived(getUserActivityByFollowingId[0].user_name)
             }
-            const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
-            const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
-            const updateUsermaster = await UserMasterService.updateService(getUserActivityByFollowingId[0].user_id,{total_follower:total_followed_count})
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
             const createData = await UserFollowingService.createService(data);
             if (createData) {
+            const userToken = await UserTokenService.GetTokensByUserIds(getUserActivityByUser[0].user_id)
+            const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
+            const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
+            const updateUsermaster = await UserMasterService.updateService(getUserActivityByFollowingId[0].user_id,{total_follower:total_followed_count})
                 const sendNotification = await sendTemplateNotification({templateKey:"User-Follow",templateData:templateData,userIds:userToken,metaData:{created_by:tokenData(req,res),follow_user_id:data.following_user_id,current_user_image:getUserActivityByUser[0]?.file_path ?? null,following_user_image:getUserActivityByFollowingId[0]?.file_path ?? null}})
                 if(getUserActivityByFollowingId[0].is_account_public == false){
                     const PrivateUserId = await UserTokenService.GetTokensByUserIds(data.following_user_id)
@@ -500,6 +514,7 @@ const UserFollowingController = {
                     );
             }
         }catch(error){
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)

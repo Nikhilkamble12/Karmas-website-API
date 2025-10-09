@@ -9,6 +9,7 @@ import UserActivtyService from "../user_activity/user.activity.service.js";
 import notificationTemplates from "../../utils/helper/notification.templates.js";
 import UserTokenService from "../user_tokens/user.tokens.service.js";
 import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
+import UserRequestStatsService from "../user_request_stats/user.request.stats.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const RequestsController = {
@@ -32,6 +33,7 @@ const RequestsController = {
             const createData = await RequestService.createService(data);
 
             if (createData) {
+               const UserReqest = await UserRequestStatsService.CreateOrUpdateData(data.request_user_id)
                 // const getUserById = await UserTokenService.GetTokensByUserIds(data.request_user_id)
                 // const sendNotifiction = await sendTemplateNotification({templateKey:"Request-Notification",templateData:template,userIds:getUserById,metaData:{request_id:createData.dataValues.RequestId,created_by:tokenData(req,res)}})
                 return res
@@ -587,47 +589,63 @@ const RequestsController = {
                 )
             );
         }
-    },getRequestByNgoId:async(req,res)=>{
-        try{
-            const ngo_id = req.query.ngo_id
-            const getData = await RequestService.GetRequestByNgoId(ngo_id)
-            if (getData.length !== 0) {
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            getData
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
+    },getRequestByNgoId: async (req, res) => {
+        try {
+            const ngo_id = req.query.ngo_id;
+
+            const getData = await RequestService.GetRequestByNgoId(ngo_id);
+
+            if (!getData || getData.length === 0) {
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                commonResponse(
+                    responseCode.BAD_REQUEST,
+                    responseConst.DATA_NOT_FOUND,
+                    null,
+                    true
+                )
+                );
             }
-        }catch(error){
-            console.log("error",error)
+
+            
+            const updatedData = await Promise.all(
+            getData.map(async (request) => {
+                const request_media = await RequestMediaService.getDataByRequestIdByView(request.RequestId);
+                return {
+                ...request,
+                request_media: request_media ?? null,
+                };
+            })
+            );
+
+           
+            return res
+            .status(responseCode.OK)
+            .send(
+                commonResponse(
+                responseCode.OK,
+                responseConst.DATA_RETRIEVE_SUCCESS,
+                updatedData
+                )
+            );
+
+        } catch (error) {
+            console.error("Error:", error);
             logger.error(`Error ---> ${error}`);
             return res
             .status(responseCode.INTERNAL_SERVER_ERROR)
             .send(
                 commonResponse(
-                    responseCode.INTERNAL_SERVER_ERROR,
-                    responseConst.INTERNAL_SERVER_ERROR,
-                    null,
-                    true
+                responseCode.INTERNAL_SERVER_ERROR,
+                responseConst.INTERNAL_SERVER_ERROR,
+                null,
+                true
                 )
             );
         }
-    }
+    },
+
 }
 
 export default RequestsController
