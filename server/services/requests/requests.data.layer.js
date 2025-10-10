@@ -2,7 +2,6 @@ import RequestModel from "./requests.model.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 import VIEW_NAME from "../../utils/db/view.constants.js";
 import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
-import RequestService from "./requests.service.js";
 const { db, ViewFieldTableVise, tokenData } = commonPath; // Destructure necessary components from commonPath
 
 const RequestDAL = {
