@@ -18,7 +18,10 @@ const UserRequestStatsModel = (sequelize)=>{
         }, total_insiated_request:{
             type:DataTypes.INTEGER,
             allowNull:true
-        }, total_rejected_request:{
+        },total_request_approved:{
+            type:DataTypes.INTEGER,
+            allowNull:true
+        },total_rejected_request:{
             type:DataTypes.INTEGER,
             allowNull:true
         }, is_active: {
