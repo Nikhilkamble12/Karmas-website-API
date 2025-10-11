@@ -10,7 +10,8 @@ const RequestModel = (sequelize) => {
         }, request_user_id: {
             type: DataTypes.INTEGER,
             allowNull: false
-        }, RequestName: {
+        },
+        RequestName: {
             type: DataTypes.STRING(255),
             allowNull: false
         }, Age: {
