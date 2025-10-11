@@ -78,6 +78,10 @@ const UserMasterModel = (sequelize) => {
             type:DataTypes.INTEGER,
             allowNull:true
         },
+        google_id : {
+            type: DataTypes.STRING(45),
+            allowNull: true,
+        },
         is_blacklisted:{
             type:DataTypes.TINYINT,
             allowNull:true,
