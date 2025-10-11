@@ -371,8 +371,8 @@ const UserFollowingController = {
             // Delete data from the database
             const getOlderData = await UserFollowingService.getServiceById(id)
             if(getOlderData.is_following){
-            const getUserActivityByUser = await UserActivtyService.getDataByUserId(data.user_id)
-            const getUserActivityByFollowingId = await UserActivtyService.getDataByUserId(data.following_user_id)
+            const getUserActivityByUser = await UserActivtyService.getDataByUserId(getOlderData.user_id)
+            const getUserActivityByFollowingId = await UserActivtyService.getDataByUserId(getOlderData.following_user_id)
             let total_following_count = parseInt(getUserActivityByUser[0].following_no) ?? 0
             let total_followed_count = parseInt(getUserActivityByFollowingId[0].follower_no) ?? 0
             total_following_count = total_following_count - 1
@@ -527,11 +527,12 @@ const UserFollowingController = {
                     )
                 );
         }
-    },acceptPrivateUserRequest:async(req,res)=>{
+    },
+    /* acceptPrivateUserRequest:async(req,res)=>{
         try{
             const current_user_id = tokenData(req,res)
             const follow_user_id = req.body.follower_user_id
-            const getData = await UserFollowingService.getDataByUserIdAndFollowId(follow_user_id,current_user_id)
+            const getData = await UserFollowingService.getDataByUserIdAndFollowId(current_user_id,follow_user_id)
             if(getData && getData.length>0){
                 const data = req.body
                 const getUserActivityByUser = await UserActivtyService.getDataByUserId(data.user_id)
@@ -539,7 +540,7 @@ const UserFollowingController = {
                 let total_following_count = parseInt(getUserActivityByUser[0].following_no) ?? 0
                 let total_followed_count = parseInt(getUserActivityByFollowingId[0].follower_no) ?? 0
                 await addMetaDataWhileCreateUpdate(data, req, res, true);
-                const updateData = await UserFollowingService.updateService(getData[0].follow_id,{data})
+                const updateData = await UserFollowingService.updateService(getData[0].follow_id,data)
                 if(data.is_following){
                     total_following_count =  total_following_count + 1
                     total_followed_count = total_followed_count  + 1
@@ -602,7 +603,122 @@ const UserFollowingController = {
                     )
                 );
         }
-    },getListByFollowingUserToAccepted:async(req,res)=>{
+    }, */
+    acceptPrivateUserRequest: async (req, res) => {
+        try {
+            // 1️⃣ Get logged-in user (private account) and follower ID
+            const tokenUserId = tokenData(req, res); // private account
+            const followerUserId = req.body.follower_user_id; // user who sent the request
+
+            // 2️⃣ Fetch the follow request record
+            const getData = await UserFollowingService.getDataByUserIdAndFollowId(
+                followerUserId,   // user_id = follower
+                tokenUserId       // following_user_id = private account
+            );
+
+            if (!getData || getData.length === 0) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
+            }
+
+            // 3️⃣ Fetch activity data for both users
+            const getFollowerActivity = await UserActivtyService.getDataByUserId(followerUserId);
+            const getFollowingActivity = await UserActivtyService.getDataByUserId(tokenUserId);
+
+            let total_following_count = parseInt(getFollowerActivity[0].following_no) || 0;
+            let total_follower_count = parseInt(getFollowingActivity[0].follower_no) || 0;
+
+            // 4️⃣ Add metadata to update object
+            const data = req.body;
+            await addMetaDataWhileCreateUpdate(data, req, res, true);
+
+            // 5️⃣ Update follow request
+            const updateData = await UserFollowingService.updateService(getData[0].follow_id, data);
+
+            if (updateData === 0) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.ERROR_UPDATING_RECORD,
+                        null,
+                        true
+                    )
+                );
+            }
+
+            // 6️⃣ Handle accepted request
+            if (data.is_following) {
+                total_following_count += 1;
+                total_follower_count += 1;
+
+                // Update activities
+                await UserActivtyService.updateService(getFollowerActivity[0].user_activity_id, { following_no: total_following_count });
+                await UserActivtyService.updateService(getFollowingActivity[0].user_activity_id, { follower_no: total_follower_count });
+
+                // Update private user's total follower count
+                await UserMasterService.updateService(tokenUserId, { total_follower: total_follower_count });
+
+                // Send notification to follower
+                const templateData = await notificationTemplates.friendRequestAccepted(getData[0].following_user_name);
+                const userToken = await UserTokenService.GetTokensByUserIds(followerUserId);
+
+                await sendTemplateNotification({
+                    templateKey: "User-Follow",
+                    templateData,
+                    userIds: userToken,
+                    metaData: {
+                        created_by: tokenUserId,
+                        current_user_image: getFollowingActivity[0]?.file_path ?? null,
+                        following_user_image: getFollowerActivity[0]?.file_path ?? null
+                    }
+                });
+            }
+
+            // 7️⃣ Handle rejected request
+            else if (data.is_rejected) {
+                const templateData = await notificationTemplates.friendRequestRejected(getData[0].following_user_name);
+                const userToken = await UserTokenService.GetTokensByUserIds(followerUserId);
+
+                await sendTemplateNotification({
+                    templateKey: "User-Follow",
+                    templateData,
+                    userIds: userToken,
+                    metaData: {
+                        created_by: tokenUserId,
+                        current_user_image: getFollowingActivity[0]?.file_path ?? null,
+                        following_user_image: getFollowerActivity[0]?.file_path ?? null
+                    }
+                });
+            }
+
+            // 8️⃣ Return success
+            return res.status(responseCode.CREATED).send(
+                commonResponse(
+                    responseCode.CREATED,
+                    responseConst.SUCCESS_UPDATING_RECORD
+                )
+            );
+
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
+        }
+    },
+
+    getListByFollowingUserToAccepted:async(req,res)=>{
         try{
             const user_id = tokenData(req,res)
             const getData = await UserFollowingService.getListByFollowingUserToAccepted(user_id)
