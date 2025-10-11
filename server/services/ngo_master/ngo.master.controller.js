@@ -629,13 +629,13 @@ const NgoMasterController = {
                     if(data.pan_file!==null && data.pan_file!=="" && data.pan_file!==0 && data.pan_file!==undefined){
                     await saveBase64ToFile(
                         data.pan_file,
-                        "ngo_master/" + ngo_id + "/pan",
+                        "ngo_master/" + ngoWalaId + "/pan",
                         currentTime().replace(/ /g, "_").replace(/:/g, "-") +
                         "_" +
                         data.pan_cad_file_name
                     );
                     const upload_page_1 = data.pan_cad_file_name
-                    ? `ngo_master/${ngo_id}/pan/${currentTime()
+                    ? `ngo_master/${ngoWalaId}/pan/${currentTime()
                         .replace(/ /g, "_")
                         .replace(/:/g, "-")}_${data.pan_cad_file_name}`
                     : null;
@@ -645,13 +645,13 @@ const NgoMasterController = {
                     if(data.ngo_logo_file!==null && data.ngo_logo_file!=="" && data.ngo_logo_file!==0 && data.ngo_logo_file!==undefined){
                     await saveBase64ToFile(
                         data.ngo_logo_file,
-                        "ngo_master/" + ngo_id + "/logo",
+                        "ngo_master/" + ngoWalaId + "/logo",
                         currentTime().replace(/ /g, "_").replace(/:/g, "-") +
                           "_" +
                           data.ngo_logo
                       );
                       const upload_page_1 = data.ngo_logo
-                      ? `ngo_master/${ngo_id}/logo/${currentTime()
+                      ? `ngo_master/${ngoWalaId}/logo/${currentTime()
                           .replace(/ /g, "_")
                           .replace(/:/g, "-")}_${data.ngo_logo}`
                       : null;
@@ -661,13 +661,13 @@ const NgoMasterController = {
                     if(data.crs_regis_file!==null && data.crs_regis_file!=="" && data.crs_regis_file!==0 && data.crs_regis_file!==undefined){
                         await saveBase64ToFile(
                             data.crs_regis_file,
-                            "ngo_master/" + ngo_id + "/crs_regis",
+                            "ngo_master/" + ngoWalaId + "/crs_regis",
                             currentTime().replace(/ /g, "_").replace(/:/g, "-") +
                               "_" +
                               data.crs_regis_file_name
                           );
                           const upload_page_1 = data.crs_regis_file_name
-                          ? `ngo_master/${ngo_id}/crs_regis/${currentTime()
+                          ? `ngo_master/${ngoWalaId}/crs_regis/${currentTime()
                               .replace(/ /g, "_")
                               .replace(/:/g, "-")}_${data.crs_regis_file_name}`
                           : null;
@@ -677,13 +677,13 @@ const NgoMasterController = {
                     if(data.digital_signature_file!==null && data.digital_signature_file!=="" && data.digital_signature_file!==0 && data.digital_signature_file!==undefined){
                         await saveBase64ToFile(
                             data.digital_signature_file,
-                            "ngo_master/" + ngo_id + "/digital_signature",
+                            "ngo_master/" + ngoWalaId + "/digital_signature",
                             currentTime().replace(/ /g, "_").replace(/:/g, "-") +
                              "_" +
                             data.digital_signature_file_name
                         );
                         const upload_page_1 = data.digital_signature_file_name
-                        ? `ngo_master/${ngo_id}/digital_signature/${currentTime()
+                        ? `ngo_master/${ngoWalaId}/digital_signature/${currentTime()
                             .replace(/ /g, "_")
                             .replace(/:/g, "-")}_${data.digital_signature_file_name}`
                         : null;
@@ -693,13 +693,13 @@ const NgoMasterController = {
                     if(data.stamp_file!==null && data.stamp_file!=="" && data.stamp_file!==0 && data.stamp_file!==undefined){
                         await saveBase64ToFile(
                             data.stamp_file,
-                            "ngo_master/" + ngo_id + "/stamp",
+                            "ngo_master/" + ngoWalaId + "/stamp",
                             currentTime().replace(/ /g, "_").replace(/:/g, "-") +
                             "_" +
                             data.stamp_file_name
                         );
                         const upload_page_1 = data.stamp_file_name
-                        ? `ngo_master/${ngo_id}/stamp/${currentTime()
+                        ? `ngo_master/${ngoWalaId}/stamp/${currentTime()
                             .replace(/ /g, "_")
                             .replace(/:/g, "-")}_${data.stamp_file_name}`
                         : null;
@@ -890,6 +890,22 @@ const NgoMasterController = {
             const ngoStateDistrictMapping = await NgoStateDistrictMappingService.getDataByNgoId(ngo_id)
             const getNgoMedia = await ngoMediaService.getDataByNgoId(ngo_id)
             const getUserDetails = await UserMasterService.getUserByEmailIdByView(getNgomaster.email)
+
+              // File fields to update
+            const fileFields = [
+                "ngo_logo_path",
+                "pan_card_file_url",
+                "crs_regis_file_path",
+                "digital_signature_file_path",
+                "stamp_file_path"
+            ];
+            const baseUrl = process.env.GET_LIVE_CURRENT_URL + "/resources/";
+            fileFields.forEach(field => {
+                const value = getNgomaster[field];
+                getNgomaster[field] = (value && value !== "null" && value !== "") ? `${baseUrl}${value}` : null;
+            });
+
+
             getNgomaster.office_berears_list = getNgoOfficeBerrares
             getNgomaster.ngo_funds_details = ngoFundsDetails
             getNgomaster.ngo_state_district_mapping_list = ngoStateDistrictMapping
@@ -918,6 +934,7 @@ const NgoMasterController = {
                     );
             }
         }catch(error){
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
