@@ -26,8 +26,8 @@ const RequestModel = (sequelize) => {
         }, SahaykaEmailID: {
             type: DataTypes.STRING(255),
             allowNull: true
-        }, Category: {
-            type: DataTypes.STRING(255),
+        }, category_id: {
+            type: DataTypes.INTEGER,
             allowNull: true
         }, Address: {
             type: DataTypes.TEXT,
