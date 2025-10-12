@@ -74,7 +74,7 @@ const UserFollowingDAL = {
         }
     },getListByFollowingUserToAccepted:async(following_user_id)=>{
         try{
-            const getDataByFollowerUserId = await db.sequelize.query(` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where following_user_id = ${following_user_id} and is_following = 0 and is_rejected = 0 `,{type:db.Sequelize.QueryTypes.SELECT})
+            const getDataByFollowerUserId = await db.sequelize.query(` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where following_user_id = ${following_user_id} and is_private = true and is_rejected = 0 and is_following = false `,{type:db.Sequelize.QueryTypes.SELECT})
             return getDataByFollowerUserId
         }catch(error){
             throw error

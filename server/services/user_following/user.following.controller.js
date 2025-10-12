@@ -38,10 +38,11 @@ const UserFollowingController = {
                         total_followed_count = total_followed_count  + 1
                     }
                     templateData = await notificationTemplates.friendRequestAccepted(getUserActivityByFollowingId[0].user_name) 
-                }else if((checkWetherItIsPresent[0].is_following==false && getUserActivityByFollowingId[0].is_account_public == false) || checkWetherItIsPresent[0].is_rejected == 1){
+                }else if((checkWetherItIsPresent[0].is_following==false && getUserActivityByFollowingId[0].is_account_public == false) || (checkWetherItIsPresent[0].is_rejected == 1 && getUserActivityByFollowingId[0].is_account_public == false)){
                     templateData = await notificationTemplates.friendRequestSent(getUserActivityByFollowingId[0].user_name)
                     private_templateData = await notificationTemplates.followRequestReceived(getUserActivityByFollowingId[0].user_name)
                     data.is_following = false
+                    data.is_private = true
                 }else if(checkWetherItIsPresent[0].is_following==true){
                     if(data.is_following && data.is_following == false){
                         total_following_count = total_following_count - 1
@@ -94,6 +95,7 @@ const UserFollowingController = {
             templateData = await notificationTemplates.friendRequestAccepted(getUserActivityByFollowingId[0].user_name) 
             }else if(getUserActivityByFollowingId[0].is_account_public == false){
             data.is_following = false
+            data.is_private = true
             templateData = await notificationTemplates.friendRequestSent(getUserActivityByFollowingId[0].user_name)
             private_templateData = await notificationTemplates.followRequestReceived(getUserActivityByFollowingId[0].user_name)
             }
@@ -607,14 +609,8 @@ const UserFollowingController = {
     acceptPrivateUserRequest: async (req, res) => {
         try {
             // 1️⃣ Get logged-in user (private account) and follower ID
-            const tokenUserId = tokenData(req, res); // private account
-            const followerUserId = req.body.follower_user_id; // user who sent the request
-
-            // 2️⃣ Fetch the follow request record
-            const getData = await UserFollowingService.getDataByUserIdAndFollowId(
-                followerUserId,   // user_id = follower
-                tokenUserId       // following_user_id = private account
-            );
+            const follow_id = req.query.follow_id
+            const getData = await UserFollowingService.getServiceById(follow_id)
 
             if (!getData || getData.length === 0) {
                 return res.status(responseCode.BAD_REQUEST).send(
@@ -628,8 +624,8 @@ const UserFollowingController = {
             }
 
             // 3️⃣ Fetch activity data for both users
-            const getFollowerActivity = await UserActivtyService.getDataByUserId(followerUserId);
-            const getFollowingActivity = await UserActivtyService.getDataByUserId(tokenUserId);
+            const getFollowerActivity = await UserActivtyService.getDataByUserId(getData.user_id);
+            const getFollowingActivity = await UserActivtyService.getDataByUserId(getData.following_user_id);
 
             let total_following_count = parseInt(getFollowerActivity[0].following_no) || 0;
             let total_follower_count = parseInt(getFollowingActivity[0].follower_no) || 0;
@@ -637,9 +633,10 @@ const UserFollowingController = {
             // 4️⃣ Add metadata to update object
             const data = req.body;
             await addMetaDataWhileCreateUpdate(data, req, res, true);
-
+            if(data.is_accepted==true){
+            data.is_following = true
             // 5️⃣ Update follow request
-            const updateData = await UserFollowingService.updateService(getData[0].follow_id, data);
+            const updateData = await UserFollowingService.updateService(getData.follow_id, data);
 
             if (updateData === 0) {
                 return res.status(responseCode.BAD_REQUEST).send(
@@ -650,6 +647,7 @@ const UserFollowingController = {
                         true
                     )
                 );
+            }
             }
 
             // 6️⃣ Handle accepted request
@@ -662,18 +660,18 @@ const UserFollowingController = {
                 await UserActivtyService.updateService(getFollowingActivity[0].user_activity_id, { follower_no: total_follower_count });
 
                 // Update private user's total follower count
-                await UserMasterService.updateService(tokenUserId, { total_follower: total_follower_count });
-
+                await UserMasterService.updateService(getData.user_id, { total_follower: total_follower_count });
+                
                 // Send notification to follower
-                const templateData = await notificationTemplates.friendRequestAccepted(getData[0].following_user_name);
-                const userToken = await UserTokenService.GetTokensByUserIds(followerUserId);
+                const templateData = await notificationTemplates.friendRequestAccepted({username:getData.following_user_name});
+                const userToken = await UserTokenService.GetTokensByUserIds(getData.following_user_id);
 
                 await sendTemplateNotification({
                     templateKey: "User-Follow",
                     templateData,
                     userIds: userToken,
                     metaData: {
-                        created_by: tokenUserId,
+                        created_by: tokenData(req,res),
                         current_user_image: getFollowingActivity[0]?.file_path ?? null,
                         following_user_image: getFollowerActivity[0]?.file_path ?? null
                     }
@@ -682,15 +680,15 @@ const UserFollowingController = {
 
             // 7️⃣ Handle rejected request
             else if (data.is_rejected) {
-                const templateData = await notificationTemplates.friendRequestRejected(getData[0].following_user_name);
-                const userToken = await UserTokenService.GetTokensByUserIds(followerUserId);
+                const templateData = await notificationTemplates.friendRequestRejected({username:getData.following_user_name});
+                const userToken = await UserTokenService.GetTokensByUserIds(getData.user_id);
 
                 await sendTemplateNotification({
                     templateKey: "User-Follow",
                     templateData,
                     userIds: userToken,
                     metaData: {
-                        created_by: tokenUserId,
+                        created_by: tokenData(req,res),
                         current_user_image: getFollowingActivity[0]?.file_path ?? null,
                         following_user_image: getFollowerActivity[0]?.file_path ?? null
                     }
@@ -706,6 +704,7 @@ const UserFollowingController = {
             );
 
         } catch (error) {
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
                 commonResponse(
@@ -720,7 +719,7 @@ const UserFollowingController = {
 
     getListByFollowingUserToAccepted:async(req,res)=>{
         try{
-            const user_id = tokenData(req,res)
+            const user_id = req.query.following_user_id ?? tokenData(req,res)
             const getData = await UserFollowingService.getListByFollowingUserToAccepted(user_id)
             if (getData.length !== 0) {
                 return res
