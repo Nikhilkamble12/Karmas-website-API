@@ -23,7 +23,7 @@ const UserFollowingModel = (sequelize) => {
     is_private: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: 1
+      defaultValue: false
     },
     is_rejected: {
       type: DataTypes.BOOLEAN,
