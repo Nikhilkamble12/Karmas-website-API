@@ -331,7 +331,7 @@ const UserBlackListController = {
                 reason: blacklistData.reason || 'No reason provided LOL '
             });
 
-            // Step 9: Execute production-ready UPSERT transaction (CREATE or REACTIVATE only)
+            // Step 9: Execute   UPSERT transaction (CREATE or REACTIVATE only)
             const transactionResult = await UserBlackListService.createOrReactivateWithActivityUpdate(
                 blacklistData,
                 userActivity.user_activity_id,
