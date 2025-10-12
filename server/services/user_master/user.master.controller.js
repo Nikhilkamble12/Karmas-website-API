@@ -62,7 +62,7 @@ const UserMasterController = {
                     file_path = upload_page_1
                     //    const updateUserMaster = await UserMasterService.updateService(createData.dataValues.user_id,{file_path:upload_page_1})
                 } else {
-                    file_path = data.file_path
+                    file_path = null
                 }
 
                 if (data.bg_image_file !== null && data.bg_image_file !== "" && data.bg_image_file !== 0 && data.bg_image_file !== undefined && data.bg_image && data.bg_image !== "" && data.bg_image !== 0) {
@@ -83,8 +83,8 @@ const UserMasterController = {
                 }
 
                 const updateData = {
-                    file_path: file_path,
-                    bg_image_path: bg_image_path
+                    file_path: file_path ?? null,
+                    bg_image_path: bg_image_path ?? null
                 };
                 //console.log("updateData",updateData)
                 const updateUserMaster = await UserMasterService.updateService(createData.dataValues.user_id, updateData);
