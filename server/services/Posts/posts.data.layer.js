@@ -103,7 +103,7 @@ const PostDAL = {
         .map(id => parseInt(id.trim(), 10))
         .filter(id => !isNaN(id));
     }
-    if (Array.isArray(already_viewed) && already_viewed.length > 0) {
+    if (already_viewed.length > 0) {
       exclusionClause = `AND vp.post_id NOT IN (:already_viewed)`;
       replacements.already_viewed = already_viewed;
     }
@@ -147,7 +147,7 @@ const PostDAL = {
           AND vp.is_active = 1
           ${exclusionClause}
         ORDER BY RAND()
-        LIMIT 5
+        LIMIT 20
       )
     ) AS combined_posts
     ORDER BY created_at DESC
