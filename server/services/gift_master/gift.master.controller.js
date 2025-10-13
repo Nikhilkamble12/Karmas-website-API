@@ -356,6 +356,7 @@ const GiftMasterController = {
                         progress: parseFloat(progressValue.toFixed(2)), // number e.g. 85.32
                         hasCoupon: !!userCoupon,
                         couponCode: userCoupon?.coupon_code ?? null,
+                        status_id : userCoupon?.status_id ?? null,
                         status: userCoupon?.status_name ?? null
                     };
                 }
