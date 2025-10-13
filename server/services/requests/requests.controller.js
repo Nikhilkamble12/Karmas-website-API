@@ -535,24 +535,38 @@ const RequestsController = {
             const limit = req.query.limit
             const already_viewed = req.query.already_viewed
             const getAllRequest = await RequestService.getRequestsForUserFeed(user_id,limit,already_viewed)
-            const updatedPostData = await Promise.all(getAllRequest.map(async (currentData) => {
-                // Normalize file path
-                if (
-                    currentData.request_user_file_path &&
-                    currentData.request_user_file_path !== "null" &&
-                    currentData.request_user_file_path !== ""
-                ) {
-                    currentData.request_user_file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.request_user_file_path}`;
-                } else {
-                    currentData.request_user_file_path = null;
-                }
-    
-                // Fetch post media in parallel
-                const getAllRequestMedia = await RequestMediaService.getDataByRequestIdByView(currentData.RequestId);
-                currentData.request_media = getAllRequestMedia ?? [];
-    
-                return currentData;
-                }));
+            // Extract all request IDs first
+            const requestIds = getAllRequest.map(r => r.RequestId);
+
+            // Fetch all media at once
+            const allRequestMedia = await RequestMediaService.getDataByMultipleRequestIds(requestIds);
+
+            // Group media by RequestId
+            const mediaByRequest = allRequestMedia.reduce((acc, media) => {
+            if (!acc[media.RequestId]) acc[media.RequestId] = [];
+            acc[media.RequestId].push(media);
+            return acc;
+            }, {});
+
+            // Now enrich all requests in a single pass
+        const updatedRequestData = getAllRequest.map(currentData => {
+        // Normalize file path
+        if (
+            currentData.request_user_file_path &&
+            currentData.request_user_file_path !== "null" &&
+            currentData.request_user_file_path !== ""
+        ) {
+            currentData.request_user_file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.request_user_file_path}`;
+        } else {
+            currentData.request_user_file_path = null;
+        }
+
+        // Attach grouped media
+        currentData.request_media = mediaByRequest[currentData.RequestId] ?? [];
+
+        return currentData;
+        });
+
             if (getAllRequest.length !== 0) {
                 return res
                     .status(responseCode.OK)
@@ -560,7 +574,7 @@ const RequestsController = {
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            updatedPostData
+                            updatedRequestData
                         )
                     );
             } else {
