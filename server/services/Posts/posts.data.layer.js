@@ -168,8 +168,6 @@ const PostDAL = {
 getPostByUserIdForHome: async (user_id, limit = 20, already_viewed = []) => {
   try {
     const replacements = { user_id, limit: Number(limit) };
-    console.log("already_viewed",already_viewed)
-    console.log(typeof already_viewed)
     // --- Handle already_viewed posts array ---
     if (typeof already_viewed === "string") {
       already_viewed = already_viewed.replace(/^"|"$/g, ""); // remove wrapping quotes
