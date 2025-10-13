@@ -13,6 +13,7 @@ const UserActivtyService = {
     // Method to update an existing record by its ID 
     updateService: async (user_activity_id, data) => {
         try {
+            console.log("user_activity_id--->",user_activity_id,"data---->",data)
             return await UserActivityDAL.UpdateData(user_activity_id, data)
         } catch (error) {
             throw error

@@ -499,24 +499,57 @@ const PostController = {
       //   const getAllPostMedia = await PostMediaService.getDatabyPostIdByView(currentData.post_id)
       //   currentData.post_media = getAllPostMedia ?? []
       // }
-      const updatedPostData = await Promise.all(getAllPostData.map(async (currentData) => {
-            // Normalize file path
-            if (
-              currentData.file_path &&
-              currentData.file_path !== "null" &&
-              currentData.file_path !== ""
-            ) {
-              currentData.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.file_path}`;
-            } else {
-              currentData.file_path = null;
-            }
+      // const updatedPostData = await Promise.all(getAllPostData.map(async (currentData) => {
+      //       // Normalize file path
+      //       if (
+      //         currentData.file_path &&
+      //         currentData.file_path !== "null" &&
+      //         currentData.file_path !== ""
+      //       ) {
+      //         currentData.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.file_path}`;
+      //       } else {
+      //         currentData.file_path = null;
+      //       }
 
-            // Fetch post media in parallel
-            const getAllPostMedia = await PostMediaService.getDatabyPostIdByView(currentData.post_id);
-            currentData.post_media = getAllPostMedia ?? [];
+      //       // Fetch post media in parallel
+      //       const getAllPostMedia = await PostMediaService.getDatabyPostIdByView(currentData.post_id);
+      //       currentData.post_media = getAllPostMedia ?? [];
 
-            return currentData;
-            }));
+      //       return currentData;
+      //       }));
+
+      // ✅ Optimized parallel media loading
+      const updatedPostData = await (async () => {
+        if (!getAllPostData || getAllPostData.length === 0) return [];
+
+        // Step 1: Extract all post IDs
+        const postIds = getAllPostData.map(p => p.post_id);
+
+        // Step 2: Fetch all media for these posts in ONE query
+        const allMedia = await PostMediaService.getPostMediaByPostIdsByIn(postIds);
+
+        // Step 3: Create a map { post_id: [media...] }
+        const mediaMap = {};
+        for (const media of allMedia) {
+          if (!mediaMap[media.post_id]) mediaMap[media.post_id] = [];
+          mediaMap[media.post_id].push(media);
+        }
+
+        // Step 4: Process posts + attach media
+        return getAllPostData.map(currentData => {
+          // Normalize file path
+          currentData.file_path =
+            currentData.file_path && currentData.file_path !== "null" && currentData.file_path !== ""
+              ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.file_path}`
+              : null;
+
+          // Attach related media
+          currentData.post_media = mediaMap[currentData.post_id] || [];
+
+          return currentData;
+        });
+      })();
+
 
       if (getAllPostData.length !== 0) {
         return res

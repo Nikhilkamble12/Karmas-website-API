@@ -102,7 +102,23 @@ const RequestMediaDAL = {
     }catch(error){
       throw error
     }
+  },// RequestMediaService.js
+  getDataByMultipleRequestIdsByIn: async (requestIds) => {
+    if (!Array.isArray(requestIds) || requestIds.length === 0) return [];
+
+    const query = `
+      ${ViewFieldTableVise.REQUEST_MEDIA_FIELDS}
+      WHERE RequestId IN (:requestIds)
+        AND is_active = 1
+    `;
+
+    const media = await db.sequelize.query(query, {
+      replacements: { requestIds },
+      type: db.Sequelize.QueryTypes.SELECT,
+    });
+
+    return media ?? [];
   }
-};
+  };
 
 export default RequestMediaDAL; // Export the CommentsDAL object for use in the controller
