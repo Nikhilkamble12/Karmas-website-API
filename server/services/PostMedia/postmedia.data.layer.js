@@ -76,7 +76,20 @@ const PostMediaDAL = {
     }catch(error){
       throw error
     }
+  },getPostMediaByPostIdsByIn: async (postIds = []) => {
+  if (!postIds.length) return [];
+  
+  const query = `
+    ${ViewFieldTableVise.POST_MEDIA_FIELDS}
+    WHERE post_id IN (:postIds)
+  `;
+
+  return await db.sequelize.query(query, {
+    replacements: { postIds },
+    type: db.Sequelize.QueryTypes.SELECT
+  });
   }
+
 }
 
 export default PostMediaDAL; 

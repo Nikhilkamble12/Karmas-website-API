@@ -46,6 +46,12 @@ const PostMediaService = {
     }catch(error){
       throw error
     }
+  },getPostMediaByPostIdsByIn:async(postIds)=>{
+    try{
+      return await PostMediaDAL.getPostMediaByPostIdsByIn(postIds)
+    }catch(error){
+      throw error
+    }
   }
 };
 

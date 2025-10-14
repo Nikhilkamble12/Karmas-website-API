@@ -63,6 +63,7 @@ const UserFollowingController = {
                     }
                 if(getUserActivityByFollowingId[0].is_account_public == false){
                     const PrivateUserId = await UserTokenService.GetTokensByUserIds(data.following_user_id)
+                    private_templateData = await notificationTemplates.followRequestReceived(getUserActivityByFollowingId[0].user_name)
                     const PrivatesendNotification = await sendTemplateNotification({templateKey:"User-Follow",templateData:private_templateData,userIds:PrivateUserId,metaData:{created_by:tokenData(req,res),follow_user_id:data.user_id,current_user_image:getUserActivityByUser[0]?.file_path ?? null,following_user_image:getUserActivityByFollowingId[0]?.file_path ?? null}})
                 }
                 return res

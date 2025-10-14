@@ -423,7 +423,7 @@ const CouponsController = {
       const assignCoupon = await CouponsService.assignCouponToUser(getNewCoupon.coupon_id,
           { 
             user_id: user_id, 
-            status_id: 18, 
+            status_id: 17, 
             redeem_date: currentTime().date, 
             redeem_time: currentTime().time 
           }
