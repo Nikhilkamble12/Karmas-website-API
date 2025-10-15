@@ -391,7 +391,7 @@ getPostByUserIdForHome: async (user_id, limit = 20) => {
                   (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
                 )
             )
-            ${exclusionClause}
+            
         )
         UNION
         (
@@ -417,7 +417,7 @@ getPostByUserIdForHome: async (user_id, limit = 20) => {
                   (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
                 )
             )
-            ${exclusionClause}
+            
           ORDER BY RAND()
           LIMIT 20
         )

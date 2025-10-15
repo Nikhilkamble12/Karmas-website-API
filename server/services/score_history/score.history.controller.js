@@ -450,26 +450,30 @@ const ScoreHistoryController = {
         }
     },SearchUserScoreByUserName:async(req,res)=>{
         try{
-            const user_id = req.query.user_id
+            const user_name = req.query.user_name
             const limit = req.query.limit
             const offset = req.query.offset
-            const getScoreHistory = await ScoreHistoryService.getScoreHistoryByUserIdByView(user_id,limit,offset)
-            if (getScoreHistory.length !== 0) {
-                const getUserrank = await ScoreHistoryService.getUserRankByUserId(user_id)
+            const getScoreHistory = await ScoreHistoryService.findScoreHistoryByUsername(user_name,limit,offset)
+            //console.log("getScoreHistory",getScoreHistory)
+            if(getScoreHistory.length >  0) {
+                await Promise.all(getScoreHistory.map( async (score) => {
+                    const getUserRank = await ScoreHistoryService.getUserRankByUserId(score.user_id)
+                    score.user_rank = getUserRank
+                }))
+
                 const mergedList = {
-                    userScoredData : getScoreHistory,
-                    user_rank :getUserrank
-                }
-                 // Step 3: Save the data to local file cache
+                    userScoredData : getScoreHistory
+                } 
+
                 return res
                     .status(responseCode.OK)
                     .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            mergedList
-                        )
-                    );
+                    commonResponse(
+                        responseCode.OK,
+                        responseConst.DATA_RETRIEVE_SUCCESS,
+                        mergedList
+                    )
+                );
             } else {
                 return res
                     .status(responseCode.BAD_REQUEST)

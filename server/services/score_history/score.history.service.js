@@ -79,6 +79,16 @@ const ScoreHistoryService = {
         }catch(error){
             throw error
         }
+    },
+    findScoreHistoryByUsername: async (user_name, limit, offset) => {
+        try {
+            if (!user_name || typeof user_name !== 'string' || user_name.trim() === '') {
+            throw new Error('Invalid or missing user_name');
+            }
+            return await ScoreHistoryDAL.checkWetherUserIsPresent(user_name, limit, offset)
+        } catch (error) {
+            throw error
+        }
     }
 }
 export default ScoreHistoryService 

@@ -56,7 +56,7 @@ router.get(
 )
 // Search By UserName
 router.get(
-    `${basePath}/Searchby/Username`,
+    `${basePath}/search/byUsername`,
     verifyToken,
     ScoreHistoryController.SearchUserScoreByUserName
 )
