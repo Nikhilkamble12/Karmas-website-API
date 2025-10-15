@@ -4,7 +4,7 @@ import commonPath from "../../middleware/comman_path/comman.path.js"; // Import 
 const {express,verifyToken,basePathRoute,multer,path,fs} = commonPath
 
 // Define the base path for routes
-const basePath=`${basePathRoute}/postmedia` 
+const basePath=`${basePathRoute}/blogmedia` 
 const router = express.Router()
 
 // Convert import.meta.url to a file path
