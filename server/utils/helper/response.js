@@ -17,12 +17,18 @@ const createResponse = (
   const codeAndMessage = getCodeAndMessage(message);
    if (!isError) {
     console.log("no error in get");
-
+    // Safely determine length
+    const dataLength = Array.isArray(data)
+    ? data.length
+    : data && typeof data === "object"
+    ? Object.keys(data).length
+    : 0;
     // If it's not an error response, create a success response object
     return {
       statusCode,
       success: true,
       code: codeAndMessage?.code ?? null,
+      dataLength:dataLength,
       message: codeAndMessage?.message ?? message,
       data,
     };
