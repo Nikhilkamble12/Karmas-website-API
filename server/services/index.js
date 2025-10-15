@@ -52,7 +52,6 @@ const environment = process.env.NODE_ENV || "development";
 // Select the appropriate configuration based on the environment
 
 const config = await dbConfig[environment];
-console.log("config",config)
 // Initialize a new Sequelize instance with the selected configuration
 const sequelize = new Sequelize(config.DB, config.USER, config.PASSWORD, {
   host: config.HOST,
