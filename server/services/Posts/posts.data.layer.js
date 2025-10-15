@@ -272,6 +272,8 @@ getPostByUserIdForHome: async (user_id, limit = 20) => {
       replacements: { user_id },
       type: db.Sequelize.QueryTypes.SELECT,
     });
+    console.log("viewedResults",viewedResults)
+    let results = []
     const already_viewed = viewedResults.map((r) => r.post_id);
     let exclusionClause = "";
     if (already_viewed.length > 0) {
@@ -342,7 +344,7 @@ getPostByUserIdForHome: async (user_id, limit = 20) => {
       LIMIT :limit;
     `;
 
-    const results = await db.sequelize.query(query, {
+    results = await db.sequelize.query(query, {
       replacements,
       type: db.Sequelize.QueryTypes.SELECT,
     });
@@ -365,6 +367,70 @@ getPostByUserIdForHome: async (user_id, limit = 20) => {
       `;
 
       await db.sequelize.query(insertQuery);
+    }else if(results.length == 0){
+       // --- SQL Query ---
+    const query22 = `
+      SELECT * FROM (
+        (
+          -- 1️⃣ Posts from followed users (not blacklisted)
+          SELECT vp.*
+          FROM massom.v_Posts vp
+          JOIN user_following uf 
+            ON uf.following_user_id = vp.user_id
+          WHERE uf.user_id = :user_id
+            AND uf.is_following = 1
+            AND uf.is_active = 1
+            AND vp.is_active = 1
+            AND vp.is_blacklist = 0
+            AND NOT EXISTS (
+              SELECT 1
+              FROM user_blacklist ub
+              WHERE ub.is_active = 1
+                AND (
+                  (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
+                  OR
+                  (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
+                )
+            )
+            ${exclusionClause}
+        )
+        UNION
+        (
+          -- 2️⃣ Random discovery posts (excluding followed & blacklisted users)
+          SELECT vp.*
+          FROM massom.v_Posts vp
+          WHERE vp.user_id NOT IN (
+              SELECT following_user_id 
+              FROM user_following 
+              WHERE user_id = :user_id
+                AND is_following = 1
+                AND is_active = 1
+          )
+            AND vp.is_active = 1
+            AND vp.is_blacklist = 0
+            AND NOT EXISTS (
+              SELECT 1
+              FROM user_blacklist ub
+              WHERE ub.is_active = 1
+                AND (
+                  (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
+                  OR
+                  (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
+                )
+            )
+            ${exclusionClause}
+          ORDER BY RAND()
+          LIMIT 20
+        )
+      ) AS combined_posts
+      ORDER BY created_at DESC
+      LIMIT :limit;
+    `;
+
+      results = await db.sequelize.query(query22, {
+      replacements,
+      type: db.Sequelize.QueryTypes.SELECT,
+    });
     }
 
     // 4️⃣ Return results
