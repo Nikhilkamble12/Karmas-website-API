@@ -266,7 +266,7 @@ const RequestDAL = {
 
       const already_viewed = viewedResults.map((r) => r.request_id);
       let exclusionClause = "";
-
+      let results = []
       if (already_viewed.length > 0) {
         exclusionClause = `AND r.RequestId NOT IN (:already_viewed)`;
         replacements.already_viewed = already_viewed;
@@ -316,7 +316,7 @@ const RequestDAL = {
         LIMIT :limit;
       `;
 
-      const results = await db.sequelize.query(query, {
+      results = await db.sequelize.query(query, {
         replacements,
         type: db.Sequelize.QueryTypes.SELECT,
       });
@@ -339,6 +339,54 @@ const RequestDAL = {
         `;
 
         await db.sequelize.query(insertQuery);
+      }else if(results.length == 0){
+        const query222 = `
+        SELECT r.*
+        FROM v_Requests r
+        WHERE r.is_active = 1
+          AND r.is_blacklist = 0
+          -- Exclude blacklisted users using EXISTS (faster than NOT IN)
+          AND NOT EXISTS (
+            SELECT 1
+            FROM user_blacklist ub
+            WHERE ub.is_active = 1
+              AND (
+                (ub.user_id = r.request_user_id AND ub.blacklisted_user_id = :user_id)
+                OR
+                (ub.user_id = :user_id AND ub.blacklisted_user_id = r.request_user_id)
+              )
+          )
+          ${exclusionClause}
+          AND (
+            -- Include followed users' requests
+            r.request_user_id IN (
+              SELECT following_user_id
+              FROM user_following
+              WHERE user_id = :user_id
+                AND is_following = 1
+                AND is_active = 1
+            )
+            OR
+            -- Include random discovery requests
+            (
+              r.request_user_id NOT IN (
+                SELECT following_user_id
+                FROM user_following
+                WHERE user_id = :user_id
+                  AND is_following = 1
+                  AND is_active = 1
+              )
+              AND RAND() < 0.1  -- probabilistic sampling instead of ORDER BY RAND()
+            )
+          )
+        ORDER BY r.created_at DESC
+        LIMIT :limit;
+      `;
+
+      results = await db.sequelize.query(query222, {
+        replacements,
+        type: db.Sequelize.QueryTypes.SELECT,
+      });
       }
 
       // 4️⃣ Return results

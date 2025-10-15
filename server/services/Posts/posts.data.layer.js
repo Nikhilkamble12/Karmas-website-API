@@ -272,7 +272,6 @@ getPostByUserIdForHome: async (user_id, limit = 20) => {
       replacements: { user_id },
       type: db.Sequelize.QueryTypes.SELECT,
     });
-    console.log("viewedResults",viewedResults)
     let results = []
     const already_viewed = viewedResults.map((r) => r.post_id);
     let exclusionClause = "";
