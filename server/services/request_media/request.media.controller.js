@@ -381,7 +381,7 @@ const RequestMediaController = {
           const getUserById = await UserTokenService.GetTokensByUserIds(RequestData.request_user_id)
           const template = notificationTemplates.requestReceivedForEvaluation({requestName:RequestData.RequestName})
           const sendNotifiction = await sendTemplateNotification({templateKey:"Request-Notification",templateData:template,userIds:getUserById,metaData:{request_id:data.RequestId,created_by:tokenData(req,res),request_media_url:fileUrlData}})
-          const updateRequestStatus = await RequestService.updateService(data.RequestId,{status_id:STATUS_MASTER.REQUEST_INSIATED})
+          const updateRequestStatus = await RequestService.updateService(data.RequestId,{status_id:STATUS_MASTER.REQUEST_PENDING})
         }
         // Save to DB or perform further actions as needed
         // Example: await saveMediaToDatabase(fileUrl, data);  // This is a placeholder function
@@ -434,7 +434,7 @@ const RequestMediaController = {
           const getUserById = await UserTokenService.GetTokensByUserIds(RequestData.request_user_id)
           const template = notificationTemplates.requestReceivedForEvaluation({requestName:RequestData.RequestName})
           const sendNotifiction = await sendTemplateNotification({templateKey:"Request-Notification",templateData:template,userIds:getUserById,metaData:{request_id:data.RequestId,created_by:tokenData(req,res),request_media_url:fileUrlData}})
-          const updateRequestStatus = await RequestService.updateService(data.RequestId,{status_id:STATUS_MASTER.REQUEST_INSIATED})
+          const updateRequestStatus = await RequestService.updateService(data.RequestId,{status_id:STATUS_MASTER.REQUEST_PENDING})
         }
       deleteFile(filePath)
       if(createData) {

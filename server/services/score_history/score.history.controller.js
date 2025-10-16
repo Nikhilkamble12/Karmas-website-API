@@ -450,38 +450,60 @@ const ScoreHistoryController = {
         }
     },SearchUserScoreByUserName:async(req,res)=>{
         try{
-            const user_id = req.query.user_id
+            const user_name = req.query.user_name
             const limit = req.query.limit
             const offset = req.query.offset
-            const getScoreHistory = await ScoreHistoryService.getScoreHistoryByUserIdByView(user_id,limit,offset)
-            if (getScoreHistory.length !== 0) {
-                const getUserrank = await ScoreHistoryService.getUserRankByUserId(user_id)
-                const mergedList = {
-                    userScoredData : getScoreHistory,
-                    user_rank :getUserrank
+            const getScoreHistory = await ScoreHistoryService.findScoreHistoryByUsername(user_name,limit,offset)
+            //console.log("getScoreHistory",getScoreHistory)
+            if (getScoreHistory && getScoreHistory.length > 0) {
+           
+            const rankDataList = await Promise.all(
+                getScoreHistory.map(async (score) => {
+                const getUserRank = await ScoreHistoryService.getUserRankByUserId(score.user_id);
+
+                if (getUserRank && getUserRank.length > 0) {
+                    const r = getUserRank[0]; 
+                    return {
+                        user_id: r.user_id,
+                        user_name: r.user_name,
+                        file_name: r.file_name,
+                        file_path: r.file_path,
+                        total_score: r.total_score,
+                        rank: r.rank
+                    };
+                } else {
+                    return null;
                 }
-                 // Step 3: Save the data to local file cache
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            mergedList
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
-            }
+                })
+            );
+
+            const uniqueRanks = Array.from(
+                new Map(
+                rankDataList.filter(Boolean).map((item) => [item.user_id, item])
+                ).values()
+            );
+
+            return res
+                .status(responseCode.OK)
+                .send(
+                commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    uniqueRanks
+                )
+                );
+        } else {
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                commonResponse(
+                    responseCode.BAD_REQUEST,
+                    responseConst.DATA_NOT_FOUND,
+                    null,
+                    true
+                )
+                );
+        }
         }catch(error){
         console.log("error",error)
         logger.error(`Error ---> ${error}`);

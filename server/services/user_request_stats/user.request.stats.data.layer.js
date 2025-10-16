@@ -67,7 +67,7 @@ const UserRequestStatsDAL = {
             user_id:user_id,
             total_request:getDataByUserId[0].total_request ?? 0,
             total_draft_request:getDataByUserId[0].total_request_draft ?? 0,
-            total_insiated_request:getDataByUserId[0].total_request_insiated_status ?? 0,
+            total_insiated_request:getDataByUserId[0].total_request_pending_status ?? 0,
             total_request_approved:getDataByUserId[0].total_request_approved_status ?? 0,
             total_rejected_request:getDataByUserId[0].total_request_rejected ?? 0,
             is_active:true,

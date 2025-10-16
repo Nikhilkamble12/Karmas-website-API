@@ -162,6 +162,33 @@ const ScoreHistoryDAL = {
         }catch(error){
             throw error
         }
+    }, checkWetherUserIsPresent : async (user_name, limit, offset) => {
+        try {
+            let query = `${ViewFieldTableVise.SIMPLE_SCORE_HISTORY_FIELDS} WHERE user_name LIKE :user_name AND is_active = 1`;
+
+            const replacements = { user_name: `%${user_name}%`};
+
+            if (
+                typeof limit === 'number' &&
+                typeof offset === 'number' &&
+                !isNaN(limit) &&
+                !isNaN(offset)
+            ) {
+                query += ` LIMIT :limit OFFSET :offset`;
+                replacements.limit = limit;
+                replacements.offset = offset;
+            }
+
+            const getData = await db.sequelize.query(query, {
+                replacements,
+                type: db.Sequelize.QueryTypes.SELECT,
+            });
+
+            return getData;
+            
+        } catch (error) {
+            
+        }
     }
 }
 
