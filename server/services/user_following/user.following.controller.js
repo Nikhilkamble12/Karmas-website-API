@@ -162,7 +162,7 @@ const UserFollowingController = {
             const getUserActivityByFollowingId = await UserActivtyService.getDataByUserId(data.following_user_id)
             let total_following_count = parseInt(getUserActivityByUser[0].following_no) ?? 0
             let total_followed_count = parseInt(getUserActivityByFollowingId[0].follower_no) ?? 0
-            if(getOlderDatabyId.is_following==false){
+            if( getOlderDatabyId.is_following==false){
                     if(data.is_following && getUserActivityByFollowingId[0].is_account_public == true){
                         total_following_count =  total_following_count + 1
                         total_followed_count = total_followed_count  + 1
@@ -172,10 +172,10 @@ const UserFollowingController = {
                         templateData = await notificationTemplates.friendRequestSent(getUserActivityByFollowingId[0].user_name)
                         private_templateData = await notificationTemplates.followRequestReceived(getUserActivityByFollowingId[0].user_name) 
                     }
-                }else if(getOlderDatabyId[0].is_following==false && getUserActivityByFollowingId[0].is_account_public == false){
+                }else if(getOlderDatabyId.is_following==false && getUserActivityByFollowingId[0].is_account_public == false){
                     data.is_following = false
                 }else if(getOlderDatabyId.is_following==true){
-                    if(data.is_following && data.is_following==false){
+                    if(data.is_following==false){
                         total_following_count = total_following_count - 1
                         total_followed_count = total_followed_count - 1
                     }
