@@ -356,7 +356,7 @@ const RequestDAL = {
                 (ub.user_id = :user_id AND ub.blacklisted_user_id = r.request_user_id)
               )
           )
-          ${exclusionClause}
+         
           AND (
             -- Include followed users' requests
             r.request_user_id IN (
