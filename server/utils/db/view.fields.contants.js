@@ -14,7 +14,7 @@ const ViewFieldTableWise = {
     CITY_MASTER_FIELDS :` SELECT city_id, city_name, country_id, country_name, state_id, state_name, is_metro_city, is_active FROM ${VIEW_NAME.GET_ALL_CITY_MASTER} ` ,
     COUNTRY_MASTER_FIELDS :` SELECT country_id, country_name, is_active FROM ${VIEW_NAME.GET_ALL_COUNTRY_MASTER} `,
     COUPON_MASTER_FIELDS : ` SELECT coupon_id, coupon_code, rate, amount, company_name, active_date, expires_date, distributed_status, active_status, created_at FROM ${VIEW_NAME.GET_ALL_COUPON_MASTER} `,
-    COMMENTS_FIELDS :` SELECT comment_id, user_id, post_id, comment_text, parent_id, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_COMMENTS} `,
+    COMMENTS_FIELDS :` SELECT comment_id, user_id, post_id, comment_text, parent_id, user_name, user_profile, created_at, is_active FROM ${VIEW_NAME.GET_ALL_COMMENTS} `,
     COMPANY_MASTER_FIELDS :` SELECT company_id, company_name, company_email, company_logo, company_logo_path, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_COMPANY_MASTER} `,
     COUPONS_FIELDS: `SELECT coupon_id, coupon_code, expiry_date, gift_master_id, gift_name, gift_amount, status_id, user_id, status_name, redeem_date, redeem_time, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_COUPONS}`,
 
@@ -27,7 +27,7 @@ const ViewFieldTableWise = {
     GROUP_ROLE_PAGE_PERMISSION_FIELDS:` SELECT role_page_permission_id, role_id, role_name, page_id, page_name, page_url, mobile_url, interface, module_name, permission, ngo_level_id, level_name, description FROM ${VIEW_NAME.GET_ALL_GROUP_ROLE_PAGE_PERMISSION} `,
 
     // -------> L
-    LIKES_FIELDS:` SELECT like_id, user_id, post_id, is_liked, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at, file_path, file_name FROM ${VIEW_NAME.GET_ALL_LIKES} `,
+    LIKES_FIELDS:` SELECT like_id, user_id, post_id, is_liked, created_at, is_active, user_name, user_profile FROM ${VIEW_NAME.GET_ALL_LIKES} `,
 
     // 📘----> M
     MENU_FIELDS:` SELECT menu_id, menu, role_type, ip_address, city_cordinates, created_by, created_at, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_MENU} `,
@@ -65,8 +65,8 @@ const ViewFieldTableWise = {
     ROLE_MASTER_FIELDS:` SELECT role_id, role, menu_id, menu, is_active FROM ${VIEW_NAME.GET_ALL_ROLE_MASTER} `,
     REQUEST_MEDIA_FIELDS:` SELECT request_media_id, RequestId, img_name, media_url, media_type, sequence, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_REQUEST_MEDIA} `,
     REQUEST_TYPE_FIELDS:` SELECT request_type_id, request_type_name, created_by, created_at, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_REQUEST_TYPE} `,
-    REQUEST_COMMENTS:` SELECT comment_id, user_id, RequestName, request_id, comment_text, total_comment, parent_id, created_at, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_COMMENTS} `,
-    REQUEST_LIKES:` SELECT like_id, user_id, RequestName, request_id, is_liked, created_at, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_LIKE} `,
+    REQUEST_COMMENTS:` SELECT comment_id, user_id, RequestName, request_id, comment_text, total_comment, parent_id, created_at, is_active, user_name, user_profile FROM ${VIEW_NAME.GET_ALL_REQUEST_COMMENTS} `,
+    REQUEST_LIKES:` SELECT like_id, user_id, RequestName, request_id, is_liked, created_at, is_active, user_name, user_profile FROM ${VIEW_NAME.GET_ALL_REQUEST_LIKE} `,
     REQUEST_COMMENT_LIKES:` SELECT like_id, user_id, comment_text, request_cmt_id, is_liked, created_at, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_COMMENT_LIKE} `,
     REQUEST_TAG_FIELDS:` SELECT request_tag_id, request_id, tagged_user_id, tagged_user_image_path, user_image_path, user_id, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_TAG} `,
 

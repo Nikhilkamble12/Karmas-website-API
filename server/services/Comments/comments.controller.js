@@ -344,15 +344,6 @@ const CommentsController = {
             const limit = req.query.limit
             const offset = req.query.offset
             const getCommentData = await CommentService.getCommentByPostOrParentId(post_id,parent_id,limit,offset)
-            await Promise.all(getCommentData.map( async (comment) => {
-                const user = await UserMasterService.getServiceById(comment.user_id);
-                comment.user_name = user.user_name;
-                if(user.file_path && user.file_path!=="null" && user.file_path!==""){
-                    comment.user_profile = `${process.env.GET_LIVE_CURRENT_URL}/resources/${user.file_path}`;
-                } else {
-                    comment.user_profile = null;
-                }
-            }))
             if (getCommentData.length !== 0) {
                 return res
                     .status(responseCode.OK)
