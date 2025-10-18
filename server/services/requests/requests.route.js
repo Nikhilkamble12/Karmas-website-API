@@ -57,6 +57,10 @@ router.get(
     verifyToken,
     RequestsController.getRequestByNgoId
 )
-
+router.get(
+    `${basePath}/getHome/videoData`,
+    verifyToken,
+    RequestsController.getAllVideoRequestByUserIdForHome
+)
 // Export the router for use in other parts of the application
 export default router

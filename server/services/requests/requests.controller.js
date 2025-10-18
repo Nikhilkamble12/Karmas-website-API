@@ -658,8 +658,77 @@ const RequestsController = {
                 )
             );
         }
-    },
+    },getAllVideoRequestByUserIdForHome: async(req,res)=>{
+        try {
+            const user_id = tokenData(req, res);
+            const limit = req.query.limit;
+            const already_viewed = req.query.already_viewed;
 
+            // 1️⃣ Fetch requests with only video media
+            const getAllRequestVideos = await RequestService.getRequestVideosForUserFeed(user_id, limit, already_viewed);
+
+            // 2️⃣ Extract all request IDs
+            const requestIds = getAllRequestVideos.map(r => r.RequestId);
+
+            // 3️⃣ Fetch all media at once (only videos)
+            const allRequestMedia = await RequestMediaService.getVideoDataByMultipleRequestIds(requestIds);
+
+            // 4️⃣ Group media by RequestId
+            const mediaByRequest = allRequestMedia.reduce((acc, media) => {
+            if (!acc[media.RequestId]) acc[media.RequestId] = [];
+            acc[media.RequestId].push(media);
+            return acc;
+            }, {});
+
+            // 5️⃣ Attach media & normalize user file path
+            const updatedRequestData = getAllRequestVideos.map(currentData => {
+            if (
+                currentData.request_user_file_path &&
+                currentData.request_user_file_path !== "null" &&
+                currentData.request_user_file_path !== ""
+            ) {
+                currentData.request_user_file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.request_user_file_path}`;
+            } else {
+                currentData.request_user_file_path = null;
+            }
+
+            currentData.request_media = mediaByRequest[currentData.RequestId] ?? [];
+            return currentData;
+            });
+
+            // 6️⃣ Response
+            if (getAllRequestVideos.length !== 0) {
+            return res.status(responseCode.OK).send(
+                commonResponse(
+                responseCode.OK,
+                responseConst.DATA_RETRIEVE_SUCCESS,
+                updatedRequestData
+                )
+            );
+            } else {
+            return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(
+                responseCode.BAD_REQUEST,
+                responseConst.DATA_NOT_FOUND,
+                null,
+                true
+                )
+            );
+            }
+
+        } catch (error) {
+            console.log("error", error);
+            logger.error(`Error ---> ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(
+                responseCode.INTERNAL_SERVER_ERROR,
+                responseConst.INTERNAL_SERVER_ERROR,
+                null,
+                true
+            )
+            );
+        }
+    }
 }
 
 export default RequestsController

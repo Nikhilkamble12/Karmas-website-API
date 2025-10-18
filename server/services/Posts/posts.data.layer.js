@@ -73,10 +73,15 @@ const PostDAL = {
       
           baseQuery += ` ORDER BY post_id DESC`;
       
-          if (limit !== null && offset !== null && limit!=="null" && limit!=="undefined" && offset!=="null" && offset!=="undefined" && offset!=="" && limit!=="") {
+          // Convert safely and validate
+          const limitNum = Number(limit);
+          const offsetNum = Number(offset);
+
+          // ✅ Only include LIMIT/OFFSET if both are valid numbers
+          if (!isNaN(limitNum) && !isNaN(offsetNum)) {
             baseQuery += ` LIMIT :limit OFFSET :offset`;
-            replacements.limit = Number(limit);   // ✅ Ensure numeric type
-            replacements.offset = Number(offset); // ✅ Ensure numeric type
+            replacements.limit = limitNum;
+            replacements.offset = offsetNum;
           }
           
       
@@ -438,9 +443,194 @@ getPostByUserIdForHome: async (user_id, limit = 20) => {
     console.error("❌ Error in getPostsForUserFeed:", error);
     throw error;
   }
-}
+},
+getVideoPostByUserIdForHomePage: async (user_id, limit = 20) => {
+  try {
+    const replacements = { user_id, limit: Number(limit) };
 
+    // 1️⃣ Get already viewed video IDs
+    const viewedQuery = `
+      SELECT post_id
+      FROM user_viewed_video
+      WHERE user_id = :user_id
+        AND is_active = 1
+    `;
+    const viewedResults = await db.sequelize.query(viewedQuery, {
+      replacements: { user_id },
+      type: db.Sequelize.QueryTypes.SELECT,
+    });
 
+    let results = [];
+    const already_viewed = viewedResults.map((r) => r.post_id);
+    let exclusionClause = "";
+    if (already_viewed.length > 0) {
+      exclusionClause = `AND vp.post_id NOT IN (:already_viewed)`;
+      replacements.already_viewed = already_viewed;
+    }
+
+    // 2️⃣ Main video feed query
+    const query = `
+      SELECT * FROM (
+        (
+          -- Followed users' videos
+          SELECT DISTINCT vp.*
+          FROM massom.v_Posts vp
+          JOIN massom.v_PostMedia vpm ON vp.post_id = vpm.post_id
+          JOIN user_following uf ON uf.following_user_id = vp.user_id
+          WHERE vpm.media_type = 'video'
+            AND uf.user_id = :user_id
+            AND uf.is_following = 1
+            AND uf.is_active = 1
+            AND vp.is_active = 1
+            AND vp.is_blacklist = 0
+            AND NOT EXISTS (
+              SELECT 1
+              FROM user_blacklist ub
+              WHERE ub.is_active = 1
+                AND (
+                  (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
+                  OR
+                  (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
+                )
+            )
+            ${exclusionClause}
+        )
+        UNION
+        (
+          -- Random discovery videos
+          SELECT DISTINCT vp.*
+          FROM massom.v_Posts vp
+          JOIN massom.v_PostMedia vpm ON vp.post_id = vpm.post_id
+          JOIN (
+            SELECT FLOOR(RAND() * (SELECT MAX(post_id) FROM massom.v_Posts)) AS rand_id
+          ) AS r
+          WHERE vpm.media_type = 'video'
+            AND vp.post_id >= r.rand_id
+            AND vp.user_id NOT IN (
+              SELECT following_user_id 
+              FROM user_following 
+              WHERE user_id = :user_id
+                AND is_following = 1
+                AND is_active = 1
+            )
+            AND vp.is_active = 1
+            AND vp.is_blacklist = 0
+            AND NOT EXISTS (
+              SELECT 1
+              FROM user_blacklist ub
+              WHERE ub.is_active = 1
+                AND (
+                  (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
+                  OR
+                  (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
+                )
+            )
+            ${exclusionClause}
+          ORDER BY RAND()
+          LIMIT 20
+        )
+      ) AS combined_videos
+      ORDER BY created_at DESC
+      LIMIT :limit;
+    `;
+
+    results = await db.sequelize.query(query, {
+      replacements,
+      type: db.Sequelize.QueryTypes.SELECT,
+    });
+
+    // 3️⃣ Mark fetched videos as viewed
+    if (results.length > 0) {
+      const insertValues = results
+        .map(
+          (vp) =>
+            `(${db.sequelize.escape(user_id)}, ${db.sequelize.escape(
+              vp.post_id
+            )}, 1, NOW(), NOW())`
+        )
+        .join(",");
+
+      const insertQuery = `
+        INSERT INTO user_viewed_video (user_id, post_id, is_active, created_at, modified_at)
+        VALUES ${insertValues}
+        ON DUPLICATE KEY UPDATE modified_at = NOW(), is_active = 1;
+      `;
+
+      await db.sequelize.query(insertQuery);
+    } else if (results.length == 0) {
+      // 4️⃣ Fallback query if all videos already viewed
+      const query22 = `
+        SELECT * FROM (
+          (
+            -- Followed users' videos
+            SELECT DISTINCT vp.*
+            FROM massom.v_Posts vp
+            JOIN massom.v_PostMedia vpm ON vp.post_id = vpm.post_id
+            JOIN user_following uf ON uf.following_user_id = vp.user_id
+            WHERE vpm.media_type = 'video'
+              AND uf.user_id = :user_id
+              AND uf.is_following = 1
+              AND uf.is_active = 1
+              AND vp.is_active = 1
+              AND vp.is_blacklist = 0
+              AND NOT EXISTS (
+                SELECT 1
+                FROM user_blacklist ub
+                WHERE ub.is_active = 1
+                  AND (
+                    (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
+                    OR
+                    (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
+                  )
+              )
+          )
+          UNION
+          (
+            -- Random discovery videos
+            SELECT DISTINCT vp.*
+            FROM massom.v_Posts vp
+            JOIN massom.v_PostMedia vpm ON vp.post_id = vpm.post_id
+            WHERE vpm.media_type = 'video'
+              AND vp.user_id NOT IN (
+                SELECT following_user_id 
+                FROM user_following 
+                WHERE user_id = :user_id
+                  AND is_following = 1
+                  AND is_active = 1
+              )
+              AND vp.is_active = 1
+              AND vp.is_blacklist = 0
+              AND NOT EXISTS (
+                SELECT 1
+                FROM user_blacklist ub
+                WHERE ub.is_active = 1
+                  AND (
+                    (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
+                    OR
+                    (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
+                  )
+              )
+            ORDER BY RAND()
+            LIMIT 20
+          )
+        ) AS fallback_videos
+        ORDER BY RAND()
+        LIMIT :limit;
+      `;
+
+      results = await db.sequelize.query(query22, {
+        replacements,
+        type: db.Sequelize.QueryTypes.SELECT,
+      });
+    }
+
+    // 5️⃣ Return results
+    return results ?? [];
+  } catch (error) {
+    console.error("❌ Error in getVideoPostForHome:", error);
+    throw error;
+  }
+},
 
 };
 

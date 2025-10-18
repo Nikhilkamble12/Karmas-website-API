@@ -88,6 +88,21 @@ const PostMediaDAL = {
     replacements: { postIds },
     type: db.Sequelize.QueryTypes.SELECT
   });
+  },getVideoMediaByPostIdsByIn: async(postIds = []) => {
+    if (!postIds.length) return [];
+
+    const query = `
+      ${ViewFieldTableVise.POST_MEDIA_FIELDS}
+      WHERE post_id IN (:postIds) 
+      AND media_type = 'video'
+      AND is_active = 1
+      ORDER BY sequence ASC
+    `;
+
+    return await db.sequelize.query(query, {
+      replacements: { postIds },
+      type: db.Sequelize.QueryTypes.SELECT
+    });
   }
 
 }

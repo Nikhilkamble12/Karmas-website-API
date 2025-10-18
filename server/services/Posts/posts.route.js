@@ -54,6 +54,11 @@ router.get(
     verifyToken,
     PostController.getAllPostByUserIdForHomePage
 )
+router.get(
+    `${basePath}/getVideoPost/Home`,
+    verifyToken,
+    PostController.getAllVideoPostByUserIdForHomePage
+)
 
 // Export the router for use in other parts of the application
 export default router
