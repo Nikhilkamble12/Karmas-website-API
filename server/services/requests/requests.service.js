@@ -76,6 +76,12 @@ const RequestService = {
         }catch(error){
             throw error
         }
+    }, getRequestVideosForUserFeed:async(user_id,limit,already_viewed)=>{
+        try {
+            return await RequestDAL.getRequestVideosForUserFeed(user_id,limit,already_viewed)
+        } catch (error) {
+            throw error
+        }
     }
 }
 
