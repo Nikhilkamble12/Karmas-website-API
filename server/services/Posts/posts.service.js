@@ -52,6 +52,12 @@ const PostService = {
     }catch(error){
       throw error
     }
+  },getVideoPostByUserIdForHomePage:async(user_id,limit,already_viewed)=> {
+    try {
+      return await PostDAL.getVideoPostByUserIdForHomePage(user_id,limit,already_viewed)
+    } catch (error) {
+      throw error
+    }
   }
 };
 

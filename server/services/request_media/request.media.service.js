@@ -64,6 +64,12 @@ const RequestMediaService = {
     }catch(error){
       throw error
     }
+  },getVideoDataByMultipleRequestIds:async(RequestId)=> {
+    try{
+      return await RequestMediaDAL.getVideoDataByMultipleRequestIdsByIn(RequestId)
+    }catch(error){
+      throw error
+    }
   }
 };
 

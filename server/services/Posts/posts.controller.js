@@ -587,7 +587,85 @@ const PostController = {
           )
         );
     }
+  }, getAllVideoPostByUserIdForHomePage: async (req, res) => {
+  try {
+    const user_id = tokenData(req, res);
+    const limit = req.query.limit;
+    const already_viewed = req.query.already_viewed;
+
+    const getAllPostData = await PostService.getVideoPostByUserIdForHomePage(
+      user_id,
+      limit,
+      already_viewed
+    );
+
+    const updatedPostData = await (async () => {
+      if (!getAllPostData || getAllPostData.length === 0) return [];
+
+      const postIds = getAllPostData.map(p => p.post_id);
+
+      // Fetch all related media for these posts (only videos)
+      const allMedia = await PostMediaService.getVideoMediaByPostIdsByIns(postIds);
+
+      // Map { post_id: [media...] }
+      const mediaMap = {};
+      for (const media of allMedia) {
+        if (!mediaMap[media.post_id]) mediaMap[media.post_id] = [];
+        mediaMap[media.post_id].push(media);
+      }
+
+      // Attach media + normalize file paths
+      return getAllPostData.map(currentData => {
+        currentData.file_path =
+          currentData.file_path &&
+          currentData.file_path !== "null" &&
+          currentData.file_path !== ""
+            ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.file_path}`
+            : null;
+
+        currentData.post_media = mediaMap[currentData.post_id] || [];
+        return currentData;
+      });
+    })();
+
+    if (getAllPostData.length !== 0) {
+      return res
+        .status(responseCode.OK)
+        .send(
+          commonResponse(
+            responseCode.OK,
+            responseConst.DATA_RETRIEVE_SUCCESS,
+            updatedPostData
+          )
+        );
+    } else {
+      return res
+        .status(responseCode.BAD_REQUEST)
+        .send(
+          commonResponse(
+            responseCode.BAD_REQUEST,
+            responseConst.DATA_NOT_FOUND,
+            null,
+            true
+          )
+        );
+    }
+  } catch (error) {
+    console.log("error", error);
+    logger.error(`Error ---> ${error}`);
+    return res
+      .status(responseCode.INTERNAL_SERVER_ERROR)
+      .send(
+        commonResponse(
+          responseCode.INTERNAL_SERVER_ERROR,
+          responseConst.INTERNAL_SERVER_ERROR,
+          null,
+          true
+        )
+      );
   }
+},
+
 };
 
 export default PostController;

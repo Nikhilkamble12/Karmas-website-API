@@ -118,6 +118,22 @@ const RequestMediaDAL = {
     });
 
     return media ?? [];
+  }, getVideoDataByMultipleRequestIdsByIn: async(requestIds) => {
+    if (!Array.isArray(requestIds) || requestIds.length === 0) return [];
+
+    const query = `
+      ${ViewFieldTableVise.REQUEST_MEDIA_FIELDS}
+      WHERE RequestId IN (:requestIds)
+        AND media_type = 'video'
+        AND is_active = 1
+    `;
+
+    const media = await db.sequelize.query(query, {
+      replacements: { requestIds },
+      type: db.Sequelize.QueryTypes.SELECT,
+    });
+
+    return media ?? [];
   }
   };
 
