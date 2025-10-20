@@ -5,7 +5,7 @@ const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,ad
 
 const NgoLikesController = {
     // Create A new Record 
-    create: async (req, res) => {
+    /* create: async (req, res) => {
         try {
             const data = req.body;
              data.user_id = await tokenData(req,res);
@@ -73,9 +73,84 @@ const NgoLikesController = {
                     )
                 );
         }
-    }, 
+    }, */
+    create: async (req, res) => {
+        try {
+            const data = req.body;
+            data.user_id = await tokenData(req, res);
+
+            const existingLike = await NgolikesService.getDataByUserId(data.user_id, data.ngo_id);
+
+            if (existingLike && existingLike.length > 0) {
+                const oldLike = existingLike[0];
+
+                // ---- Case 1: Toggling from dislike -> like ----
+                if (!oldLike.is_liked && data.is_liked) {
+                    const getNgoData = await NgoMasterService.getServiceById(data.ngo_id);
+                    const totalLikes = parseInt(getNgoData.total_ngo_likes || 0) + 1;
+                    await NgoMasterService.updateService(data.ngo_id, { total_ngo_likes: totalLikes });
+                }
+
+                // ---- Case 2: Toggling from like -> dislike ----
+                if (oldLike.is_liked && !data.is_liked) {
+                    const getNgoData = await NgoMasterService.getServiceById(data.ngo_id);
+                    const totalLikes = Math.max(0, parseInt(getNgoData.total_ngo_likes || 0) - 1);
+                    await NgoMasterService.updateService(data.ngo_id, { total_ngo_likes: totalLikes });
+                }
+
+                // ---- Update the like record itself ----
+                await NgolikesService.updateService(oldLike.like_id, data);
+
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK, 
+                            responseConst.SUCCESS_UPDATING_RECORD
+                        )
+                );
+            } 
+            // ---- New like entry ----
+            else {
+                await addMetaDataWhileCreateUpdate(data, req, res, false);
+
+                const createData = await NgolikesService.createService(data);
+
+                // Increment total likes if this is a like
+                if (createData && data.is_liked) {
+                    const getNgoData = await NgoMasterService.getServiceById(data.ngo_id);
+                    const totalLikes = parseInt(getNgoData.total_ngo_likes || 0) + 1;
+                    await NgoMasterService.updateService(data.ngo_id, { total_ngo_likes: totalLikes });
+                }
+
+                return res
+                    .status(responseCode.CREATED)
+                    .send(
+                        commonResponse(
+                            responseCode.CREATED, 
+                            responseConst.SUCCESS_ADDING_RECORD
+                        )
+                );
+            }
+
+        } catch (error) {
+            console.log("error", error);
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+            );
+        }
+    },
+
     // update Record Into Db
-    update: async (req, res) => {
+    /* update: async (req, res) => {
         try {
             const id = req.query.id
             const data = req.body
@@ -136,7 +211,73 @@ const NgoLikesController = {
                     )
                 );
         }
+    }, */
+    update: async (req, res) => {
+        try {
+            const id = req.query.id;
+            const data = req.body;
+
+            // Add metadata for modification (modified by, modified at)
+            await addMetaDataWhileCreateUpdate(data, req, res, true);
+
+            const getOlderData = await NgolikesService.getServiceById(id);
+
+            if (getOlderData && !getOlderData.is_liked) {
+                // ---- Case: dislike -> like ----
+                if (data.is_liked) {
+                    const getNgoData = await NgoMasterService.getServiceById(data.ngo_id);
+                    const total_likesCount = parseInt(getNgoData.total_ngo_likes || 0) + 1;
+                    await NgoMasterService.updateService(data.ngo_id, { total_ngo_likes: total_likesCount });
+                }
+            } else if (getOlderData && getOlderData.is_liked) {
+                // ---- Case: like -> dislike ----
+                if (!data.is_liked) {
+                    const getNgoData = await NgoMasterService.getServiceById(data.ngo_id);
+                    const total_likesCount = Math.max(0, parseInt(getNgoData.total_ngo_likes || 0) - 1);
+                    await NgoMasterService.updateService(data.ngo_id, { total_ngo_likes: total_likesCount });
+                }
+            }
+
+            // ---- Update the like record itself ----
+            const updatedRowsCount = await NgolikesService.updateService(id, data);
+
+            if (updatedRowsCount === 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_UPDATING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+
+            return res
+                .status(responseCode.CREATED)
+                .send(
+                    commonResponse(
+                        responseCode.CREATED,
+                        responseConst.SUCCESS_UPDATING_RECORD
+                    )
+                );
+
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
     },
+
     // Retrieve all records 
     getAllByView: async (req, res) => {
         try {
