@@ -19,103 +19,241 @@ const {
 
 const LikesController = {
   // Create a new Record
+  // create: async (req, res) => {
+  //   try {
+  //     const data = req.body;
+  //     // Validate required fields
+  //     if (!data.post_id) {
+  //       return res
+  //         .status(responseCode.BAD_REQUEST)
+  //         .send(
+  //           commonResponse(
+  //             responseCode.BAD_REQUEST,
+  //             "post_id is required",
+  //             null,
+  //             true
+  //           )
+  //         );
+  //     }
+  //     // Set user_id from token if not provided
+  //     if (!data.user_id || data.user_id === "null" || data.user_id === "undefined" || data.user_id === 0) {
+  //       data.user_id = tokenData(req, res);
+  //     }
+  //     // Add metadata to creation (created_by, created_at,)
+  //     await addMetaDataWhileCreateUpdate(data, req, res, false);
+  //     // data.created_by=1,
+  //     // data.created_at = new Date()
+  //     // Create the record using ORM
+  //     const postData = await PostService.getServiceById(data.post_id)
+
+  //     if(data.is_liked){
+  //       const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
+  //       const total_likes = parseInt(getUserActivityData[0].total_likes_no) + 1
+  //       const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes_no:total_likes})
+
+  //       if(postData) {
+  //         await PostService.updateService(data.post_id,
+  //           {
+  //             total_likes: parseInt(postData.total_likes || 0) + 1           
+  //           }
+  //         )
+  //       }
+  //     }
+  //     const currentUser = await UserMasterService.getServiceById(data.user_id);
+  //     const template = notificationTemplates.postLiked({ username : currentUser.user_name })
+  //     const createdData = await LikesService.createSerive(data);
+  //     const likeData = await LikesService.getServiceById(createdData.like_id);
+  //     if (likeData.file_path && likeData.file_path !== "null" && likeData.file_path !== "") {
+  //           likeData.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${likeData.file_path}`;
+  //         } else {
+  //           likeData.file_path = null;
+  //         }
+  //     const postMediaData = await PostMediaService.getDatabyPostIdByView(data.post_id);
+    
+  //     if (createdData) {
+  //       // get user tokens
+  //       const getUserToken = await UserTokenService.GetTokensByUserIds(postData.user_id)
+  //       // send notification
+  //       if(getUserToken.length!==0 && data.user_id !== postData.user_id){
+  //         await sendTemplateNotification({templateKey:"Postliked-Notification",templateData:template,userIds:getUserToken,metaData:{like_id:createdData.dataValues.like_id,
+  //           user_profile : likeData?.file_path,
+  //           post_image:  postMediaData.length!==0 ? postMediaData[0]?.media_url : null,
+  //           created_by: tokenData(req,res)}})
+  //       }
+  //       return res
+  //         .status(responseCode.CREATED)
+  //         .send(
+  //           commonResponse(
+  //             responseCode.CREATED,
+  //             responseConst.SUCCESS_ADDING_RECORD,
+  //             createdData
+  //           )
+  //         );
+  //     } else {
+  //       return res
+  //         .status(responseCode.BAD_REQUEST)
+  //         .send(
+  //           commonResponse(
+  //             responseCode.BAD_REQUEST,
+  //             responseConst.ERROR_ADDING_RECORD,
+  //             null,
+  //             true
+  //           )
+  //         );
+  //     }
+  //   } catch (error) {
+  //     console.log("error", error);
+  //     logger.error(`Error --> ${error}`);
+  //     return res
+  //       .status(responseCode.INTERNAL_SERVER_ERROR)
+  //       .send(
+  //         commonResponse(
+  //           responseCode.INTERNAL_SERVER_ERROR,
+  //           responseConst.ERROR_ADDING_RECORD,
+  //           null,
+  //           true
+  //         )
+  //       );
+  //   }
+  // },
   create: async (req, res) => {
     try {
-      const data = req.body;
-      // Validate required fields
-      if (!data.post_id) {
-        return res
-          .status(responseCode.BAD_REQUEST)
-          .send(
-            commonResponse(
-              responseCode.BAD_REQUEST,
-              "post_id is required",
-              null,
-              true
-            )
-          );
-      }
-      // Set user_id from token if not provided
-      if (!data.user_id || data.user_id === "null" || data.user_id === "undefined" || data.user_id === 0) {
-        data.user_id = tokenData(req, res);
-      }
-      // Add metadata to creation (created_by, created_at,)
-      await addMetaDataWhileCreateUpdate(data, req, res, false);
-      // data.created_by=1,
-      // data.created_at = new Date()
-      // Create the record using ORM
-      const postData = await PostService.getServiceById(data.post_id)
+        const data = req.body;
+       // Validate required fields
+        if (!data.post_id) {
+          return res
+            .status(responseCode.BAD_REQUEST)
+            .send(
+              commonResponse(
+                responseCode.BAD_REQUEST,
+                "post_id is required",
+                null,
+                true
+              )
+            );
+        }
 
-      if(data.is_liked){
-        const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
-        const total_likes = parseInt(getUserActivityData[0].total_likes_no) + 1
-        const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes_no:total_likes})
+        if (!data.user_id || data.user_id === "null" || data.user_id === "undefined" || data.user_id === 0) {
+          data.user_id = tokenData(req, res);
+        }
 
-        if(postData) {
-          await PostService.updateService(data.post_id,
-            {
-              total_likes: parseInt(postData.total_likes || 0) + 1           
+        // Add metadata (created_by, updated_by, etc.)
+        await addMetaDataWhileCreateUpdate(data, req, res, false);
+
+        // Check if the user already liked/disliked this post
+        const existingLike = await LikesService.getDataByUserIdAndPostId(data.user_id, data.post_id);
+
+        if (existingLike && existingLike.length > 0) {
+            const oldLike = existingLike[0];
+
+            // ---- Case 1.1: dislike → like ----
+            if (!oldLike.is_liked && data.is_liked) {
+                // Increment user total post likes
+                const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
+                const total_post_like_no = parseInt(getUserActivityData[0].total_post_like_no ?? 0) + 1;
+                await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_likes_no : total_post_like_no });
+
+                // Increment post total likes
+                const getPostData = await PostService.getDataByIdByView(data.post_id);
+                const total_likes = parseInt(getPostData.total_likes ?? 0) + 1;
+                await PostService.updateService(data.post_id, { total_likes });
             }
-          )
+
+            // ---- Case 1.2: like → dislike ----
+            if (oldLike.is_liked && !data.is_liked) {
+                const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
+                const total_post_like_no = Math.max(0, parseInt(getUserActivityData[0].total_post_like_no ?? 0) - 1);
+                await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_likes_no : total_post_like_no });
+
+                const getPostData = await PostService.getDataByIdByView(data.post_id);
+                const total_likes = Math.max(0, parseInt(getPostData.total_likes ?? 0) - 1);
+                await PostService.updateService(data.post_id, { total_likes });
+            }
+
+            // Update existing like record
+            await LikesService.updateService(oldLike.like_id, data);
+
+            return res
+                .status(responseCode.OK)
+                .send(
+                    commonResponse(
+                        responseCode.OK,
+                        responseConst.SUCCESS_UPDATING_RECORD
+                    )
+                );
+        } else {
+            if (data.is_liked) {
+                // Increment user total post likes
+                const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
+                const total_post_like_no = parseInt(getUserActivityData[0].total_post_like_no ?? 0) + 1;
+                await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_likes_no : total_post_like_no });
+
+                // Increment post total likes
+                const getPostData = await PostService.getDataByIdByView(data.post_id);
+                const total_likes = parseInt(getPostData.total_likes ?? 0) + 1;
+                await PostService.updateService(data.post_id, { total_likes });
+            }
+
+            // Create new like record
+            const createData = await LikesService.createSerive(data);
+
+            // ---- Send notification only for new likes ----
+            if (createData && data.is_liked) {
+                const currentUser = await UserMasterService.getServiceById(data.user_id);
+                const postData = await PostService.getDataByIdByView(data.post_id);
+                const postMediaData = await PostMediaService.getDatabyPostIdByView(data.post_id);
+                const getUserToken = await UserTokenService.GetTokensByUserIds(postData.user_id);
+
+                // Format user profile image
+                if (currentUser.file_path && currentUser.file_path !== "null" && currentUser.file_path !== "") {
+                    currentUser.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentUser.file_path}`;
+                } else {
+                    currentUser.file_path = null;
+                }
+
+                const template = notificationTemplates.postLiked({ username: currentUser.user_name });
+
+                if (postData.user_id !== data.user_id && getUserToken.length !== 0) {
+                    await sendTemplateNotification({
+                        templateKey: "Postliked-notification",
+                        templateData: template,
+                        userIds: getUserToken,
+                        metaData: {
+                            like_id: createData.dataValues.like_id,
+                            user_profile: currentUser?.file_path,
+                            post_media_url: postMediaData.length !== 0 ? postMediaData[0]?.media_url : null,
+                            created_by: data.user_id
+                        }
+                    });
+                }
+            }
+
+            return res
+                .status(responseCode.CREATED)
+                .send(
+                    commonResponse(
+                        responseCode.CREATED,
+                        responseConst.SUCCESS_ADDING_RECORD
+                    )
+                );
         }
-      }
-      const currentUser = await UserMasterService.getServiceById(data.user_id);
-      const template = notificationTemplates.postLiked({ username : currentUser.user_name })
-      const createdData = await LikesService.createSerive(data);
-      const likeData = await LikesService.getServiceById(createdData.like_id);
-      if (likeData.file_path && likeData.file_path !== "null" && likeData.file_path !== "") {
-            likeData.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${likeData.file_path}`;
-          } else {
-            likeData.file_path = null;
-          }
-      const postMediaData = await PostMediaService.getDatabyPostIdByView(data.post_id);
-    
-      if (createdData) {
-        // get user tokens
-        const getUserToken = await UserTokenService.GetTokensByUserIds(postData.user_id)
-        // send notification
-        if(getUserToken.length!==0 && data.user_id !== postData.user_id){
-          await sendTemplateNotification({templateKey:"Postliked-Notification",templateData:template,userIds:getUserToken,metaData:{like_id:createdData.dataValues.like_id,
-            user_profile : likeData?.file_path,
-            post_image:  postMediaData.length!==0 ? postMediaData[0]?.media_url : null,
-            created_by: tokenData(req,res)}})
-        }
-        return res
-          .status(responseCode.CREATED)
-          .send(
-            commonResponse(
-              responseCode.CREATED,
-              responseConst.SUCCESS_ADDING_RECORD,
-              createdData
-            )
-          );
-      } else {
-        return res
-          .status(responseCode.BAD_REQUEST)
-          .send(
-            commonResponse(
-              responseCode.BAD_REQUEST,
-              responseConst.ERROR_ADDING_RECORD,
-              null,
-              true
-            )
-          );
-      }
+
     } catch (error) {
-      console.log("error", error);
-      logger.error(`Error --> ${error}`);
-      return res
-        .status(responseCode.INTERNAL_SERVER_ERROR)
-        .send(
-          commonResponse(
-            responseCode.INTERNAL_SERVER_ERROR,
-            responseConst.ERROR_ADDING_RECORD,
-            null,
-            true
-          )
-        );
+        console.log("error", error);
+        logger.error(`Error ---> ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
     }
-  },
+},
+
   // Update an existing record by its ID
   update: async (req, res) => {
     try {
