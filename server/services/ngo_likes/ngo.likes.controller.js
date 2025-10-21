@@ -87,14 +87,14 @@ const NgoLikesController = {
                 // ---- Case 1: Toggling from dislike -> like ----
                 if (!oldLike.is_liked && data.is_liked) {
                     const getNgoData = await NgoMasterService.getServiceById(data.ngo_id);
-                    const totalLikes = parseInt(getNgoData.total_ngo_likes || 0) + 1;
+                    const totalLikes = parseInt(getNgoData.total_ngo_likes ?? 0) + 1;
                     await NgoMasterService.updateService(data.ngo_id, { total_ngo_likes: totalLikes });
                 }
 
                 // ---- Case 2: Toggling from like -> dislike ----
                 if (oldLike.is_liked && !data.is_liked) {
                     const getNgoData = await NgoMasterService.getServiceById(data.ngo_id);
-                    const totalLikes = Math.max(0, parseInt(getNgoData.total_ngo_likes || 0) - 1);
+                    const totalLikes = Math.max(0, parseInt(getNgoData.total_ngo_likes ?? 0) - 1);
                     await NgoMasterService.updateService(data.ngo_id, { total_ngo_likes: totalLikes });
                 }
 
@@ -119,7 +119,7 @@ const NgoLikesController = {
                 // Increment total likes if this is a like
                 if (createData && data.is_liked) {
                     const getNgoData = await NgoMasterService.getServiceById(data.ngo_id);
-                    const totalLikes = parseInt(getNgoData.total_ngo_likes || 0) + 1;
+                    const totalLikes = parseInt(getNgoData.total_ngo_likes ?? 0) + 1;
                     await NgoMasterService.updateService(data.ngo_id, { total_ngo_likes: totalLikes });
                 }
 
@@ -226,14 +226,14 @@ const NgoLikesController = {
                 // ---- Case: dislike -> like ----
                 if (data.is_liked) {
                     const getNgoData = await NgoMasterService.getServiceById(data.ngo_id);
-                    const total_likesCount = parseInt(getNgoData.total_ngo_likes || 0) + 1;
+                    const total_likesCount = parseInt(getNgoData.total_ngo_likes ?? 0) + 1;
                     await NgoMasterService.updateService(data.ngo_id, { total_ngo_likes: total_likesCount });
                 }
             } else if (getOlderData && getOlderData.is_liked) {
                 // ---- Case: like -> dislike ----
                 if (!data.is_liked) {
                     const getNgoData = await NgoMasterService.getServiceById(data.ngo_id);
-                    const total_likesCount = Math.max(0, parseInt(getNgoData.total_ngo_likes || 0) - 1);
+                    const total_likesCount = Math.max(0, parseInt(getNgoData.total_ngo_likes ?? 0) - 1);
                     await NgoMasterService.updateService(data.ngo_id, { total_ngo_likes: total_likesCount });
                 }
             }

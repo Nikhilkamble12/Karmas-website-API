@@ -78,6 +78,14 @@ const RequestModel = (sequelize) => {
          status_id: {
             type: DataTypes.INTEGER,
             allowNull: true
+        }, total_likes: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0
+        }, total_comments: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue : 0
         },
         is_active: {
             type: DataTypes.BOOLEAN,

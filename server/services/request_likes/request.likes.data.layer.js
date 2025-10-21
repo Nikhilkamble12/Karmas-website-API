@@ -79,6 +79,13 @@ const RequestLikeDAL = {
         }catch(error){
             throw error
         }
+    },getDataByUserIdandRequestId:async(user_id,request_id)=>{
+        try{
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.REQUEST_LIKES} where user_id = ${user_id} and request_id = ${request_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getAllData
+        }catch(error){
+            throw error
+        }
     }
 }
 

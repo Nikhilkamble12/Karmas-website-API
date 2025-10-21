@@ -90,6 +90,13 @@ const LikesDAL = {
     }catch(error){
       throw error
     }
+  },getDataByUserIdAndPostId:async(user_id,post_id)=>{
+    try{
+        const getAllData = await db.sequelize.query(`${ViewFieldTableVise.LIKES_FIELDS} where user_id = ${user_id} and post_id = ${post_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+        return getAllData
+    }catch(error){
+        throw error
+    }
   }
 };
 

@@ -1,3 +1,4 @@
+import { request } from "express";
 import RequestLikeDAL from "./request.likes.data.layer.js";
 
 const RequestLikeService = {
@@ -50,6 +51,12 @@ const RequestLikeService = {
         try{
             return await RequestLikeDAL.getRequestLikeByUserIdByView(user_id,limit,offset)
         }catch(error){
+            throw error
+        }
+    },getDataByUserIdandRequestId:async(user_id,request_id)=>{
+        try {
+            return await RequestLikeDAL.getDataByUserIdandRequestId(user_id,request_id)
+        } catch (error) {
             throw error
         }
     }

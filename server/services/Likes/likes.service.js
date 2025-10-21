@@ -52,6 +52,12 @@ const LikesService = {
     }catch(error){
       throw error
     }
+  },getDataByUserIdAndPostId:async(user_id, post_id)=>{
+    try {
+      return await LikesDAL.getDataByUserIdAndPostId(user_id,post_id)
+    } catch (error) {
+      throw error
+    }
   }
 }
 

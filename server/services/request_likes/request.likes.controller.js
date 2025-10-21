@@ -14,66 +14,111 @@ const RequestLikesController = {
     create: async (req, res) => {
         try {
             const data = req.body;
-            // Add metadata for creation (created by, created at)
+            data.user_id = await tokenData(req, res);
+
+            // Add metadata for creation
             await addMetaDataWhileCreateUpdate(data, req, res, false);
-            if (data.is_liked) {
-                const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req, res))
-                const total_request_like_no = parseInt(getUserActivityData[0].total_request_like_no) + 1
-                const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no: total_request_like_no })
-            }
-            // data.created_by=1,
-            // data.created_at = new Date()
-            // Create the record using ORM
-            const currentUser = await UserMasterService.getServiceById(data.user_id);
-            const template = notificationTemplates.requestLiked({ username: currentUser.user_name})
-            const createData = await RequestLikeService.createService(data);
-            const requestMediaData = await RequestMediaService.getDataByRequestIdByView(data.request_id)
 
-            if(currentUser.file_path && currentUser.file_path!=="null" && currentUser.file_path!==""){
-                currentUser.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentUser.file_path}`;
-            } else {
-                currentUser.file_path = null;
-            }
+            // Check if user has already liked/disliked this request
+            const existingLike = await RequestLikeService.getDataByUserIdandRequestId(data.user_id, data.request_id);
 
-            if (createData) {
-                const requestData = await RequestService.getServiceById(data.request_id);
-                const getUserToken = await UserTokenService.GetTokensByUserIds(requestData.request_user_id);
-                
-                if(requestData.request_user_id !== data.user_id && getUserToken.length!==0) {
-                    await sendTemplateNotification({templateKey:"Requestliked-notification",
-                        templateData:template,
-                        userIds:getUserToken,
-                        metaData : {
-                            like_id:createData.dataValues.request_like_id,
-                            user_profile : currentUser?.file_path,
-                            request_media_url : requestMediaData.length!==0 ? requestMediaData[0]?.media_url : null,
-                            created_by: tokenData(req,res)
-                        }
-                    })
+            if (existingLike && existingLike.length > 0) {
+                const oldLike = existingLike[0];
+
+                // ---- Case 1: dislike -> like ----
+                if (!oldLike.is_liked && data.is_liked) {
+                    // Update user activity like count
+                    const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
+                    const total_request_like_no = parseInt(getUserActivityData[0].total_request_like_no ?? 0) + 1;
+                    await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no });
+
+                    // Update request total_likes
+                    const getRequestData = await RequestService.getServiceById(data.request_id);
+                    const total_likes = parseInt(getRequestData.total_likes ?? 0) + 1;
+                    await RequestService.updateService(data.request_id, { total_likes });
+                }
+
+                // ---- Case 2: like -> dislike ----
+                if (oldLike.is_liked && !data.is_liked) {
+                    const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
+                    const total_request_like_no = Math.max(0, parseInt(getUserActivityData[0].total_request_like_no ?? 0) - 1);
+                    await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no });
+
+                    const getRequestData = await RequestService.getServiceById(data.request_id);
+                    const total_likes = Math.max(0, parseInt(getRequestData.total_likes ?? 0) - 1);
+                    await RequestService.updateService(data.request_id, { total_likes });
+                }
+
+                // ---- Update the existing like record ----
+                await RequestLikeService.updateService(oldLike.like_id, data);
+
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK, 
+                            responseConst.SUCCESS_UPDATING_RECORD
+                        )
+                    );
+            } 
+            // ---- New like entry ----
+            else {
+                // Increment total_request_like_no and total_likes if it’s a like
+                if (data.is_liked) {
+                    const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
+                    const total_request_like_no = parseInt(getUserActivityData[0].total_request_like_no ?? 0) + 1;
+                    await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no });
+
+                    const getRequestData = await RequestService.getServiceById(data.request_id);
+                    const total_likes = parseInt(getRequestData.total_likes ?? 0) + 1;
+                    await RequestService.updateService(data.request_id, { total_likes });
+                }
+
+                // Create new like record
+                const createData = await RequestLikeService.createService(data);
+
+                // ---- Send notification only for new likes ----
+                if (createData && data.is_liked) {
+                    const currentUser = await UserMasterService.getServiceById(data.user_id);
+                    const requestData = await RequestService.getServiceById(data.request_id);
+                    const getUserToken = await UserTokenService.GetTokensByUserIds(requestData.request_user_id);
+                    const requestMediaData = await RequestMediaService.getDataByRequestIdByView(data.request_id);
+
+                    if (currentUser.file_path && currentUser.file_path !== "null" && currentUser.file_path !== "") {
+                        currentUser.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentUser.file_path}`;
+                    } else {
+                        currentUser.file_path = null;
+                    }
+
+                    const template = notificationTemplates.requestLiked({ username: currentUser.user_name });
+
+                    if (requestData.request_user_id !== data.user_id && getUserToken.length !== 0) {
+                        await sendTemplateNotification({
+                            templateKey: "Requestliked-notification",
+                            templateData: template,
+                            userIds: getUserToken,
+                            metaData: {
+                                like_id: createData.dataValues.like_id,
+                                user_profile: currentUser?.file_path,
+                                request_media_url: requestMediaData.length !== 0 ? requestMediaData[0]?.media_url : null,
+                                created_by: data.user_id
+                            }
+                        });
+                    }
                 }
 
                 return res
                     .status(responseCode.CREATED)
                     .send(
                         commonResponse(
-                            responseCode.CREATED,
+                            responseCode.CREATED, 
                             responseConst.SUCCESS_ADDING_RECORD
                         )
                     );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_ADDING_RECORD,
-                            null,
-                            true
-                        )
-                    );
             }
+
         } catch (error) {
-            console.log("error", error)
+            console.log("error", error);
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
