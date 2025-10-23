@@ -154,7 +154,7 @@ const LikesController = {
                 await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_likes_no : total_post_like_no });
 
                 // Increment post total likes
-                const getPostData = await PostService.getDataByIdByView(data.post_id);
+                const getPostData = await PostService.getServiceById(data.post_id);
                 const total_likes = parseInt(getPostData.total_likes ?? 0) + 1;
                 await PostService.updateService(data.post_id, { total_likes });
             }
@@ -165,7 +165,7 @@ const LikesController = {
                 const total_post_like_no = Math.max(0, parseInt(getUserActivityData[0].total_post_like_no ?? 0) - 1);
                 await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_likes_no : total_post_like_no });
 
-                const getPostData = await PostService.getDataByIdByView(data.post_id);
+                const getPostData = await PostService.getServiceById(data.post_id);
                 const total_likes = Math.max(0, parseInt(getPostData.total_likes ?? 0) - 1);
                 await PostService.updateService(data.post_id, { total_likes });
             }
@@ -189,7 +189,7 @@ const LikesController = {
                 await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_likes_no : total_post_like_no });
 
                 // Increment post total likes
-                const getPostData = await PostService.getDataByIdByView(data.post_id);
+                const getPostData = await PostService.getServiceById(data.post_id);
                 const total_likes = parseInt(getPostData.total_likes ?? 0) + 1;
                 await PostService.updateService(data.post_id, { total_likes });
             }
@@ -200,7 +200,7 @@ const LikesController = {
             // ---- Send notification only for new likes ----
             if (createData && data.is_liked) {
                 const currentUser = await UserMasterService.getServiceById(data.user_id);
-                const postData = await PostService.getDataByIdByView(data.post_id);
+                const postData = await PostService.getServiceById(data.post_id);
                 const postMediaData = await PostMediaService.getDatabyPostIdByView(data.post_id);
                 const getUserToken = await UserTokenService.GetTokensByUserIds(postData.user_id);
 
