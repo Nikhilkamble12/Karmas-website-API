@@ -319,6 +319,7 @@ getPostByUserIdForHome: async (user_id, limit = 20) => {
           JOIN (
             SELECT FLOOR(RAND() * (SELECT MAX(post_id) FROM massom.v_Posts)) AS rand_id
           ) AS r
+          JOIN user_master u ON u.user_id = vp.user_id
           WHERE vp.post_id >= r.rand_id
             AND vp.user_id NOT IN (
               SELECT following_user_id 
@@ -329,6 +330,8 @@ getPostByUserIdForHome: async (user_id, limit = 20) => {
             )
             AND vp.is_active = 1
             AND vp.is_blacklist = 0
+            AND u.is_account_public = 1 
+            AND u.is_blacklisted = 0        
             AND NOT EXISTS (
               SELECT 1
               FROM user_blacklist ub
