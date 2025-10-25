@@ -10,6 +10,7 @@ import notificationTemplates from "../../utils/helper/notification.templates.js"
 import UserTokenService from "../user_tokens/user.tokens.service.js";
 import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
 import UserRequestStatsService from "../user_request_stats/user.request.stats.service.js";
+import RequestTagService from "../request_tag/request.tag.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const RequestsController = {
@@ -164,6 +165,11 @@ const RequestsController = {
             //   }
             // }
             // Return fetched data or handle case where no data is found
+            await Promise.all(getAll.map(async(currentData)=> {
+                const getTaggedUsers = await RequestTagService.getAllTagByRequestd(currentData.RequestId)
+                currentData.tagged_users = getTaggedUsers
+            }))
+
             if (getAll.length !== 0) {
                 return res
                     .status(responseCode.OK)
@@ -222,6 +228,8 @@ const RequestsController = {
             const getDataByid = await RequestService.getServiceById(Id)
             const getRequestMedia = await RequestMediaService.getDataByRequestIdByView(Id)
             getDataByid.request_media = getRequestMedia
+            const getTagedUsers = await RequestTagService.getAllTagByRequestd(Id)
+            getDataByid.tagged_users = getTagedUsers
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){

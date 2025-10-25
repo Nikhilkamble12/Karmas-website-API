@@ -37,5 +37,11 @@ router.delete(
     ReqestTagController.deleteData
 )
 
+router.get(
+    `${basePath}/get/byRequestId`,
+    verifyToken,
+    ReqestTagController.getDataByRequestId
+)
+
 // Export the router for use in other parts of the application
 export default router
