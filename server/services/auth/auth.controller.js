@@ -134,7 +134,8 @@ let AuthController = {
           user_id: userData.user_id,
           user_name: userData.user_name,
           full_name: userData.full_name,
-          role: userData.role
+          role: userData.role,
+          first_time_login: userData.first_time_login
         },
         token: token,
         permission:{

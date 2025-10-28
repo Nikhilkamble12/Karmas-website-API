@@ -2,6 +2,7 @@ import PostService from "./posts.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import PostMediaService from "../PostMedia/postmedia.service.js";
 import UserFollowingService from "../user_following/user.following.service.js";
+import PostTagService from "../post_tag/post.tag.service.js";
 
 const { commonResponse,responseCode, responseConst, logger,tokenData, currentTime,addMetaDataWhileCreateUpdate } = commonPath;
 
@@ -137,7 +138,10 @@ const PostController = {
           //   }
           // }
           // Return fetched data or handle case where no data is found
-
+      await Promise.all(getAll.map(async(post) => {
+        const getTaggedUsers = await PostTagService.getDataByPostId(post.post_id);
+        post.tagged_users = getTaggedUsers
+      }))
       if (getAll.length !== 0) {
         return res
           .status(responseCode.OK)
@@ -204,7 +208,8 @@ const PostController = {
       //   }
       // }
       // Return the fetched data or handle case where no data is found
-
+      const getTaggedUsers = await PostTagService.getDataByPostId(Id);
+      getDataByid.tagged_users = getTaggedUsers; 
       if (getDataByid.length !== 0) {
         return res
           .status(responseCode.OK)
