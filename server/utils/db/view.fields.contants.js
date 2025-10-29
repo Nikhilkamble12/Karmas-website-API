@@ -56,7 +56,7 @@ const ViewFieldTableWise = {
     PAGE_FIELDS:` SELECT page_id, parent_id, page_name, page_url, mobile_url, interface, module_name  FROM ${VIEW_NAME.GET_ALL_PAGE} `,
     PERMISSION_FIELDS:` SELECT permission_id, permission_values, permission FROM ${VIEW_NAME.GET_ALL_PERMISSION} `,
     PAGE_PERMISSION_FIELDS:` SELECT page_permission_id, page_id, page_name, permission_id, permission_values, permission FROM ${VIEW_NAME.GET_ALL_PAGE_PERMISSION} `,
-    POST_TAG_FIELDS:` SELECT post_tag_id, post_id, tagged_user_id, tagged_user_file_path, user_file_path, user_id, is_active FROM ${VIEW_NAME.GET_ALL_POST_TAG} `,
+    POST_TAG_FIELDS:` SELECT post_tag_id, post_id, tagged_user_id, tagged_user_name, tagged_user_file_path, user_file_path, user_id, is_active FROM ${VIEW_NAME.GET_ALL_POST_TAG} `,
 
 
     //  ------> R 
@@ -68,7 +68,7 @@ const ViewFieldTableWise = {
     REQUEST_COMMENTS:` SELECT comment_id, user_id, RequestName, request_id, comment_text, total_comment, parent_id, created_at, is_active, user_name, user_profile FROM ${VIEW_NAME.GET_ALL_REQUEST_COMMENTS} `,
     REQUEST_LIKES:` SELECT like_id, user_id, RequestName, request_id, is_liked, created_at, is_active, user_name, user_profile FROM ${VIEW_NAME.GET_ALL_REQUEST_LIKE} `,
     REQUEST_COMMENT_LIKES:` SELECT like_id, user_id, comment_text, request_cmt_id, is_liked, created_at, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_COMMENT_LIKE} `,
-    REQUEST_TAG_FIELDS:` SELECT request_tag_id, request_id, tagged_user_id, tagged_user_image_path, user_image_path, user_id, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_TAG} `,
+    REQUEST_TAG_FIELDS:` SELECT request_tag_id, request_id, tagged_user_id, tagged_user_name, tagged_user_image_path, user_image_path, user_id, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_TAG} `,
 
     // -------> S
     STATE_MASTER_FIELDS :` SELECT state_id, state_name, country_id, country_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at  FROM ${VIEW_NAME.GET_ALL_STATE_MASTER} `,
