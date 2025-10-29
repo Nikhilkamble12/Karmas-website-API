@@ -337,9 +337,9 @@ const RequestNgoController = {
                     }
                 }
             }
-            const getRequestData = await RequestService.getServiceById(data.requestNgoList[1].RequestId)
+            const getRequestData = await RequestService.getServiceById(data.requestNgoList[0].RequestId)
             if(getRequestData && getRequestData.length!==0){
-                const updateData = await UserRequestStatsService.CreateOrUpdateData(getRequestData[0].request_user_id)
+                const updateData = await UserRequestStatsService.CreateOrUpdateData(getRequestData.request_user_id)
             }
             if (request_saved && !request_error) {
                 return res
