@@ -366,7 +366,7 @@ const UserMasterController = {
     // Delete A Record 
     deleteData: async (req, res) => {
         try {
-            const id = req.params.id
+            const id = req.query.id
             // Delete data from the database
             const deleteData = await UserMasterService.deleteByid(id, req, res)
             // Also delete data from the JSON file

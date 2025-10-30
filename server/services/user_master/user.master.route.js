@@ -32,7 +32,7 @@ router.get(
 )
 // Route to delete a record by ID
 router.delete(
-    `${basePath}/:id`,
+    `${basePath}/delete`,
     verifyToken,
     UserMasterController.deleteData
 )
