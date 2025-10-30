@@ -23,7 +23,7 @@ const ViewFieldTableWise = {
     DISTRICT_MASTER_FIELDS:` SELECT district_id, district_name, state_id, state_name, country_id, country_name, district_is_active, district_created_by, district_created_at, district_modified_by, district_modified_at, district_deleted_by, district_deleted_at, state_is_active, country_is_active FROM ${VIEW_NAME.GET_ALL_DISTRICT} `,
     
     //-------> G
-    GIFT_MASTER_FIELDS:` SELECT gift_master_id, company_id, gift_name, company_logo, company_logo_path, gift_score_required, gift_amount, gift_t_c, how_to_redeem, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_GIFT_MASTER} `,
+    GIFT_MASTER_FIELDS:` SELECT gift_master_id, company_id, gift_name, company_logo, company_logo_path, gift_score_required, gift_amount, gift_t_c, how_to_redeem, is_active, created_by FROM ${VIEW_NAME.GET_ALL_GIFT_MASTER} `,
     GROUP_ROLE_PAGE_PERMISSION_FIELDS:` SELECT role_page_permission_id, role_id, role_name, page_id, page_name, page_url, mobile_url, interface, module_name, permission, ngo_level_id, level_name, description FROM ${VIEW_NAME.GET_ALL_GROUP_ROLE_PAGE_PERMISSION} `,
 
     // -------> L
@@ -57,6 +57,9 @@ const ViewFieldTableWise = {
     PERMISSION_FIELDS:` SELECT permission_id, permission_values, permission FROM ${VIEW_NAME.GET_ALL_PERMISSION} `,
     PAGE_PERMISSION_FIELDS:` SELECT page_permission_id, page_id, page_name, permission_id, permission_values, permission FROM ${VIEW_NAME.GET_ALL_PAGE_PERMISSION} `,
     POST_TAG_FIELDS:` SELECT post_tag_id, post_id, tagged_user_id, tagged_user_name, tagged_user_file_path, user_file_path, user_id, is_active FROM ${VIEW_NAME.GET_ALL_POST_TAG} `,
+
+    // -------> Q
+    QUOTES_FIELDS:` SELECT quote_id, quote_text, created_at, is_active, created_by FROM ${VIEW_NAME.GET_ALL_QUOTES_FIELDS} `,
 
 
     //  ------> R 

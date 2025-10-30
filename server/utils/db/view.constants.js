@@ -62,5 +62,6 @@ GET_ALL_BLOG_MEDIA:"v_blog_media",
 GET_ALL_REQUEST_TAG:"v_request_tag",
 GET_ALL_POST_TAG:"v_post_tag",
 GET_ALL_USER_REQUEST_STATS:"v_user_request_stats",
+GET_ALL_QUOTES_FIELDS:"v_quotes"
 }
 export default VIEW_NAME
