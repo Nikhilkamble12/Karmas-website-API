@@ -12,7 +12,11 @@ const NgoFieldModel = (sequelize) =>{
         }, field_description:{
             type:DataTypes.STRING(400),
             allowNull:true
-        },is_active: {
+        },request_type_id:{
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        is_active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
         },
