@@ -50,7 +50,7 @@ const UserMasterDAL = {
     // Method to retrieve all records by view
     getAllDataByView: async () => {
         try {
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.USER_MASTER_FIELDS}`, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.USER_MASTER_FIELDS} order by user_id desc`, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
