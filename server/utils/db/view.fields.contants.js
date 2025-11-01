@@ -34,7 +34,7 @@ const ViewFieldTableWise = {
     
 
     // -------> N
-    NGO_FIELD_FIELDS:` SELECT ngo_field_id, field_name, field_description, is_active, created_by, created_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_FIELDS} `,
+    NGO_FIELD_FIELDS:` SELECT ngo_field_id, field_name, field_description, request_type_id, request_type_name, is_active, created_by, created_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_FIELDS} `,
     NGO_MASTER_FIELDS:` SELECT ngo_id, unique_id, darpan_reg_date, ngo_name, ngo_type, ngo_type_name, registration_no, act_name, city_of_registration_id, city_of_registration_name, state_of_registration_id, state_of_registration_name, country_of_registration_id, country_of_registration_name, date_of_registration, address, city_id, city_name, state_id, state_name, country_id, country_name, telephone, mobile_no, website_url, email, ngo_logo, ngo_logo_path, pan_cad_file_name, pan_card_file_url, crs_regis_file_name, crs_regis_file_path, digital_signature_file_name, digital_signature_file_path, stamp_file_name, stamp_file_path, is_active, total_request_assigned, total_request_completed, total_request_rejected, remarks, total_ngo_likes,is_blacklist,blacklist_reason, status_id, status_name FROM ${VIEW_NAME.GET_ALL_NGO_MASTER} `,
     NGO_FUNDS_DETAILS_FIELDS:` SELECT ngo_funds_id, ngo_id, department_name, source, financial_year, amount_sanctioned, purpose, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_FUNDS_DETAILS} `,
     NGO_BEARERS_FIELDS:` SELECT bearer_id, ngo_id, name, designation_id, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_OFFICE_BEARRRS} `,

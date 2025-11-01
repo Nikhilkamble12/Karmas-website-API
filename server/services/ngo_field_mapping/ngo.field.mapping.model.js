@@ -12,7 +12,9 @@ const NgoFieldsMappingModel = (sequelize)=>{
         }, ngo_field_id:{
             type:DataTypes.INTEGER,
             allowNull:true
-        }, is_active: {
+        },
+        
+         is_active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
         },
