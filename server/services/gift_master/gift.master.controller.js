@@ -231,7 +231,6 @@ const GiftMasterController = {
             // }
             // Return the fetched data or handle case where no data is found
             const couponData = await CouponsService.getCouponAndRedeemService(tokenData(req, res), Id);
-            console.log("couponData", couponData);
             getDataByid.status = couponData ? couponData.status_name : null;
             getDataByid.couponData = couponData ? couponData : null;
             if (getDataByid.length !== 0) {
@@ -321,7 +320,7 @@ const GiftMasterController = {
             console.log("user_id", user_id);
             
             const [userScores, allGifts, userCoupons] = await Promise.all([
-                UserActivtyService.getDataByUserId(user_id),
+                UserActivtyService.getDataByUserId(user_id, ['total_scores_no']),
                 GiftMasterService.getAllService(),
                 CouponsService.getCouponsByUserId(user_id),
             ]);
@@ -339,18 +338,17 @@ const GiftMasterController = {
                 );
             }
 
-            const userScore = userScores[0].total_scores_no ?? 0;
+            const couponMap = new Map(
+                userCoupons.map(coupon => [coupon.gift_master_id, coupon])
+            );
 
             const giftResponse = allGifts.map((gift) => {
-                const userCoupon = userCoupons.find(
-                    (coupon) => coupon.gift_master_id === gift.gift_master_id
-                );
-                
+                const userScore = userScores[0].total_scores_no ?? 0;
                 const progressValue = Math.min(
                     (userScore / gift.gift_score_required) * 100,
                     100
                 );
-
+                const userCoupon = couponMap.get(gift.gift_master_id);
                 return {
                         ...gift,
                         progress: parseFloat(progressValue.toFixed(2)), // number e.g. 85.32
