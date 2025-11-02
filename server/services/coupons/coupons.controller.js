@@ -97,11 +97,13 @@ const CouponsController = {
           );
       }
       const getDataById = await CouponsService.getServiceById(id)
-        if(getDataById && getDataById.length>0 &&  getDataById.user_id!==null && getDataById.user_id!==""){
+      //console.log("getDataById", getDataById)
+        if(getDataById.status_id === 18){
           const fetchUser = await UserActivtyService.getDataByUserId(getDataById.user_id)
           const getCountOfTotalCupon = await CouponsService.getCouponsByUserId(getDataById.user_id)
+          console.log("--->", getCountOfTotalCupon)
           if(getCountOfTotalCupon>=fetchUser){
-            constupdateUserActivity = await UserActivtyService.updateByuserId(getDataById.user_id,{total_reward_redeem:getCountOfTotalCupon.length})
+            const updateUserActivity = await UserActivtyService.updateByuserId(getDataById.user_id,{total_reward_redeem:getCountOfTotalCupon.length})
           }
         }
       return res

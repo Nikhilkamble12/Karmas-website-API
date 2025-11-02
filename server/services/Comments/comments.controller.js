@@ -50,7 +50,7 @@ const CommentsController = {
                 const getUserToken = await UserTokenService.GetTokensByUserIds(postData.user_id);
                 if(getUserToken.length!==0 && data.user_id !== postData.user_id){
                     await sendTemplateNotification({templateKey:"PostComment-Notification",templateData:template,userIds:getUserToken,metaData:{comment_id:createData.dataValues.post_id,
-                    post_image: postMediaData.length!==0 ? postMediaData[0]?.media_url : null,
+                    media_url: postMediaData.length!==0 ? postMediaData[0]?.media_url : null,
                     user_profile : currentUser?.file_path,
                     created_by:tokenData(req,res)}})
                 }
