@@ -29,7 +29,7 @@ const RequestDAL = {
   getAllDataByView: async () => {
     try {
       const getAllData = await db.sequelize.query(
-        `${ViewFieldTableVise.REQUEST_FIELDS}`,
+        ` ${ViewFieldTableVise.REQUEST_FIELDS} order by RequestId Desc`,
         { type: db.Sequelize.QueryTypes.SELECT }
       );
       return getAllData; // Return the retrieved data
