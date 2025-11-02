@@ -231,7 +231,6 @@ const GiftMasterController = {
             // }
             // Return the fetched data or handle case where no data is found
             const couponData = await CouponsService.getCouponAndRedeemService(tokenData(req, res), Id);
-            console.log("couponData", couponData);
             getDataByid.status = couponData ? couponData.status_name : null;
             getDataByid.couponData = couponData ? couponData : null;
             if (getDataByid.length !== 0) {

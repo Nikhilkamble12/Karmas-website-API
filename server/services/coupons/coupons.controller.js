@@ -366,6 +366,7 @@ const CouponsController = {
     try {
       const user_id = req.query.user_id;
       const gift_master_id = req.query.gift_master_id;
+
       const getGiftDetails  = await GiftMasterService.getServiceById(gift_master_id)
       if(getGiftDetails &&getGiftDetails.length==0){
           return res
@@ -379,19 +380,7 @@ const CouponsController = {
           )
       );
       }
-      const getUserTotalScore = await UserActivtyService.getDataByUserId(user_id)
-      if( getUserTotalScore.total_scores_no < getGiftDetails.gift_score_required){
-          return res
-         .status(responseCode.BAD_REQUEST)
-         .send(
-            commonResponse(
-              responseCode.BAD_REQUEST,
-              responseConst.USER_NOT_ELIGIBLE_FOR_GIFT,
-              null,
-              true
-          )
-      );
-      }
+      
       const existingCoupon = await CouponsService.getCouponAndRedeemService(user_id, gift_master_id);
       // If user has already redeemed a coupon for the given gift_master_id
       if(existingCoupon){
