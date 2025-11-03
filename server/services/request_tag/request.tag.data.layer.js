@@ -93,6 +93,13 @@ const RequestTagDAL = {
         }catch(error){
             throw error
         }
+    },getAllTagsByMultipleRequestIds:async(request_ids)=>{
+        try{
+            const getData = await db.sequelize.query(` ${ViewFieldTableVise.REQUEST_TAG_FIELDS} where request_id IN (${request_ids}) `,{type:db.Sequelize.QueryTypes.SELECT})
+            return getData
+        }catch(error){
+            throw error
+        }
     }
 }
 

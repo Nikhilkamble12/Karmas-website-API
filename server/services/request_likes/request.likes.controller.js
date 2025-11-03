@@ -100,7 +100,7 @@ const RequestLikesController = {
                             metaData: {
                                 like_id: createData.dataValues.like_id,
                                 user_profile: currentUser?.file_path,
-                                request_media_url: requestMediaData.length !== 0 ? requestMediaData[0]?.media_url : null,
+                                media_url: requestMediaData.length !== 0 ? requestMediaData[0]?.media_url : null,
                                 created_by: data.user_id
                             }
                         });
