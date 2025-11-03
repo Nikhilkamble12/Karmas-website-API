@@ -397,6 +397,8 @@ const RequestNgoController = {
             const getDataByNgoRequest = await RequestNgoService.getServiceById(Request_Ngo_Id)
             let dataToStore = {}
             dataToStore.status_id = req.body.status_id
+            console.log("data",data)
+            console.log("getDataByNgoRequest",getDataByNgoRequest)
             const getNgoData = await NgoMasterService.getServiceById(getDataByNgoRequest.ngo_id) 
             if(parseInt(requestDetails.status_id)!==STATUS_MASTER.REQUEST_APPROVED && parseInt(data.status_id)==STATUS_MASTER.REQUEST_APPROVED){
                 let userActivityData = {}
