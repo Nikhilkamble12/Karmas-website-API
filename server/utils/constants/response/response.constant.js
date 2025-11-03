@@ -55,7 +55,7 @@ const RESPONSE_CONSTANTS = {
     SOS_NOT_YET_CREATED:"Sos Not Yet Created.",
     USER_HAS_BLOCKED_YOU:"You Have Been Blocked By Admin.",
     USER_IS_BLACKLISTED:"Account Has Been Blacklisted.",
-    COUPON_ALREADY_REDEEMED:"You have already redeemed this coupon.",
+    COUPON_ALREADY_REDEEMED:"You have already have this coupon.",
     NO_COUPONS_AVAILABLE:"No coupons are currently available for this gift",
     USER_IS_ALREADY_BLOCKED:"User is Already Block.",
     REQUEST_IS_INCOMPLETE:"Request not Yet Completed.",

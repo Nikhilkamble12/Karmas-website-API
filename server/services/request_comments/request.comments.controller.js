@@ -55,7 +55,7 @@ const RequestCommentController = {
                         metaData : {
                             comment_id:createData.dataValues.request_comment_id,
                             user_profile : currentUser?.file_path,
-                            request_media_url : requestMediaData.length!==0 ? requestMediaData[0]?.media_url : null,
+                            media_url : requestMediaData.length!==0 ? requestMediaData[0]?.media_url : null,
                             created_by: tokenData(req,res)
                         }
                     })
