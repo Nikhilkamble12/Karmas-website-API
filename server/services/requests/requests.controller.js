@@ -165,10 +165,29 @@ const RequestsController = {
             //   }
             // }
             // Return fetched data or handle case where no data is found
-            await Promise.all(getAll.map(async(currentData)=> {
-                const getTaggedUsers = await RequestTagService.getAllTagByRequestd(currentData.RequestId)
-                currentData.tagged_users = getTaggedUsers
-            }))
+            // await Promise.all(getAll.map(async(currentData)=> {
+            //     const getTaggedUsers = await RequestTagService.getAllTagByRequestd(currentData.RequestId)
+            //     currentData.tagged_users = getTaggedUsers
+            // }))
+
+            // 1️⃣ Extract all RequestIds
+            const requestIds = getAll.map(item => item.RequestId);
+            
+            // 2️⃣ Fetch all tags for these RequestIds in one go
+            const allTags = await RequestTagService.getAllTagsByMultipleRequestIds(requestIds);
+
+            // 3️⃣ Group tags by RequestId
+            const tagsByRequest = allTags.reduce((acc, tag) => {
+            if (!acc[tag.request_id]) acc[tag.request_id] = [];
+            acc[tag.request_id].push(tag);
+            return acc;
+            }, {});
+
+            // 4️⃣ Assign tags to each request
+            for (const currentData of getAll) {
+            currentData.tagged_users = tagsByRequest[currentData.RequestId] || [];
+            }
+
 
             if (getAll.length !== 0) {
                 return res
@@ -193,6 +212,7 @@ const RequestsController = {
                     );
             }
         } catch (error) {
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)

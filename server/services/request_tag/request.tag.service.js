@@ -46,6 +46,12 @@ const RequestTagService = {
         }catch(error){
             throw error
         }
+    },getAllTagsByMultipleRequestIds:async(request_ids)=>{
+        try{
+            return await RequestTagDAL.getAllTagsByMultipleRequestIds(request_ids)  
+        }catch(error){
+            throw error
+        }
     }
 }
 
