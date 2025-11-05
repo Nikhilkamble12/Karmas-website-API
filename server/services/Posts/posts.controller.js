@@ -3,6 +3,7 @@ import commonPath from "../../middleware/comman_path/comman.path.js";
 import PostMediaService from "../PostMedia/postmedia.service.js";
 import UserFollowingService from "../user_following/user.following.service.js";
 import PostTagService from "../post_tag/post.tag.service.js";
+import UserActivtyService from "../user_activity/user.activity.service.js";
 
 const { commonResponse,responseCode, responseConst, logger,tokenData, currentTime,addMetaDataWhileCreateUpdate } = commonPath;
 
@@ -16,11 +17,16 @@ const PostController = {
       // data.created_by=1,
       // data.created_at = new Date()
       // Create the record using ORM
+      if(data.user_id !==null || data.user_id !=="" || data.user_id !=="null" || data.user_id !=="undefined"){
+        const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
+        const totalPosts = parseInt(getUserActivityData[0].total_user_posts_no ?? 0) + 1;
+        const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_user_posts_no: totalPosts  });
+      }
       
       const createdData = await PostService.createSerive(data);
       const user_id = tokenData(req, res);
-      const getFollowerUserIdOnly = await UserFollowingService.getOnlyUserIdOfFollowAndBlocked(user_id)
-      const getUserFollower = await UserFollowingService.getDataByFollowingUserId(user_id)
+      // const getFollowerUserIdOnly = await UserFollowingService.getOnlyUserIdOfFollowAndBlocked(user_id)
+      // const getUserFollower = await UserFollowingService.getDataByFollowingUserId(user_id)
       if (createdData) {
         return res
           .status(responseCode.CREATED)
@@ -252,9 +258,15 @@ const PostController = {
     try {
       const id = req.query.id;
       // Delete data from the database
-      const deleteData = await PostService.deleteById(id, req, res);
+      const getDataById = await PostService.getServiceById(id);
       // Also delete data from the JSON file
       // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
+      const getUserActivityData = await UserActivtyService.getDataByUserId(getDataById.user_id)
+      const [updateUserActivity, deleteData] = await Promise.all(
+         await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_user_posts_no:parseInt(getUserActivityData[0].total_user_posts_no) - 1}),
+         await PostService.deleteById(id, req, res)
+      )
+      
       if (deleteData === 0) {
         return res
           .status(responseCode.BAD_REQUEST)
