@@ -70,6 +70,6 @@ const RequestNgoService = {
         }catch(error){
             throw error
         }
-    }
+    },
 }
 export default RequestNgoService

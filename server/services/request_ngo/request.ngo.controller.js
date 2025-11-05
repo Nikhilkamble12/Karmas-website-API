@@ -394,6 +394,18 @@ const RequestNgoController = {
             //     )
             //     )  
             // }
+            if(requestDetails.status_id==STATUS_MASTER.REQUEST_APPROVED || requestDetails.status_id==STATUS_MASTER.REQUEST_REJECTED){
+                return res 
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                commonResponse(
+                    responseCode.BAD_REQUEST,
+                    responseConst.CANNOT_UPDATE_STATUS_CHECK_REQUEST,
+                    null,
+                    true
+                )
+                )  
+            }
             const getDataByNgoRequest = await RequestNgoService.getServiceById(Request_Ngo_Id)
             let dataToStore = {}
             dataToStore.status_id = req.body.status_id

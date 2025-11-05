@@ -172,7 +172,7 @@ const RequestsController = {
 
             // 1️⃣ Extract all RequestIds
             const requestIds = getAll.map(item => item.RequestId);
-            
+
             // 2️⃣ Fetch all tags for these RequestIds in one go
             const allTags = await RequestTagService.getAllTagsByMultipleRequestIds(requestIds);
 
@@ -302,9 +302,22 @@ const RequestsController = {
             const id = req.query.id
             // Delete data from the database
             const getDataById = await RequestService.getServiceById(id)
+            if(getDataById.status_id == STATUS_MASTER.REQUEST_APPROVAL_PENDINNG || getDataById.status_id == STATUS_MASTER.REQUEST_REJECTED){
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.CANNOT_DELETE_REQUEST_AT_THIS_STAGE,
+                            null,
+                            true
+                        )
+                    );
+            }
             const getUserActivityData = await UserActivtyService.getDataByUserId(getDataById.request_user_id)
             const updateUserActivityData = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_requests_no:parseInt(getUserActivityData[0].total_requests_no) - 1})
             const deleteData = await RequestService.deleteByid(id, req, res)
+
             // Also delete data from the JSON file
             // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
             if (deleteData === 0) {
@@ -319,7 +332,10 @@ const RequestsController = {
                         )
                     );
             }
-
+            if(getDataById.AssignedNGO && getDataById.AssignedNGO!==null && getDataById.AssignedNGO!==0){
+                const recalculate = await RequestNgoService.getRequestNgoCountByNgo(getDataById.AssignedNGO)
+                const updateNgo = await NgoMasterService.updateService(getDataById.AssignedNGO,{total_request_assigned:recalculate[0].total_ngo_request,total_request_completed:recalculate[0].total_request_approved_status,total_request_rejected:recalculate[0].total_request_rejected})
+            }
             return res
                 .status(responseCode.CREATED)
                 .send(

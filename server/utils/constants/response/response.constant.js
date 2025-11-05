@@ -67,7 +67,9 @@ const RESPONSE_CONSTANTS = {
     USER_ACTIVITY_NOT_FOUND:"User activity data not found.",
     TRANSACTION_FAILED:"Database transaction failed.",
     CANNOT_BLOCK_YOURSELF:"You cannot block yourself.",
-    THE_SPECIFIC_USER_ID_DOES_EXIST:"The specified user ID does not exist. Please verify and try again."
+    THE_SPECIFIC_USER_ID_DOES_EXIST:"The specified user ID does not exist. Please verify and try again.",
+    CANNOT_UPDATE_STATUS_CHECK_REQUEST:"Cannot update the status. Check Final Status.",
+    CANNOT_DELETE_REQUEST_AT_THIS_STAGE:"Cannot delete request at this stage."
   };
   
   export default RESPONSE_CONSTANTS;
