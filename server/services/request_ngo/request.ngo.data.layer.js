@@ -127,7 +127,7 @@ const RequestNgoDAL = {
       },getRequestNgoCountById:async(ngo_id)=>{
         try{
             const getData = await db.sequelize.query(` SELECT 
-            COUNT(RequestId) AS total_request,
+            COUNT(RequestId) AS total_ngo_request,
             SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_PENDING} THEN 1 ELSE 0 END) AS total_request_pending_status,
             SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
             SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected

@@ -195,6 +195,9 @@
     },{
       "code":"1.0036",
       "message":"Cannot update the status. Check Final Status."
+    },{
+      "code":"1.0037",
+      "message":"Cannot delete request at this stage."
     }
   ]
 }
