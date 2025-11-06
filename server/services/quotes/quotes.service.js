@@ -40,6 +40,14 @@ const QuotesService = {
         } catch (error) {
             throw error
         }
+    },
+    // method to retrive a random quote
+    getRandomQuoteService: async () => {
+        try {
+            return await QuotesDAL.getRandomQuote()
+        } catch (error) {
+
+        }
     }
 }
 export default QuotesService

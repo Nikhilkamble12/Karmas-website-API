@@ -36,6 +36,12 @@ router.delete(
     verifyToken,
     QuotesController.deleteData
 )
+// Route to retrieve a random quote
+router.get(
+    `${basePath}/getRandom`,
+    verifyToken,
+    QuotesController.getRandomQuote
+)
 
 // Export the router for use in other parts of the application
 export default router
