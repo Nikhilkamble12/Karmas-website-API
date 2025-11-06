@@ -72,6 +72,9 @@ const ViewFieldTableWise = {
     REQUEST_LIKES:` SELECT like_id, user_id, RequestName, request_id, is_liked, created_at, is_active, user_name, user_profile FROM ${VIEW_NAME.GET_ALL_REQUEST_LIKE} `,
     REQUEST_COMMENT_LIKES:` SELECT like_id, user_id, comment_text, request_cmt_id, is_liked, created_at, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_COMMENT_LIKE} `,
     REQUEST_TAG_FIELDS:` SELECT request_tag_id, request_id, tagged_user_id, tagged_user_name, tagged_user_image_path, user_image_path, user_id, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_TAG} `,
+    REPORT_FIELDS:` SELECT report_id, report_user_id, report_user_name, report_full_name, report_page_type_id, report_page, report_type_id, report_type, reason, user_id, user_name, full_name, post_id, ngo_id, request_id, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_REPORT} `,
+    REPORT_PAGE_TYPE_FIELDS:` SELECT report_page_type_id, report_page, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_REPORT_PAGE_TYPE} `,
+    REPORT_TYPE_FIELDS: ` SELECT report_type_id, report_type, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_REPORT_TYPE} `,
 
     // -------> S
     STATE_MASTER_FIELDS :` SELECT state_id, state_name, country_id, country_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at  FROM ${VIEW_NAME.GET_ALL_STATE_MASTER} `,
@@ -85,11 +88,13 @@ const ViewFieldTableWise = {
 
     // -------> T
     TABLE_MASTER_FIELDS: ` SELECT table_id, table_name, is_active FROM ${VIEW_NAME.GET_ALL_TABLE_MASTER}  `,
+    TICKET_FIELDS : ` SELECT ticket_id, ticket_code, user_id, created_user_name, created_full_name, assigned_to, assigned_user_name, assigned_full_name, module_type_id, module_name, subject, description, status_id, status_name, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_TICKET} `,
+    TICKET_MODULE_TYPE_FIELDS : ` SELECT module_type_id, module_name, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_TICKET_MODULE_TYPE} `,
 
     //  ------> U
     USER_MASTER_FIELDS :` SELECT  user_id, user_name, password, full_name, role_id, role, is_account_public, email_id, mobile_no, gender, bio, enrolling_date, ngo_id, ngo_name, ngo_unique_id, file_name, file_path, bg_image, bg_image_path, reset_otp, reset_otp_expiry, google_id, is_active, first_time_login, is_blacklisted,
     ngo_level_id, blacklist_reason, blacklisted_by, total_scores_no, follower_no FROM ${VIEW_NAME.GET_ALL_USER_MASTER} `,
-    USER_ACTIVITY_FIELDS :` SELECT  user_id, user_name, email_id, file_path, enrolling_date, is_account_public, user_activity_id, follower_no, following_no, total_reports_no, total_scores_no, total_requests_no, total_rewards_no, total_likes_no, total_comments_no, total_post_comment_likes_no, total_request_like_no, total_request_comment_no, total_request_comment_likes_no, total_shares_no, total_blacklist_user, total_refer_and_earn_no, show_user_chats_history, show_user_posts_history, screen_time, total_reward_redeem, last_active_at FROM ${VIEW_NAME.GET_ALL_USER_ACTIVITY} `,
+    USER_ACTIVITY_FIELDS :` SELECT  user_id, user_name, email_id, file_path, enrolling_date, is_account_public, user_activity_id, follower_no, following_no, total_reports_no, total_scores_no, total_requests_no, total_rewards_no, total_likes_no, total_comments_no, total_post_comment_likes_no, total_request_like_no, total_request_comment_no, total_request_comment_likes_no, total_shares_no, total_blacklist_user, total_refer_and_earn_no, show_user_chats_history, show_user_posts_history, screen_time, total_reward_redeem, total_user_posts_no, last_active_at FROM ${VIEW_NAME.GET_ALL_USER_ACTIVITY} `,
     USER_FOLLOWING_FIELDS:` SELECT follow_id, user_id, user_name, user_file_name, user_file_path, following_user_id, following_user_name, following_user_file_name, following_user_file_path, followed_at, is_following, is_private, is_rejected FROM ${VIEW_NAME.GET_ALL_USER_FOLLOWING} `,
     USER_BLACKLIST_FIELDS:` SELECT blacklist_id, user_id, user_name, blacklisted_user_id, blacklisted_user_name, reason, blacklisted_at, is_active  FROM ${VIEW_NAME.GET_ALL_USER_BLACKLIST} `,
     USER_TOKEN_FIELDS:` SELECT user_token_id, user_id, file_path, bg_image_path, role_id, android_token, web_token, is_android, is_web, is_android_on, is_web_on, updated_at FROM ${VIEW_NAME.GET_ALL_USER_TOKEN} `,

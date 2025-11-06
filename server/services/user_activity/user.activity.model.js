@@ -66,7 +66,10 @@ const UserActivityModel = (sequelize)=>{
         }, total_reward_redeem:{
             type:DataTypes.INTEGER,
             allowNull:true
-        },last_active_at:{
+        }, total_user_posts_no: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }, last_active_at:{
             type:DataTypes.DATE,
             allowNull:true
         }, is_active: {

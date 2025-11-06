@@ -24,14 +24,14 @@ const CouponsController = {
       // Create the record using ORM
       const createData = await CouponsService.createService(data);
       if (createData) {
-        const getDataById = await CouponsService.getServiceById(createData.dataValues.coupon_id)
-        if(getDataById && getDataById.length>0 &&  getDataById.user_id!==null && getDataById.user_id!==""){
-          const fetchUser = await UserActivtyService.getDataByUserId(getDataById.user_id)
-          const getCountOfTotalCupon = await CouponsService.getCouponsByUserId(getDataById.user_id)
-          if(getCountOfTotalCupon>=fetchUser){
-            constupdateUserActivity = await UserActivtyService.updateByuserId(getDataById.user_id,{total_reward_redeem:getCountOfTotalCupon.length})
-          }
-        }
+        // const getDataById = await CouponsService.getServiceById(createData.dataValues.coupon_id)
+        // if(getDataById && getDataById.length>0 &&  getDataById.user_id!==null && getDataById.user_id!==""){
+        //   const fetchUser = await UserActivtyService.getDataByUserId(getDataById.user_id)
+        //   const getCountOfTotalCupon = await CouponsService.getCouponsByUserId(getDataById.user_id)
+        //   if(getCountOfTotalCupon>=fetchUser){
+        //     constupdateUserActivity = await UserActivtyService.updateByuserId(getDataById.user_id,{total_reward_redeem:getCountOfTotalCupon.length})
+        //   }
+        // }
         
         return res
           .status(responseCode.CREATED)
@@ -101,7 +101,6 @@ const CouponsController = {
         if(getDataById.status_id === 18){
           const fetchUser = await UserActivtyService.getDataByUserId(getDataById.user_id)
           const getCountOfTotalCupon = await CouponsService.getCouponsByUserId(getDataById.user_id)
-          console.log("--->", getCountOfTotalCupon)
           if(getCountOfTotalCupon>=fetchUser){
             const updateUserActivity = await UserActivtyService.updateByuserId(getDataById.user_id,{total_reward_redeem:getCountOfTotalCupon.length})
           }

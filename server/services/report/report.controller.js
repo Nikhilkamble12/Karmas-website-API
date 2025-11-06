@@ -1,9 +1,10 @@
-import QuotesService from "./quotes.service.js";
+import ReportService from "./report.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+const { commonResponse,responseCode, responseConst, logger,tokenData, currentTime,addMetaDataWhileCreateUpdate } = commonPath;
 
-const QuotesController = {
-    // Create A new Record 
+
+const ReportController = {
+     // Create A new Record 
     create: async (req, res) => {
         try {
             const data = req.body;
@@ -12,7 +13,7 @@ const QuotesController = {
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
-            const createData = await QuotesService.createService(data);
+            const createData = await ReportService.createService(data);
             if (createData) {
                 return res
                     .status(responseCode.CREATED)
@@ -49,8 +50,6 @@ const QuotesController = {
                 );
         }
     }, 
-
-    
     // update Record Into Db
     update: async (req, res) => {
         try {
@@ -60,11 +59,11 @@ const QuotesController = {
             await addMetaDataWhileCreateUpdate(data, req, res, true);
 
             // Update the record using ORM
-            const updatedRowsCount = await  QuotesService.updateService(id, data);
+            const updatedRowsCount = await ReportService.updateService(id, data);
             // if (updatedRowsCount > 0) {
-            //     const newData = await  QuotesService.getServiceById(id);
+            //     const newData = await ReportService.getServiceById(id);
             //     // Update the JSON data in the file
-            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
+            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "table_id", id, newData, CITY_VIEW_NAME);
             // }
             // Handle case where no records were updated
             if (updatedRowsCount === 0) {
@@ -120,12 +119,12 @@ const QuotesController = {
             //     }
             //   }
             // Fetch data from the database if JSON is empty
-            const getAll = await  QuotesService.getAllService()
+            const getAll = await ReportService.getAllService()
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await  QuotesService.getAllService()
+            //   const DataToSave=await ReportService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -172,7 +171,7 @@ const QuotesController = {
         try {
             const Id = req.query.id
             // Fetch data by ID from JSON
-            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
+            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"table_id",Id)
             // if(getJsonDatabyId!==null){
             //   return res
             //     .status(responseCode.OK)
@@ -186,12 +185,12 @@ const QuotesController = {
             // }
 
             // If not found in JSON, fetch data from the database
-            const getDataByid = await  QuotesService.getServiceById(Id)
+            const getDataByid = await ReportService.getServiceById(Id)
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await  QuotesService.getAllService()
+            //   const DataToSave=await ReportService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -238,9 +237,9 @@ const QuotesController = {
         try {
             const id = req.query.id
             // Delete data from the database
-            const deleteData = await  QuotesService.deleteByid(id, req, res)
+            const deleteData = await ReportService.deleteById(id, req, res)
             // Also delete data from the JSON file
-            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
+            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"table_id",id)
             if (deleteData === 0) {
                 return res
                     .status(responseCode.BAD_REQUEST)
@@ -275,47 +274,7 @@ const QuotesController = {
                     )
                 );
         }
-    },
-    // Retrive a random quote
-    getRandomQuote: async (req, res) => {
-        try {
-            const randomQuote = await QuotesService.getRandomQuoteService();
-            if (randomQuote) {
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            randomQuote
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
-            }
-
-        } catch (error) {
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
-        }
     }
 }
-export default QuotesController
+
+export default ReportController

@@ -46,6 +46,10 @@ import RequestTagModel from "./request_tag/request.tag.model.js";
 import PostTagModel from "./post_tag/post.tag.model.js";
 import UserRequestStatsModel from "./user_request_stats/user.request.stats.model.js";
 import QuotesModel from "./quotes/quotes.model.js";
+import ReportTypeModel from "./report_type/report.type.model.js";
+import ReportPageTypeModel from "./report_page_type/report.page.type.model.js";
+import TicketModuleTypeModel from "./ticket_module_type/ticket.module.type.model.js";
+import TicketModel from "./ticket/ticket.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -122,6 +126,10 @@ db.RequestTagModel = RequestTagModel(sequelize,Sequelize);
 db.PostTagModel = PostTagModel(sequelize,Sequelize);
 db.UserRequestStatsModel = UserRequestStatsModel(sequelize,Sequelize);
 db.QuotesModel = QuotesModel(sequelize,Sequelize);
+db.ReportTypeModel = ReportTypeModel(sequelize,Sequelize);
+db.ReportPageTypeModel = ReportPageTypeModel(sequelize,Sequelize);
+db.TicketModuleTypeModel = TicketModuleTypeModel(sequelize,Sequelize);
+db.TicketModel = TicketModel(sequelize,Sequelize);
 
 
 export default db

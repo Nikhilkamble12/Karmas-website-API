@@ -95,7 +95,7 @@ const NgoMasterDAL = {
         let query = `
             SELECT 
                 COUNT(ngo_id) AS total_ngo,
-                SUM(total_request_assigned) AS total_request,
+                SUM(total_request_assigned) AS total_ngo_request_assigned,
                 SUM(total_request_completed) AS total_ngo_request_completed,
                 SUM(total_request_rejected) AS total_ngo_request_rejected,
 
