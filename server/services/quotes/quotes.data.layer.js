@@ -66,7 +66,36 @@ const QuotesDAL = {
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
+  },
+  getRandomQuote: async () => {
+    try {
+      // Step 1: Count active quotes
+      const [[{ total }]] = await db.sequelize.query(
+        `SELECT COUNT(*) AS total FROM v_quotes WHERE is_active = 1`
+      );
+
+      if (total === 0) return {};
+
+      // Step 2: Pick a random offset
+      const randomOffset = Math.floor(Math.random() * total);
+
+      // Step 3: Fetch one record efficiently
+      const [quote] = await db.sequelize.query(
+        `${ViewFieldTableVise.QUOTES_FIELDS} WHERE is_active = 1 LIMIT 1 OFFSET :offset`,
+        {
+          replacements: { offset: randomOffset },
+          type: db.Sequelize.QueryTypes.SELECT,
+        }
+      );
+
+      // Step 4: Return a cleaned result (exclude unwanted fields)
+      return quote || {};
+    } catch (error) {
+      throw error;
+    }
   }
+
+
 };
 
 export default QuotesDAL; // Export the CommentsDAL object for use in the controller
