@@ -65,6 +65,8 @@ GET_ALL_USER_REQUEST_STATS:"v_user_request_stats",
 GET_ALL_QUOTES_FIELDS:"v_quotes",
 GET_ALL_REPORT:"v_report",
 GET_ALL_REPORT_TYPE:"v_report_type",
-GET_ALL_REPORT_PAGE_TYPE :"v_report_page_type"
+GET_ALL_REPORT_PAGE_TYPE :"v_report_page_type",
+GET_ALL_TICKET_MODULE_TYPE :"v_ticket_module_type",
+GET_ALL_TICKET : "v_ticket",
 }
 export default VIEW_NAME

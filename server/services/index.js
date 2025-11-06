@@ -48,6 +48,8 @@ import UserRequestStatsModel from "./user_request_stats/user.request.stats.model
 import QuotesModel from "./quotes/quotes.model.js";
 import ReportTypeModel from "./report_type/report.type.model.js";
 import ReportPageTypeModel from "./report_page_type/report.page.type.model.js";
+import TicketModuleTypeModel from "./ticket_module_type/ticket.module.type.model.js";
+import TicketModel from "./ticket/ticket.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -126,6 +128,8 @@ db.UserRequestStatsModel = UserRequestStatsModel(sequelize,Sequelize);
 db.QuotesModel = QuotesModel(sequelize,Sequelize);
 db.ReportTypeModel = ReportTypeModel(sequelize,Sequelize);
 db.ReportPageTypeModel = ReportPageTypeModel(sequelize,Sequelize);
+db.TicketModuleTypeModel = TicketModuleTypeModel(sequelize,Sequelize);
+db.TicketModel = TicketModel(sequelize,Sequelize);
 
 
 export default db
