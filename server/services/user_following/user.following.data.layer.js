@@ -33,12 +33,19 @@ const UserFollowingDAL = {
     // Method to retrieve a specific record by its ID
     getDataByIdByView: async (follow_id) => {
         try {
-            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where follow_id  = ${follow_id} `, { type: db.Sequelize.QueryTypes.SELECT })
-            return getDataById[0] ?? [] // Return the retrieved data
+            // Use parameterized query to prevent SQL injection
+            const getDataById = await db.sequelize.query(
+                `${ViewFieldTableVise.USER_FOLLOWING_FIELDS} WHERE follow_id = :follow_id`,
+                {
+                    replacements: { follow_id: parseInt(follow_id) },
+                    type: db.Sequelize.QueryTypes.SELECT
+                }
+            );
+            return getDataById[0] ?? null; // Return single record or null
         } catch (error) {
-            throw error // Throw error for handling in the controller
+            throw error; // Throw error for handling in the controller
         }
-    }, 
+    },
     // Method to mark a record as deleted (soft delete)
     deleteDataById: async (follow_id, req, res) => {
         try {
