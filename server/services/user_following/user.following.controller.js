@@ -608,11 +608,22 @@ const UserFollowingController = {
     }, */
     acceptPrivateUserRequest: async (req, res) => {
         try {
-            // 1️⃣ Get logged-in user (private account) and follower ID
-            const follow_id = req.query.follow_id
-            const getData = await UserFollowingService.getServiceById(follow_id)
+            // 1️⃣ Input validation
+            const follow_id = req.query.follow_id;
+            if (!follow_id || isNaN(parseInt(follow_id))) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        "Invalid follow_id parameter",
+                        null,
+                        true
+                    )
+                );
+            }
 
-            if (!getData || getData.length === 0) {
+            // 2️⃣ Get follow request data
+            const getData = await UserFollowingService.getServiceById(follow_id);
+            if (!getData || (Array.isArray(getData) && getData.length === 0)) {
                 return res.status(responseCode.BAD_REQUEST).send(
                     commonResponse(
                         responseCode.BAD_REQUEST,
@@ -623,22 +634,56 @@ const UserFollowingController = {
                 );
             }
 
-            // 3️⃣ Fetch activity data for both users
+            // 3️⃣ Validate request payload
+            const { is_accepted, is_following, is_rejected } = req.body;
+            if (typeof is_accepted !== 'boolean') {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        "is_accepted must be a boolean value",
+                        null,
+                        true
+                    )
+                );
+            }
+
+            // 4️⃣ Fetch activity data for both users
             const getFollowerActivity = await UserActivtyService.getDataByUserId(getData.user_id);
             const getFollowingActivity = await UserActivtyService.getDataByUserId(getData.following_user_id);
+
+            if (!getFollowerActivity || !getFollowingActivity || 
+                getFollowerActivity.length === 0 || getFollowingActivity.length === 0) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        "User activity data not found",
+                        null,
+                        true
+                    )
+                );
+            }
 
             let total_following_count = parseInt(getFollowerActivity[0].following_no) || 0;
             let total_follower_count = parseInt(getFollowingActivity[0].follower_no) || 0;
 
-            // 4️⃣ Add metadata to update object
-            const data = req.body;
-            await addMetaDataWhileCreateUpdate(data, req, res, true);
-            if(data.is_accepted==true){
-            data.is_following = true
-            // 5️⃣ Update follow request
-            const updateData = await UserFollowingService.updateService(getData.follow_id, data);
+            // 5️⃣ Prepare update data (exclude non-database fields)
+            const updateData = {
+                is_following: is_accepted === true ? true : getData.is_following,
+                is_rejected: is_rejected || false
+            };
 
-            if (updateData === 0) {
+            // Add metadata for update
+            await addMetaDataWhileCreateUpdate(updateData, req, res, true);
+
+            // 6️⃣ Perform database update
+            const updateResult = await UserFollowingService.updateService(getData.follow_id, updateData);
+            
+            // Fix: Check the first element of the Sequelize result array
+            const [affectedRows] = updateResult;
+            logger.info(`Follow update result: ${affectedRows} rows affected for follow_id: ${follow_id}`);
+
+            if (affectedRows === 0) {
+                logger.error(`No rows updated for follow_id: ${follow_id}, updateData:`, updateData);
                 return res.status(responseCode.BAD_REQUEST).send(
                     commonResponse(
                         responseCode.BAD_REQUEST,
@@ -648,65 +693,99 @@ const UserFollowingController = {
                     )
                 );
             }
-            }
 
-            // 6️⃣ Handle accepted request
-            if (data.is_following) {
-                if(getData.is_following==false){
-                total_following_count += 1;
-                total_follower_count += 1;
+            // 7️⃣ Handle business logic based on acceptance/rejection
+            if (is_accepted === true) {
+                // Only increment counts if the follow wasn't already accepted
+                if (getData.is_following === false) {
+                    total_following_count += 1;
+                    total_follower_count += 1;
+
+                    // Update user activity counts
+                    await UserActivtyService.updateService(
+                        getFollowerActivity[0].user_activity_id, 
+                        { following_no: total_following_count }
+                    );
+                    await UserActivtyService.updateService(
+                        getFollowingActivity[0].user_activity_id, 
+                        { follower_no: total_follower_count }
+                    );
+
+                    // Update private user's total follower count
+                    await UserMasterService.updateService(
+                        getData.following_user_id, 
+                        { total_follower: total_follower_count }
+                    );
                 }
-                // Update activities
-                await UserActivtyService.updateService(getFollowerActivity[0].user_activity_id, { following_no: total_following_count });
-                await UserActivtyService.updateService(getFollowingActivity[0].user_activity_id, { follower_no: total_follower_count });
-
-                // Update private user's total follower count
-                await UserMasterService.updateService(getData.user_id, { total_follower: total_follower_count });
                 
-                // Send notification to follower
-                const templateData = await notificationTemplates.friendRequestAccepted({username:getData.following_user_name});
-                const userToken = await UserTokenService.GetTokensByUserIds(getData.following_user_id);
+                // Send acceptance notification to the follower
+                try {
+                    const templateData = await notificationTemplates.friendRequestAccepted({
+                        username: getFollowingActivity[0].user_name
+                    });
+                    const userToken = await UserTokenService.GetTokensByUserIds(getData.user_id);
 
-                await sendTemplateNotification({
-                    templateKey: "User-Follow",
-                    templateData,
-                    userIds: userToken,
-                    metaData: {
-                        created_by: tokenData(req,res),
-                        current_user_image: getFollowingActivity[0]?.file_path ?? null,
-                        following_user_image: getFollowerActivity[0]?.file_path ?? null
-                    }
-                });
+                    await sendTemplateNotification({
+                        templateKey: "User-Follow",
+                        templateData,
+                        userIds: userToken,
+                        metaData: {
+                            created_by: tokenData(req, res),
+                            follow_user_id: getData.following_user_id,
+                            current_user_image: getFollowingActivity[0]?.file_path ?? null,
+                            following_user_image: getFollowerActivity[0]?.file_path ?? null
+                        }
+                    });
+                } catch (notificationError) {
+                    logger.error('Failed to send acceptance notification:', notificationError);
+                }
+            }
+            // Handle rejection
+            else if (is_rejected === true) {
+                try {
+                    const templateData = await notificationTemplates.friendRequestRejected({
+                        username: getFollowingActivity[0].user_name
+                    });
+                    const userToken = await UserTokenService.GetTokensByUserIds(getData.user_id);
+
+                    await sendTemplateNotification({
+                        templateKey: "User-Follow",
+                        templateData,
+                        userIds: userToken,
+                        metaData: {
+                            created_by: tokenData(req, res),
+                            follow_user_id: getData.following_user_id,
+                            current_user_image: getFollowingActivity[0]?.file_path ?? null,
+                            following_user_image: getFollowerActivity[0]?.file_path ?? null
+                        }
+                    });
+                } catch (notificationError) {
+                    logger.error('Failed to send rejection notification:', notificationError);
+                }
             }
 
-            // 7️⃣ Handle rejected request
-            else if (data.is_rejected) {
-                const templateData = await notificationTemplates.friendRequestRejected({username:getData.following_user_name});
-                const userToken = await UserTokenService.GetTokensByUserIds(getData.user_id);
-
-                await sendTemplateNotification({
-                    templateKey: "User-Follow",
-                    templateData,
-                    userIds: userToken,
-                    metaData: {
-                        created_by: tokenData(req,res),
-                        current_user_image: getFollowingActivity[0]?.file_path ?? null,
-                        following_user_image: getFollowerActivity[0]?.file_path ?? null
-                    }
-                });
-            }
-
-            // 8️⃣ Return success
+            // 8️⃣ Return success response
+            logger.info(`Successfully updated follow request ${follow_id}: accepted=${is_accepted}, rejected=${is_rejected}`);
             return res.status(responseCode.CREATED).send(
                 commonResponse(
                     responseCode.CREATED,
-                    responseConst.SUCCESS_UPDATING_RECORD
+                    responseConst.SUCCESS_UPDATING_RECORD,
+                    {
+                        follow_id: getData.follow_id,
+                        is_following: updateData.is_following,
+                        is_rejected: updateData.is_rejected,
+                        updated: true
+                    }
                 )
             );
 
         } catch (error) {
-            console.log("error",error)
-            logger.error(`Error ---> ${error}`);
+            console.error("acceptPrivateUserRequest error:", error);
+            logger.error(`Error in acceptPrivateUserRequest for follow_id ${req.query.follow_id}: ${error.message}`, {
+                error: error.stack,
+                follow_id: req.query.follow_id,
+                payload: req.body
+            });
             return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
                 commonResponse(
                     responseCode.INTERNAL_SERVER_ERROR,
