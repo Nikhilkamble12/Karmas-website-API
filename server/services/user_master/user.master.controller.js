@@ -33,17 +33,30 @@ const UserMasterController = {
             const createData = await UserMasterService.createService(data);
             if(createData?.success==false){
                  return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.UNIQUE_CONSTRANTS_FAILED,
+                        createData.message,
+                        true
+                    )
+                );
+            }
+            // If user creation failed
+            if (!createData) {
+                return res
                     .status(responseCode.BAD_REQUEST)
                     .send(
                         commonResponse(
                             responseCode.BAD_REQUEST,
-                            responseConst.UNIQUE_CONSTRANTS_FAILED,
-                            createData.message,
+                            responseConst.ERROR_ADDING_RECORD,
+                            null,
                             true
                         )
                     );
             }
-            if (createData) {
+
                 let file_path = null, bg_image_path = null;
                 if (data.Base64File !== null && data.Base64File !== "" && data.Base64File !== 0 && data.Base64File !== undefined && data.file_name && data.file_name !== "" && data.file_name !== 0) {
                     const user_id = createData.dataValues.user_id
@@ -88,8 +101,7 @@ const UserMasterController = {
                 };
                 //console.log("updateData",updateData)
                 const updateUserMaster = await UserMasterService.updateService(createData.dataValues.user_id, updateData);
-            }
-            if (createData) {
+
                 const user_id = createData.dataValues.user_id
                 const userActvityCreate = {
                     user_id: user_id,
@@ -99,8 +111,6 @@ const UserMasterController = {
                 // await addMetaDataWhileCreateUpdate(userActvityCreate, req, res, false);
                 const UserActivity = await UserActivtyService.createService(userActvityCreate)
 
-            }
-            if (createData) {
                 return res
                     .status(responseCode.CREATED)
                     .send(
@@ -109,18 +119,7 @@ const UserMasterController = {
                             responseConst.SUCCESS_ADDING_RECORD
                         )
                     );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_ADDING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
+            
         } catch (error) {
             console.log("error", error)
             logger.error(`Error ---> ${error}`);
@@ -135,6 +134,7 @@ const UserMasterController = {
                     )
                 );
         }
+
     },
     // update Record Into Db
     update: async (req, res) => {
