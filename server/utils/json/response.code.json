@@ -198,6 +198,15 @@
     },{
       "code":"1.0037",
       "message":"Cannot delete request at this stage."
+    },{
+      "code":"1.0038",
+      "message":"Invalid follow_id parameter"
+    },{
+      "code":"1.0039",
+      "message":"is_accepted must be a boolean value"
+    },{
+      "code":"1.0040",
+      "message":"User activity data not found"
     }
   ]
 }
