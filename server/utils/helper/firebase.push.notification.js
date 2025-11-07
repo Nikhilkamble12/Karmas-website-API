@@ -201,20 +201,62 @@ const sendTemplateNotification = async ({
 
 
         // Build an array of per-user messages:
-        const messages = userIds.map(user => ({
-            token: user.token,
+        // const messages = userIds.map(user => ({
+        //     token: user.token,
+        //     notification: {
+        //         title,
+        //         body: description,
+        //         image: user.user_image || undefined // image per user
+        //     },
+        //     data: {
+        //         user_image: user.user_image ?? '',
+        //         bg_image: user.bg_image ?? '',
+        //         type: templateKey,
+        //         ...convertObjectValuesToString(metaData),
+        //     }
+        // }));
+
+
+        const messages = [];
+        userIds.forEach(user => {
+
+        // send to Android if token available
+        if (user.android_token) {
+            messages.push({
+            token: user.android_token,
             notification: {
                 title,
                 body: description,
-                image: user.user_image || undefined // image per user
+                image: user.user_image || undefined,
             },
             data: {
                 user_image: user.user_image ?? '',
-                bg_image: user.bg_image ?? '',
+                bg_image: user.user_bg_image ?? '',
                 type: templateKey,
                 ...convertObjectValuesToString(metaData),
-            }
-        }));
+            },
+            });
+        }
+
+        // send to Web if token available
+        if (user.web_token) {
+            messages.push({
+            token: user.web_token,
+            notification: {
+                title,
+                body: description,
+                image: user.user_image || undefined,
+            },
+            data: {
+                user_image: user.user_image ?? '',
+                bg_image: user.user_bg_image ?? '',
+                type: templateKey,
+                ...convertObjectValuesToString(metaData),
+            },
+            });
+        }
+        });
+
 
         // Break into batches of 500 (FCM max)
         const batchSize = 500;

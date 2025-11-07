@@ -73,21 +73,17 @@ let AuthController = {
           );
         }
       }
-      if(web_token){
-        const DataToUpdate = {
-          web_token:android_token,
-          is_web:true,
-          role_id:userData.role_id
-        }
-        await UserTokenService.CreateOrUpdateUserToken(userData.user_id,DataToUpdate)
-      }else if(android_token){
-         const DataToUpdate = {
-          android_token:android_token,
-          is_android:true,
-          role_id:userData.role_id
-        }
-        await UserTokenService.CreateOrUpdateUserToken(userData.user_id,DataToUpdate)
+      const DataToUpdate = {
+        role_id:userData.role_id
       }
+      if(web_token){
+        DataToUpdate.web_token=android_token
+        DataToUpdate.is_web=true
+      }else if(android_token){
+        DataToUpdate.android_token=android_token
+        DataToUpdate.is_android=true
+      }
+      await UserTokenService.CreateOrUpdateUserToken(userData.user_id,DataToUpdate)
       let levelGroupRolePagePermission = []
           if(userData.ngo_level_id && userData.ngo_level_id!==null && userData.ngo_level_id!=="" && userData.ngo_level_id!==0){
            levelGroupRolePagePermission = await GroupRolePagePermissionService.getByRoleIdAndNgoLevelId(userData.role_id,userData.ngo_level_id)

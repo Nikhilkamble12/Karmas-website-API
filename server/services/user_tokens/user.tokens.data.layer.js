@@ -1,50 +1,91 @@
 import UserTokenModel from "./user.tokens.model.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessary components from commonPath
+
+// function mapTokenResults(results) {
+//   const tokens = [];
+
+//   results.forEach(row => {
+//     if (row.is_android && row.is_android_on && row.android_token) {
+//       tokens.push({
+//         userTokenId: row.user_token_id,
+//         user_image:
+//           row.file_path && row.file_path !== 'null' && row.file_path.trim() !== ''
+//             ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.file_path}`
+//             : null,
+//         user_bg_image:
+//           row.bg_image_path && row.bg_image_path !== 'null' && row.bg_image_path.trim() !== ''
+//             ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.bg_image_path}`
+//             : null,
+//         user_id: row.user_id,
+//         platform: "android",
+//         token: row.android_token,
+//         updatedAt: row.updated_at
+//       });
+//     }
+
+//     if (row.is_web && row.is_web_on && row.web_token) {
+//       tokens.push({
+//         userTokenId: row.user_token_id,
+//         userId: row.user_id,
+//         user_image:
+//           row.file_path && row.file_path !== 'null' && row.file_path.trim() !== ''
+//             ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.file_path}`
+//             : null,
+//         user_bg_image:
+//           row.bg_image_path && row.bg_image_path !== 'null' && row.bg_image_path.trim() !== ''
+//             ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.bg_image_path}`
+//             : null,
+//         user_id: row.user_id,
+//         platform: "web",
+//         token: row.web_token,
+//         updatedAt: row.updated_at
+//       });
+//     }
+//   });
+
+//   return tokens;
+// }
+
+
 function mapTokenResults(results) {
   const tokens = [];
 
   results.forEach(row => {
-    if (row.is_android && row.is_android_on && row.android_token) {
-      tokens.push({
-        userTokenId: row.user_token_id,
-        user_image:
-          row.file_path && row.file_path !== 'null' && row.file_path.trim() !== ''
-            ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.file_path}`
-            : null,
-        user_bg_image:
-          row.bg_image_path && row.bg_image_path !== 'null' && row.bg_image_path.trim() !== ''
-            ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.bg_image_path}`
-            : null,
-        user_id: row.user_id,
-        platform: "android",
-        token: row.android_token,
-        updatedAt: row.updated_at
-      });
-    }
+    const userData = {
+      userTokenId: row.user_token_id,
+      user_id: row.user_id,
+      user_image:
+        row.file_path && row.file_path !== 'null' && row.file_path.trim() !== ''
+          ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.file_path}`
+          : null,
+      user_bg_image:
+        row.bg_image_path && row.bg_image_path !== 'null' && row.bg_image_path.trim() !== ''
+          ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.bg_image_path}`
+          : null,
+      android_token:
+        row.is_android && row.is_android_on && row.android_token
+          ? row.android_token
+          : null,
+      web_token:
+        row.is_web && row.is_web_on && row.web_token
+          ? row.web_token
+          : null,
+      updatedAt: row.updated_at,
+    };
 
-    if (row.is_web && row.is_web_on && row.web_token) {
-      tokens.push({
-        userTokenId: row.user_token_id,
-        userId: row.user_id,
-        user_image:
-          row.file_path && row.file_path !== 'null' && row.file_path.trim() !== ''
-            ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.file_path}`
-            : null,
-        user_bg_image:
-          row.bg_image_path && row.bg_image_path !== 'null' && row.bg_image_path.trim() !== ''
-            ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.bg_image_path}`
-            : null,
-        user_id: row.user_id,
-        platform: "web",
-        token: row.web_token,
-        updatedAt: row.updated_at
-      });
+    // Push if any token is present (android or web)
+    if (userData.android_token || userData.web_token) {
+      tokens.push(userData);
+    } else {
+      // Still add to tokens (for history tracking)
+      tokens.push({ ...userData, android_token: null, web_token: null });
     }
   });
 
   return tokens;
 }
+
 
 const UserTokenDAL = {
   // Method to create a new record in the database
