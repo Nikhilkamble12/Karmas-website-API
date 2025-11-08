@@ -27,7 +27,7 @@ const TicketDAL = {
   getAllDataByView: async () => {
     try {
       const getAllData = await db.sequelize.query(
-        `${ViewFieldTableVise.POSTS_FIELDS}`,
+        `${ViewFieldTableVise.TICKET_FIELDS}`,
         { type: db.Sequelize.QueryTypes.SELECT } 
       );
       return getAllData; // Return the retrieved data
@@ -39,7 +39,7 @@ const TicketDAL = {
   getDataByIdByView: async (ticket_id) => {
     try {
       const getDataById = await db.sequelize.query(
-        ` ${ViewFieldTableVise.POSTS_FIELDS} where ticket_id  = ${ticket_id} `,
+        ` ${ViewFieldTableVise.TICKET_FIELDS} where ticket_id  = ${ticket_id} `,
         { type: db.Sequelize.QueryTypes.SELECT }
       );
       return getDataById[0] ?? [];  // Return the retrieved data
