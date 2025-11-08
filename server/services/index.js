@@ -50,6 +50,8 @@ import ReportTypeModel from "./report_type/report.type.model.js";
 import ReportPageTypeModel from "./report_page_type/report.page.type.model.js";
 import TicketModuleTypeModel from "./ticket_module_type/ticket.module.type.model.js";
 import TicketModel from "./ticket/ticket.model.js";
+import ModuleTypeModel from "./module_type/module.type.model.js";
+import BugTypeModel from "./bug_type/bug.type.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -130,6 +132,8 @@ db.ReportTypeModel = ReportTypeModel(sequelize,Sequelize);
 db.ReportPageTypeModel = ReportPageTypeModel(sequelize,Sequelize);
 db.TicketModuleTypeModel = TicketModuleTypeModel(sequelize,Sequelize);
 db.TicketModel = TicketModel(sequelize,Sequelize);
+db.ModuleTypeModel = ModuleTypeModel(sequelize,Sequelize);
+db.BugTypeModel = BugTypeModel(sequelize,Sequelize);
 
 
 export default db

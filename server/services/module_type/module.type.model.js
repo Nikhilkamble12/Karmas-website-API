@@ -1,23 +1,26 @@
-import { DataTypes} from "sequelize";
+import { DataTypes } from "sequelize";
 
-const QuotesModel = (sequelize) => {
+const ModuleTypeModel = (sequelize) => {
   return sequelize.define(
-    "quotes",
+    "module_type",
     {
-      quote_id: {
+      module_type_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
-      quote_text : {
-        type: DataTypes.TEXT,
-        allowNull: false,
+      module_name: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
       },
-      
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       is_active: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue : 1
+        defaultValue: 1,
       },
       created_by: {
         type: DataTypes.INTEGER,
@@ -46,7 +49,7 @@ const QuotesModel = (sequelize) => {
       },
     },
     {
-      tableName: "quotes",
+      tableName: "module_type",
       paranoid: true,
       timestamps: false,
       defaultScope: {
@@ -63,7 +66,7 @@ const QuotesModel = (sequelize) => {
         },
       },
     }
-  )
-}
+  );
+};
 
-export default QuotesModel;
+export default ModuleTypeModel;

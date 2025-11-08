@@ -9,6 +9,8 @@ const ViewFieldTableWise = {
     BONUS_HISTORY_FIELDS:` SELECT history_id, bonus_id, previous_create_score, new_create_score, change_date, score_category_id, score_category_name, changed_by, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_BONUS_HISTORY} `,
     BLACK_LISTED_NGO_FIELDS:` SELECT ngo_id, ngo_name, unique_id, darpan_reg_date, ngo_type, registration_no, act_name, city_of_registration_id, state_of_registration_id, country_of_registration_id, date_of_registration, address, city_id, state_id, country_id, telephone, mobile_no, website_url, email, ngo_logo, ngo_logo_path, pan_cad_file_name, pan_card_file_url, crs_regis_file_name, crs_regis_file_path, is_blacklist, blacklist_reason FROM ${VIEW_NAME.GET_ALL_BLACKLIST_NGO} `,
     BLACK_LISTED_USER_FIELDS:` SELECT user_id, user_name, password, full_name, role_id, is_account_public, email_id, gender, enrolling_date, ngo_id, first_time_login, file_name, file_path, reset_otp, reset_otp_expiry, google_id, is_blacklisted, is_active, blacklist_reason FROM ${VIEW_NAME.GET_ALL_BLACKLISTER_USER} `,
+    BUG_TYPE_FIELDS: ` SELECT bug_type_id, module_type_id, module_name, bug_type_name, severity_level, description, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_BUG_TYPE} `,
+    BUG_MASTER_FIELDS: ` SELECT bug_id, bug_code, bug_title, bug_description, module_type_id, module_type_name, bug_type_id, bug_type_name, severity_status_id, severity_name, severity_type_id, severity_type_name, priority_status_id, priority_name, priority_type_id, priority_type_name, bug_status_id, bug_status_name, bug_status_type_id, bug_status_type_name, reported_by, assigned_to, resolution_summary, steps_to_reproduce, expected_behavior, actual_behavior, environment, screenshot_url, log_reference, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_BUG_MATSER} `,
 
     //  ------> C
     CITY_MASTER_FIELDS :` SELECT city_id, city_name, country_id, country_name, state_id, state_name, is_metro_city, is_active FROM ${VIEW_NAME.GET_ALL_CITY_MASTER} ` ,
@@ -31,6 +33,7 @@ const ViewFieldTableWise = {
 
     // 📘----> M
     MENU_FIELDS:` SELECT menu_id, menu, role_type, ip_address, city_cordinates, created_by, created_at, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_MENU} `,
+    MODULE_TYPE_FIELDS : ` SELECT module_type_id, module_name, description, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_MODULE_TYPE} `,
     
 
     // -------> N

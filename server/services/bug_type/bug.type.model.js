@@ -1,23 +1,34 @@
-import { DataTypes} from "sequelize";
+import { DataTypes } from "sequelize";
 
-const QuotesModel = (sequelize) => {
+const BugTypeModel = (sequelize) => {
   return sequelize.define(
-    "quotes",
+    "bug_type",
     {
-      quote_id: {
+      bug_type_id: {
         type: DataTypes.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
-      quote_text : {
-        type: DataTypes.TEXT,
+      module_type_id: {
+        type: DataTypes.INTEGER,
         allowNull: false,
       },
-      
+      bug_type_name: {
+        type: DataTypes.STRING(100),
+        allowNull: true,
+      },
+      severity_level: {
+        type: DataTypes.ENUM,
+        allowNull: false,
+      },
+      description: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       is_active: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue : 1
+        defaultValue: 1,
       },
       created_by: {
         type: DataTypes.INTEGER,
@@ -46,7 +57,7 @@ const QuotesModel = (sequelize) => {
       },
     },
     {
-      tableName: "quotes",
+      tableName: "bug_type",
       paranoid: true,
       timestamps: false,
       defaultScope: {
@@ -63,7 +74,7 @@ const QuotesModel = (sequelize) => {
         },
       },
     }
-  )
-}
+  );
+};
 
-export default QuotesModel;
+export default BugTypeModel

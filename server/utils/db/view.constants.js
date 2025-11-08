@@ -68,5 +68,10 @@ GET_ALL_REPORT_TYPE:"v_report_type",
 GET_ALL_REPORT_PAGE_TYPE :"v_report_page_type",
 GET_ALL_TICKET_MODULE_TYPE :"v_ticket_module_type",
 GET_ALL_TICKET : "v_ticket",
+GET_ALL_BUG_TYPE : "v_bug_type",
+GET_ALL_BUG_MATSER : "v_bug_master",
+GET_ALL_MODULE_TYPE : "v_module_type",
+
+
 }
 export default VIEW_NAME
