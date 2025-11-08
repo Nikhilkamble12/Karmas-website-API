@@ -131,6 +131,7 @@ let AuthController = {
           user_name: userData.user_name,
           full_name: userData.full_name,
           role: userData.role,
+          ngo_id:userData?.ngo_id ?? null,
           first_time_login: userData.first_time_login
         },
         token: token,
