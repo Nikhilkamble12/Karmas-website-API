@@ -93,6 +93,7 @@ const ViewFieldTableWise = {
     TABLE_MASTER_FIELDS: ` SELECT table_id, table_name, is_active FROM ${VIEW_NAME.GET_ALL_TABLE_MASTER}  `,
     TICKET_FIELDS : ` SELECT ticket_id, ticket_code, user_id, created_user_name, created_full_name, assigned_to, assigned_user_name, assigned_full_name, module_type_id, module_name, subject, description, status_id, status_name, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_TICKET} `,
     TICKET_MODULE_TYPE_FIELDS : ` SELECT module_type_id, module_name, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_TICKET_MODULE_TYPE} `,
+    TICKET_MEDIA_FIELDS: ` SELECT ticket_media_id, ticket_id, ticket_code, subject, sequence, media_type, media_url, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_TICKET_MEDIA} `,
 
     //  ------> U
     USER_MASTER_FIELDS :` SELECT  user_id, user_name, password, full_name, role_id, role, is_account_public, email_id, mobile_no, gender, bio, enrolling_date, ngo_id, ngo_name, ngo_unique_id, file_name, file_path, bg_image, bg_image_path, reset_otp, reset_otp_expiry, google_id, is_active, first_time_login, is_blacklisted,
