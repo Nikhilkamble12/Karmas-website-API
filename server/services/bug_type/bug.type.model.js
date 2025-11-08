@@ -17,9 +17,10 @@ const BugTypeModel = (sequelize) => {
         type: DataTypes.STRING(100),
         allowNull: true,
       },
-      severity_level: {
-        type: DataTypes.ENUM,
+       severity_level: {
+        type: DataTypes.ENUM("Low", "Medium", "High", "Critical"),
         allowNull: false,
+        defaultValue: "Low",
       },
       description: {
         type: DataTypes.TEXT,
