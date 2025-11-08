@@ -38,11 +38,19 @@ const UserFollowingController = {
                         total_followed_count = total_followed_count  + 1
                     }
                     templateData = await notificationTemplates.friendRequestAccepted(getUserActivityByFollowingId[0].user_name) 
-                }else if((checkWetherItIsPresent[0].is_following==false && getUserActivityByFollowingId[0].is_account_public == false) || (checkWetherItIsPresent[0].is_rejected == 1 && getUserActivityByFollowingId[0].is_account_public == false)){
-                    templateData = await notificationTemplates.friendRequestSent(getUserActivityByFollowingId[0].user_name)
-                    private_templateData = await notificationTemplates.followRequestReceived(getUserActivityByFollowingId[0].user_name)
-                    data.is_following = false
-                    data.is_private = true
+                }else if (
+                        (checkWetherItIsPresent[0].is_following == false && getUserActivityByFollowingId[0].is_account_public == false)
+                        || (checkWetherItIsPresent[0].is_rejected == 1 && getUserActivityByFollowingId[0].is_account_public == false)
+                    ) {
+                    // Reset rejected state to allow re-request
+                    data.is_following = false;
+                    data.is_private = true;
+                    data.is_rejected = false;
+                    await addMetaDataWhileCreateUpdate(data, req, res, true);
+
+                    templateData = await notificationTemplates.friendRequestSent(getUserActivityByFollowingId[0].user_name);
+                    private_templateData = await notificationTemplates.followRequestReceived(getUserActivityByFollowingId[0].user_name);
+                    
                 }else if(checkWetherItIsPresent[0].is_following==true){
                     if(data.is_following == false){
                         total_following_count = total_following_count - 1
