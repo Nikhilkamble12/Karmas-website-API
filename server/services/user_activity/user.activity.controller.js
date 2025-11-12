@@ -273,7 +273,50 @@ const UserActivityController = {
                     )
                 );
         }
-    }
+    },
+    // Retrieve records by User ID
+    getDataByUserId: async (req, res) => {
+        try {
+            const userId = req.query.userId;    
+
+            const getDataByUserId = await UserActivtyService.getDataByUserId(userId);
+            if (getDataByUserId.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getDataByUserId
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)   
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    }   
+
 }
 
 export default UserActivityController
