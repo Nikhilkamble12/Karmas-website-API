@@ -67,12 +67,12 @@ const UserFollowingController = {
                 const updateUserMaster = await UserMasterService.updateService(getUserActivityByFollowingId[0].user_id,{total_follower:total_followed_count})
                 const getNewerData = await UserFollowingService.getServiceById(checkWetherItIsPresent[0].follow_id)
                     if(getNewerData.is_following && !checkWetherItIsPresent[0].is_following){
-                const sendNotification = await sendTemplateNotification({templateKey:"User-Follow",templateData:templateData,userIds:userToken,metaData:{created_by:tokenData(req,res),follow_user_id:data.following_user_id,current_user_image:getUserActivityByUser[0]?.file_path ?? null,following_user_image:getUserActivityByFollowingId[0]?.file_path ?? null}})
+                const sendNotification = await sendTemplateNotification({templateKey:"Follow-Request-Accepted",templateData:templateData,userIds:userToken,metaData:{created_by:tokenData(req,res),follow_user_id:data.following_user_id,current_user_image:getUserActivityByUser[0]?.file_path ?? null,following_user_image:getUserActivityByFollowingId[0]?.file_path ?? null}})
                     }
                 if(getUserActivityByFollowingId[0].is_account_public == false){
                     const PrivateUserId = await UserTokenService.GetTokensByUserIds(data.following_user_id)
                     private_templateData = await notificationTemplates.followRequestReceived(getUserActivityByFollowingId[0].user_name)
-                    const PrivatesendNotification = await sendTemplateNotification({templateKey:"User-Follow",templateData:private_templateData,userIds:PrivateUserId,metaData:{created_by:tokenData(req,res),follow_user_id:data.user_id,current_user_image:getUserActivityByUser[0]?.file_path ?? null,following_user_image:getUserActivityByFollowingId[0]?.file_path ?? null}})
+                    const PrivatesendNotification = await sendTemplateNotification({templateKey:"Follow-Request-Received",templateData:private_templateData,userIds:PrivateUserId,metaData:{created_by:tokenData(req,res),follow_user_id:data.user_id,current_user_image:getUserActivityByUser[0]?.file_path ?? null,following_user_image:getUserActivityByFollowingId[0]?.file_path ?? null}})
                 }
                 return res
                     .status(responseCode.CREATED)
@@ -115,11 +115,11 @@ const UserFollowingController = {
             const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
             const updateUsermaster = await UserMasterService.updateService(getUserActivityByFollowingId[0].user_id,{total_follower:total_followed_count})
                 if(templateData){
-                const sendNotification = await sendTemplateNotification({templateKey:"User-Follow",templateData:templateData,userIds:userToken,metaData:{created_by:tokenData(req,res),follow_user_id:data.following_user_id,current_user_image:getUserActivityByUser[0]?.file_path ?? null,following_user_image:getUserActivityByFollowingId[0]?.file_path ?? null}})
+                const sendNotification = await sendTemplateNotification({templateKey:"Follow-Request-Accepted",templateData:templateData,userIds:userToken,metaData:{created_by:tokenData(req,res),follow_user_id:data.following_user_id,current_user_image:getUserActivityByUser[0]?.file_path ?? null,following_user_image:getUserActivityByFollowingId[0]?.file_path ?? null}})
                 }
                 if(getUserActivityByFollowingId[0].is_account_public == false){
                     const PrivateUserId = await UserTokenService.GetTokensByUserIds(data.following_user_id)
-                    const PrivatesendNotification = await sendTemplateNotification({templateKey:"User-Follow",templateData:private_templateData,userIds:PrivateUserId,metaData:{created_by:tokenData(req,res),follow_user_id:data.user_id,current_user_image:getUserActivityByUser[0]?.file_path ?? null,following_user_image:getUserActivityByFollowingId[0]?.file_path ?? null}})
+                    const PrivatesendNotification = await sendTemplateNotification({templateKey:"Follow-Request-Received",templateData:private_templateData,userIds:PrivateUserId,metaData:{created_by:tokenData(req,res),follow_user_id:data.user_id,current_user_image:getUserActivityByUser[0]?.file_path ?? null,following_user_image:getUserActivityByFollowingId[0]?.file_path ?? null}})
                 }
                 return res
                     .status(responseCode.CREATED)
@@ -734,7 +734,7 @@ const UserFollowingController = {
                     const userToken = await UserTokenService.GetTokensByUserIds(getData.user_id);
 
                     await sendTemplateNotification({
-                        templateKey: "User-Follow",
+                        templateKey: "Follow-Request-Accepted",
                         templateData,
                         userIds: userToken,
                         metaData: {
@@ -757,7 +757,7 @@ const UserFollowingController = {
                     const userToken = await UserTokenService.GetTokensByUserIds(getData.user_id);
 
                     await sendTemplateNotification({
-                        templateKey: "User-Follow",
+                        templateKey: "Follow-Request-Rejected",
                         templateData,
                         userIds: userToken,
                         metaData: {
