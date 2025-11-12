@@ -98,39 +98,53 @@ const UserMasterDAL = {
         }catch(error){
             throw error
         }
-    },checkWetherUserIsPresent: async (user_name, limit, offset) => {
-    try {
-        let query = `
-            ${ViewFieldTableVise.USER_MASTER_FIELDS}
-            WHERE (user_name LIKE :search OR full_name LIKE :search)
-              AND is_blacklisted = false
-        `;
+    },checkWhetherUserIsPresent: async (user_name, limit, offset, user_id) => {
+        try {
+            let query = `
+            SELECT *
+            FROM (
+                ${ViewFieldTableVise.USER_MASTER_FIELDS}
+            ) AS u
+            LEFT JOIN v_user_blacklist AS vb1 
+                ON vb1.blacklisted_user_id = u.user_id 
+                AND vb1.user_id = :searching_user_id
+            LEFT JOIN v_user_blacklist AS vb2 
+                ON vb2.user_id = u.user_id 
+                AND vb2.blacklisted_user_id = :searching_user_id
+            WHERE (u.user_name LIKE :search OR u.user_name LIKE :search)
+                AND u.is_blacklisted = false
+                AND vb1.user_id IS NULL
+                AND vb2.user_id IS NULL
+                AND u.user_id != :searching_user_id
+            `;
 
-        const replacements = { search: `%${user_name}%` };
+            const replacements = {
+                search: `%${user_name}%`,
+                searching_user_id: user_id || 0,
+            };
 
-        // Add LIMIT and OFFSET if both are valid numbers
-        if (
-            typeof limit === 'number' &&
-            typeof offset === 'number' &&
-            !isNaN(limit) &&
-            !isNaN(offset)
-        ) {
-            query += ` LIMIT :limit OFFSET :offset`;
-            replacements.limit = limit;
-            replacements.offset = offset;
+            if (
+                typeof limit === "number" &&
+                typeof offset === "number" &&
+                !isNaN(limit) &&
+                !isNaN(offset)
+            ) {
+                query += ` LIMIT :limit OFFSET :offset`;
+                replacements.limit = limit;
+                replacements.offset = offset;
+            }
+
+            const getData = await db.sequelize.query(query, {
+                replacements,
+                type: db.Sequelize.QueryTypes.SELECT,
+            });
+
+            return getData;
+        } catch (error) {
+            throw error;
         }
-
-        const getData = await db.sequelize.query(query, {
-            replacements,
-            type: db.Sequelize.QueryTypes.SELECT,
-        });
-
-        return getData;
-    } catch (error) {
-        throw error;
-    }
-}
-, checkIfUserNameIsPresentByGoogleId: async (google_id) => {
+    },
+ checkIfUserNameIsPresentByGoogleId: async (google_id) => {
         try {
             console.log('google_id', google_id)
             const getData = await db.sequelize.query(`${ViewFieldTableVise.USER_MASTER_FIELDS} where google_id = '${google_id}'`, { type: db.Sequelize.QueryTypes.SELECT })

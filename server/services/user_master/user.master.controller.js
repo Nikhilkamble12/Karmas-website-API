@@ -479,7 +479,8 @@ const UserMasterController = {
             const user_name = req.query.user_name
             const limit = req.query.limit
             const offset = req.query.offset
-            const FindUserBySearchQuery = await UserMasterService.findUserByFulNameAndUseName(user_name, limit, offset)
+            const user_id = tokenData(req, res)
+            const FindUserBySearchQuery = await UserMasterService.findUserByFulNameAndUseName(user_name, limit, offset, user_id)
             if (FindUserBySearchQuery.length !== 0) {
                 for (let i = 0; i < FindUserBySearchQuery.length; i++) {
                     const currentuserData = FindUserBySearchQuery[i]

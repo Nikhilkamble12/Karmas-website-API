@@ -46,9 +46,9 @@ const UserMasterService = {
         }catch(error){
             throw error
         }
-    },findUserByFulNameAndUseName:async(user_name,limit,offset)=>{
+    },findUserByFulNameAndUseName:async(user_name,limit,offset,user_id)=>{
         try{
-            return await UserMasterDAL.checkWetherUserIsPresent(user_name,limit,offset)
+            return await UserMasterDAL.checkWhetherUserIsPresent(user_name,limit,offset,user_id)
         }catch(error){
             throw error
         }
