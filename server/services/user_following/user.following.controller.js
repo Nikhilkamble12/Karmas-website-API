@@ -28,8 +28,8 @@ const UserFollowingController = {
                     )
                 );
             }
-            let total_following_count = parseInt(getUserActivityByUser[0].following_no) ?? 0
-            let total_followed_count = parseInt(getUserActivityByFollowingId[0].follower_no) ?? 0
+            let total_following_count = parseInt(getUserActivityByUser[0]?.following_no) ?? 0
+            let total_followed_count = parseInt(getUserActivityByFollowingId[0]?.follower_no) ?? 0
             const checkWetherItIsPresent = await UserFollowingService.getDataByUserIdAndFollowId(data.user_id,data.following_user_id)
             if(checkWetherItIsPresent && checkWetherItIsPresent.length>0){
                 if(checkWetherItIsPresent[0].is_following==false && getUserActivityByFollowingId[0].is_account_public == true){
@@ -53,11 +53,11 @@ const UserFollowingController = {
                     
                 }else if(checkWetherItIsPresent[0].is_following==true){
                     if(data.is_following == false){
-                        total_following_count = total_following_count - 1
-                        total_followed_count = total_followed_count - 1
+                        total_following_count = Math.max(0,total_following_count - 1)
+                        total_followed_count = Math.max(0, total_followed_count - 1)
                     }
                 }
-                 const userToken = await UserTokenService.GetTokensByUserIds(getUserActivityByUser[0].user_id)
+                const userToken = await UserTokenService.GetTokensByUserIds(getUserActivityByUser[0].user_id)
                 await addMetaDataWhileCreateUpdate(data, req, res, true);
 
                 const updateUserFollowing = await UserFollowingService.updateService(checkWetherItIsPresent[0].follow_id,data)
@@ -184,8 +184,8 @@ const UserFollowingController = {
                     data.is_following = false
                 }else if(getOlderDatabyId.is_following==true){
                     if(data.is_following==false){
-                        total_following_count = total_following_count - 1
-                        total_followed_count = total_followed_count - 1
+                        total_following_count = Math.max(0, total_following_count - 1)
+                        total_followed_count = Math.max(0,total_followed_count - 1)
                     }
                 }
             const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
@@ -385,8 +385,8 @@ const UserFollowingController = {
             const getUserActivityByFollowingId = await UserActivtyService.getDataByUserId(getOlderData.following_user_id)
             let total_following_count = parseInt(getUserActivityByUser[0].following_no) ?? 0
             let total_followed_count = parseInt(getUserActivityByFollowingId[0].follower_no) ?? 0
-            total_following_count = total_following_count - 1
-            total_followed_count = total_followed_count - 1
+            total_following_count = Math.max(0,total_following_count - 1)
+            total_followed_count = Math.max(0,total_followed_count - 1)
             const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
             const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
             const updateUserMaster = await UserMasterService.updateService(getUserActivityByFollowingId[0].user_id,{total_follower:total_followed_count})
