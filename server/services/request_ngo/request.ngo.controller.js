@@ -413,6 +413,8 @@ const RequestNgoController = {
             console.log("getDataByNgoRequest",getDataByNgoRequest)
             const getNgoData = await NgoMasterService.getServiceById(getDataByNgoRequest.ngo_id) 
             if(parseInt(requestDetails.status_id)!==STATUS_MASTER.REQUEST_APPROVED && parseInt(data.status_id)==STATUS_MASTER.REQUEST_APPROVED){
+                console.log("requestDetails.status_id------->Approved---->",requestDetails.status_id)
+
                 let userActivityData = {}
                 let UserMasterData = {}
                 const ngoRequestCompleted = parseInt(getNgoData.total_request_completed) ?? 0 
@@ -431,7 +433,7 @@ const RequestNgoController = {
                 }
                 await addMetaDataWhileCreateUpdate(userActivityData, req, res, true);
                 if(parseInt(req.body.status_id)==STATUS_MASTER.REQUEST_APPROVED){
-                    const updaterequest = await RequestService.updateService(RequestId,{status_id:8,AssignedNGO:getDataByNgoRequest.ngo_id})
+                    const updaterequest = await RequestService.updateService(RequestId,{status_id:STATUS_MASTER.REQUEST_APPROVED,AssignedNGO:getDataByNgoRequest.ngo_id})
                     const updateUserActivity = await UserActivtyService.updateService(getUserDataByUserId[0].user_activity_id,userActivityData)
                     const gitScoreHistory = {
                         user_id:requestDetails.request_user_id,
@@ -478,7 +480,8 @@ const RequestNgoController = {
                             responseConst.SUCCESS_UPDATING_RECORD
                         )
                     );
-            }else if(parseInt(requestDetails.status_id)!==STATUS_MASTER.REQUEST_REJECTED && parseInt(data.status_id)==STATUS_MASTER.REQUEST_REJECTED){
+            }else if(parseInt(requestDetails.status_id)!==STATUS_MASTER.REQUEST_APPROVED && parseInt(data.status_id)==STATUS_MASTER.REQUEST_REJECTED){
+                console.log("requestDetails.status_id------->Rejected---->",data.status_id)
                 let ngoRequestRejected = getNgoData.total_request_rejected
                 let dataToStore = {}
                 dataToStore.status_id = req.body.status_id
