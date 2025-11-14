@@ -112,6 +112,7 @@ import fs from "fs"
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import UserTokenService from '../../services/user_tokens/user.tokens.service.js';
 
 // In ES Modules, __dirname is not available directly, so we construct it
 const __filename = fileURLToPath(import.meta.url);
@@ -267,7 +268,7 @@ const sendTemplateNotification = async ({
         for (let i = 0; i < messages.length; i += batchSize) {
             const batchMessages = messages.slice(i, i + batchSize);
             console.log(`Processing batch ${i / batchSize + 1}/${Math.ceil(messages.length / batchSize)} with ${batchMessages.length} messages.`);
-            console.log("batchMessages",batchMessages)
+            // console.log("batchMessages",batchMessages)
             try {
                 // sendAll takes an array of messages with individual tokens
                 const response = await messaging.sendEach(batchMessages);
@@ -277,26 +278,54 @@ const sendTemplateNotification = async ({
 
                 // Handle per-message failures
                 if (response.failureCount > 0) {
-                    response.responses.forEach((resp, index) => {
-                        if (!resp.success) {
-                            const failedMsg = batchMessages[index];
-                            const originalUserIdEntry = userIds.find(u => u.token === failedMsg.token);
-                            allFailedTokensDetails.push({
-                                token: failedMsg.token,
-                                user_id: originalUserIdEntry ? originalUserIdEntry.user_id : 'unknown',
-                                error: resp.error?.message,
-                                errorCode: resp.error?.code
-                            });
+                    //  response.responses.forEach((resp, index) => {
+                    //     if (!resp.success) {
+                    //         const failedMsg = batchMessages[index];
+                    //         const originalUserIdEntry = userIds.find(u => u.token === failedMsg.token);
+                    //         allFailedTokensDetails.push({
+                    //             token: failedMsg.token,
+                    //             user_id: originalUserIdEntry ? originalUserIdEntry.user_id : 'unknown',
+                    //             error: resp.error?.message,
+                    //             errorCode: resp.error?.code
+                    //         });
 
-                            // Example invalid token cleanup:
-                            if (['messaging/invalid-registration-token',
-                                'messaging/not-found',
-                                'messaging/registration-token-not-registered']
-                                .includes(resp.error?.code)) {
-                                console.warn(`Consider removing invalid token from DB: ${failedMsg.token}`);
+                    //         // Example invalid token cleanup:
+                    //         if (['messaging/invalid-registration-token',
+                    //             'messaging/not-found',
+                    //             'messaging/registration-token-not-registered']
+                    //             .includes(resp.error?.code)) {
+                    //             console.warn(`Consider removing invalid token from DB: ${failedMsg.token}`);
+                    //         }
+                    //     }
+                    // });
+
+                    for (let index = 0; index < response.responses.length; index++) {
+                            const resp = response.responses[index];
+
+                            if (!resp.success) {
+                                const failedMsg = batchMessages[index];
+
+                                const originalUserIdEntry = userIds.find(u => u.token === failedMsg.token);
+
+                                allFailedTokensDetails.push({
+                                    token: failedMsg.token,
+                                    user_id: originalUserIdEntry ? originalUserIdEntry.user_id : 'unknown',
+                                    error: resp.error?.message,
+                                    errorCode: resp.error?.code
+                                });
+
+                                // Invalid token → remove only that specific token
+                                if ([
+                                    'messaging/invalid-registration-token',
+                                    'messaging/not-found',
+                                    'messaging/registration-token-not-registered'
+                                ].includes(resp.error?.code)) {
+
+                                    console.warn(`Removing invalid token from DB: ${failedMsg.token}`);
+                                    await UserTokenService.removeOnlyThisToken(failedMsg.token);
+                                }
                             }
                         }
-                    });
                 }
 
                 console.log(`Batch sent: ${response.successCount} succeeded, ${response.failureCount} failed.`);

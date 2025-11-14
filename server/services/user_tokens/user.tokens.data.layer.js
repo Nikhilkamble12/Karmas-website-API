@@ -1,4 +1,5 @@
 import UserTokenModel from "./user.tokens.model.js";
+import { Op } from "sequelize";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessary components from commonPath
 
@@ -217,7 +218,29 @@ const UserTokenDAL = {
     } catch (error) {
       throw error;
     }
-  }
+  },removeOnlyThisToken : async (token) => {
+  await UserTokenModel(db.sequelize).update(
+    {
+      // Use CASE to remove only the matching column
+      android_token: db.sequelize.literal(`CASE 
+          WHEN android_token = '${token}' THEN NULL 
+          ELSE android_token 
+        END`),
+      web_token: db.sequelize.literal(`CASE 
+          WHEN web_token = '${token}' THEN NULL 
+          ELSE web_token 
+        END`)
+    },
+    {
+      where: {
+        [Op.or]: [
+          { android_token: token },
+          { web_token: token }
+        ]
+      }
+    }
+  );
+},
 }
 
 export default UserTokenDAL

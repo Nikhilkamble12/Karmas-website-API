@@ -64,6 +64,12 @@ const UserTokenService = {
         }catch(error){
             throw error
         }
+    },removeOnlyThisToken:async(token)=>{
+        try{
+            return await UserTokenDAL.removeOnlyThisToken(token)
+        }catch(error){
+            throw error
+        }
     }
 }
 
