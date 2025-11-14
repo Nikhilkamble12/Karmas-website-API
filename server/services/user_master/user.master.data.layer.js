@@ -102,9 +102,7 @@ const UserMasterDAL = {
         try {
             let query = `
             SELECT u.*
-            FROM (
-                ${ViewFieldTableVise.USER_MASTER_FIELDS}
-            ) AS u
+            FROM v_user_master AS u
             LEFT JOIN v_user_blacklist AS vb1 
                 ON vb1.blacklisted_user_id = u.user_id 
                 AND vb1.user_id = :searching_user_id
