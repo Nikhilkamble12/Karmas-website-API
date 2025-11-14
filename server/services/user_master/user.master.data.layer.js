@@ -101,7 +101,7 @@ const UserMasterDAL = {
     },checkWhetherUserIsPresent: async (user_name, limit, offset, user_id) => {
         try {
             let query = `
-            SELECT *
+            SELECT u.*
             FROM (
                 ${ViewFieldTableVise.USER_MASTER_FIELDS}
             ) AS u
@@ -111,11 +111,10 @@ const UserMasterDAL = {
             LEFT JOIN v_user_blacklist AS vb2 
                 ON vb2.user_id = u.user_id 
                 AND vb2.blacklisted_user_id = :searching_user_id
-            WHERE (u.user_name LIKE :search OR u.user_name LIKE :search)
+            WHERE (u.user_name LIKE :search OR u.full_name LIKE :search)
                 AND u.is_blacklisted = false
                 AND vb1.user_id IS NULL
                 AND vb2.user_id IS NULL
-                AND u.user_id != :searching_user_id
             `;
 
             const replacements = {
