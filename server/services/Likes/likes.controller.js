@@ -151,7 +151,6 @@ const LikesController = {
                 const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
                 const total_post_like_no = parseInt(getUserActivityData[0].total_likes_no ?? 0) + 1;
                 await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_likes_no : total_post_like_no });
-
                 // Increment post total likes
                 const getPostData = await PostService.getServiceById(data.post_id);
                 const total_likes = parseInt(getPostData.total_likes ?? 0) + 1;
