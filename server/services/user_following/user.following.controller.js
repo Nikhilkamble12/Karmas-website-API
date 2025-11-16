@@ -33,7 +33,7 @@ const UserFollowingController = {
             const checkWetherItIsPresent = await UserFollowingService.getDataByUserIdAndFollowId(data.user_id,data.following_user_id)
             if(checkWetherItIsPresent && checkWetherItIsPresent.length>0){
                 if(checkWetherItIsPresent[0].is_following==false && getUserActivityByFollowingId[0].is_account_public == true){
-                    if(data.is_following){
+                    if(parseInt(data.is_following)){
                         total_following_count =  total_following_count + 1
                         total_followed_count = total_followed_count  + 1
                     }
@@ -52,7 +52,7 @@ const UserFollowingController = {
                     private_templateData = await notificationTemplates.followRequestReceived(getUserActivityByFollowingId[0].user_name);
                     
                 }else if(checkWetherItIsPresent[0].is_following==true){
-                    if(data.is_following == false){
+                    if(parseInt(data.is_following) == false){
                         total_following_count = Math.max(0,total_following_count - 1)
                         total_followed_count = Math.max(0, total_followed_count - 1)
                     }
@@ -380,7 +380,7 @@ const UserFollowingController = {
             const id = req.query.id
             // Delete data from the database
             const getOlderData = await UserFollowingService.getServiceById(id)
-            if(getOlderData.is_following){
+            if(getOlderData && getOlderData.is_following==true){
             const getUserActivityByUser = await UserActivtyService.getDataByUserId(getOlderData.user_id)
             const getUserActivityByFollowingId = await UserActivtyService.getDataByUserId(getOlderData.following_user_id)
             let total_following_count = parseInt(getUserActivityByUser[0].following_no) ?? 0
