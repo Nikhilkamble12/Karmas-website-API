@@ -256,7 +256,7 @@ const RequestCommentLikesController = {
             const deleteData = await RequestCommentLikesService.deleteByid(id, req, res)
             // Also delete data from the JSON file
             // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
-            if (deleteData === 0) {
+            if (deleteData == 0) {
                 return res
                     .status(responseCode.BAD_REQUEST)
                     .send(
@@ -268,6 +268,10 @@ const RequestCommentLikesController = {
                         )
                     );
             }
+
+            const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req, res))
+            const total_request_comment_likes_no = Math.max( 0, parseInt(getUserActivityData[0].total_request_comment_likes_no) - 1);
+            const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_comment_likes_no: total_request_comment_likes_no })
 
             return res
                 .status(responseCode.CREATED)
