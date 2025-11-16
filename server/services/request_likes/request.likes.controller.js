@@ -30,7 +30,7 @@ const RequestLikesController = {
                     // Update user activity like count
                     const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
                     const total_request_like_no = parseInt(getUserActivityData[0].total_request_like_no ?? 0) + 1;
-                    await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no });
+                    await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no:total_request_like_no });
 
                     // Update request total_likes
                     const getRequestData = await RequestService.getServiceById(data.request_id);
@@ -42,7 +42,7 @@ const RequestLikesController = {
                 if (oldLike.is_liked && !data.is_liked) {
                     const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
                     const total_request_like_no = Math.max(0, parseInt(getUserActivityData[0].total_request_like_no ?? 0) - 1);
-                    await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no });
+                    await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no:total_request_like_no });
 
                     const getRequestData = await RequestService.getServiceById(data.request_id);
                     const total_likes = Math.max(0, parseInt(getRequestData.total_likes ?? 0) - 1);
@@ -67,7 +67,7 @@ const RequestLikesController = {
                 if (data.is_liked) {
                     const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
                     const total_request_like_no = parseInt(getUserActivityData[0].total_request_like_no ?? 0) + 1;
-                    await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no });
+                    await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no:total_request_like_no });
 
                     const getRequestData = await RequestService.getServiceById(data.request_id);
                     const total_likes = parseInt(getRequestData.total_likes ?? 0) + 1;
