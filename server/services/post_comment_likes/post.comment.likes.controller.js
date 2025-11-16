@@ -252,6 +252,10 @@ const PostCommentLikesController = {
     deleteData: async (req, res) => {
         try {
             const id = req.query.id
+            const getPostCommentLikeById = await PostCommentLikesService.getServiceById(id)
+            const getUserActivityData = await UserActivtyService.getDataByUserId(getPostCommentLikeById.user_id)
+            const total_post_comment_likes_no = parseInt(getUserActivityData[0].total_post_comment_likes_no) - 1
+            const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_post_comment_likes_no: total_post_comment_likes_no })
             // Delete data from the database
             const deleteData = await PostCommentLikesService.deleteByid(id, req, res)
             // Also delete data from the JSON file
