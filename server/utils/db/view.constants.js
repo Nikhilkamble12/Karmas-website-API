@@ -71,7 +71,8 @@ GET_ALL_TICKET : "v_ticket",
 GET_ALL_BUG_TYPE : "v_bug_type",
 GET_ALL_BUG_MATSER : "v_bug_master",
 GET_ALL_MODULE_TYPE : "v_module_type",
-GET_ALL_TICKET_MEDIA: "v_ticket_media"
+GET_ALL_TICKET_MEDIA: "v_ticket_media",
+GET_ALL_NGO_DESIGNATION_MASTER : "v_ngo_designation_master"
 
 }
 export default VIEW_NAME

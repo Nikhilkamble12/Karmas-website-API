@@ -53,6 +53,7 @@ import TicketModel from "./ticket/ticket.model.js";
 import ModuleTypeModel from "./module_type/module.type.model.js";
 import BugTypeModel from "./bug_type/bug.type.model.js";
 import TicketMediaModel from "./ticket_media/ticket.media.model.js";
+import NgoDesignationMasterModel from "./ngo_designation_master/ngo.designation.master.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -136,6 +137,7 @@ db.TicketModel = TicketModel(sequelize,Sequelize);
 db.ModuleTypeModel = ModuleTypeModel(sequelize,Sequelize);
 db.BugTypeModel = BugTypeModel(sequelize,Sequelize);
 db.TicketMediaModel = TicketMediaModel(sequelize,Sequelize);
+db.NgoDesignationMasterModel = NgoDesignationMasterModel(sequelize,Sequelize);
 
 
 export default db
