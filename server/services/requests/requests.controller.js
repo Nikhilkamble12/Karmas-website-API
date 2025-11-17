@@ -664,6 +664,18 @@ const RequestsController = {
     },getRequestByNgoId: async (req, res) => {
         try {
             const ngo_id = req.query.ngo_id;
+            if(!ngo_id || ngo_id==""){
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_MISSING_KINDLY_CHECK,
+                            null,
+                            true
+                        )
+                    );
+            }
 
             const getData = await RequestService.GetRequestByNgoId(ngo_id);
 

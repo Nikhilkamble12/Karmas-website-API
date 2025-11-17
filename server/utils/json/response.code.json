@@ -207,6 +207,9 @@
     },{
       "code":"1.0040",
       "message":"User activity data not found"
+    },{
+      "code":"1.0041",
+      "message":"Data Is Missing Kindly Verify Your Data."
     }
   ]
 }
