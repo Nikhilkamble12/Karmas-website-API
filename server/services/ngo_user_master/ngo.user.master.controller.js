@@ -1,24 +1,19 @@
-import PostCommentLikesService from "./post.comment.likes.service.js";
+import NgoUserMasterService from "./ngo.user.master.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
-import UserActivtyService from "../user_activity/user.activity.service.js";
-const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
+const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
-const PostCommentLikesController = {
-    // Create A new Record 
+
+const NgoUserMasterController = {
+       // Create A new Record 
     create: async (req, res) => {
         try {
             const data = req.body;
             // Add metadata for creation (created by, created at)
             await addMetaDataWhileCreateUpdate(data, req, res, false);
-            if (data.is_liked) {
-                const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req, res))
-                const total_post_comment_likes_no = parseInt(getUserActivityData[0].total_post_comment_likes_no) + 1
-                const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_post_comment_likes_no: total_post_comment_likes_no })
-            }
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
-            const createData = await PostCommentLikesService.createService(data);
+            const createData = await NgoUserMasterService.createService(data);
             if (createData) {
                 return res
                     .status(responseCode.CREATED)
@@ -41,7 +36,7 @@ const PostCommentLikesController = {
                     );
             }
         } catch (error) {
-            console.log("error", error)
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -54,7 +49,9 @@ const PostCommentLikesController = {
                     )
                 );
         }
-    },
+    }, 
+
+    
     // update Record Into Db
     update: async (req, res) => {
         try {
@@ -62,22 +59,11 @@ const PostCommentLikesController = {
             const data = req.body
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, true);
-            const getOlderData = await PostCommentLikesService.getServiceById(id)
-            if (data.is_liked !== getOlderData.is_liked) {
-                const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req, res))
-                if (data.is_liked) {
-                    const total_likes = parseInt(getUserActivityData[0].total_post_comment_likes_no) + 1
-                    const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_post_comment_likes_no: total_likes })
-                } else {
-                    const total_likes = parseInt(getUserActivityData[0].total_post_comment_likes_no) - 1
-                    const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_post_comment_likes_no: total_likes })
-                }
-            }
 
             // Update the record using ORM
-            const updatedRowsCount = await PostCommentLikesService.updateService(id, data);
+            const updatedRowsCount = await  NgoUserMasterService.updateService(id, data);
             // if (updatedRowsCount > 0) {
-            //     const newData = await PostCommentLikesService.getServiceById(id);
+            //     const newData = await  NgoUserMasterService.getServiceById(id);
             //     // Update the JSON data in the file
             //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
             // }
@@ -135,12 +121,12 @@ const PostCommentLikesController = {
             //     }
             //   }
             // Fetch data from the database if JSON is empty
-            const getAll = await PostCommentLikesService.getAllService()
+            const getAll = await  NgoUserMasterService.getAllService()
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await PostCommentLikesService.getAllService()
+            //   const DataToSave=await  NgoUserMasterService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -201,12 +187,12 @@ const PostCommentLikesController = {
             // }
 
             // If not found in JSON, fetch data from the database
-            const getDataByid = await PostCommentLikesService.getServiceById(Id)
+            const getDataByid = await  NgoUserMasterService.getServiceById(Id)
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await PostCommentLikesService.getAllService()
+            //   const DataToSave=await  NgoUserMasterService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -252,11 +238,8 @@ const PostCommentLikesController = {
     deleteData: async (req, res) => {
         try {
             const id = req.query.id
-            const getPostCommentLikeById = await PostCommentLikesService.getServiceById(id)
-
-
             // Delete data from the database
-            const deleteData = await PostCommentLikesService.deleteByid(id, req, res)
+            const deleteData = await  NgoUserMasterService.deleteByid(id, req, res)
             // Also delete data from the JSON file
             // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
             if (deleteData === 0) {
@@ -271,11 +254,7 @@ const PostCommentLikesController = {
                         )
                     );
             }
-            if(getPostCommentLikeById && getPostCommentLikeById.is_liked){
-            const getUserActivityData = await UserActivtyService.getDataByUserId(getPostCommentLikeById.user_id)
-            const total_post_comment_likes_no = parseInt(getUserActivityData[0].total_post_comment_likes_no) - 1
-            const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_post_comment_likes_no: total_post_comment_likes_no })
-            }
+
             return res
                 .status(responseCode.CREATED)
                 .send(
@@ -297,88 +276,7 @@ const PostCommentLikesController = {
                     )
                 );
         }
-    }, getPostCommentLikesByPostCommentId: async (req, res) => {
-        try {
-            const post_cmt_id = req.query.post_cmt_id
-            const limit = req.query.limit
-            const offset = req.query.offset
-            const getPostCommentLikesByPostCommentId = await PostCommentLikesService.getPostCommentLikesByPostCommentId(post_cmt_id, limit, offset)
-            if (getPostCommentLikesByPostCommentId.length !== 0) {
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            getPostCommentLikesByPostCommentId
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
-            }
-        } catch (error) {
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
-        }
-    },getPostCommentLikesByUserIdByView:async(req,res)=>{
-        try{
-            const user_id = req.query.user_id
-            const limit = req.query.limit
-            const offset = req.query.offset
-            const PostCommentLikesByView = await PostCommentLikesService.getPostCommentLikesByUserId(user_id,limit,offset)
-            if (PostCommentLikesByView.length !== 0) {
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            PostCommentLikesByView
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
-            }
-        }catch(error){
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
-        }
-    }
+    },
 }
-export default PostCommentLikesController
+
+export default NgoUserMasterController

@@ -475,6 +475,9 @@ const LikesController = {
             total_likes: Math.max(0, parseInt(post.total_likes || 0) - 1)
           });
         }
+        const getUserActivityData = await UserActivtyService.getDataByUserId(likeData.user_id);
+        const total_post_like_no = Math.max(0, parseInt(getUserActivityData[0].total_likes_no ?? 0) - 1);
+        await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_likes_no : total_post_like_no });
       }
       
       if (deleteData === 0) {

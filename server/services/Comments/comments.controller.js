@@ -289,7 +289,7 @@ const CommentsController = {
                     const updateComment = await CommentService.updateService(getParentData.comment_id,{total_comment:parseInt(getParentData.total_comment) - 1})
                 }
             }
-             const getUserActivityData = await UserActivtyService.getDataByUserId(getDataByCommentId.user_id)
+            const getUserActivityData = await UserActivtyService.getDataByUserId(getDataByCommentId.user_id)
             if(getUserActivityData){
                 const total_comment = parseInt(getUserActivityData[0].total_comments_no) - 1
                 const userActivityUpdate = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_comments_no:total_comment})

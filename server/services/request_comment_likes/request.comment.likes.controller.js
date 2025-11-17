@@ -268,10 +268,12 @@ const RequestCommentLikesController = {
                         )
                     );
             }
-
+            const getDataById = await RequestCommentLikesService.getServiceById(id)
+            if(getDataById && getDataById.is_liked){
             const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req, res))
             const total_request_comment_likes_no = Math.max( 0, parseInt(getUserActivityData[0].total_request_comment_likes_no) - 1);
             const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_comment_likes_no: total_request_comment_likes_no })
+            }
 
             return res
                 .status(responseCode.CREATED)

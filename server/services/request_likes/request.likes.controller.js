@@ -345,7 +345,17 @@ const RequestLikesController = {
                         )
                     );
             }
+            const getDataById = await RequestLikeService.getServiceById(id)
+            // ---- Case 2: like -> dislike ----
+            if (getDataById.is_liked) {
+                const getUserActivityData = await UserActivtyService.getDataByUserId(getDataById.user_id);
+                const total_request_like_no = Math.max(0, parseInt(getUserActivityData[0].total_request_like_no ?? 0) - 1);
+                await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no:total_request_like_no });
 
+                const getRequestData = await RequestService.getServiceById(getDataById.request_id);
+                const total_likes = Math.max(0, parseInt(getRequestData.total_likes ?? 0) - 1);
+                await RequestService.updateService(data.request_id, { total_likes });
+            }
             return res
                 .status(responseCode.CREATED)
                 .send(

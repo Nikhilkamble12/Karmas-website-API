@@ -289,9 +289,12 @@ const NgoMediaLikesController = {
                         )
                     );
             }
+            const getDataById = await NgoMediaLikesService.getServiceById(id)
+            if(getDataById.is_liked == true){
             const getNgoData = await ngoMediaService.getServiceById(data.ngo_media_id)
             const total_likesCount = parseInt(getNgoData.total_likes ?? 0) - 1
             const updateNgo = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:total_likesCount})
+            }
             return res
                 .status(responseCode.CREATED)
                 .send(
