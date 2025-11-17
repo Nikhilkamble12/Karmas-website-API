@@ -58,6 +58,12 @@ const PostMediaService = {
     } catch (error) {
       throw error
     }
+  },deletePostMediaByPostId:async(post_id, req, res)=>{
+    try{
+    return await PostMediaDAL.deletePostMediaByPostId(post_id, req, res) 
+    }catch(error){
+      throw error
+    }
   }
 };
 

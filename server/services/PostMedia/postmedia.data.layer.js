@@ -103,6 +103,24 @@ const PostMediaDAL = {
       replacements: { postIds },
       type: db.Sequelize.QueryTypes.SELECT
     });
+  },deletePostMediaByPostId:async(post_id, req, res)=>{
+    try{
+      const [deleteDataById] = await PostMediaModel(db.sequelize).update(
+        {
+          is_active: 0,
+          deleted_by: tokenData(req, res),
+          deleted_at: new Date(),
+        },
+        {
+          where: {
+            post_id: post_id,
+          },
+        }
+      );
+      return deleteDataById;
+    }catch(error){
+      throw error
+    }
   }
 
 }

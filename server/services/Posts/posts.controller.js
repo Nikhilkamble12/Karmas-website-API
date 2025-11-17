@@ -266,7 +266,6 @@ const PostController = {
          await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_user_posts_no:parseInt(getUserActivityData[0].total_user_posts_no) - 1}),
          await PostService.deleteById(id, req, res)
       )
-      
       if (deleteData === 0) {
         return res
           .status(responseCode.BAD_REQUEST)
@@ -279,6 +278,8 @@ const PostController = {
             )
           );
       }
+      const deletePostMedia = await PostMediaService.deletePostMediaByPostId(id,req,res)
+      const deletePostTag = await PostTagService.deletePostTagByPostId(id,req,res)
       return res
         .status(responseCode.CREATED)
         .send(

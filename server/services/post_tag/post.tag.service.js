@@ -46,6 +46,13 @@ const PostTagService = {
         }catch(error){
             throw error
         }
+    },
+    deletePostTagByPostId:async(post_id,req,res)=>{
+        try{
+            return await PostTagDAL.deletePostTagByPostId(post_id,req,res)
+        }catch(error){
+            throw error
+        }
     }
 }
 
