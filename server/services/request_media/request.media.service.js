@@ -70,6 +70,12 @@ const RequestMediaService = {
     }catch(error){
       throw error
     }
+  },deleteDataByRequestId:async(RequestId,req,res)=>{
+    try{
+      return await RequestMediaDAL.deleteRequestMediaByRequestId(RequestId,req,res)
+    }catch(error){
+      throw error
+    }
   }
 };
 

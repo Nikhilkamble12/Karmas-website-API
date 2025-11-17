@@ -300,9 +300,22 @@ const RequestsController = {
     deleteData: async (req, res) => {
         try {
             const id = req.query.id
+
             // Delete data from the database
             const getDataById = await RequestService.getServiceById(id)
-            if(getDataById.status_id == STATUS_MASTER.REQUEST_APPROVAL_PENDINNG || getDataById.status_id == STATUS_MASTER.REQUEST_REJECTED){
+            if(getDataById.created_at !== tokenData(req,res)){
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.CANNOT_DELETE_REQUEST_AT_THIS_STAGE,
+                            null,
+                            true
+                        )
+                    );
+            }
+            if(getDataById.status_id == STATUS_MASTER.REQUEST_APPROVAL_PENDINNG || getDataById.status_id == STATUS_MASTER.REQUEST_REJECTED || getDataById.status_id == STATUS_MASTER.REQUEST_APPROVED){
                 return res
                     .status(responseCode.BAD_REQUEST)
                     .send(
@@ -317,6 +330,7 @@ const RequestsController = {
             const getUserActivityData = await UserActivtyService.getDataByUserId(getDataById.request_user_id)
             const updateUserActivityData = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_requests_no:parseInt(getUserActivityData[0].total_requests_no) - 1})
             const deleteData = await RequestService.deleteByid(id, req, res)
+            const deleteRequestPost = await RequestMediaService.deleteDataByRequestId(id, req, res)
 
             // Also delete data from the JSON file
             // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)

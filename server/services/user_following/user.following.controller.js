@@ -392,16 +392,17 @@ const UserFollowingController = {
             const id = req.query.id
             // Delete data from the database
             const getOlderData = await UserFollowingService.getServiceById(id)
-            if(getOlderData && getOlderData.is_following==true){
-            const getUserActivityByUser = await UserActivtyService.getDataByUserId(getOlderData.user_id)
-            const getUserActivityByFollowingId = await UserActivtyService.getDataByUserId(getOlderData.following_user_id)
-            let total_following_count = parseInt(getUserActivityByUser[0].following_no) ?? 0
-            let total_followed_count = parseInt(getUserActivityByFollowingId[0].follower_no) ?? 0
-            total_following_count = Math.max(0,total_following_count - 1)
-            total_followed_count = Math.max(0,total_followed_count - 1)
-            const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
-            const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
-            const updateUserMaster = await UserMasterService.updateService(getUserActivityByFollowingId[0].user_id,{total_follower:total_followed_count})
+            if(getOlderData && getOlderData.length == 0){
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
             }
             const deleteData = await UserFollowingService.deleteByid(id, req, res)
             // Also delete data from the JSON file
@@ -418,7 +419,17 @@ const UserFollowingController = {
                         )
                     );
             }
-
+            if(getOlderData && getOlderData.is_following==true){
+            const getUserActivityByUser = await UserActivtyService.getDataByUserId(getOlderData.user_id)
+            const getUserActivityByFollowingId = await UserActivtyService.getDataByUserId(getOlderData.following_user_id)
+            let total_following_count = parseInt(getUserActivityByUser[0].following_no) ?? 0
+            let total_followed_count = parseInt(getUserActivityByFollowingId[0].follower_no) ?? 0
+            total_following_count = Math.max(0,total_following_count - 1)
+            total_followed_count = Math.max(0,total_followed_count - 1)
+            const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})
+            const updateUserActivityFollowed = await UserActivtyService.updateService(getUserActivityByFollowingId[0].user_activity_id,{follower_no:total_followed_count})
+            const updateUserMaster = await UserMasterService.updateService(getUserActivityByFollowingId[0].user_id,{total_follower:total_followed_count})
+            }
             return res
                 .status(responseCode.CREATED)
                 .send(

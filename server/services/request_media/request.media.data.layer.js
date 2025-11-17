@@ -134,6 +134,24 @@ const RequestMediaDAL = {
     });
 
     return media ?? [];
+  },deleteRequestMediaByRequestId:async(RequestId,req,res)=>{
+    try{
+      const [deleteDataById] = await RequestMediaModel(db.sequelize).update(
+        {
+          is_active: 0,
+          deleted_by: tokenData(req, res),
+          deleted_at: new Date(),
+        },
+        {
+          where: {
+            RequestId : RequestId ,
+          },
+        }
+      );
+      return deleteDataById; // Return the result of the update operation
+    }catch(error){
+      throw error
+    }
   }
   };
 
