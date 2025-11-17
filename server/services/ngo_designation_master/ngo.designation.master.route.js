@@ -37,6 +37,12 @@ router.delete(
     verifyToken,
     NgoDesignationMasterController.deleteData
 )
+// Router to Get a Record By Ngo ID
+router.get(
+    `${basePath}/getBy/NgoId`,
+    verifyToken,
+    NgoDesignationMasterController.getByNgoIdByView
+)
 
 
 // Export the router for use in other parts of the application

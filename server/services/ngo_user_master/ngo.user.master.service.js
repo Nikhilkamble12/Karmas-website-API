@@ -41,6 +41,13 @@ const NgoUserMasterService = {
             throw error
         }
     },
+    getDataByUserIdByView:async(user_id)=>{
+        try{
+            return await NgoUserMasterDAL.getDataByUserIdByView(user_id)
+        }catch(error){
+            throw error
+        }
+    }
 }
 
 export default NgoUserMasterService

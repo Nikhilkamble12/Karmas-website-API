@@ -37,6 +37,11 @@ router.delete(
     verifyToken,
     NgoUserMasterController.deleteData
 )
+router.get(
+    `${basePath}/getData/ByUserId`,
+    verifyToken,
+    NgoUserMasterController.getDataByUserId
+)
 
 
 // Export the router for use in other parts of the application

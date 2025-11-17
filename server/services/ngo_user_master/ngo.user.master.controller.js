@@ -276,7 +276,46 @@ const NgoUserMasterController = {
                     )
                 );
         }
-    },
+    },getDataByUserId:async(req,res)=>{
+        try{
+            const user_id = req.query.user_id
+            const getDataByUserId = await NgoUserMasterService.getDataByUserIdByView(user_id)
+            if (getDataByUserId.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getDataByid
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        }catch(error){
+           logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                ); 
+        }
+    }
 }
 
 export default NgoUserMasterController

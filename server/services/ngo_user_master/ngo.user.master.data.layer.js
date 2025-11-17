@@ -67,6 +67,17 @@ const NgoUserMasterDAL = {
       throw error; // Throw error for handling in the controller
     }
   },
+  getDataByUserIdByView: async (user_id) => {
+    try {
+      const getDataById = await db.sequelize.query(
+        ` ${ViewFieldTableVise.GET_ALL_NGO_USER_MASTER} where user_id  = ${user_id} `,
+        { type: db.Sequelize.QueryTypes.SELECT }
+      );
+      return getDataById[0] ?? [];  // Return the retrieved data
+    } catch (error) {
+      throw error; // Throw error for handling in the controller
+    }
+  },
 }
 
 export default NgoUserMasterDAL

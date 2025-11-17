@@ -41,6 +41,13 @@ const NgoDesignationMasterService = {
             throw error
         }
     },
+    getDataByNgoIdByView:async(ngo_id)=>{
+        try{
+            return await NgoDesignationMasterDAL.getDataByNgoIdByView(ngo_id)
+        }catch(error){
+            throw error
+        }
+    }
 }
 
 export default NgoDesignationMasterService
