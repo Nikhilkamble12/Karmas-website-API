@@ -28,18 +28,18 @@ const UserFollowingController = {
                     )
                 );
             }
-            if (typeof data.is_following !== "boolean") {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.INVALID_DATA,
-                            null,
-                            true
-                        )
-                    );
-            }
+            // if (typeof data.is_following !== "boolean") {
+            //     return res
+            //         .status(responseCode.BAD_REQUEST)
+            //         .send(
+            //             commonResponse(
+            //                 responseCode.BAD_REQUEST,
+            //                 responseConst.INVALID_DATA,
+            //                 null,
+            //                 true
+            //             )
+            //         );
+            // }
             let total_following_count = parseInt(getUserActivityByUser[0]?.following_no) ?? 0
             let total_followed_count = parseInt(getUserActivityByFollowingId[0]?.follower_no) ?? 0
             const checkWetherItIsPresent = await UserFollowingService.getDataByUserIdAndFollowId(data.user_id,data.following_user_id)
