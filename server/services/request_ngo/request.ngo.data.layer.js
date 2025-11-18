@@ -2,6 +2,7 @@ import RequestNgoModel from "./request.ngo.model.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 import VIEW_NAME from "../../utils/db/view.constants.js";
 const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessary components from commonPath
+import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 
 const RequestNgoDAL = {
       // Method to create a new record in the database
