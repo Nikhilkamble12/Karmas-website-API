@@ -94,6 +94,13 @@ const UserMasterService = {
         }catch(error){
             throw error
         }
+    },
+    getAllUsersByScoresSorted: async (limit, offset) => {
+        try {
+            return await UserMasterDAL.getAllUsersByScoresSorted(limit, offset);
+        } catch (error) {
+            throw error;
+        }
     }
 }
 export default UserMasterService

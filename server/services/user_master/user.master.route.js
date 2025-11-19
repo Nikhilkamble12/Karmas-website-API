@@ -72,6 +72,11 @@ router.get(
     verifyToken,
     UserMasterController.UserDataByNgoId
 )
-
+// Route to retrive all records with pagination
+router.get(
+    `${basePath}/getAll`,
+    verifyToken,
+    UserMasterController.getAllByViewWithPagination
+)
 // Export the router for use in other parts of the application
 export default router

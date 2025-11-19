@@ -230,6 +230,19 @@ const UserMasterDAL = {
             throw error
         }
     
+    },
+    getAllUsersByScoresSorted: async (limit, offset) => {
+        try {
+            let query = `
+            ${ViewFieldTableVise.USER_MASTER_FIELDS} WHERE is_blacklisted = false
+            ORDER BY total_scores_no DESC
+            LIMIT ${limit} OFFSET ${offset};
+            `;
+            const getAll = await db.sequelize.query(query, { type: db.Sequelize.QueryTypes.SELECT });
+            return getAll;
+        } catch (error) {
+            throw error;
+        }
     }
 }
 

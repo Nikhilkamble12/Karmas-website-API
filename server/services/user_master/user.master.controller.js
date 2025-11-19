@@ -732,6 +732,36 @@ const UserMasterController = {
                     )
                 );
         }
+    }, 
+    getAllByViewWithPagination: async (req, res) => {
+        try {
+            const limit = req.query.limit ? parseInt(req.query.limit) : 5;
+            const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
+            const getAllByViewWithPagination = await UserMasterService.getAllUsersByScoresSorted(limit, offset);
+
+            return res
+                .status(responseCode.OK)
+                .send(
+                    commonResponse(
+                        responseCode.OK,
+                        responseConst.DATA_RETRIEVE_SUCCESS,
+                        getAllByViewWithPagination
+                    )
+                );
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
     }
 }
 export default UserMasterController
