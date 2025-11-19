@@ -416,17 +416,32 @@ const RequestDAL = {
       throw error;
     }
   },
-  getRecentHundredRequestDesc: async () => {
-    try {
-      const getAllData = await db.sequelize.query(
-        `${ViewFieldTableVise.REQUEST_FIELDS} order by RequestId DESC LIMIT 100 `,
-        { type: db.Sequelize.QueryTypes.SELECT }
-      );
-      return getAllData; // Return the retrieved data
-    } catch (error) {
-      throw error; // Throw error for handling in the controller
+  getRecentHundredRequestDesc: async (ngo_id = null) => {
+  try {
+    let query = `${ViewFieldTableVise.REQUEST_FIELDS} `;
+    let replacements = {};
+
+    // If ngo_id exists, add WHERE clause
+    if (ngo_id) {
+      query += `WHERE AssignedNGO = :ngo_id `;
+      replacements.ngo_id = ngo_id;
     }
-  },
+
+    // Order + LIMIT always needed
+    query += `ORDER BY RequestId DESC LIMIT 100`;
+
+    const getAllData = await db.sequelize.query(query, {
+      replacements,
+      type: db.Sequelize.QueryTypes.SELECT
+    });
+
+    return getAllData;
+
+  } catch (error) {
+    throw error;
+  }
+},
+
   getRequestByNgoId: async (ngo_id) => {
     try {
       const getData = await db.sequelize.query(
@@ -584,6 +599,29 @@ const RequestDAL = {
     console.error("❌ Error in getRequestVideosForUserFeed:", error);
     throw error;
   }
-}
+},getSumOfTotalRequestByNgoId: async (ngo_id) => {
+    try {
+      const getData = await db.sequelize.query(
+        `SELECT 
+          COUNT(RequestId) AS total_request,
+          SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_DRAFT} THEN 1 ELSE 0 END) AS total_request_draft
+        FROM ${VIEW_NAME.GET_ALL_REQUEST}
+        `,
+        { type: db.Sequelize.QueryTypes.SELECT }
+      );
+      const getDataRequest = await db.sequelize.query(` SELECT 
+      SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_PENDING} THEN 1 ELSE 0 END) AS total_request_pending_status,
+      SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
+      SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected
+      FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} where ngo_id = ${ngo_id}`,{type:db.Sequelize.QueryTypes.SELECT})
+      // merge objects
+    return {
+      ...getData[0],
+      ...getDataRequest[0]
+    };
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 export default RequestDAL;

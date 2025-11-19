@@ -9,10 +9,20 @@ const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,ad
 const DashBoardController = {
 webDashBoardData:async(req,res)=>{
     try{
-        const NgoCount = await  NgoMasterService.getTotalSumOfData()
-        const RequestCount = await RequestService.getCountOfTotalRequest()
-        const recentRequestAll = await RequestService.getRecentHundredRequestDesc()
-        const userCount = await UserMasterService.getUserMasterDashBoardCount()
+        ngo_id = req.query.ngo_id
+        let userCount
+        let RequestCount
+        let recentRequestAll
+        const NgoCount = await  NgoMasterService.getTotalSumOfData(ngo_id)
+        if(ngo_id){
+        RequestCount = await RequestService.getCountOfTotalRequestByNgoId(ngo_id)
+        userCount = await UserMasterService.getUserMasterCountByNgoId(ngo_id)
+        recentRequestAll = await RequestService.getRecentHundredRequestDesc(ngo_id)
+        }else{
+        RequestCount = await RequestService.getCountOfTotalRequest()
+        userCount = await UserMasterService.getUserMasterDashBoardCount()
+        recentRequestAll = await RequestService.getRecentHundredRequestDesc()
+        }
         const ScoreCount = await ScoreHistoryService.ScoreDashBoardCount()
         const mergedData = {
             ...NgoCount[0],

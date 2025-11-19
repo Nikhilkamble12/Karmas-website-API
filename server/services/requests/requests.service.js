@@ -58,9 +58,9 @@ const RequestService = {
         }catch(error){
             throw error
         }
-    },getRecentHundredRequestDesc:async()=>{
+    },getRecentHundredRequestDesc:async(ngo_id)=>{
         try{
-            return await RequestDAL.getRecentHundredRequestDesc()
+            return await RequestDAL.getRecentHundredRequestDesc(ngo_id)
         }catch(error){
             throw error
         }
@@ -80,6 +80,12 @@ const RequestService = {
         try {
             return await RequestDAL.getRequestVideosForUserFeed(user_id,limit,already_viewed)
         } catch (error) {
+            throw error
+        }
+    },getCountOfTotalRequestByNgoId:async(ngo_id)=>{
+        try{
+            return await RequestDAL.getSumOfTotalRequestByNgoId(ngo_id)
+        }catch(error){
             throw error
         }
     }
