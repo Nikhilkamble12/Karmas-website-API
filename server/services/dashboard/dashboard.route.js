@@ -10,22 +10,22 @@ const router = express.Router()
 
 // web DashBoard 
 router.get(`${basePath}/getWeb/DashBoard`,
-    verifyToken,
+    // verifyToken,
     DashBoardController.webDashBoardData
 )
     router.get(
         `${basePath}/getNgoCount`,
-        verifyToken,
+        // verifyToken,
         DashBoardController.getNgoCount
     )
     router.get(
         `${basePath}/getRequestCount`,
-        verifyToken,
+        // verifyToken,
         DashBoardController.getRequestCount
     )
     router.get(
         `${basePath}/getUserCount`,
-        verifyToken,
+        // verifyToken,
         DashBoardController.getUserCount
     )
 

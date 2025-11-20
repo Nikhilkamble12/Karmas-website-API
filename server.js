@@ -38,6 +38,8 @@ app.use((req, res, next) => {
 app.use(helmet());
 app.use(cors());
 app.use(morgan("dev"));
+// Debug Mode (turn on/off)
+const DEBUG_MODE = process.env.DEBUG_MODE === "true"; 
 
 // const allowedOrigins = [
 //   'https://the-ballard-pier-pvt-ltd.web.app',
@@ -125,6 +127,19 @@ app.use(
 // })
 
 
+console.log("DEBUG_MODE",DEBUG_MODE)
+// Debug incoming API requests
+app.use((req, res, next) => {
+  if (DEBUG_MODE) {
+    console.log("🔥 DEBUG AUTH REQUEST -----------------------");
+    console.log("URL:", req.originalUrl);
+    console.log("Method:", req.method);
+    console.log("Headers:", req.headers);
+    console.log("Body:", req.body);
+    console.log("---------------------------------------------");
+  }
+  next();
+});
 
 // Create Routes
 

@@ -9,7 +9,7 @@ const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,ad
 const DashBoardController = {
 webDashBoardData:async(req,res)=>{
     try{
-        ngo_id = req.query.ngo_id
+        const ngo_id = req.query.ngo_id ?? null
         let userCount
         let RequestCount
         let recentRequestAll
@@ -31,7 +31,7 @@ webDashBoardData:async(req,res)=>{
             ...ScoreCount[0],
             recentRequestAll:recentRequestAll
         }
-        if (mergedData.length !== 0) {
+        if (Object.keys(mergedData).length > 0) {
                 return res
                     .status(responseCode.OK)
                     .send(
@@ -54,6 +54,7 @@ webDashBoardData:async(req,res)=>{
                     );
             }
     }catch(error){
+        console.log("error",error)
         logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -159,14 +160,14 @@ webDashBoardData:async(req,res)=>{
         }else{
         user_count = await UserMasterService.getUserMasterDashBoardCount()
         }
-        if (RequestCount.length !== 0) {
+        if (user_count.length !== 0) {
                 return res
                     .status(responseCode.OK)
                     .send(
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            RequestCount[0]
+                            user_count[0]
                         )
                     );
             } else {

@@ -73,7 +73,7 @@ const NgoDesignationMasterDAL = {
         ` ${ViewFieldTableVise.NGO_DESIGNATION_MASTER_FIELDS} where ngo_id  = ${ngo_id} `,
         { type: db.Sequelize.QueryTypes.SELECT }
       );
-      return getDataById[0] ?? [];  // Return the retrieved data
+      return getDataById;  // Return the retrieved data
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
