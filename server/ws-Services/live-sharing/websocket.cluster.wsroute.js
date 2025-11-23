@@ -52,7 +52,8 @@ export default async function defineRoutes(wsRouter, activeConnections) {
           // Get the user's SOS history to check the last captured time
           const userSosStatus = await LocalJsonHelper.getAll(activeSos,15, "sos_id",user.sos_id);
             // console.log("userSosStatus",userSosStatus)
-          if (userSosStatus) {
+          if (userSosStatus && userSosStatus.length>0) {
+            console.log("userSosStatus",userSosStatus)
             const lastCapturedTime = userSosStatus[0].captured_time;
             // console.log("lastCapturedTime",lastCapturedTime)
             // console.log("currentTime",currentTime)
