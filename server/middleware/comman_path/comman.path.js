@@ -26,7 +26,8 @@ import path from 'path';
 import fs from "fs";
 import { fileURLToPath } from 'url';
 import notificationTemplates from '../../utils/helper/notification.templates.js';
-// import LocalJsonHelper from "../../utils/helper/local.json.helper.js";
+import TABLE_VIEW_FOLDER_MAP from '../../utils/constants/id_constant/local.json.constant.js';
+import LocalJsonHelper from "../../utils/helper/local.json.helper.js";
 
 
 const commonPath={
@@ -54,7 +55,9 @@ const commonPath={
     path:path,
     fs:fs,
     fileURLToPath:fileURLToPath,
-    notificationTemplates:notificationTemplates
+    notificationTemplates:notificationTemplates,
+    LocalJsonHelper:LocalJsonHelper,
+    TABLE_VIEW_FOLDER_MAP:TABLE_VIEW_FOLDER_MAP,
 }
 
 export default commonPath

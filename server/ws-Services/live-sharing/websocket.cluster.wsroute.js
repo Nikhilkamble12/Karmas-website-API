@@ -4,6 +4,12 @@ import sendTemplateNotification from "../../utils/helper/firebase.push.notificat
 import getCurrentIndianTime from "../../utils/helper/get.current.time.ist.js";
 import LocalJsonHelper from "../../utils/helper/local.json.helper.js";
 import notificationTemplates from "../../utils/helper/notification.templates.js";
+import TABLE_VIEW_FOLDER_MAP from "../../utils/constants/id_constant/local.json.constant.js";
+const activeSos = {
+                view_name: null,
+                folder_name: "Sos",
+                json_file_name:"sos.current.json"
+                }
 const saveCurrentUserSos = "Sos/sos.current.json"
 import WebSocket from "ws";
 
@@ -34,20 +40,20 @@ export default async function defineRoutes(wsRouter, activeConnections) {
     async function checkSosUsers() {
     try {
       // Fetch all active SOS users from the file
-      const getAllActiveSosUser = await LocalJsonHelper.getAll("Sos/sos.active.json");
+      const getAllActiveSosUser = await LocalJsonHelper.getAll("sos_user_list",15);
       const currentTime = getCurrentIndianTime(); // Current timestamp in IST
       const reminderThreshold = 40 * 1000; // 40 seconds in milliseconds
       const checkThreshold = 10 * 1000; // Check every 10 seconds
-        if(getAllActiveSosUser && getAllActiveSosUser.data && getAllActiveSosUser.data.length>0){
-      for (const user of getAllActiveSosUser.data) {
+        if(getAllActiveSosUser && getAllActiveSosUser && getAllActiveSosUser.length>0){
+      for (const user of getAllActiveSosUser) {
         if (user.is_active) {
         //   const userSosStatus = user; // Get user's SOS status
 
           // Get the user's SOS history to check the last captured time
-          const userSosStatus = await LocalJsonHelper.getAllByField(saveCurrentUserSos, "sos_id",user.sos_id);
+          const userSosStatus = await LocalJsonHelper.getAll(activeSos,15, "sos_id",user.sos_id);
             // console.log("userSosStatus",userSosStatus)
           if (userSosStatus) {
-            const lastCapturedTime = userSosStatus.values[0].captured_time;
+            const lastCapturedTime = userSosStatus[0].captured_time;
             // console.log("lastCapturedTime",lastCapturedTime)
             // console.log("currentTime",currentTime)
             const timeDifference = getTimeDifference(currentTime, lastCapturedTime);

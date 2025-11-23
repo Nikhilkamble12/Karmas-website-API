@@ -1,1103 +1,622 @@
-// import fs from 'fs';
-// import path, { dirname } from 'path';
-// import { fileURLToPath } from 'url';
-// const fsPromises = fs.promises;
+/**
+ * Fixed High-Performance Local JSON Cache System (Node.js - ES6 Modules)
+ */
 
-// const __filename = fileURLToPath(import.meta.url);
-// const __dirname = dirname(__filename);
-// import commonPath from '../../middleware/comman_path/comman.path.js';
-
-// const { basePathRoute } = commonPath;
-
-// const BASE_DIR = path.join(__dirname, '../../resources/json');
-
-// // List of peer backend instances (adjust ports/hosts as needed)
-// const PEERS = [
-   
-// ];
- 
-// function ensureDir(filePath) {
-//   const dir = path.dirname(filePath);
-//   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-//   if (!fs.existsSync(filePath)) fs.writeFileSync(filePath, '{}');
-// }
-
-// function getFilePath(relativePath) {
-//   const safePath = path.normalize(relativePath).replace(/^(\.\.[\/\\])+/, '');
-//   return path.join(BASE_DIR, safePath);
-// }
-
-// async function load(filePath) {
-//   await ensureDir(filePath);
-//   const data = await fsPromises.readFile(filePath, 'utf-8');
-//   return JSON.parse(data || '{}');
-// }
-
-// async function save(filePath, data) {
-//   await fsPromises.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
-// }
-
-// function isExpired(entry) {
-//   return entry.expiresAt && Date.now() > entry.expiresAt;
-// }
-
-// function getRemainingMs(entry) {
-//   return entry.expiresAt ? Math.max(0, entry.expiresAt - Date.now()) : null;
-// }
-// function formatDate(timestamp) {
-//     const date = new Date(timestamp);
-//     return date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Kolkata' }); // 'YYYY-MM-DD'
-//   }
-//   function formatTimeRemaining(ms) {
-//     if (ms <= 0) return '00:00:00';
-  
-//     const totalSeconds = Math.floor(ms / 1000);
-//     const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-//     const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-//     const seconds = String(totalSeconds % 60).padStart(2, '0');
-  
-//     return `${hours}:${minutes}:${seconds}`;
-//   }
-    
-// function deleteFile(filePath) {
-//     try {
-//       fs.unlinkSync(filePath);  // Delete the expired file
-//       console.log(`File ${filePath} deleted due to expiration.`);
-//     } catch (err) {
-//       console.error(`Error deleting file ${filePath}:`, err);
-//     }
-//   }
-  
-//   export async function broadcastToPeers(relativePath, operation, data = null, field = null) {
-//   for (const peer of PEERS) {
-//     const fullUrl = `${peer}${basePathRoute}/json_auto_update_common/sync/push`;
-//     try {
-//       await axios.post(fullUrl, {
-//         path: relativePath,
-//         operation,
-//         data,
-//         field
-//       });
-//     } catch (err) {
-//       console.warn(`⚠️ Push to peer ${peer} failed:`, err.message);
-//     }
-//   }
-// }
-
-
-
-// async function set(relativePath, key, newValue, ttlMs = null) {
-//   try{
-//   const filePath = path.join(BASE_DIR, relativePath);
-//   const now = Date.now();
-//   const expiresAt = ttlMs ? now + ttlMs : null;
-//   // Initialize default file structure
-//   let fileData = {
-//     value: [],
-//     createdAt: now,
-//     updatedAt: now,
-//     expiresAt,
-//     ttlMs
-//   };
-//   let operationType = ""
-//   // If file exists, read it
-//   if (fs.existsSync(filePath)) {
-//     try {
-//       const raw = fs.readFileSync(filePath, 'utf8');
-//     //   console.log("🔍 Raw file content:", raw);
-//       const parsed = JSON.parse(raw);
-//       fileData = {
-//         value:Array.isArray(parsed.value) ? parsed.value : [],
-//         updatedAt: now,
-//         expiresAt,
-//         ttlMs
-//       };
-//     } catch (err) {
-//         console.warn('⚠️ Error parsing JSON, resetting file:', err);
-//     }
-//   }
-//   if (!Array.isArray(fileData.value)) {
-//     fileData.value = [];
-//   }
-//   // Work with the array inside `value`
-//   let updated = false;
-//   if (key) {
-//     // Try to find and update entry by key (e.g., user_id or id)
-//     fileData.value = fileData.value.map(item => {
-//       if (item[key] !== undefined && item[key] == newValue[key]) {
-//         updated = true;
-//         return newValue;  // Replace instead of merging
-//       }
-//       return item;
-//     });
-//     if (!updated) {
-//       fileData.value.push(newValue); 
-//     }
-//     operationType = 'ADD_OR_UPDATE';
-//   }else{
-//     operationType = 'FULL_REPLACE';
-//     fileData.value = newValue
-//   }
-
-//   // If not updated (no key match), push as new
-  
-// // // Split the relative path to get the directory
-// // const dir = path.join(BASE_DIR, relativePath.substring(0, relativePath.lastIndexOf('/')));
-// // await fs.promises.mkdir(dir, { recursive: true });
-
-//  // Ensure directory exists
-//     const dir = path.dirname(filePath);
-//     await fs.promises.mkdir(dir, { recursive: true });
-    
-//   // Save file
-//    // Use async write
-//    await fs.promises.writeFile(filePath, JSON.stringify(fileData, null, 2), 'utf8');
-//    if(operationType!==""){
-//    await broadcastToPeers(relativePath, operationType, newValue, key);
-//    }
-
-//   return true;
-// }catch(error){
-//   console.log(" inside json set error -->",error)
-// }
-// }
-
-
-
-
-// async function getById(relativePath, field, value) {
-//     const filePath = getFilePath(relativePath);
-//     const db = await load(filePath);
-//     // Check for file expiration
-//     if (isExpired(db)) {
-//         deleteFile(filePath);  // Delete expired file
-//         return [];
-//       }
-//     // Ensure the value is an array and search for the entry by the given field and value
-//     const entry = db.value && Array.isArray(db.value)
-//       ? db.value.find(item => item[field] == value)
-//       : [];
-  
-//     if (!entry || isExpired(entry)) {
-//       return [];
-//     }
-    
-//     return {
-//       value: entry,
-//       createdAt: formatDate(db.createdAt),
-//       updatedAt: formatDate(db.updatedAt),
-//       expiresAt: formatDate(db.expiresAt),
-//       ttlMs: formatTimeRemaining(db.ttlMs),
-//       remainingMs: formatTimeRemaining(getRemainingMs(entry))
-//     };
-//   }
-
-// async function getAllByField(relativePath, field, value) {
-//   const filePath = getFilePath(relativePath);
-//   const db = await load(filePath);
-
-//   // Check for file expiration
-//   if (isExpired(db)) {
-//     deleteFile(filePath);  // Delete expired file
-//     return [];
-//   }
-
-//   // Filter all matching entries
-//   // Filter all matching entries
-//   const entries = db.value && Array.isArray(db.value)
-//     ? db.value.filter(item => item[field] == value)
-//     : [];
-
-//   if (!entries.length) {
-//     return [];
-//   }
-
-//   return {
-//     values: entries,
-//     createdAt: formatDate(db.createdAt),
-//     updatedAt: formatDate(db.updatedAt),
-//     expiresAt: formatDate(db.expiresAt),
-//     ttlMs: formatTimeRemaining(db.ttlMs),
-//     remainingMs: formatTimeRemaining(getRemainingMs(db))
-//   };
-
-// }
-
-  
-
-//   async function getAll(relativePath) {
-//     const filePath = path.join(BASE_DIR, relativePath);
-    
-//     if (!fs.existsSync(filePath)) {
-//       return [];  // Return an empty array if the file doesn't exist
-//     }
-   
-//     try {
-//       const raw = await fs.promises.readFile(filePath, 'utf8');
-//       const parsed = JSON.parse(raw);
-//       // Check for file expiration
-//       if (isExpired(parsed)) {
-//         deleteFile(filePath);  // Delete expired file
-//         return [];  // Return empty array if expired
-//       }
-//       // Ensure `value` is an array and return it
-//         // Check if `parsed.value` is an object and return its properties
-//     const remainingMs = parsed.expiresAt ? parsed.expiresAt - Date.now() : null;
-//     if (parsed.value && typeof parsed.value === 'object') {
-//         return {
-//             data:parsed.value,
-//             createdAt: formatDate(parsed.createdAt),
-//             updatedAt: formatDate(parsed.updatedAt),
-//             expiresAt: formatDate(parsed.expiresAt),
-//             ttlMs: formatTimeRemaining(parsed.ttlMs),
-//             remainingMs:formatTimeRemaining(remainingMs)
-//         };  // Return the object if it's structured as expected
-//       }
-//       return []
-//     } catch (err) {
-//       console.warn('⚠️ Error reading or parsing file:', err);
-//       return [];  // Return an empty array if error occurs
-//     }
-//   }
-
-// async function remove(relativePath, key, value) {
-//   const filePath = getFilePath(relativePath);
-//   const db = await load(filePath);
-
-//   if (Array.isArray(db.value)) {
-//     const originalLength = db.value.length;
-
-//     // Filter out the object with the matching key-value pair
-//     db.value = db.value.filter(item => item[key] !== value);
-
-//     // If at least one object was removed, update updatedAt and save
-//     if (db.value.length < originalLength) {
-//       db.updatedAt = Date.now();
-//       await save(filePath, db);
-//       return true;
-//     }
-//   }
-//   await broadcastToPeers(relativePath, 'DELETE', { [key]: value }, key);
-
-
-//   // Nothing was removed
-//   return false;
-// }
-
-// async function checkDataStatus(relativePath) {
-//   const filePath = getFilePath(relativePath);
-//   try {
-//     await fsPromises.access(filePath);
-//     const raw = await fsPromises.readFile(filePath, 'utf8');
-//     const parsed = JSON.parse(raw);
-
-//     if (isExpired(parsed)) {
-//       deleteFile(filePath);
-//       return { exists: false, expired: true, totalCount: 0 };
-//     }
-
-//     const totalCount = Array.isArray(parsed.value) ? parsed.value.length : 0;
-//     return { exists: true, expired: false, totalCount };
-
-//   } catch (err) {
-//     console.log("json err-->",err)
-//     if (err.code === 'ENOENT') {
-//       console.log("inside if")
-//       return { exists: false, expired: false, totalCount: 0 };
-//     } else {
-//       console.log("inside else")
-//       console.error('Error reading file:', filePath, err);
-//       throw err;
-//     }
-//   }
-// }
-// async function deleteFullFile(relativePath) {
-//   const filePath = getFilePath(relativePath);
-
-//   try {
-//     await fsPromises.unlink(filePath);  // deletes the file
-//     console.log(`File ${filePath} deleted.`);
-//     await broadcastToPeers(relativePath, 'DELETE_FILE');
-//     return true;
-//   } catch (err) {
-//     console.error(`Error deleting file ${filePath}:`, err);
-//     return false;
-//   }
-// }
-
-// const LocalJsonHelper = {
-//   set,
-//   getById,
-//   getAll,
-//   getAllByField,
-//   remove,
-//   checkDataStatus,
-//   deleteFullFile
-// };
-
-// export default LocalJsonHelper;
-
-
-import fs from 'fs';
-import path, { dirname } from 'path';
+import { promises as fs } from 'fs';
+import fsSync from 'fs';
+import path from 'path';
 import { fileURLToPath } from 'url';
-import axios from 'axios';
-
-const fsPromises = fs.promises;
+// ⚠️ Ensure this path is correct for your project structure
+import db from "../../services/index.js"; 
+import { QueryTypes } from 'sequelize';
+// ⚠️ Ensure this path is correct
+import TABLE_VIEW_FOLDER_MAP from '../constants/id_constant/local.json.constant.js';
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-import commonPath from '../../middleware/comman_path/comman.path.js';
+const __dirname = path.dirname(__filename);
 
-const { basePathRoute } = commonPath;
+// ==========================================
+// CONFIGURATION
+// ==========================================
+export class CacheConfig {
+    static MAX_ENTRIES_FOR_MEMORY = 2000;
+    static MAX_FILE_SIZE_MB = 3.0;
+    static MAX_ENTRIES_FOR_COUNTER_UPDATES = 1000;
+    static COUNTER_UPDATE_INTERVAL = 10;
+    static USE_METADATA_FILES = true;
+    static DB_QUERY_TIMEOUT = 30000;
+    static ENABLE_DB_OPERATIONS = true;
+}
 
-const BASE_DIR = path.join(__dirname, '../../resources/json');
+// ==========================================
+// MEMORY CACHE
+// ==========================================
+export class MemoryCache {
+    constructor(maxSize = 100, ttlSeconds = 3600) {
+        this._cache = new Map();
+        this._accessTimes = new Map();
+        this._cacheSizes = new Map();
+        this.maxSize = maxSize;
+        this.ttlSeconds = ttlSeconds;
+    }
 
-// Cache Configuration
-const CacheConfig = {
-  MAX_ENTRIES_FOR_MEMORY: 1000,
-  MAX_FILE_SIZE_MB: 1,
-  ENABLE_MEMORY_CACHE: true,
-  CACHE_TTL_MS: 5 * 60 * 1000, // 5 minutes default
-  STATS_UPDATE_INTERVAL: 60000 // Update stats every minute
-};
+    _estimateSizeBytes(data) {
+        try {
+            const jsonStr = JSON.stringify(data);
+            return Buffer.byteLength(jsonStr, 'utf-8');
+        } catch (error) {
+            const dataList = data.data || [];
+            return dataList.length * 500;
+        }
+    }
 
-// In-memory cache
-class MemoryCache {
-  constructor() {
-    this._cache = new Map();
-    this._cacheSizes = new Map();
-    this._cacheTimestamps = new Map();
-    this._stats = {
-      hits: 0,
-      misses: 0,
-      totalRequests: 0
-    };
-    
-    // Periodic cleanup of expired entries
-    setInterval(() => this._cleanupExpired(), 60000);
-  }
+    _isCacheable(data) {
+        const dataList = data.data || [];
+        const dataLength = dataList.length;
 
-  _calculateSize(data) {
-    return Buffer.byteLength(JSON.stringify(data), 'utf8');
-  }
+        if (dataLength >= CacheConfig.MAX_ENTRIES_FOR_MEMORY) {
+            return {
+                cacheable: false,
+                reason: `too_many_entries(${dataLength}>=${CacheConfig.MAX_ENTRIES_FOR_MEMORY})`
+            };
+        }
 
-  _cleanupExpired() {
-    const now = Date.now();
-    for (const [key, entry] of this._cache.entries()) {
-      if (entry.expiresAt && now > entry.expiresAt) {
+        const estimatedSize = this._estimateSizeBytes(data);
+        const maxSizeBytes = CacheConfig.MAX_FILE_SIZE_MB * 1024 * 1024;
+
+        if (estimatedSize >= maxSizeBytes) {
+            const sizeMb = (estimatedSize / (1024 * 1024)).toFixed(2);
+            return {
+                cacheable: false,
+                reason: `too_large(${sizeMb}MB>=${CacheConfig.MAX_FILE_SIZE_MB}MB)`
+            };
+        }
+
+        return { cacheable: true, reason: 'cacheable' };
+    }
+
+    get(key) {
+        if (!this._cache.has(key)) return null;
+
+        const now = Date.now() / 1000;
+        const accessTime = this._accessTimes.get(key) || 0;
+
+        if (now - accessTime > this.ttlSeconds) {
+            this.invalidate(key);
+            return null;
+        }
+
+        this._accessTimes.set(key, now);
+        return this._cache.get(key);
+    }
+
+    set(key, value) {
+        const { cacheable, reason } = this._isCacheable(value);
+
+        if (!cacheable) {
+            this.invalidate(key);
+            return { cached: false, reason };
+        }
+
+        // Eviction Policy (LRU)
+        if (this._cache.size >= this.maxSize && !this._cache.has(key)) {
+            if (this._accessTimes.size > 0) {
+                let oldestKey = this._accessTimes.keys().next().value;
+                let oldestTime = Infinity;
+                
+                for (const [k, time] of this._accessTimes.entries()) {
+                    if (time < oldestTime) {
+                        oldestTime = time;
+                        oldestKey = k;
+                    }
+                }
+
+                if (oldestKey) this.invalidate(oldestKey);
+            }
+        }
+
+        const estimatedSize = this._estimateSizeBytes(value);
+        this._cache.set(key, value);
+        this._accessTimes.set(key, Date.now() / 1000);
+        this._cacheSizes.set(key, estimatedSize);
+
+        const sizeMb = (estimatedSize / (1024 * 1024)).toFixed(2);
+        console.log(`✅ Cached ${key}: ${(value.data || []).length} entries, ${sizeMb}MB`);
+
+        return { cached: true, reason: `cached` };
+    }
+
+    invalidate(key) {
         this._cache.delete(key);
+        this._accessTimes.delete(key);
         this._cacheSizes.delete(key);
-        this._cacheTimestamps.delete(key);
-      }
-    }
-  }
-
-  shouldCache(data) {
-    const dataArray = Array.isArray(data) ? data : (data.value || []);
-    const size = this._calculateSize(data);
-    const sizeMB = size / (1024 * 1024);
-    const entryCount = dataArray.length;
-
-    return (
-      CacheConfig.ENABLE_MEMORY_CACHE &&
-      entryCount <= CacheConfig.MAX_ENTRIES_FOR_MEMORY &&
-      sizeMB <= CacheConfig.MAX_FILE_SIZE_MB
-    );
-  }
-
-  set(key, value, ttlMs = CacheConfig.CACHE_TTL_MS) {
-    if (!this.shouldCache(value)) {
-      return false;
     }
 
-    const now = Date.now();
-    const expiresAt = ttlMs ? now + ttlMs : null;
-    
-    this._cache.set(key, {
-      data: value,
-      expiresAt,
-      cachedAt: now
-    });
-    
-    this._cacheSizes.set(key, this._calculateSize(value));
-    this._cacheTimestamps.set(key, now);
-    
-    return true;
-  }
-
-  get(key) {
-    this._stats.totalRequests++;
-    
-    const entry = this._cache.get(key);
-    if (!entry) {
-      this._stats.misses++;
-      return null;
+    clear() {
+        this._cache.clear();
+        this._accessTimes.clear();
+        this._cacheSizes.clear();
     }
 
-    // Check expiration
-    if (entry.expiresAt && Date.now() > entry.expiresAt) {
-      this.delete(key);
-      this._stats.misses++;
-      return null;
+    getStats() {
+        return { size: this._cache.size }; 
     }
-
-    this._stats.hits++;
-    return entry.data;
-  }
-
-  delete(key) {
-    this._cache.delete(key);
-    this._cacheSizes.delete(key);
-    this._cacheTimestamps.delete(key);
-  }
-
-  clear() {
-    this._cache.clear();
-    this._cacheSizes.clear();
-    this._cacheTimestamps.clear();
-  }
-
-  getStats() {
-    const totalSize = Array.from(this._cacheSizes.values()).reduce((a, b) => a + b, 0);
-    const totalSizeMB = totalSize / (1024 * 1024);
-
-    return {
-      size: this._cache.size,
-      max_entries_threshold: CacheConfig.MAX_ENTRIES_FOR_MEMORY,
-      max_file_size_mb: CacheConfig.MAX_FILE_SIZE_MB,
-      total_size_mb: Math.round(totalSizeMB * 100) / 100,
-      cache_enabled: CacheConfig.ENABLE_MEMORY_CACHE,
-      hits: this._stats.hits,
-      misses: this._stats.misses,
-      hit_rate: this._stats.totalRequests > 0 
-        ? Math.round((this._stats.hits / this._stats.totalRequests) * 100) / 100 
-        : 0,
-      keys: Array.from(this._cache.keys()),
-      cached_tables: Object.fromEntries(
-        Array.from(this._cache.entries()).map(([key, entry]) => [
-          key,
-          {
-            size_mb: Math.round((this._cacheSizes.get(key) / (1024 * 1024)) * 100) / 100,
-            entries: Array.isArray(entry.data?.value) 
-              ? entry.data.value.length 
-              : (Array.isArray(entry.data) ? entry.data.length : 0),
-            cached_at: new Date(this._cacheTimestamps.get(key)).toISOString(),
-            expires_at: entry.expiresAt ? new Date(entry.expiresAt).toISOString() : null
-          }
-        ])
-      )
-    };
-  }
 }
 
-const memoryCache = new MemoryCache();
+const _memoryCache = new MemoryCache(50, 1800);
 
-// List of peer backend instances
-const PEERS = [];
-
-// Utility functions
-function ensureDirSync(filePath) {
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
+// ==========================================
+// INDEX MANAGER
+// ==========================================
+export class IndexManager {
+    constructor() { this._indexes = new Map(); }
+    buildIndex(tableName, keyName, data) {
+        if (!Array.isArray(data)) return;
+        const index = new Map();
+        for (const item of data) {
+            if (item && item[keyName] !== undefined) index.set(item[keyName], item);
+        }
+        if (!this._indexes.has(tableName)) this._indexes.set(tableName, new Map());
+        this._indexes.get(tableName).set(keyName, index);
+    }
+    lookup(tableName, keyName, keyValue) {
+        return this._indexes.get(tableName)?.get(keyName)?.get(keyValue) || null;
+    }
+    batchLookup(tableName, keyName, keyValues) {
+        const index = this._indexes.get(tableName)?.get(keyName);
+        if (!index) return [];
+        return keyValues.map(kv => index.get(kv)).filter(item => item !== undefined);
+    }
+    invalidate(tableName) { this._indexes.delete(tableName); }
+    clear() { this._indexes.clear(); }
 }
+const _indexManager = new IndexManager();
 
-function getFilePath(relativePath) {
-  const safePath = path.normalize(relativePath).replace(/^(\.\.[\/\\])+/, '');
-  return path.join(BASE_DIR, safePath);
-}
-
-async function load(filePath) {
-  // Try memory cache first
-  const cached = memoryCache.get(filePath);
-  if (cached) {
-    return cached;
-  }
-
-  // Load from file
-  ensureDirSync(filePath);
-  
-  if (!fs.existsSync(filePath)) {
-    return { value: [], createdAt: Date.now(), updatedAt: Date.now() };
-  }
-
-  const data = await fsPromises.readFile(filePath, 'utf-8');
-  const parsed = JSON.parse(data || '{}');
-  
-  // Cache if eligible
-  memoryCache.set(filePath, parsed);
-  
-  return parsed;
-}
-
-async function save(filePath, data) {
-  // Save to file
-  await fsPromises.writeFile(filePath, JSON.stringify(data, null, 2), 'utf8');
-  
-  // Update cache
-  memoryCache.set(filePath, data);
-}
-
-function isExpired(entry) {
-  return entry.expiresAt && Date.now() > entry.expiresAt;
-}
-
-function getRemainingMs(entry) {
-  return entry.expiresAt ? Math.max(0, entry.expiresAt - Date.now()) : null;
-}
-
-function formatDate(timestamp) {
-  const date = new Date(timestamp);
-  return date.toLocaleDateString('sv-SE', { timeZone: 'Asia/Kolkata' });
-}
-
-function formatTimeRemaining(ms) {
-  if (ms <= 0) return '00:00:00';
-
-  const totalSeconds = Math.floor(ms / 1000);
-  const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
-  const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
-  const seconds = String(totalSeconds % 60).padStart(2, '0');
-
-  return `${hours}:${minutes}:${seconds}`;
-}
-
-async function deleteFile(filePath) {
-  try {
-    await fsPromises.unlink(filePath);
-    memoryCache.delete(filePath);
-    console.log(`File ${filePath} deleted due to expiration.`);
-  } catch (err) {
-    console.error(`Error deleting file ${filePath}:`, err);
-  }
-}
-
-export async function broadcastToPeers(relativePath, operation, data = null, field = null) {
-  // Use Promise.allSettled for parallel execution without blocking
-  const promises = PEERS.map(peer => {
-    const fullUrl = `${peer}${basePathRoute}/json_auto_update_common/sync/push`;
-    return axios.post(fullUrl, {
-      path: relativePath,
-      operation,
-      data,
-      field
-    }, { timeout: 5000 }).catch(err => {
-      console.warn(`⚠️ Push to peer ${peer} failed:`, err.message);
-      return null;
-    });
-  });
-
-  await Promise.allSettled(promises);
-}
-
-async function set(relativePath, key, newValue, ttlMs = null) {
-  try {
-    const filePath = path.join(BASE_DIR, relativePath);
-    const now = Date.now();
-    const expiresAt = ttlMs ? now + ttlMs : null;
-
-    let fileData = {
-      value: [],
-      createdAt: now,
-      updatedAt: now,
-      expiresAt,
-      ttlMs
-    };
-
-    let operationType = "";
-
-    // Load existing data (will use cache if available)
-    if (fs.existsSync(filePath)) {
-      try {
-        const parsed = await load(filePath);
-        fileData = {
-          value: Array.isArray(parsed.value) ? parsed.value : [],
-          createdAt: parsed.createdAt || now,
-          updatedAt: now,
-          expiresAt,
-          ttlMs
+// ==========================================
+// METADATA MANAGER
+// ==========================================
+export class MetadataManager {
+    static _getMetadataPath(dataFilePath) {
+        const parsed = path.parse(dataFilePath);
+        return path.join(parsed.dir, `${parsed.name}.meta.json`);
+    }
+    static async loadMetadata(dataFilePath) {
+        if (!CacheConfig.USE_METADATA_FILES) return null;
+        try {
+            const metaPath = this._getMetadataPath(dataFilePath);
+            if (!fsSync.existsSync(metaPath)) return null;
+            return JSON.parse(await fs.readFile(metaPath, 'utf-8'));
+        } catch (e) { return null; }
+    }
+    static async saveMetadata(dataFilePath, metadata) {
+        if (!CacheConfig.USE_METADATA_FILES) return;
+        try {
+            await fs.writeFile(this._getMetadataPath(dataFilePath), JSON.stringify(metadata, null, 2), 'utf-8');
+        } catch (e) { console.error("Meta save failed", e.message); }
+    }
+    static extractMetadata(data) {
+        return {
+            name: data.name, view_name: data.view_name,
+            created_at: data.created_at, modified_at: data.modified_at,
+            expiry_at: data.expiry_at, db_count_check_counter: data.db_count_check_counter,
+            data_length: (data.data || []).length
         };
-      } catch (err) {
-        console.warn('⚠️ Error parsing JSON, resetting file:', err);
-      }
     }
-
-    if (!Array.isArray(fileData.value)) {
-      fileData.value = [];
+    static mergeMetadata(data, metadata) {
+        return { ...data, ...metadata };
     }
-
-    let updated = false;
-    
-    if (key) {
-      // Find index for faster update
-      const index = fileData.value.findIndex(item => 
-        item[key] !== undefined && item[key] == newValue[key]
-      );
-
-      if (index !== -1) {
-        fileData.value[index] = newValue;
-        updated = true;
-      } else {
-        fileData.value.push(newValue);
-      }
-      operationType = 'ADD_OR_UPDATE';
-    } else {
-      operationType = 'FULL_REPLACE';
-      fileData.value = newValue;
-    }
-
-    // Ensure directory exists
-    const dir = path.dirname(filePath);
-    await fsPromises.mkdir(dir, { recursive: true });
-
-    // Save file and update cache
-    await save(filePath, fileData);
-
-    // Broadcast to peers (non-blocking)
-    if (operationType !== "" && PEERS.length > 0) {
-      broadcastToPeers(relativePath, operationType, newValue, key).catch(err => 
-        console.warn('Broadcast failed:', err)
-      );
-    }
-
-    return true;
-  } catch (error) {
-    console.log("inside json set error -->", error);
-    throw error;
-  }
 }
 
-async function getById(relativePath, field, value) {
-  const filePath = getFilePath(relativePath);
-  const db = await load(filePath);
-
-  if (isExpired(db)) {
-    await deleteFile(filePath);
-    return [];
-  }
-
-  const entry = db.value && Array.isArray(db.value)
-    ? db.value.find(item => item[field] == value)
-    : null;
-
-  if (!entry || isExpired(entry)) {
-    return [];
-  }
-
-  return {
-    value: entry,
-    createdAt: formatDate(db.createdAt),
-    updatedAt: formatDate(db.updatedAt),
-    expiresAt: db.expiresAt ? formatDate(db.expiresAt) : null,
-    ttlMs: db.ttlMs ? formatTimeRemaining(db.ttlMs) : null,
-    remainingMs: formatTimeRemaining(getRemainingMs(db))
-  };
-}
-
-async function getAllByField(relativePath, field, value) {
-  const filePath = getFilePath(relativePath);
-  const db = await load(filePath);
-
-  if (isExpired(db)) {
-    await deleteFile(filePath);
-    return [];
-  }
-
-  const entries = db.value && Array.isArray(db.value)
-    ? db.value.filter(item => item[field] == value)
-    : [];
-
-  if (!entries.length) {
-    return [];
-  }
-
-  return {
-    values: entries,
-    createdAt: formatDate(db.createdAt),
-    updatedAt: formatDate(db.updatedAt),
-    expiresAt: db.expiresAt ? formatDate(db.expiresAt) : null,
-    ttlMs: db.ttlMs ? formatTimeRemaining(db.ttlMs) : null,
-    remainingMs: formatTimeRemaining(getRemainingMs(db))
-  };
-}
-
-async function getAll(relativePath) {
-  const filePath = path.join(BASE_DIR, relativePath);
-
-  if (!fs.existsSync(filePath)) {
-    return [];
-  }
-
-  try {
-    const parsed = await load(filePath);
-
-    if (isExpired(parsed)) {
-      await deleteFile(filePath);
-      return [];
+// ==========================================
+// DATABASE HELPER (FIXED REGEX)
+// ==========================================
+export class DatabaseHelper {
+    static isValidViewName(viewName) {
+        if (!viewName || typeof viewName !== 'string') return false;
+        
+        const trimmed = viewName.trim();
+        if (trimmed.length === 0) return false;
+        
+        // ✅ FIX: Separated character class [] and double-dash --
+        // This prevents the "Range out of order" error
+        const dangerousPatterns = /[;'"\\]|--/;
+        
+        if (dangerousPatterns.test(trimmed)) {
+            console.error(`❌ Invalid view_name detected (potential SQL injection): ${viewName}`);
+            return false;
+        }
+        
+        return true;
     }
 
-    const remainingMs = parsed.expiresAt ? parsed.expiresAt - Date.now() : null;
-
-    if (parsed.value && typeof parsed.value === 'object') {
-      return {
-        data: parsed.value,
-        createdAt: formatDate(parsed.createdAt),
-        updatedAt: formatDate(parsed.updatedAt),
-        expiresAt: parsed.expiresAt ? formatDate(parsed.expiresAt) : null,
-        ttlMs: parsed.ttlMs ? formatTimeRemaining(parsed.ttlMs) : null,
-        remainingMs: formatTimeRemaining(remainingMs)
-      };
+    static async getDbCount(viewName) {
+        if (!CacheConfig.ENABLE_DB_OPERATIONS || !this.isValidViewName(viewName)) return null;
+        try {
+            const result = await db.sequelize.query(`SELECT COUNT(*) as count FROM ${viewName}`, {
+                type: QueryTypes.SELECT, timeout: CacheConfig.DB_QUERY_TIMEOUT, raw: true
+            });
+            return parseInt(result[0]?.count || 0, 10);
+        } catch (e) { return null; }
     }
 
-    return [];
-  } catch (err) {
-    console.warn('⚠️ Error reading or parsing file:', err);
-    return [];
-  }
+    static async fetchAllFromDb(viewName) {
+        if (!CacheConfig.ENABLE_DB_OPERATIONS || !this.isValidViewName(viewName)) return [];
+        try {
+            return await db.sequelize.query(`SELECT * FROM ${viewName}`, {
+                type: QueryTypes.SELECT, timeout: CacheConfig.DB_QUERY_TIMEOUT, raw: true
+            }) || [];
+        } catch (e) { console.error(`DB Fetch Error ${viewName}:`, e.message); return []; }
+    }
+
+    static async testConnection() {
+        try { await sequelize.authenticate(); return true; } catch { return false; }
+    }
 }
 
-async function remove(relativePath, key, value) {
-  const filePath = getFilePath(relativePath);
-  const db = await load(filePath);
+// ==========================================
+// OPTIMIZED LOCAL JSON DB (FINAL)
+// ==========================================
+export class OptimizedLocalJsonDB {
+    // Go up two levels (../../) to reach 'server', then into 'resources/json'
+    static _BASE_PATH = path.join(__dirname, '../../resources/json');
+    static _WRITE_QUEUE = new Map();
+    static _PENDING_WRITES = 0;
+    static _REQUEST_COUNTERS = new Map();
+    static _FILE_LOCKS = new Map();
+    static _writeTimeout = null;
 
-  if (Array.isArray(db.value)) {
-    const originalLength = db.value.length;
-    db.value = db.value.filter(item => item[key] !== value);
+    constructor(configOrName, expiryDays = 15) {
+        let mapping;
+        
+        if (typeof configOrName === 'string') {
+            if (!TABLE_VIEW_FOLDER_MAP || !TABLE_VIEW_FOLDER_MAP[configOrName]) {
+                throw new Error(`❌ Unknown table '${configOrName}' in TABLE_VIEW_FOLDER_MAP`);
+            }
+            mapping = TABLE_VIEW_FOLDER_MAP[configOrName];
+            this.tableName = configOrName;
+        } 
+        else if (typeof configOrName === 'object' && configOrName !== null) {
+            mapping = configOrName;
+            const fileName = mapping.json_file_name || mapping.file_name || 'unknown.json';
+            this.tableName = mapping.name || `${mapping.folder_name || 'root'}/${fileName}`;
+        } 
+        else {
+            throw new Error('❌ Invalid constructor argument');
+        }
 
-    if (db.value.length < originalLength) {
-      db.updatedAt = Date.now();
-      await save(filePath, db);
-      
-      // Broadcast to peers (non-blocking)
-      if (PEERS.length > 0) {
-        broadcastToPeers(relativePath, 'DELETE', { [key]: value }, key).catch(err =>
-          console.warn('Broadcast failed:', err)
-        );
-      }
-      
-      return true;
+        this.viewName = mapping.view_name || null;
+        this.folderName = mapping.folder_name || this.tableName;
+        let jsonFileName = mapping.json_file_name || mapping.file_name || `${this.tableName}.json`;
+        this.jsonFileName = jsonFileName.replace('.json5', '.json');
+        this.expiryDays = expiryDays;
+
+        this.hasValidViewName = DatabaseHelper.isValidViewName(this.viewName);
+        if (!this.viewName) this.hasValidViewName = false;
+
+        const folderPath = path.join(OptimizedLocalJsonDB._BASE_PATH, this.folderName);
+        if (!fsSync.existsSync(folderPath)) {
+            try { fsSync.mkdirSync(folderPath, { recursive: true }); } catch (e) {}
+        }
+        this.filePath = path.join(folderPath, this.jsonFileName);
+        this._cacheKey = `${this.tableName}:${expiryDays}`;
     }
-  }
 
-  return false;
-}
-
-async function checkDataStatus(relativePath) {
-  const filePath = getFilePath(relativePath);
-  
-  try {
-    await fsPromises.access(filePath);
-    const parsed = await load(filePath);
-
-    if (isExpired(parsed)) {
-      await deleteFile(filePath);
-      return { exists: false, expired: true, totalCount: 0 };
+    static _getInstance(tableRef, expiryDays) {
+        return new OptimizedLocalJsonDB(tableRef, expiryDays);
     }
 
-    const totalCount = Array.isArray(parsed.value) ? parsed.value.length : 0;
-    
-    // Get file stats
-    const stats = await fsPromises.stat(filePath);
-    const sizeMB = stats.size / (1024 * 1024);
-    
-    return {
-      exists: true,
-      expired: false,
-      totalCount,
-      size_mb: Math.round(sizeMB * 100) / 100,
-      is_cached: memoryCache.get(filePath) !== null,
-      should_cache: memoryCache.shouldCache(parsed)
-    };
-
-  } catch (err) {
-    if (err.code === 'ENOENT') {
-      return { exists: false, expired: false, totalCount: 0 };
+    async _loadFromMemoryOrFile() {
+        const cached = _memoryCache.get(this._cacheKey);
+        if (cached) return cached;
+        if (!fsSync.existsSync(this.filePath)) return null;
+        try {
+            const content = await fs.readFile(this.filePath, 'utf-8');
+            let data = JSON.parse(content);
+            const metadata = await MetadataManager.loadMetadata(this.filePath);
+            if (metadata) data = MetadataManager.mergeMetadata(data, metadata);
+            _memoryCache.set(this._cacheKey, data);
+            return data;
+        } catch (error) { return null; }
     }
-    console.error('Error reading file:', filePath, err);
-    throw err;
-  }
-}
 
-async function deleteFullFile(relativePath) {
-  const filePath = getFilePath(relativePath);
-
-  try {
-    await fsPromises.unlink(filePath);
-    memoryCache.delete(filePath);
-    console.log(`File ${filePath} deleted.`);
-    
-    // Broadcast to peers (non-blocking)
-    if (PEERS.length > 0) {
-      broadcastToPeers(relativePath, 'DELETE_FILE').catch(err =>
-        console.warn('Broadcast failed:', err)
-      );
+    async _saveLazy(data, force, metadataOnly) {
+         const dataLength = (data.data || []).length;
+         const isLarge = dataLength >= CacheConfig.MAX_ENTRIES_FOR_COUNTER_UPDATES;
+         if (isLarge && metadataOnly) {
+             const metadata = MetadataManager.extractMetadata(data);
+             await MetadataManager.saveMetadata(this.filePath, metadata);
+             return;
+         }
+         const { cached } = _memoryCache.set(this._cacheKey, data);
+         if (!cached) {
+             try {
+                await fs.writeFile(this.filePath, JSON.stringify(data, null, 2), 'utf-8');
+                await MetadataManager.saveMetadata(this.filePath, MetadataManager.extractMetadata(data));
+             } catch(e) {}
+             return;
+         }
+         OptimizedLocalJsonDB._WRITE_QUEUE.set(this._cacheKey, {
+             filePath: this.filePath, data: data, timestamp: Date.now()
+         });
+         OptimizedLocalJsonDB._PENDING_WRITES++;
+         if (force || OptimizedLocalJsonDB._PENDING_WRITES >= 5) await OptimizedLocalJsonDB._flushWriteQueue();
+         else this._scheduleFlush();
     }
     
-    return true;
-  } catch (err) {
-    console.error(`Error deleting file ${filePath}:`, err);
-    return false;
-  }
-}
-
-// Cache management functions
-function getCacheStats() {
-  return memoryCache.getStats();
-}
-
-function clearCache() {
-  memoryCache.clear();
-  return { success: true, message: 'Cache cleared' };
-}
-
-function updateCacheConfig(config) {
-  Object.assign(CacheConfig, config);
-  return { success: true, config: CacheConfig };
-}
-
-const LocalJsonHelper = {
-  set,
-  getById,
-  getAll,
-  getAllByField,
-  remove,
-  checkDataStatus,
-  deleteFullFile,
-  getCacheStats,
-  clearCache,
-  updateCacheConfig
-};
-
-export default LocalJsonHelper;
-
-
-
-
-/* ============================================
-   USAGE EXAMPLES
-   ============================================ */
-
-// Example 1: Basic Set/Get Operations
-async function example1_BasicOperations() {
-  // Set a single user (will be cached if < 1MB and < 1000 entries)
-  await LocalJsonHelper.set(
-    'users/active_users.json',
-    'user_id',
-    { user_id: 123, name: 'John Doe', email: 'john@example.com' },
-    300000 // 5 minutes TTL
-  );
-
-  // Get user by ID
-  const user = await LocalJsonHelper.getById('users/active_users.json', 'user_id', 123);
-  console.log('User:', user);
-  // Output: { value: {...}, createdAt: '2025-11-23', updatedAt: '2025-11-23', ... }
-
-  // Get all users
-  const allUsers = await LocalJsonHelper.getAll('users/active_users.json');
-  console.log('All users:', allUsers.data);
-}
-
-// Example 2: Bulk Data with Array Operations
-async function example2_BulkOperations() {
-  const users = [
-    { user_id: 1, name: 'Alice', role: 'admin' },
-    { user_id: 2, name: 'Bob', role: 'user' },
-    { user_id: 3, name: 'Charlie', role: 'user' }
-  ];
-
-  // Add multiple users
-  for (const user of users) {
-    await LocalJsonHelper.set('users/all_users.json', 'user_id', user);
-  }
-
-  // Get all users with specific role
-  const admins = await LocalJsonHelper.getAllByField('users/all_users.json', 'role', 'admin');
-  console.log('Admins:', admins.values);
-}
-
-// Example 3: Session Management with TTL
-async function example3_SessionManagement() {
-  const session = {
-    session_id: 'sess_abc123',
-    user_id: 456,
-    token: 'jwt_token_here',
-    created_at: Date.now()
-  };
-
-  // Store session with 30 minute expiry
-  await LocalJsonHelper.set(
-    'sessions/active_sessions.json',
-    'session_id',
-    session,
-    30 * 60 * 1000 // 30 minutes
-  );
-
-  // Check session status
-  const sessionData = await LocalJsonHelper.getById(
-    'sessions/active_sessions.json',
-    'session_id',
-    'sess_abc123'
-  );
-  console.log('Session expires in:', sessionData.remainingMs);
-}
-
-// Example 4: Remove Operations
-async function example4_RemoveOperations() {
-  // Remove a specific user
-  const removed = await LocalJsonHelper.remove('users/all_users.json', 'user_id', 123);
-  console.log('User removed:', removed); // true or false
-
-  // Delete entire file
-  await LocalJsonHelper.deleteFullFile('sessions/old_sessions.json');
-}
-
-// Example 5: Check Data Status and Cache Info
-async function example5_StatusCheck() {
-  const status = await LocalJsonHelper.checkDataStatus('users/all_users.json');
-  console.log('File status:', status);
-  /* Output:
-  {
-    exists: true,
-    expired: false,
-    totalCount: 450,
-    size_mb: 0.85,
-    is_cached: true,
-    should_cache: true
-  }
-  */
-}
-
-// Example 6: Cache Statistics and Management
-async function example6_CacheManagement() {
-  // Get cache statistics
-  const stats = LocalJsonHelper.getCacheStats();
-  console.log('Cache Stats:', JSON.stringify(stats, null, 2));
-  /* Output:
-  {
-    "size": 15,
-    "max_entries_threshold": 1000,
-    "max_file_size_mb": 1,
-    "total_size_mb": 0.45,
-    "hits": 1250,
-    "misses": 50,
-    "hit_rate": 0.96,
-    "cached_tables": {
-      "users/active_users.json": {
-        "size_mb": 0.12,
-        "entries": 450,
-        "cached_at": "2025-11-23T10:30:00.000Z",
-        "expires_at": "2025-11-23T10:35:00.000Z"
-      }
+    _scheduleFlush() {
+        if (OptimizedLocalJsonDB._writeTimeout) clearTimeout(OptimizedLocalJsonDB._writeTimeout);
+        OptimizedLocalJsonDB._writeTimeout = setTimeout(async () => await OptimizedLocalJsonDB._flushWriteQueue(), 5000);
     }
-  }
-  */
 
-  // Update cache configuration
-  LocalJsonHelper.updateCacheConfig({
-    MAX_ENTRIES_FOR_MEMORY: 2000,
-    MAX_FILE_SIZE_MB: 2,
-    ENABLE_MEMORY_CACHE: true
-  });
-
-  // Clear all cache if needed
-  LocalJsonHelper.clearCache();
-}
-
-// Example 7: Real-World Dashboard Data (like your use case)
-async function example7_DashboardData() {
-  const dashboardData = {
-    total_ngo: 150,
-    total_request: 5000,
-    total_users: 10000,
-    total_request_pending: 250,
-    total_request_approved: 4500,
-    total_request_rejected: 250,
-    timestamp: Date.now()
-  };
-
-  // Store dashboard data (will be cached automatically if small enough)
-  await LocalJsonHelper.set(
-    'dashboard/ngo_stats.json',
-    null, // No key means full replace
-    dashboardData,
-    600000 // 10 minutes cache
-  );
-
-  // Retrieve dashboard data (from cache if available)
-  const data = await LocalJsonHelper.getAll('dashboard/ngo_stats.json');
-  console.log('Dashboard Data:', data.data);
-  console.log('Cache hit rate:', LocalJsonHelper.getCacheStats().hit_rate);
-}
-
-// Example 8: NGO-Specific Data
-async function example8_NgoSpecificData() {
-  const ngoId = 'ngo_123';
-  
-  // Store NGO requests
-  const request = {
-    request_id: 'req_001',
-    ngo_id: ngoId,
-    status: 'pending',
-    amount: 50000,
-    created_at: Date.now()
-  };
-
-  await LocalJsonHelper.set(
-    `ngo/${ngoId}/requests.json`,
-    'request_id',
-    request,
-    3600000 // 1 hour
-  );
-
-  // Get all requests for this NGO
-  const ngoRequests = await LocalJsonHelper.getAllByField(
-    `ngo/${ngoId}/requests.json`,
-    'status',
-    'pending'
-  );
-  console.log('Pending requests:', ngoRequests.values);
-}
-
-// Example 9: Parallel Operations for Performance
-async function example9_ParallelOperations() {
-  // Execute multiple reads in parallel
-  const [users, sessions, dashboard] = await Promise.all([
-    LocalJsonHelper.getAll('users/all_users.json'),
-    LocalJsonHelper.getAll('sessions/active_sessions.json'),
-    LocalJsonHelper.getAll('dashboard/ngo_stats.json')
-  ]);
-
-  console.log('All data loaded in parallel:', {
-    userCount: users.data?.length || 0,
-    sessionCount: sessions.data?.length || 0,
-    dashboardData: dashboard.data
-  });
-}
-
-// Example 10: Error Handling Best Practices
-async function example10_ErrorHandling() {
-  try {
-    const result = await LocalJsonHelper.set(
-      'users/test.json',
-      'user_id',
-      { user_id: 999, name: 'Test User' }
-    );
-
-    if (result) {
-      console.log('Data saved successfully');
-      
-      // Verify it was cached
-      const status = await LocalJsonHelper.checkDataStatus('users/test.json');
-      if (status.is_cached) {
-        console.log('✓ Data is cached for fast access');
-      } else {
-        console.log('⚠ Data too large for cache, using file storage');
-      }
+    static async _flushWriteQueue() {
+        if (this._WRITE_QUEUE.size === 0) return;
+        for (const [key, val] of this._WRITE_QUEUE.entries()) {
+            try { await fs.writeFile(val.filePath, JSON.stringify(val.data, null, 2), 'utf-8'); } catch (e) {}
+        }
+        this._WRITE_QUEUE.clear();
+        this._PENDING_WRITES = 0;
     }
-  } catch (error) {
-    console.error('Error saving data:', error);
-    // Handle error appropriately
-  }
+
+    _isExpired(data) {
+        try { return new Date() >= new Date(data.expiry_at); } catch { return true; }
+    }
+
+    async _getDbCount() {
+        if (!this.hasValidViewName) return null;
+        return await DatabaseHelper.getDbCount(this.viewName);
+    }
+
+    async _fetchFullFromDb() {
+        if (!this.hasValidViewName) return [];
+        return await DatabaseHelper.fetchAllFromDb(this.viewName);
+    }
+
+    async _needsRefresh(data) {
+        if (this._isExpired(data)) return { needs: true, reason: 'expired' };
+        if (!this.hasValidViewName) return { needs: false, reason: 'no_view' };
+        
+        const counter = data.db_count_check_counter || 0;
+        if (counter <= 0) {
+            const dbCount = await this._getDbCount();
+            if (dbCount === null) return { needs: false, reason: 'db_fail' };
+            const localCount = (data.data || []).length;
+            if (dbCount !== localCount) return { needs: true, reason: 'count_mismatch' };
+        }
+        return { needs: false, reason: 'valid' };
+    }
+
+    _createCacheStructure(freshData) {
+        const now = new Date();
+        const expiry = new Date(now.getTime() + this.expiryDays * 24 * 60 * 60 * 1000);
+        return {
+            name: this.tableName, view_name: this.viewName,
+            created_at: now.toISOString(), modified_at: now.toISOString(),
+            expiry_at: expiry.toISOString(), db_count_check_counter: 15,
+            data: freshData
+        };
+    }
+
+    // ==========================================
+    // STATIC API
+    // ==========================================
+
+    static async getAll(tableRef, expiryDays = 15, filterField = null, filterValue = null) {
+        const instance = this._getInstance(tableRef, expiryDays);
+        let data = await instance._loadFromMemoryOrFile();
+
+        if (!data) {
+            if (!instance.hasValidViewName) return [];
+            const freshData = await instance._fetchFullFromDb();
+            if (freshData.length === 0) return [];
+            
+            data = instance._createCacheStructure(freshData);
+            await instance._saveLazy(data, true);
+            _indexManager.buildIndex(instance.tableName, 'id', freshData);
+            
+            if (filterField !== null) return this._filterList(freshData, filterField, filterValue);
+            return freshData;
+        }
+
+        const { needs } = await instance._needsRefresh(data);
+        if (needs) {
+            const freshData = await instance._fetchFullFromDb();
+            if (freshData.length > 0) {
+                data.data = freshData;
+                data.modified_at = new Date().toISOString();
+                data.db_count_check_counter = 15;
+                await instance._saveLazy(data, true);
+                _indexManager.buildIndex(instance.tableName, 'id', freshData);
+            }
+        } else {
+             const isLarge = (data.data || []).length >= CacheConfig.MAX_ENTRIES_FOR_COUNTER_UPDATES;
+             data.db_count_check_counter = (data.db_count_check_counter || 15) - 1;
+             
+             if (isLarge) {
+                 const key = `${instance._cacheKey}:req`;
+                 let reqs = (this._REQUEST_COUNTERS.get(key) || 0) + 1;
+                 this._REQUEST_COUNTERS.set(key, reqs);
+                 if (reqs % CacheConfig.COUNTER_UPDATE_INTERVAL === 0) await instance._saveLazy(data, false, true);
+             } else {
+                 await instance._saveLazy(data, false);
+             }
+        }
+
+        if (!_indexManager.lookup(instance.tableName, 'id', 1)) {
+            _indexManager.buildIndex(instance.tableName, 'id', data.data);
+        }
+
+        if (filterField !== null) return this._filterList(data.data, filterField, filterValue);
+        return data.data;
+    }
+
+    static _filterList(data, field, value) {
+        if (!Array.isArray(data)) return [];
+        const target = typeof value === 'boolean' ? Number(value) : value;
+        return data.filter(i => i && i[field] !== undefined && (typeof i[field] === 'boolean' ? Number(i[field]) : i[field]) === target);
+    }
+
+    static async getByKey(tableRef, keyName, keyValue, expiryDays = 15, filterField = null, filterValue = null) {
+        const instance = this._getInstance(tableRef, expiryDays);
+        let result = _indexManager.lookup(instance.tableName, keyName, keyValue);
+        
+        if (!result) {
+            const all = await this.getAll(tableRef, expiryDays);
+            if (all.length > 0) result = _indexManager.lookup(instance.tableName, keyName, keyValue);
+        }
+
+        if (result && filterField !== null) {
+            const target = typeof filterValue === 'boolean' ? Number(filterValue) : filterValue;
+            if (!this._matchesFilter(result, filterField, target)) return null;
+        }
+        return result;
+    }
+
+    static _matchesFilter(item, field, target) {
+        if (!item || item[field] === undefined) return false;
+        return (typeof item[field] === 'boolean' ? Number(item[field]) : item[field]) === target;
+    }
+
+    static async getByKeysBatch(tableRef, keyName, keyValues, expiryDays = 15, filterField = null, filterValue = null) {
+        const instance = this._getInstance(tableRef, expiryDays);
+        await this.getAll(tableRef, expiryDays);
+        let results = _indexManager.batchLookup(instance.tableName, keyName, keyValues);
+        if (filterField !== null) results = this._filterList(results, filterField, filterValue);
+        return results;
+    }
+
+    static async save(tableRef, dataEntry = null, keyName = null, keyValue = null, newFile = false, expiryDays = 15) {
+        const instance = this._getInstance(tableRef, expiryDays);
+        
+        if (this._FILE_LOCKS.get(instance._cacheKey)) {
+             await new Promise(r => setTimeout(r, 100));
+        }
+        this._FILE_LOCKS.set(instance._cacheKey, true);
+
+        try {
+            let data = await instance._loadFromMemoryOrFile();
+            const now = new Date();
+
+            if (!data) data = instance._createCacheStructure([]);
+            
+            if (instance._isExpired(data) && instance.hasValidViewName) {
+                const fresh = await instance._fetchFullFromDb();
+                if(fresh.length > 0) {
+                     data.data = fresh;
+                     data.expiry_at = new Date(now.getTime() + expiryDays * 24 * 60 * 60 * 1000).toISOString();
+                }
+            }
+
+            if (newFile) {
+                data.data = Array.isArray(dataEntry) ? dataEntry : [];
+            } else {
+                if (!dataEntry || !keyName || keyValue === undefined) throw new Error('Invalid upsert params');
+                if (!Array.isArray(data.data)) data.data = [];
+                
+                const idx = data.data.findIndex(i => i[keyName] === keyValue);
+                if (idx >= 0) data.data[idx] = dataEntry;
+                else data.data.push(dataEntry);
+            }
+
+            data.modified_at = now.toISOString();
+            await instance._saveLazy(data, true);
+            _indexManager.invalidate(instance.tableName);
+            
+            return data;
+        } finally {
+            this._FILE_LOCKS.delete(instance._cacheKey);
+        }
+    }
+
+    static async deleteEntry(tableRef, keyName, keyValue, expiryDays = 15) {
+        const instance = this._getInstance(tableRef, expiryDays);
+        const data = await instance._loadFromMemoryOrFile();
+        if (!data || !Array.isArray(data.data)) return false;
+
+        const originalLen = data.data.length;
+        data.data = data.data.filter(e => e && e[keyName] !== keyValue);
+        
+        if (data.data.length !== originalLen) {
+            data.modified_at = new Date().toISOString();
+            await instance._saveLazy(data, true);
+            _indexManager.invalidate(instance.tableName);
+            return true;
+        }
+        return false;
+    }
+
+    // 🆕 NEW METHOD: Get File Status
+    static async getFileStatus(tableRef, expiryDays = 15) {
+        try {
+            const instance = this._getInstance(tableRef, expiryDays);
+            const inMemory = _memoryCache.get(instance._cacheKey) !== null;
+            const fileExists = fsSync.existsSync(instance.filePath);
+            
+            let stats = null;
+            if (fileExists) {
+                const fileStats = await fs.stat(instance.filePath);
+                stats = {
+                    size_bytes: fileStats.size,
+                    size_mb: (fileStats.size / (1024 * 1024)).toFixed(2),
+                    modified_at: fileStats.mtime
+                };
+            }
+
+            return {
+                table_name: instance.tableName,
+                file_path: instance.filePath,
+                exists: fileExists,
+                in_memory: inMemory,
+                stats: stats
+            };
+        } catch (error) {
+            return {
+                error: error.message,
+                exists: false
+            };
+        }
+    }
+
+    // 🆕 NEW METHOD: Deletes a single file (Alias for invalidate)
+    static async deleteFile(tableRef) {
+        return await this.invalidate(tableRef);
+    }
+
+    // 🆕 NEW METHOD: Clears EVERYTHING (Memory + Files)
+    static async clearAll() {
+        // 1. Clear In-Memory
+        _memoryCache.clear();
+        _indexManager.clear();
+        this._REQUEST_COUNTERS.clear();
+        this._WRITE_QUEUE.clear();
+        this._FILE_LOCKS.clear();
+        
+        // 2. Clear File System
+        try {
+            if (fsSync.existsSync(this._BASE_PATH)) {
+                 await fs.rm(this._BASE_PATH, { recursive: true, force: true });
+                 await fs.mkdir(this._BASE_PATH, { recursive: true });
+            }
+            console.log('🧹 CLEARED ALL CACHE AND FILES');
+            return true;
+        } catch(error) {
+            console.error('❌ Failed to clear all cache:', error.message);
+            return false;
+        }
+    }
+
+    static async invalidate(tableRef, expiryDays = 15) {
+        const instance = this._getInstance(tableRef, expiryDays);
+        _memoryCache.invalidate(instance._cacheKey);
+        _indexManager.invalidate(instance.tableName);
+        
+        try {
+             if (fsSync.existsSync(instance.filePath)) await fs.unlink(instance.filePath);
+             const meta = MetadataManager._getMetadataPath(instance.filePath);
+             if (fsSync.existsSync(meta)) await fs.unlink(meta);
+             console.log(`🗑️ Deleted file: ${instance.tableName}`);
+        } catch(e) {}
+    }
 }
+
+export const LocalJsonDB = OptimizedLocalJsonDB;
+export default OptimizedLocalJsonDB;

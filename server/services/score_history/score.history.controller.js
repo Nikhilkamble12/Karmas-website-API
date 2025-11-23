@@ -2,7 +2,7 @@ import ScoreHistoryService from "./score.history.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import LocalJsonHelper from "../../utils/helper/local.json.helper.js";
 import RequestMediaService from "../request_media/request.media.service.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate,TABLE_VIEW_FOLDER_MAP} = commonPath
 
 const ScoreHistoryController = {
     // Create A new Record 
@@ -319,12 +319,19 @@ const ScoreHistoryController = {
             const user_id = tokenData(req, res)
             const limit = req.query.limit
             const fileName = `score/score_${limit}.json`;
+
+             const jsonFileDetails = {
+                view_name: null,
+                folder_name: "score",
+                json_file_name:`score_${limit}.json`
+            };
             // const fileName = `score/score_${limit}.json`;
             const ttlMs = 60 * 60 * 1000; 
             // 1 hour in milliseconds
             // Step 1: Try to get from local file cache
-            const localData = await LocalJsonHelper.getAll(fileName, 'get');
-            const cachedData = localData.data
+            
+            const localData = await LocalJsonHelper.getAll(jsonFileDetails,15);
+            const cachedData = localData
             const getUserrank = await ScoreHistoryService.getUserRankByUserId(user_id)
             if (cachedData && cachedData.length!==0) {
                 cachedData.topScorers.sort((a, b) => a.rank - b.rank);
@@ -343,7 +350,8 @@ const ScoreHistoryController = {
             getData.user_rank = getUserrank
             if (getData.length !== 0) {
                  // Step 3: Save the data to local file cache
-            await LocalJsonHelper.set(fileName, null, getData, ttlMs);
+            // await LocalJsonHelper.set(fileName, null, getData, ttlMs);
+             await LocalJsonHelper.save(jsonFileDetails,getData,null,null,true,null)
                 return res
                     .status(responseCode.OK)
                     .send(

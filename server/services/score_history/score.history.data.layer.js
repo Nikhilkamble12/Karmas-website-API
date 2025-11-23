@@ -92,11 +92,11 @@ const ScoreHistoryDAL = {
 
             const getUserScore = await db.sequelize.query(
                 `
-          SELECT *, 
-          ROW_NUMBER() OVER (ORDER BY total_score DESC) AS row_num
-          FROM massom.v_weekly_user_scores
-          WHERE user_id = :userId
-          `,
+                SELECT *, 
+                ROW_NUMBER() OVER (ORDER BY total_score DESC) AS row_num
+                FROM massom.v_weekly_user_scores
+                WHERE user_id = :userId
+                `,
                 {
                     replacements: { userId: user_id },
                     type: db.Sequelize.QueryTypes.SELECT,
@@ -115,11 +115,11 @@ const ScoreHistoryDAL = {
     }, getAllScoreHistoryByUserIdByLimit: async (user_id, limit, offset) => {
         try {
             const getUserData = await db.sequelize.query(`
-      ${ViewFieldTableVise.SIMPLE_SCORE_HISTORY_FIELDS}
-      WHERE user_id = :user_id
-      ORDER BY date DESC
-      LIMIT :limit OFFSET :offset
-    `, {
+                ${ViewFieldTableVise.SIMPLE_SCORE_HISTORY_FIELDS}
+                WHERE user_id = :user_id
+                ORDER BY date DESC
+                LIMIT :limit OFFSET :offset
+                `, {
                 replacements: { user_id, limit: Number(limit), offset: Number(offset) },
                 type: db.Sequelize.QueryTypes.SELECT
             });

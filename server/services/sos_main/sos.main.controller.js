@@ -2,7 +2,7 @@ import SosMainService from "./sos.main.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import LocalJsonHelper from "../../utils/helper/local.json.helper.js";
 import SosHistoryService from "../sos_history/sos.history.service.js";
-const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
+const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate,TABLE_VIEW_FOLDER_MAP } = commonPath
 const SOS_ACTIVE_JSON = "Sos/sos.active.json"
 
 const SosMainController = {
@@ -334,8 +334,8 @@ const SosMainController = {
                 const getOlderData = await SosMainService.getServiceById(checkWhoseSosIsOn[0].sos_id)
                 if (!getOlderData.is_sos_on) {
                     const getAllActive = await SosMainService.getAllActiveSos()
-                    await LocalJsonHelper.deleteFullFile(SOS_ACTIVE_JSON)
-                    await LocalJsonHelper.set(SOS_ACTIVE_JSON, null, getAllActive, null)
+                    await LocalJsonHelper.deleteFile(TABLE_VIEW_FOLDER_MAP.sos_main)
+                    await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.sos_main,getAllActive,null,null,true)
                     return res
                         .status(responseCode.CREATED)
                         .send(
@@ -373,7 +373,7 @@ const SosMainController = {
                     const createData = await SosMainService.createService(data)
                     if (createData) {
                         const checkWhoseSosIsOn = await SosMainService.getByUserIdOnlyActive(user_id)
-                        await LocalJsonHelper.set(SOS_ACTIVE_JSON, "sos_id", checkWhoseSosIsOn[0], null)
+                        await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.sos_main,checkWhoseSosIsOn[0],"sos_id",createData.dataValues.sos_id,false)
                         return res
                             .status(responseCode.CREATED)
                             .send(

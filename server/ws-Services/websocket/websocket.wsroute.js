@@ -6,7 +6,7 @@ import addMetaDataWhileCreateUpdate from "../../utils/helper/InsertIdAndDate.for
 import LocalJsonHelper from "../../utils/helper/local.json.helper.js";
 import notificationTemplates from "../../utils/helper/notification.templates.js";
 import getSosUserJsonFileName from "../../utils/helper/sos_user_file_helper.js";
-const saveCurrentUserSos = "Sos/sos.current.json"
+// const saveCurrentUserSos = "Sos/sos.current.json"
 import WebSocket from "ws"
 
 
@@ -18,10 +18,10 @@ export default async function defineRoutes(wsRouter, activeConnections) {
       const { location_coordinates } = wsRequest.data;
       const { user: { user_id } } = wsRequest
       // console.log("user_id",user_id)
-      const getAllActiveSosUser = await LocalJsonHelper.getAll("Sos/sos.active.json")
+      const getAllActiveSosUser = await LocalJsonHelper.getAll("sos_user_list",15)
       // console.log("getAllActiveSosUser",getAllActiveSosUser.data)
       // Find user by ID in active SOS users
-      const userSosStatus = getAllActiveSosUser.data.find(user => user.user_id == user_id);
+      const userSosStatus = getAllActiveSosUser.find(user => user.user_id == user_id);
       console.log("userSosStatus", userSosStatus)
 
       if (!userSosStatus) {
@@ -38,7 +38,12 @@ export default async function defineRoutes(wsRouter, activeConnections) {
         }));
         return;
       }
-      const getAllByUserId = await LocalJsonHelper.getAllByField(await getSosUserJsonFileName(user_id), "user_id", user_id)
+      const fileDetails2 = {
+                view_name: null,
+                folder_name: "sos_user",
+                json_file_name:getSosUserJsonFileName(checkWetherDataIsPresent[0].sos_user_id)
+                }
+      const getAllByUserId = await LocalJsonHelper.getAll(fileDetails2,15, "user_id", user_id)
       // console.log("getAllByUserId",getAllByUserId)
 
       // Define recipients based on active users
@@ -57,7 +62,7 @@ export default async function defineRoutes(wsRouter, activeConnections) {
       }
       
       const createSosHistory = await SosHistoryService.createService(sos_history_object)
-      for (const user of getAllByUserId.values) {
+      for (const user of getAllByUserId) {
         if (user.is_active) {
           const targetWs = activeConnections.get(user.contact_user_id);  // Get WebSocket by contact user_id
           if (targetWs && targetWs.readyState === WebSocket.OPEN) {
@@ -108,7 +113,12 @@ export default async function defineRoutes(wsRouter, activeConnections) {
           console.error("Error sending notification:", error);
         }
       }
-      await LocalJsonHelper.set(saveCurrentUserSos,"sos_id",sos_history_object,null)
+      const activeSos = {
+                view_name: null,
+                folder_name: "Sos",
+                json_file_name:"sos.current.json"
+                }
+      await LocalJsonHelper.save(activeSos,sos_history_object,"sos_id",userSosStatus.sos_id,null,15)
 
       // ws.send(JSON.stringify({
       //   status: 'success',
