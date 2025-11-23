@@ -1,6 +1,5 @@
 import SosHistoryService from "./sos.history.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
-import LocalJsonHelper from "../../utils/helper/local.json.helper.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const SosHistoryController = {
