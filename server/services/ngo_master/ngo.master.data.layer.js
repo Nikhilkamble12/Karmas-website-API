@@ -100,7 +100,7 @@ const NgoMasterDAL = {
                 SUM(total_request_rejected) AS total_ngo_request_rejected,
 
                 SUM(CASE WHEN is_blacklist = TRUE THEN 1 ELSE 0 END) AS total_ngo_blacklisted,
-                SUM(CASE WHEN is_blacklist = FALSE THEN 1 ELSE 0 END) AS total_ngo_non_blacklisted_ngo,
+                SUM(CASE WHEN is_blacklist = FALSE THEN 1 ELSE 0 END) AS total_ngo_not_blacklisted,
 
                 SUM(CASE 
                     WHEN unique_id IS NULL 

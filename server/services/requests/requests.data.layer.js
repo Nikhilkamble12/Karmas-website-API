@@ -402,7 +402,7 @@ const RequestDAL = {
     try {
       const getData = await db.sequelize.query(
         `SELECT 
-          COUNT(RequestId) AS total_request,
+          COUNT(RequestId) AS total_request_global,
           SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_PENDING} THEN 1 ELSE 0 END) AS total_request_pending_status,
           SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
           SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected,
@@ -411,7 +411,7 @@ const RequestDAL = {
         `,
         { type: db.Sequelize.QueryTypes.SELECT }
       );
-      return getData;
+      return getData[0] ?? {};
     } catch (error) {
       throw error;
     }
@@ -457,7 +457,7 @@ const RequestDAL = {
     try {
       const getData = await db.sequelize.query(
         `SELECT 
-            COUNT(RequestId) AS total_request,
+            COUNT(RequestId) AS total_request_global,
             SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_PENDING} THEN 1 ELSE 0 END) AS total_request_pending_status,
             SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
             SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected,
@@ -601,27 +601,26 @@ const RequestDAL = {
   }
 },getSumOfTotalRequestByNgoId: async (ngo_id) => {
     try {
-      const getData = await db.sequelize.query(
-        `SELECT 
-          COUNT(RequestId) AS total_request,
-          SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_DRAFT} THEN 1 ELSE 0 END) AS total_request_draft
-        FROM ${VIEW_NAME.GET_ALL_REQUEST}
-        `,
-        { type: db.Sequelize.QueryTypes.SELECT }
-      );
-      const getDataRequest = await db.sequelize.query(` SELECT 
-      SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_PENDING} THEN 1 ELSE 0 END) AS total_request_pending_status,
-      SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
-      SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected
-      FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} where ngo_id = ${ngo_id}`,{type:db.Sequelize.QueryTypes.SELECT})
-      // merge objects
-    return {
-      ...getData[0],
-      ...getDataRequest[0]
-    };
+        const getData = await db.sequelize.query(
+            `SELECT 
+                (SELECT COUNT(RequestId) FROM ${VIEW_NAME.GET_ALL_REQUEST}) AS total_request_global,
+                (SELECT SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_DRAFT} THEN 1 ELSE 0 END) 
+                 FROM ${VIEW_NAME.GET_ALL_REQUEST}) AS total_request_draft,
+                COUNT(*) as total_request_assigned_to_ngo,
+                SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_PENDING} THEN 1 ELSE 0 END) AS total_request_pending_status,
+                SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
+                SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected
+            FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} 
+            WHERE ngo_id = :ngo_id`,
+            { 
+                type: db.Sequelize.QueryTypes.SELECT,
+                replacements: { ngo_id }
+            }
+        );
+        return getData[0];
     } catch (error) {
-      throw error;
+        throw error;
     }
-  },
+},
 };
 export default RequestDAL;

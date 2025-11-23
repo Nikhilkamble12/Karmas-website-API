@@ -7,67 +7,111 @@ import RequestNgoService from "../request_ngo/request.ngo.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const DashBoardController = {
-webDashBoardData:async(req,res)=>{
-    try{
-        const ngo_id = req.query.ngo_id ?? null
-        let userCount
-        let RequestCount
-        let recentRequestAll
-        const NgoCount = await  NgoMasterService.getTotalSumOfData(ngo_id)
-        if(ngo_id){
-        RequestCount = await RequestService.getCountOfTotalRequestByNgoId(ngo_id)
-        userCount = await UserMasterService.getUserMasterCountByNgoId(ngo_id)
-        recentRequestAll = await RequestService.getRecentHundredRequestDesc(ngo_id)
-        }else{
-        RequestCount = await RequestService.getCountOfTotalRequest()
-        userCount = await UserMasterService.getUserMasterDashBoardCount()
-        recentRequestAll = await RequestService.getRecentHundredRequestDesc()
-        }
-        const ScoreCount = await ScoreHistoryService.ScoreDashBoardCount()
+// webDashBoardData:async(req,res)=>{
+//     try{
+//         const ngo_id = req.query.ngo_id ?? null
+//         let userCount
+//         let RequestCount
+//         let recentRequestAll
+//         const NgoCount = await  NgoMasterService.getTotalSumOfData(ngo_id)
+//         if(ngo_id){
+//         RequestCount = await RequestService.getCountOfTotalRequestByNgoId(ngo_id)
+//         userCount = await UserMasterService.getUserMasterCountByNgoId(ngo_id)
+//         recentRequestAll = await RequestService.getRecentHundredRequestDesc(ngo_id)
+//         }else{
+//         RequestCount = await RequestService.getCountOfTotalRequest()
+//         userCount = await UserMasterService.getUserMasterDashBoardCount()
+//         recentRequestAll = await RequestService.getRecentHundredRequestDesc()
+//         }
+//         const ScoreCount = await ScoreHistoryService.ScoreDashBoardCount()
+//         const mergedData = {
+//             ...NgoCount[0],
+//             ...RequestCount,
+//             ...userCount[0],
+//             ...ScoreCount[0],
+//             recentRequestAll:recentRequestAll
+//         }
+//         if (Object.keys(mergedData).length > 0) {
+//                 return res
+//                     .status(responseCode.OK)
+//                     .send(
+//                         commonResponse(
+//                             responseCode.OK,
+//                             responseConst.DATA_RETRIEVE_SUCCESS,
+//                             mergedData
+//                         )
+//                     );
+//             } else {
+//                 return res
+//                     .status(responseCode.BAD_REQUEST)
+//                     .send(
+//                         commonResponse(
+//                             responseCode.BAD_REQUEST,
+//                             responseConst.DATA_NOT_FOUND,
+//                             null,
+//                             true
+//                         )
+//                     );
+//             }
+//     }catch(error){
+//         console.log("error",error)
+//         logger.error(`Error ---> ${error}`);
+//             return res
+//                 .status(responseCode.INTERNAL_SERVER_ERROR)
+//                 .send(
+//                     commonResponse(
+//                         responseCode.INTERNAL_SERVER_ERROR,
+//                         responseConst.INTERNAL_SERVER_ERROR,
+//                         null,
+//                         true
+//                     )
+//                 );
+//     }
+// },
+
+
+webDashBoardData: async(req, res) => {
+    try {
+        const ngo_id = req.query.ngo_id ?? null;
+        
+        // Execute all independent queries in parallel
+        const [NgoCount, RequestCount, userCount, ScoreCount, recentRequestAll] = await Promise.all([
+            NgoMasterService.getTotalSumOfData(ngo_id),
+            ngo_id 
+                ? RequestService.getCountOfTotalRequestByNgoId(ngo_id)
+                : RequestService.getCountOfTotalRequest(),
+            ngo_id
+                ? UserMasterService.getUserMasterCountByNgoId(ngo_id)
+                : UserMasterService.getUserMasterDashBoardCount(),
+            ScoreHistoryService.ScoreDashBoardCount(),
+            RequestService.getRecentHundredRequestDesc(ngo_id)
+        ]);
+        
         const mergedData = {
             ...NgoCount[0],
-            ...RequestCount[0],
+            ...RequestCount,
             ...userCount[0],
             ...ScoreCount[0],
-            recentRequestAll:recentRequestAll
-        }
+            recentRequestAll
+        };
+        
         if (Object.keys(mergedData).length > 0) {
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            mergedData
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
-            }
-    }catch(error){
-        console.log("error",error)
+            return res.status(responseCode.OK).send(
+                commonResponse(responseCode.OK, responseConst.DATA_RETRIEVE_SUCCESS, mergedData)
+            );
+        } else {
+            return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true)
+            );
+        }
+    } catch(error) {
         logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
+        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+        );
     }
-},getNgoCount:async(req,res)=>{
+},
+getNgoCount:async(req,res)=>{
     try{
         const ngo_id = req.query.ngo_id
         const NgoCount = await  NgoMasterService.getTotalSumOfData(ngo_id)
