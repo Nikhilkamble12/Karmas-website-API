@@ -247,155 +247,194 @@ const RequestDAL = {
    * Fetch user feed requests excluding already viewed ones.
    * Automatically stores newly fetched requests as viewed.
    */
-  getRequestsForUserFeed: async (user_id, limit = 20) => {
-    try {
-      const replacements = { user_id, limit: Number(limit) };
+getRequestsForUserFeed: async (user_id, limit = 20) => {
+  try {
+    const limitNum = Number(limit);
+    const replacements = { user_id, limit: limitNum };
 
-      // 1️⃣ Get already viewed request IDs from DB
-      const viewedQuery = `
-        SELECT request_id
-        FROM user_viewed_requests
-        WHERE user_id = :user_id
-          AND is_active = 1
-      `;
+    // ---------------------------------------------------------
+    // 1️⃣ Get already viewed request IDs from DB
+    // ---------------------------------------------------------
+    const viewedQuery = `
+      SELECT request_id
+      FROM user_viewed_requests
+      WHERE user_id = :user_id
+        AND is_active = 1
+    `;
 
-      const viewedResults = await db.sequelize.query(viewedQuery, {
-        replacements: { user_id },
-        type: db.Sequelize.QueryTypes.SELECT,
-      });
+    const viewedResults = await db.sequelize.query(viewedQuery, {
+      replacements: { user_id },
+      type: db.Sequelize.QueryTypes.SELECT,
+    });
 
-      const already_viewed = viewedResults.map((r) => r.request_id);
-      let exclusionClause = "";
-      let results = []
-      if (already_viewed.length > 0) {
-        exclusionClause = `AND r.RequestId NOT IN (:already_viewed)`;
-        replacements.already_viewed = already_viewed;
-      }
+    // Combine any internally viewed IDs with what the DB returned
+    let excludeIds = viewedResults.map((r) => r.request_id);
+    
+    // Helper to safely generate NOT IN clause
+    const getExclusionClause = (paramName) => {
+      if (excludeIds.length === 0) return "";
+      return `AND r.RequestId NOT IN (:${paramName})`;
+    };
 
-      // 2️⃣ Main Feed Query (optimized)
-      const query = `
+    // ---------------------------------------------------------
+    // 2️⃣ Primary Query: FOLLOWED USERS (Priority)
+    // ---------------------------------------------------------
+    if (excludeIds.length > 0) replacements.excludeIds = excludeIds;
+
+    const queryFollowed = `
+      SELECT r.*
+      FROM v_Requests r
+      WHERE r.is_active = 1
+        AND r.is_blacklist = 0
+        ${getExclusionClause('excludeIds')}
+
+        -- Exclude blacklisted users
+        AND NOT EXISTS (
+          SELECT 1 FROM user_blacklist ub
+          WHERE ub.is_active = 1
+            AND ((ub.user_id = r.request_user_id AND ub.blacklisted_user_id = :user_id)
+              OR (ub.user_id = :user_id AND ub.blacklisted_user_id = r.request_user_id))
+        )
+
+        -- ONLY FOLLOWED USERS
+        AND r.request_user_id IN (
+            SELECT following_user_id FROM user_following 
+            WHERE user_id = :user_id AND is_following = 1 AND is_active = 1
+        )
+      ORDER BY r.created_at DESC
+      LIMIT :limit;
+    `;
+
+    let results = await db.sequelize.query(queryFollowed, {
+      replacements,
+      type: db.Sequelize.QueryTypes.SELECT,
+    });
+
+    // ---------------------------------------------------------
+    // 3️⃣ Backfill Query: DISCOVERY (Random Strangers)
+    // ---------------------------------------------------------
+    if (results.length < limitNum) {
+      const needed = limitNum - results.length;
+      const currentBatchIds = results.map(r => r.RequestId);
+      
+      // Update exclusions to include what we just fetched + history
+      replacements.excludeIdsBackfill = [...excludeIds, ...currentBatchIds];
+      replacements.needed = needed;
+
+      // Note: We create the clause dynamically based on the updated array
+      const backfillExclusion = replacements.excludeIdsBackfill.length > 0 
+        ? `AND r.RequestId NOT IN (:excludeIdsBackfill)` 
+        : "";
+
+      const queryBackfill = `
         SELECT r.*
         FROM v_Requests r
         WHERE r.is_active = 1
           AND r.is_blacklist = 0
+          ${backfillExclusion}
+
           -- Exclude blacklisted users
           AND NOT EXISTS (
-            SELECT 1
-            FROM user_blacklist ub
+            SELECT 1 FROM user_blacklist ub
             WHERE ub.is_active = 1
-              AND (
-                (ub.user_id = r.request_user_id AND ub.blacklisted_user_id = :user_id)
-                OR
-                (ub.user_id = :user_id AND ub.blacklisted_user_id = r.request_user_id)
-              )
+              AND ((ub.user_id = r.request_user_id AND ub.blacklisted_user_id = :user_id)
+                OR (ub.user_id = :user_id AND ub.blacklisted_user_id = r.request_user_id))
           )
-          ${exclusionClause}
-          AND (
-            -- Include followed users’ requests
-            r.request_user_id IN (
-              SELECT following_user_id
-              FROM user_following
-              WHERE user_id = :user_id
-                AND is_following = 1
-                AND is_active = 1
-            )
-            OR
-            -- Random discovery requests (non-followed)
-            (
-              r.request_user_id NOT IN (
-                SELECT following_user_id
-                FROM user_following
-                WHERE user_id = :user_id
-                  AND is_following = 1
-                  AND is_active = 1
-              )
-              AND RAND() < 0.1
-            )
+
+          -- EXCLUDE FOLLOWED
+          AND r.request_user_id NOT IN (
+            SELECT following_user_id FROM user_following 
+            WHERE user_id = :user_id AND is_following = 1 AND is_active = 1
           )
-        ORDER BY r.created_at DESC
-        LIMIT :limit;
+          
+        ORDER BY RAND()
+        LIMIT :needed;
       `;
 
-      results = await db.sequelize.query(query, {
+      const backfillResults = await db.sequelize.query(queryBackfill, {
         replacements,
         type: db.Sequelize.QueryTypes.SELECT,
       });
 
-      // 3️⃣ Mark fetched requests as viewed
-      if (results.length > 0) {
-        const insertValues = results
-          .map(
-            (r) =>
-              `(${db.sequelize.escape(user_id)}, ${db.sequelize.escape(
-                r.RequestId
-              )}, 1, NOW(), NOW())`
-          )
-          .join(",");
+      results = [...results, ...backfillResults];
+    }
 
-        const insertQuery = `
-          INSERT INTO user_viewed_requests (user_id, request_id, is_active, created_at, modified_at)
-          VALUES ${insertValues}
-          ON DUPLICATE KEY UPDATE modified_at = NOW(), is_active = 1;
-        `;
+    // ---------------------------------------------------------
+    // 4️⃣ RECYCLE Query: Show Old Content (If feed is still empty)
+    // ---------------------------------------------------------
+    // This fixes your 400 error. If the user has seen everything, 
+    // we show them random stuff they've already seen, so the feed doesn't break.
+    if (results.length < limitNum) {
+      const needed = limitNum - results.length;
+      const currentBatchIds = results.map(r => r.RequestId); // Just exclude what is currently in the specific response batch
+      
+      replacements.recycleNeeded = needed;
+      replacements.currentBatchIds = currentBatchIds;
+      
+      const batchExclusion = currentBatchIds.length > 0 
+         ? `AND r.RequestId NOT IN (:currentBatchIds)` 
+         : "";
 
-        await db.sequelize.query(insertQuery);
-      }else if(results.length == 0){
-        const query222 = `
+      const queryRecycle = `
         SELECT r.*
         FROM v_Requests r
         WHERE r.is_active = 1
           AND r.is_blacklist = 0
-          -- Exclude blacklisted users using EXISTS (faster than NOT IN)
+          ${batchExclusion} 
+          
+          -- Notice: We REMOVED the "Already Viewed" check here.
+          -- We still respect blocks though!
           AND NOT EXISTS (
-            SELECT 1
-            FROM user_blacklist ub
+            SELECT 1 FROM user_blacklist ub
             WHERE ub.is_active = 1
-              AND (
-                (ub.user_id = r.request_user_id AND ub.blacklisted_user_id = :user_id)
-                OR
-                (ub.user_id = :user_id AND ub.blacklisted_user_id = r.request_user_id)
-              )
+              AND ((ub.user_id = r.request_user_id AND ub.blacklisted_user_id = :user_id)
+                OR (ub.user_id = :user_id AND ub.blacklisted_user_id = r.request_user_id))
           )
-         
-          AND (
-            -- Include followed users' requests
-            r.request_user_id IN (
-              SELECT following_user_id
-              FROM user_following
-              WHERE user_id = :user_id
-                AND is_following = 1
-                AND is_active = 1
-            )
-            OR
-            -- Include random discovery requests
-            (
-              r.request_user_id NOT IN (
-                SELECT following_user_id
-                FROM user_following
-                WHERE user_id = :user_id
-                  AND is_following = 1
-                  AND is_active = 1
-              )
-              AND RAND() < 0.1  -- probabilistic sampling instead of ORDER BY RAND()
-            )
-          )
-        ORDER BY r.created_at DESC
-        LIMIT :limit;
+          
+        ORDER BY RAND()
+        LIMIT :recycleNeeded;
       `;
 
-      results = await db.sequelize.query(query222, {
+      const recycleResults = await db.sequelize.query(queryRecycle, {
         replacements,
         type: db.Sequelize.QueryTypes.SELECT,
       });
-      }
-
-      // 4️⃣ Return results
-      return results ?? [];
-    } catch (error) {
-      console.error("❌ Error in getRequestsForUserFeed:", error);
-      throw error;
+      
+      results = [...results, ...recycleResults];
     }
-  },
+
+    // ---------------------------------------------------------
+    // 5️⃣ Mark fetched requests as viewed
+    // ---------------------------------------------------------
+    if (results.length > 0) {
+      const uniqueResults = [...new Map(results.map(item => [item.RequestId, item])).values()];
+
+      const insertValues = uniqueResults
+        .map(
+          (r) =>
+            `(${db.sequelize.escape(user_id)}, ${db.sequelize.escape(
+              r.RequestId
+            )}, 1, NOW(), NOW())`
+        )
+        .join(",");
+
+      const insertQuery = `
+        INSERT INTO user_viewed_requests (user_id, request_id, is_active, created_at, modified_at)
+        VALUES ${insertValues}
+        ON DUPLICATE KEY UPDATE modified_at = NOW(), is_active = 1;
+      `;
+
+      await db.sequelize.query(insertQuery);
+      
+      return uniqueResults;
+    }
+
+    return [];
+  } catch (error) {
+    console.error("❌ Error in getRequestsForUserFeed:", error);
+    throw error;
+  }
+},
 
 
   getSumOfTotalRequest: async () => {
@@ -470,89 +509,262 @@ const RequestDAL = {
     } catch (error) {
       throw error;
     }
-  }, getRequestVideosForUserFeed: async (user_id, limit = 20, already_viewed = []) => {
-  try {
-    const replacements = { user_id, limit: Number(limit) };
+  }, 
+//   getRequestVideosForUserFeed: async (user_id, limit = 20, already_viewed = []) => {
+//   try {
+//     const replacements = { user_id, limit: Number(limit) };
 
-    // 1️⃣ Get already viewed request video IDs from DB
+//     // 1️⃣ Get already viewed request video IDs from DB
+//     const viewedQuery = `
+//       SELECT request_id
+//       FROM user_viewed_request_videos
+//       WHERE user_id = :user_id
+//         AND is_active = 1
+//     `;
+
+//     const viewedResults = await db.sequelize.query(viewedQuery, {
+//       replacements: { user_id },
+//       type: db.Sequelize.QueryTypes.SELECT,
+//     });
+
+//     const already_viewed = viewedResults.map(r => r.request_id);
+//     let exclusionClause = "";
+//     let results = [];
+
+//     if (already_viewed.length > 0) {
+//       exclusionClause = `AND r.RequestId NOT IN (:already_viewed)`;
+//       replacements.already_viewed = already_viewed;
+//     }
+
+//     // 2️⃣ Main Feed Query (only video media)
+//     const query = `
+//       SELECT r.*
+//       FROM v_Requests r
+//       JOIN v_Request_Media rm ON r.RequestId = rm.RequestId
+//       WHERE r.is_active = 1
+//         AND r.is_blacklist = 0
+//         AND rm.media_type = 'video'
+//         -- Exclude blacklisted users
+//         AND NOT EXISTS (
+//           SELECT 1
+//           FROM user_blacklist ub
+//           WHERE ub.is_active = 1
+//             AND (
+//               (ub.user_id = r.request_user_id AND ub.blacklisted_user_id = :user_id)
+//               OR
+//               (ub.user_id = :user_id AND ub.blacklisted_user_id = r.request_user_id)
+//             )
+//         )
+//         ${exclusionClause}
+//         AND (
+//           -- Include followed users’ requests
+//           r.request_user_id IN (
+//             SELECT following_user_id
+//             FROM user_following
+//             WHERE user_id = :user_id
+//               AND is_following = 1
+//               AND is_active = 1
+//           )
+//           OR
+//           -- Random discovery requests (non-followed)
+//           (
+//             r.request_user_id NOT IN (
+//               SELECT following_user_id
+//               FROM user_following
+//               WHERE user_id = :user_id
+//                 AND is_following = 1
+//                 AND is_active = 1
+//             )
+//             AND RAND() < 0.1
+//           )
+//         )
+//       ORDER BY r.created_at DESC
+//       LIMIT :limit;
+//     `;
+
+//     results = await db.sequelize.query(query, {
+//       replacements,
+//       type: db.Sequelize.QueryTypes.SELECT,
+//     });
+
+//     // 3️⃣ Mark fetched request videos as viewed
+//     if (results.length > 0) {
+//       const insertValues = results
+//         .map(
+//           r => `(${db.sequelize.escape(user_id)}, ${db.sequelize.escape(r.RequestId)}, 1, NOW(), NOW())`
+//         )
+//         .join(",");
+
+//       const insertQuery = `
+//         INSERT INTO user_viewed_request_videos (user_id, request_id, is_active, created_at, modified_at)
+//         VALUES ${insertValues}
+//         ON DUPLICATE KEY UPDATE modified_at = NOW(), is_active = 1;
+//       `;
+
+//       await db.sequelize.query(insertQuery);
+//     } else if (results.length === 0) {
+//       // Fallback query if no results
+//       const query222 = `
+//         SELECT r.*
+//         FROM v_Requests r
+//         JOIN v_Request_Media rm ON r.RequestId = rm.RequestId
+//         WHERE r.is_active = 1
+//           AND r.is_blacklist = 0
+//           AND rm.media_type = 'video'
+//           -- Exclude blacklisted users
+//           AND NOT EXISTS (
+//             SELECT 1
+//             FROM user_blacklist ub
+//             WHERE ub.is_active = 1
+//               AND (
+//                 (ub.user_id = r.request_user_id AND ub.blacklisted_user_id = :user_id)
+//                 OR
+//                 (ub.user_id = :user_id AND ub.blacklisted_user_id = r.request_user_id)
+//               )
+//           )
+//         ORDER BY RAND()
+//         LIMIT :limit;
+//       `;
+
+//       results = await db.sequelize.query(query222, {
+//         replacements,
+//         type: db.Sequelize.QueryTypes.SELECT,
+//       });
+//     }
+
+//     // 4️⃣ Return results
+//     return results ?? [];
+
+//   } catch (error) {
+//     console.error("❌ Error in getRequestVideosForUserFeed:", error);
+//     throw error;
+//   }
+// },
+
+getRequestVideosForUserFeed: async (user_id, limit = 20, already_viewed = []) => {
+  try {
+    const limitNum = Number(limit);
+    const replacements = { user_id, limit: limitNum };
+    
+    // ---------------------------------------------------------
+    // 1️⃣ Get IDs user has already watched (History)
+    // ---------------------------------------------------------
     const viewedQuery = `
       SELECT request_id
       FROM user_viewed_request_videos
-      WHERE user_id = :user_id
-        AND is_active = 1
+      WHERE user_id = :user_id AND is_active = 1
     `;
-
+    
     const viewedResults = await db.sequelize.query(viewedQuery, {
       replacements: { user_id },
       type: db.Sequelize.QueryTypes.SELECT,
     });
 
-    const already_viewed = viewedResults.map(r => r.request_id);
-    let exclusionClause = "";
-    let results = [];
+    // Combine passed-in IDs with DB history
+    let excludeIds = [...already_viewed, ...viewedResults.map(r => r.request_id)];
+    
+    // Helper to safely create "NOT IN (...)" SQL
+    const getExclusionClause = (paramName) => {
+       if (excludeIds.length === 0) return "";
+       return `AND r.RequestId NOT IN (:${paramName})`;
+    };
 
-    if (already_viewed.length > 0) {
-      exclusionClause = `AND r.RequestId NOT IN (:already_viewed)`;
-      replacements.already_viewed = already_viewed;
-    }
+    // ---------------------------------------------------------
+    // 2️⃣ Primary Query: FOLLOWED USERS (Priority Content)
+    // ---------------------------------------------------------
+    if (excludeIds.length > 0) replacements.excludeIds = excludeIds;
 
-    // 2️⃣ Main Feed Query (only video media)
-    const query = `
+    const queryFollowed = `
       SELECT r.*
       FROM v_Requests r
       JOIN v_Request_Media rm ON r.RequestId = rm.RequestId
       WHERE r.is_active = 1
         AND r.is_blacklist = 0
         AND rm.media_type = 'video'
-        -- Exclude blacklisted users
+        ${getExclusionClause('excludeIds')}
+        
+        -- STRICT BLOCKLIST CHECK
         AND NOT EXISTS (
-          SELECT 1
-          FROM user_blacklist ub
+          SELECT 1 FROM user_blacklist ub
           WHERE ub.is_active = 1
-            AND (
-              (ub.user_id = r.request_user_id AND ub.blacklisted_user_id = :user_id)
-              OR
-              (ub.user_id = :user_id AND ub.blacklisted_user_id = r.request_user_id)
-            )
+            AND ((ub.user_id = r.request_user_id AND ub.blacklisted_user_id = :user_id)
+              OR (ub.user_id = :user_id AND ub.blacklisted_user_id = r.request_user_id))
         )
-        ${exclusionClause}
-        AND (
-          -- Include followed users’ requests
-          r.request_user_id IN (
-            SELECT following_user_id
-            FROM user_following
-            WHERE user_id = :user_id
-              AND is_following = 1
-              AND is_active = 1
-          )
-          OR
-          -- Random discovery requests (non-followed)
-          (
-            r.request_user_id NOT IN (
-              SELECT following_user_id
-              FROM user_following
-              WHERE user_id = :user_id
-                AND is_following = 1
-                AND is_active = 1
-            )
-            AND RAND() < 0.1
-          )
+
+        -- ONLY FOLLOWED USERS
+        AND r.request_user_id IN (
+            SELECT following_user_id FROM user_following 
+            WHERE user_id = :user_id AND is_following = 1 AND is_active = 1
         )
       ORDER BY r.created_at DESC
       LIMIT :limit;
     `;
 
-    results = await db.sequelize.query(query, {
+    let results = await db.sequelize.query(queryFollowed, {
       replacements,
       type: db.Sequelize.QueryTypes.SELECT,
     });
 
-    // 3️⃣ Mark fetched request videos as viewed
+    // ---------------------------------------------------------
+    // 3️⃣ Backfill Query: DISCOVERY (Random Strangers)
+    // ---------------------------------------------------------
+    // If Step 2 returned fewer items than 'limit', we fill the rest here.
+    if (results.length < limitNum) {
+      const needed = limitNum - results.length;
+      
+      // IMPORTANT: Add the videos we JUST fetched in Step 2 to the exclusion list
+      // so we don't fetch duplicates in the same batch.
+      const currentBatchIds = results.map(r => r.RequestId);
+      excludeIds = [...excludeIds, ...currentBatchIds];
+      
+      replacements.excludeIdsBackfill = excludeIds;
+      replacements.needed = needed;
+
+      const queryBackfill = `
+        SELECT r.*
+        FROM v_Requests r
+        JOIN v_Request_Media rm ON r.RequestId = rm.RequestId
+        WHERE r.is_active = 1
+          AND r.is_blacklist = 0
+          AND rm.media_type = 'video'
+          ${getExclusionClause('excludeIdsBackfill')}
+
+          -- STRICT BLOCKLIST CHECK
+          AND NOT EXISTS (
+            SELECT 1 FROM user_blacklist ub
+            WHERE ub.is_active = 1
+              AND ((ub.user_id = r.request_user_id AND ub.blacklisted_user_id = :user_id)
+                OR (ub.user_id = :user_id AND ub.blacklisted_user_id = r.request_user_id))
+          )
+          
+          -- EXCLUDE FOLLOWED (Because we already tried them in Step 2)
+          AND r.request_user_id NOT IN (
+             SELECT following_user_id FROM user_following 
+             WHERE user_id = :user_id AND is_following = 1 AND is_active = 1
+          )
+        
+        -- HERE IS THE FIX: We use ORDER BY RAND() instead of the 10% filter
+        ORDER BY RAND()
+        LIMIT :needed;
+      `;
+
+      const backfillResults = await db.sequelize.query(queryBackfill, {
+        replacements,
+        type: db.Sequelize.QueryTypes.SELECT,
+      });
+
+      results = [...results, ...backfillResults];
+    }
+
+    // ---------------------------------------------------------
+    // 4️⃣ Mark results as Viewed
+    // ---------------------------------------------------------
     if (results.length > 0) {
-      const insertValues = results
-        .map(
-          r => `(${db.sequelize.escape(user_id)}, ${db.sequelize.escape(r.RequestId)}, 1, NOW(), NOW())`
-        )
+      // Remove accidental duplicates
+      const uniqueResults = [...new Map(results.map(item => [item.RequestId, item])).values()];
+      
+      const insertValues = uniqueResults
+        .map(r => `(${db.sequelize.escape(user_id)}, ${db.sequelize.escape(r.RequestId)}, 1, NOW(), NOW())`)
         .join(",");
 
       const insertQuery = `
@@ -562,44 +774,21 @@ const RequestDAL = {
       `;
 
       await db.sequelize.query(insertQuery);
-    } else if (results.length === 0) {
-      // Fallback query if no results
-      const query222 = `
-        SELECT r.*
-        FROM v_Requests r
-        JOIN v_Request_Media rm ON r.RequestId = rm.RequestId
-        WHERE r.is_active = 1
-          AND r.is_blacklist = 0
-          AND rm.media_type = 'video'
-          -- Exclude blacklisted users
-          AND NOT EXISTS (
-            SELECT 1
-            FROM user_blacklist ub
-            WHERE ub.is_active = 1
-              AND (
-                (ub.user_id = r.request_user_id AND ub.blacklisted_user_id = :user_id)
-                OR
-                (ub.user_id = :user_id AND ub.blacklisted_user_id = r.request_user_id)
-              )
-          )
-        ORDER BY RAND()
-        LIMIT :limit;
-      `;
-
-      results = await db.sequelize.query(query222, {
-        replacements,
-        type: db.Sequelize.QueryTypes.SELECT,
-      });
+      
+      return uniqueResults;
     }
 
-    // 4️⃣ Return results
-    return results ?? [];
+    return [];
 
   } catch (error) {
     console.error("❌ Error in getRequestVideosForUserFeed:", error);
     throw error;
   }
-},getSumOfTotalRequestByNgoId: async (ngo_id) => {
+},
+
+
+
+getSumOfTotalRequestByNgoId: async (ngo_id) => {
     try {
         const getData = await db.sequelize.query(
             `SELECT 

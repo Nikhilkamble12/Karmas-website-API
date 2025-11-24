@@ -278,7 +278,7 @@ const SosUserListController = {
     },getDatabyUserId:async(req,res)=>{
         try{
             const user_id = req.query.user_id
-            const getDataById = await LocalJsonHelper.getAll(TABLE_VIEW_FOLDER_MAP.sos_user_list.folder_name,15,"user_id",user_id)
+            const getDataById = await LocalJsonHelper.getAll(TABLE_VIEW_FOLDER_MAP.sos_user_list,"15d","user_id",user_id)
             console.log("getDataById",getDataById)
             if(getDataById && getDataById.length!==0 && getDataById.length>0){
                 getDataById.forEach(entry => {
@@ -389,7 +389,7 @@ const SosUserListController = {
                 folder_name: "sos_user",
                 json_file_name:`user_${lowerLimit}_${upperLimit}.json`
                 }
-                const fileStatus = await LocalJsonHelper.getFileStatus(fileDetails,15);
+                const fileStatus = await LocalJsonHelper.getFileStatus(fileDetails,"15d");
                 const currentBatchCount = await SosUserListService.getCountForUserIdRange(lowerLimit, upperLimit);
 
                 if (!fileStatus.exists || fileStatus.totalCount !== currentBatchCount[0].total_count) {
@@ -398,7 +398,7 @@ const SosUserListController = {
 
                     const batchData = await SosUserListService.getAllServiceWithLimitOffset(limit, offset);
 
-                    await LocalJsonHelper.save(fileDetails,batchData,null,null,true,15);
+                    await LocalJsonHelper.save(fileDetails,batchData,null,null,true,"15d");
                 }
             }
             const checkWetherDataIsPresent = await SosUserListService.getDataByUserIdAndContactUserId(data.user_id,data.contact_user_id)
@@ -429,7 +429,7 @@ const SosUserListController = {
                 folder_name: "sos_user",
                 json_file_name:getSosUserJsonFileName(checkWetherDataIsPresent[0].sos_user_id)
                 }
-            await LocalJsonHelper.save(fileDetails2,getByIdAfterUpdate, "sos_user_id", checkWetherDataIsPresent[0].sos_user_id, false,15);
+            await LocalJsonHelper.save(fileDetails2,getByIdAfterUpdate, "sos_user_id", checkWetherDataIsPresent[0].sos_user_id, false,"15d");
             // if (updatedRowsCount > 0) {
             //     const newData = await SosUserListService.getServiceById(id);
             //     // Update the JSON data in the file
@@ -469,7 +469,7 @@ const SosUserListController = {
                 folder_name: "sos_user",
                 json_file_name:getSosUserJsonFileName(createData.dataValues.sos_user_id)
                 }
-            await LocalJsonHelper.save(fileDetails2, getByIdAfterCreate,"sos_user_id",createData.dataValues.sos_user_id , null,15);
+            await LocalJsonHelper.save(fileDetails2, getByIdAfterCreate,"sos_user_id",createData.dataValues.sos_user_id , null,"15d");
                 return res
                     .status(responseCode.CREATED)
                     .send(

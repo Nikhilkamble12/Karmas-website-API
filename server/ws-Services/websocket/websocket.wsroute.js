@@ -18,7 +18,7 @@ export default async function defineRoutes(wsRouter, activeConnections) {
       const { location_coordinates } = wsRequest.data;
       const { user: { user_id } } = wsRequest
       // console.log("user_id",user_id)
-      const getAllActiveSosUser = await LocalJsonHelper.getAll("sos_user_list",15)
+      const getAllActiveSosUser = await LocalJsonHelper.getAll("sos_user_list","15d")
       // console.log("getAllActiveSosUser",getAllActiveSosUser.data)
       // Find user by ID in active SOS users
       const userSosStatus = getAllActiveSosUser.find(user => user.user_id == user_id);
@@ -43,7 +43,7 @@ export default async function defineRoutes(wsRouter, activeConnections) {
                 folder_name: "sos_user",
                 json_file_name:getSosUserJsonFileName(checkWetherDataIsPresent[0].sos_user_id)
                 }
-      const getAllByUserId = await LocalJsonHelper.getAll(fileDetails2,15, "user_id", user_id)
+      const getAllByUserId = await LocalJsonHelper.getAll(fileDetails2,"15d", "user_id", user_id)
       // console.log("getAllByUserId",getAllByUserId)
 
       // Define recipients based on active users
@@ -118,7 +118,7 @@ export default async function defineRoutes(wsRouter, activeConnections) {
                 folder_name: "Sos",
                 json_file_name:"sos.current.json"
                 }
-      await LocalJsonHelper.save(activeSos,sos_history_object,"sos_id",userSosStatus.sos_id,null,15)
+      await LocalJsonHelper.save(activeSos,sos_history_object,"sos_id",userSosStatus.sos_id,null,"15d")
 
       // ws.send(JSON.stringify({
       //   status: 'success',

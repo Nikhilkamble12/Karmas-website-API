@@ -318,7 +318,7 @@ const ScoreHistoryController = {
         try{
             const user_id = tokenData(req, res)
             const limit = req.query.limit
-            const fileName = `score/score_${limit}.json`;
+            // const fileName = `score/score_${limit}.json`;
 
              const jsonFileDetails = {
                 view_name: null,
@@ -330,7 +330,8 @@ const ScoreHistoryController = {
             // 1 hour in milliseconds
             // Step 1: Try to get from local file cache
             
-            const localData = await LocalJsonHelper.getAll(jsonFileDetails,15);
+            const localData = await LocalJsonHelper.getAll(jsonFileDetails,"60m");
+            console.log("localData",localData)
             const cachedData = localData
             const getUserrank = await ScoreHistoryService.getUserRankByUserId(user_id)
             if (cachedData && cachedData.length!==0) {
@@ -347,11 +348,11 @@ const ScoreHistoryController = {
                     );
             }
             const getData = await ScoreHistoryService.getScoreDasHBoardDataByLimit(limit)
-            getData.user_rank = getUserrank
             if (getData.length !== 0) {
                  // Step 3: Save the data to local file cache
             // await LocalJsonHelper.set(fileName, null, getData, ttlMs);
-             await LocalJsonHelper.save(jsonFileDetails,getData,null,null,true,null)
+             await LocalJsonHelper.save(jsonFileDetails,getData,null,null,true,null,"15d")
+             getData.user_rank = getUserrank
                 return res
                     .status(responseCode.OK)
                     .send(

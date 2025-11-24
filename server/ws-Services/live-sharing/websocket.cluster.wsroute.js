@@ -40,7 +40,7 @@ export default async function defineRoutes(wsRouter, activeConnections) {
     async function checkSosUsers() {
     try {
       // Fetch all active SOS users from the file
-      const getAllActiveSosUser = await LocalJsonHelper.getAll("sos_user_list",15);
+      const getAllActiveSosUser = await LocalJsonHelper.getAll("sos_user_list","15d");
       const currentTime = getCurrentIndianTime(); // Current timestamp in IST
       const reminderThreshold = 40 * 1000; // 40 seconds in milliseconds
       const checkThreshold = 10 * 1000; // Check every 10 seconds
@@ -50,7 +50,7 @@ export default async function defineRoutes(wsRouter, activeConnections) {
         //   const userSosStatus = user; // Get user's SOS status
 
           // Get the user's SOS history to check the last captured time
-          const userSosStatus = await LocalJsonHelper.getAll(activeSos,15, "sos_id",user.sos_id);
+          const userSosStatus = await LocalJsonHelper.getAll(activeSos,"15d", "sos_id",user.sos_id);
             // console.log("userSosStatus",userSosStatus)
           if (userSosStatus && userSosStatus.length>0) {
             console.log("userSosStatus",userSosStatus)

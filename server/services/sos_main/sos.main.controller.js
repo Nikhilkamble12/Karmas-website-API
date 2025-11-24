@@ -335,7 +335,7 @@ const SosMainController = {
                 if (!getOlderData.is_sos_on) {
                     const getAllActive = await SosMainService.getAllActiveSos()
                     await LocalJsonHelper.deleteFile(TABLE_VIEW_FOLDER_MAP.sos_main)
-                    await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.sos_main,getAllActive,null,null,true)
+                    await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.sos_main,getAllActive,null,null,true,"15d")
                     return res
                         .status(responseCode.CREATED)
                         .send(
@@ -373,7 +373,7 @@ const SosMainController = {
                     const createData = await SosMainService.createService(data)
                     if (createData) {
                         const checkWhoseSosIsOn = await SosMainService.getByUserIdOnlyActive(user_id)
-                        await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.sos_main,checkWhoseSosIsOn[0],"sos_id",createData.dataValues.sos_id,false)
+                        await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.sos_main,checkWhoseSosIsOn[0],"sos_id",createData.dataValues.sos_id,false,"15d")
                         return res
                             .status(responseCode.CREATED)
                             .send(
