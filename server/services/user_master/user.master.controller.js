@@ -1,7 +1,9 @@
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
+import { ROLE_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 import getBase64FromFile from "../../utils/helper/base64.retrive.data.js";
 import saveBase64ToFile from "../../utils/helper/base64ToFile.js";
 import getCurrentIndianTime from "../../utils/helper/get.current.time.ist.js";
+import NgoUserMasterService from "../ngo_user_master/ngo.user.master.service.js"
 import UserActivtyService from "../user_activity/user.activity.service.js";
 import UserBlackListService from "../user_blacklist/user.blacklist.service.js";
 import UserMasterService from "./user.master.service.js";
@@ -110,7 +112,15 @@ const UserMasterController = {
                 }
                 // await addMetaDataWhileCreateUpdate(userActvityCreate, req, res, false);
                 const UserActivity = await UserActivtyService.createService(userActvityCreate)
-
+                if(data.role_id == ROLE_MASTER.NGO || data.role_id == ROLE_MASTER.NGO_USER){
+                    const createNgoUserData = {
+                        user_id : user_id,
+                        designation_id:data.designation_id ?? null,
+                        user_joining_date:data.user_joining_date ?? null,
+                    }
+                    addMetaDataWhileCreateUpdate(createNgoUserData,req,res,false)
+                    const createData = await NgoUserMasterService.createService(createNgoUserData)
+                }
                 return res
                     .status(responseCode.CREATED)
                     .send(

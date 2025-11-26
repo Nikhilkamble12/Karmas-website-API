@@ -259,6 +259,11 @@ const TABLE_VIEW_FOLDER_MAP = {
         "folder_name": "score_category",
         "json_file_name": "score_category.json5"
     },
+    "score_eligibility_mapping":{
+        "view_name": "v_score_eligibility",
+        "folder_name": "score_eligibility_mapping",
+        "json_file_name": "score_eligibility_mapping.json5"
+    },
     "sos_history": {
         "view_name": "v_sos_history",
         "folder_name": "sos_history",

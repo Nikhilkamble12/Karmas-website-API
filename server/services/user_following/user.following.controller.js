@@ -71,7 +71,6 @@ const UserFollowingController = {
                 }
                 const userToken = await UserTokenService.GetTokensByUserIds(getUserActivityByUser[0].user_id)
                 await addMetaDataWhileCreateUpdate(data, req, res, true);
-
                 const updateUserFollowing = await UserFollowingService.updateService(checkWetherItIsPresent[0].follow_id,data)
                 if(updateUserFollowing>0){
                 const updateUserActivity = await UserActivtyService.updateService(getUserActivityByUser[0].user_activity_id,{following_no:total_following_count})

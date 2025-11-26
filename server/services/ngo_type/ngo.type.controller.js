@@ -1,6 +1,6 @@
 import ngoTypeService from "./ngo.type.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate,LocalJsonHelper,TABLE_VIEW_FOLDER_MAP} = commonPath
 
 const ngoTypeController = {
      // Create A new Record 
@@ -14,6 +14,8 @@ const ngoTypeController = {
             // Create the record using ORM
             const createData = await ngoTypeService.createService(data);
             if (createData) {
+                const getDataById = await ngoTypeService.getServiceById(createData.dataValues.ngo_type_id)
+                await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.ngo_type,getDataById,"ngo_type_id",createData.dataValues.ngo_type_id,null,"30d")
                 return res
                     .status(responseCode.CREATED)
                     .send(
@@ -77,6 +79,8 @@ const ngoTypeController = {
                         )
                     );
             }
+            const getDataById = await ngoTypeService.getServiceById(id)
+            await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.ngo_type,getDataById,"ngo_type_id",id,null,"30d")
             return res
                 .status(responseCode.CREATED)
                 .send(
@@ -104,20 +108,20 @@ const ngoTypeController = {
     getAllByView: async (req, res) => {
         try {
             // Fetch local data from JSON
-            // const GetAllJson = await CommanJsonFunction.getAllData(CITY_FOLDER,CITY_JSON)
-            // if(GetAllJson!==null){
-            //     if(GetAllJson.length!==0){
-            //       return res
-            //       .status(responseCode.OK)
-            //       .send(
-            //         commonResponse(
-            //           responseCode.OK,
-            //           responseConst.DATA_RETRIEVE_SUCCESS,
-            //           GetAllJson
-            //         )
-            //       );
-            //     }
-            //   }
+            const localData = await LocalJsonHelper.getAll(TABLE_VIEW_FOLDER_MAP.ngo_type,"30d");
+            if(localData!==null){
+                if(localData.length!==0){
+                  return res
+                  .status(responseCode.OK)
+                  .send(
+                    commonResponse(
+                      responseCode.OK,
+                      responseConst.DATA_RETRIEVE_SUCCESS,
+                      localData
+                    )
+                  );
+                }
+              }
             // Fetch data from the database if JSON is empty
             const getAll = await ngoTypeService.getAllService()
 
@@ -171,18 +175,18 @@ const ngoTypeController = {
         try {
             const Id = req.query.id
             // Fetch data by ID from JSON
-            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
-            // if(getJsonDatabyId!==null){
-            //   return res
-            //     .status(responseCode.OK)
-            //     .send(
-            //       commonResponse(
-            //         responseCode.OK,
-            //         responseConst.DATA_RETRIEVE_SUCCESS,
-            //         getJsonDatabyId
-            //       )
-            //     );
-            // }
+            const getJsonDatabyId = await LocalJsonHelper.getByKey(TABLE_VIEW_FOLDER_MAP.ngo_type,"ngo_type_id",Id,"30d")
+            if(getJsonDatabyId!==null){
+              return res
+                .status(responseCode.OK)
+                .send(
+                  commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    getJsonDatabyId
+                  )
+                );
+            }
 
             // If not found in JSON, fetch data from the database
             const getDataByid = await ngoTypeService.getServiceById(Id)
@@ -252,7 +256,7 @@ const ngoTypeController = {
                         )
                     );
             }
-
+            await LocalJsonHelper.deleteEntry(TABLE_VIEW_FOLDER_MAP.ngo_type,"ngo_type_id",id,"30d")
             return res
                 .status(responseCode.CREATED)
                 .send(

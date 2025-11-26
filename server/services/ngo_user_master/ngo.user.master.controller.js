@@ -287,7 +287,7 @@ const NgoUserMasterController = {
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            getDataByid
+                            getDataByUserId
                         )
                     );
             } else {
@@ -303,6 +303,7 @@ const NgoUserMasterController = {
                     );
             }
         }catch(error){
+            console.log("error",error)
            logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)

@@ -17,6 +17,10 @@ const NgoUserMasterModel = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
+      user_joining_date:{
+        type:DataTypes.DATE,
+        allowNull:true
+      },
       is_active: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

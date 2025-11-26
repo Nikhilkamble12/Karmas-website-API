@@ -27,7 +27,7 @@ const NgoUserMasterDAL = {
   getAllDataByView: async () => {
     try {
       const getAllData = await db.sequelize.query(
-        `${ViewFieldTableVise.GET_ALL_NGO_USER_MASTER}`,
+        `${ViewFieldTableVise.NGO_USER_MASTER_FIELDS}`,
         { type: db.Sequelize.QueryTypes.SELECT } 
       );
       return getAllData; // Return the retrieved data
@@ -39,7 +39,7 @@ const NgoUserMasterDAL = {
   getDataByIdByView: async (ngo_user_id) => {
     try {
       const getDataById = await db.sequelize.query(
-        ` ${ViewFieldTableVise.GET_ALL_NGO_USER_MASTER} where ngo_user_id  = ${ngo_user_id} `,
+        ` ${ViewFieldTableVise.NGO_USER_MASTER_FIELDS} where ngo_user_id  = ${ngo_user_id} `,
         { type: db.Sequelize.QueryTypes.SELECT }
       );
       return getDataById[0] ?? [];  // Return the retrieved data
@@ -70,7 +70,7 @@ const NgoUserMasterDAL = {
   getDataByUserIdByView: async (user_id) => {
     try {
       const getDataById = await db.sequelize.query(
-        ` ${ViewFieldTableVise.GET_ALL_NGO_USER_MASTER} where user_id  = ${user_id} `,
+        ` ${ViewFieldTableVise.NGO_USER_MASTER_FIELDS} where user_id  = ${user_id} `,
         { type: db.Sequelize.QueryTypes.SELECT }
       );
       return getDataById[0] ?? [];  // Return the retrieved data

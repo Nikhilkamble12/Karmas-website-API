@@ -2,7 +2,7 @@ import CompanyMasterService from "./company.master.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import getBase64FromFile from "../../utils/helper/base64.retrive.data.js";
 import saveBase64ToFile from "../../utils/helper/base64ToFile.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate,LocalJsonHelper,TABLE_VIEW_FOLDER_MAP} = commonPath
 
 const CompanyMasterController = {
     // Create A new Record 
@@ -34,6 +34,8 @@ const CompanyMasterController = {
                 }
             }
             if (createData) {
+                const getDataById = await CompanyMasterService.getServiceById(createData.dataValues.company_id)
+                await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.company_master,getDataById,"company_id",createData.dataValues.company_id,null,"30d")
                 return res
                     .status(responseCode.CREATED)
                     .send(
@@ -112,6 +114,8 @@ const CompanyMasterController = {
                         )
                     );
             }
+            const getDataById = await CompanyMasterService.getServiceById(id)
+            await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.company_master,getDataById,"company_id",id,null,"30d")
             return res
                 .status(responseCode.CREATED)
                 .send(
@@ -138,20 +142,20 @@ const CompanyMasterController = {
     getAllByView: async (req, res) => {
         try {
             // Fetch local data from JSON
-            // const GetAllJson = await CommanJsonFunction.getAllData(CITY_FOLDER,CITY_JSON)
-            // if(GetAllJson!==null){
-            //     if(GetAllJson.length!==0){
-            //       return res
-            //       .status(responseCode.OK)
-            //       .send(
-            //         commonResponse(
-            //           responseCode.OK,
-            //           responseConst.DATA_RETRIEVE_SUCCESS,
-            //           GetAllJson
-            //         )
-            //       );
-            //     }
-            //   }
+            const localData = await LocalJsonHelper.getAll(TABLE_VIEW_FOLDER_MAP.company_master,"30d");
+            if(localData!==null){
+                if(localData.length!==0){
+                  return res
+                  .status(responseCode.OK)
+                  .send(
+                    commonResponse(
+                      responseCode.OK,
+                      responseConst.DATA_RETRIEVE_SUCCESS,
+                      localData
+                    )
+                  );
+                }
+              }
             // Fetch data from the database if JSON is empty
             const getAll = await CompanyMasterService.getAllService()
 
@@ -222,18 +226,18 @@ const CompanyMasterController = {
         try {
             const Id = req.query.id
             // Fetch data by ID from JSON
-            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
-            // if(getJsonDatabyId!==null){
-            //   return res
-            //     .status(responseCode.OK)
-            //     .send(
-            //       commonResponse(
-            //         responseCode.OK,
-            //         responseConst.DATA_RETRIEVE_SUCCESS,
-            //         getJsonDatabyId
-            //       )
-            //     );
-            // }
+            const getJsonDatabyId = await LocalJsonHelper.getByKey(TABLE_VIEW_FOLDER_MAP.company_master,"company_id",Id,"30d")
+            if(getJsonDatabyId!==null){
+              return res
+                .status(responseCode.OK)
+                .send(
+                  commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    getJsonDatabyId
+                  )
+                );
+            }
 
             // If not found in JSON, fetch data from the database
             const getDataByid = await CompanyMasterService.getServiceById(Id)
@@ -304,7 +308,7 @@ const CompanyMasterController = {
                         )
                     );
             }
-
+            await LocalJsonHelper.deleteEntry(TABLE_VIEW_FOLDER_MAP.company_master,"company_id",id,"30d")
             return res
                 .status(responseCode.CREATED)
                 .send(

@@ -1,6 +1,8 @@
 const ROLE_MASTER={
     ADMIN:1,
-    NGO:2
+    NGO:2,
+    COMMON_USER:3,
+    NGO_USER:4
 }
 const STATUS_MASTER = {
     ACTIVE:2,

@@ -1,6 +1,6 @@
 import NgoFieldsService from "./ngo.field.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate,TABLE_VIEW_FOLDER_MAP,LocalJsonHelper} = commonPath
 
 const NgoFieldController = {
      // Create A new Record 
@@ -14,6 +14,8 @@ const NgoFieldController = {
             // Create the record using ORM
             const createData = await NgoFieldsService.createService(data);
             if (createData) {
+                const getDataById = await NgoFieldsService.getServiceById(createData.dataValues.ngo_field_id)
+                await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.ngo_field,getDataById,"ngo_field_id",createData.dataValues.ngo_field_id,null,"30d")
                 return res
                     .status(responseCode.CREATED)
                     .send(
@@ -77,6 +79,8 @@ const NgoFieldController = {
                         )
                     );
             }
+            const getDataById = await NgoFieldsService.getServiceById(id)
+            await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.ngo_field,getDataById,"ngo_field_id",id,null,"30d")
             return res
                 .status(responseCode.CREATED)
                 .send(
@@ -103,20 +107,20 @@ const NgoFieldController = {
     getAllByView: async (req, res) => {
         try {
             // Fetch local data from JSON
-            // const GetAllJson = await CommanJsonFunction.getAllData(CITY_FOLDER,CITY_JSON)
-            // if(GetAllJson!==null){
-            //     if(GetAllJson.length!==0){
-            //       return res
-            //       .status(responseCode.OK)
-            //       .send(
-            //         commonResponse(
-            //           responseCode.OK,
-            //           responseConst.DATA_RETRIEVE_SUCCESS,
-            //           GetAllJson
-            //         )
-            //       );
-            //     }
-            //   }
+            const localData = await LocalJsonHelper.getAll(TABLE_VIEW_FOLDER_MAP.ngo_field,"30d");
+            if(localData!==null){
+                if(localData.length!==0){
+                  return res
+                  .status(responseCode.OK)
+                  .send(
+                    commonResponse(
+                      responseCode.OK,
+                      responseConst.DATA_RETRIEVE_SUCCESS,
+                      localData
+                    )
+                  );
+                }
+              }
             // Fetch data from the database if JSON is empty
             const getAll = await NgoFieldsService.getAllService()
 
@@ -170,18 +174,18 @@ const NgoFieldController = {
         try {
             const Id = req.query.id
             // Fetch data by ID from JSON
-            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
-            // if(getJsonDatabyId!==null){
-            //   return res
-            //     .status(responseCode.OK)
-            //     .send(
-            //       commonResponse(
-            //         responseCode.OK,
-            //         responseConst.DATA_RETRIEVE_SUCCESS,
-            //         getJsonDatabyId
-            //       )
-            //     );
-            // }
+            const getJsonDatabyId = await LocalJsonHelper.getByKey(TABLE_VIEW_FOLDER_MAP.ngo_field,"ngo_field_id",Id,"30d")
+            if(getJsonDatabyId!==null){
+              return res
+                .status(responseCode.OK)
+                .send(
+                  commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    getJsonDatabyId
+                  )
+                );
+            }
 
             // If not found in JSON, fetch data from the database
             const getDataByid = await NgoFieldsService.getServiceById(Id)
@@ -251,7 +255,7 @@ const NgoFieldController = {
                         )
                     );
             }
-
+            await LocalJsonHelper.deleteEntry(TABLE_VIEW_FOLDER_MAP.ngo_field,"ngo_field_id",id,"30d")
             return res
                 .status(responseCode.CREATED)
                 .send(

@@ -1,6 +1,6 @@
 import StatusMasterService from "./status.master.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate,TABLE_VIEW_FOLDER_MAP,LocalJsonHelper} = commonPath
 
 const StatusMasterController = {
     // Create A new Record 
@@ -14,6 +14,8 @@ const StatusMasterController = {
             // Create the record using ORM
             const createData = await StatusMasterService.createService(data);
             if (createData) {
+                const getDataById = await StatusMasterService.getServiceById(createData.dataValues.status_id)
+                await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.status_master,getDataById,"status_id",createData.dataValues.status_id,null,"30d")
                 return res
                     .status(responseCode.CREATED)
                     .send(
@@ -77,6 +79,8 @@ const StatusMasterController = {
                         )
                     );
             }
+            const getDataById = await StatusMasterService.getServiceById(id)
+            await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.status_master,getDataById,"status_id",id,null,"30d")
             return res
                 .status(responseCode.CREATED)
                 .send(
@@ -103,20 +107,20 @@ const StatusMasterController = {
     getAllByView: async (req, res) => {
         try {
             // Fetch local data from JSON
-            // const GetAllJson = await CommanJsonFunction.getAllData(CITY_FOLDER,CITY_JSON)
-            // if(GetAllJson!==null){
-            //     if(GetAllJson.length!==0){
-            //       return res
-            //       .status(responseCode.OK)
-            //       .send(
-            //         commonResponse(
-            //           responseCode.OK,
-            //           responseConst.DATA_RETRIEVE_SUCCESS,
-            //           GetAllJson
-            //         )
-            //       );
-            //     }
-            //   }
+            const localData = await LocalJsonHelper.getAll(TABLE_VIEW_FOLDER_MAP.status_master,"30d");
+            if(localData!==null){
+                if(localData.length!==0){
+                  return res
+                  .status(responseCode.OK)
+                  .send(
+                    commonResponse(
+                      responseCode.OK,
+                      responseConst.DATA_RETRIEVE_SUCCESS,
+                      localData
+                    )
+                  );
+                }
+              }
             // Fetch data from the database if JSON is empty
             const getAll = await StatusMasterService.getAllService()
 
@@ -170,18 +174,18 @@ const StatusMasterController = {
         try {
             const Id = req.query.id
             // Fetch data by ID from JSON
-            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
-            // if(getJsonDatabyId!==null){
-            //   return res
-            //     .status(responseCode.OK)
-            //     .send(
-            //       commonResponse(
-            //         responseCode.OK,
-            //         responseConst.DATA_RETRIEVE_SUCCESS,
-            //         getJsonDatabyId
-            //       )
-            //     );
-            // }
+            const getJsonDatabyId = await LocalJsonHelper.getByKey(TABLE_VIEW_FOLDER_MAP.status_master,"status_id",Id,"30d")
+            if(getJsonDatabyId!==null){
+              return res
+                .status(responseCode.OK)
+                .send(
+                  commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    getJsonDatabyId
+                  )
+                );
+            }
 
             // If not found in JSON, fetch data from the database
             const getDataByid = await StatusMasterService.getServiceById(Id)
@@ -218,6 +222,7 @@ const StatusMasterController = {
                     );
             }
         } catch (error) {
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -251,7 +256,7 @@ const StatusMasterController = {
                         )
                     );
             }
-
+            await LocalJsonHelper.deleteEntry(TABLE_VIEW_FOLDER_MAP.status_master,"status_id",id,"30d")
             return res
                 .status(responseCode.CREATED)
                 .send(
@@ -277,18 +282,18 @@ const StatusMasterController = {
         try{
             const Id = req.query.id
             // Fetch data by ID from JSON
-            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
-            // if(getJsonDatabyId!==null){
-            //   return res
-            //     .status(responseCode.OK)
-            //     .send(
-            //       commonResponse(
-            //         responseCode.OK,
-            //         responseConst.DATA_RETRIEVE_SUCCESS,
-            //         getJsonDatabyId
-            //       )
-            //     );
-            // }
+            const getJsonDatabyId = await LocalJsonHelper.getAllByKey(TABLE_VIEW_FOLDER_MAP.status_master,"parent_id",Id,"30d")
+            if(getJsonDatabyId && getJsonDatabyId.length>0){
+              return res
+                .status(responseCode.OK)
+                .send(
+                  commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    getJsonDatabyId
+                  )
+                );
+            }
 
             // If not found in JSON, fetch data from the database
             const getDataByid = await StatusMasterService.getDataByParentId(Id)

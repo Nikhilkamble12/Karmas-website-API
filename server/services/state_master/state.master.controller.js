@@ -1,6 +1,6 @@
 import StateMasterService from "./state.master.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate,TABLE_VIEW_FOLDER_MAP,LocalJsonHelper} = commonPath
 
 const StateMasterController = {
      // Create A new Record 
@@ -14,6 +14,8 @@ const StateMasterController = {
             // Create the record using ORM
             const createData = await StateMasterService.createService(data);
             if (createData) {
+                const getDataById = await StateMasterService.getServiceById(createData.dataValues.state_id)
+                await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.state_master,getDataById,"state_id",createData.dataValues.state_id,null,"30d")
                 return res
                     .status(responseCode.CREATED)
                     .send(
@@ -77,6 +79,8 @@ const StateMasterController = {
                         )
                     );
             }
+            const getDataById = await StateMasterService.getServiceById(id)
+            await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.state_master,getDataById,"state_id",id,null,"30d")
             return res
                 .status(responseCode.CREATED)
                 .send(
@@ -103,20 +107,21 @@ const StateMasterController = {
     getAllByView: async (req, res) => {
         try {
             // Fetch local data from JSON
-            // const GetAllJson = await CommanJsonFunction.getAllData(CITY_FOLDER,CITY_JSON)
-            // if(GetAllJson!==null){
-            //     if(GetAllJson.length!==0){
-            //       return res
-            //       .status(responseCode.OK)
-            //       .send(
-            //         commonResponse(
-            //           responseCode.OK,
-            //           responseConst.DATA_RETRIEVE_SUCCESS,
-            //           GetAllJson
-            //         )
-            //       );
-            //     }
-            //   }
+            const localData = await LocalJsonHelper.getAll(TABLE_VIEW_FOLDER_MAP.state_master,"30d");
+            if(localData!==null){
+                if(localData.length!==0){
+                  return res
+                  .status(responseCode.OK)
+                  .send(
+                    commonResponse(
+                      responseCode.OK,
+                      responseConst.DATA_RETRIEVE_SUCCESS,
+                      localData
+                    )
+                  );
+                }
+              }
+
             // Fetch data from the database if JSON is empty
             const getAll = await StateMasterService.getAllService()
 
@@ -170,18 +175,18 @@ const StateMasterController = {
         try {
             const Id = req.query.id
             // Fetch data by ID from JSON
-            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"state_id",Id)
-            // if(getJsonDatabyId!==null){
-            //   return res
-            //     .status(responseCode.OK)
-            //     .send(
-            //       commonResponse(
-            //         responseCode.OK,
-            //         responseConst.DATA_RETRIEVE_SUCCESS,
-            //         getJsonDatabyId
-            //       )
-            //     );
-            // }
+            const getJsonDatabyId = await LocalJsonHelper.getByKey(TABLE_VIEW_FOLDER_MAP.state_master,"state_id",Id,"30d")
+            if(getJsonDatabyId!==null){
+              return res
+                .status(responseCode.OK)
+                .send(
+                  commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    getJsonDatabyId
+                  )
+                );
+            }
 
             // If not found in JSON, fetch data from the database
             const getDataByid = await StateMasterService.getServiceById(Id)
@@ -251,7 +256,7 @@ const StateMasterController = {
                         )
                     );
             }
-
+            await LocalJsonHelper.deleteEntry(TABLE_VIEW_FOLDER_MAP.state_master,"state_id",id,"30d")
             return res
                 .status(responseCode.CREATED)
                 .send(
@@ -276,6 +281,19 @@ const StateMasterController = {
     },getStateByCountryId: async(req,res)=>{
         try{
             const Id = req.query.id
+            const getJsonDatabyId = await LocalJsonHelper.getAllByKey(TABLE_VIEW_FOLDER_MAP.state_master,"country_id",Id,"30d")
+            if(getJsonDatabyId && getJsonDatabyId.length>0){
+              return res
+                .status(responseCode.OK)
+                .send(
+                  commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    getJsonDatabyId
+                  )
+                );
+            }
+
             const getDataByid = await StateMasterService.getStateByCountryId(Id)
             if (getDataByid.length !== 0) {
                 return res
