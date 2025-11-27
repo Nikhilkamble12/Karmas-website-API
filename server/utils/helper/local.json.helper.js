@@ -1217,198 +1217,202 @@ export class OptimizedLocalJsonDB {
     //     }
     // }
 
-    /**
- * Enhanced save() method with intelligent auto-detection using DB count
- * - Auto-determines create vs update when newFile is null
- * - Flexible keyName (user_id, ngo_id, etc.) - you specify when needed
- */
+/**
+     * Enhanced save() method that accepts String OR Configuration Object
+     * Handles DB Views and Standalone Dashboard JSONs
+     */
+    static async save(tableRef, dataEntry = null, keyName = null, keyValue = null, newFile = null, expiryTime = "15d") {
+        // 1. ✅ FIX: Allow Object or String for tableRef
+        const refLog = typeof tableRef === 'string' ? tableRef : JSON.stringify(tableRef);
+        console.log(`🟢 [Start] save() called for: ${refLog}`);
 
-static async save(tableRef, dataEntry = null, keyName = null, keyValue = null, newFile = null, expiryTime = "15d") {
-    console.log("🟢 [Start] save() called for:", tableRef);
-    if (typeof tableRef !== 'string') {
-        console.error("❌ [Failure] Invalid tableRef. Expected string.");
-        throw new Error('Invalid tableRef: must be a string');
-    }
-
-    const instance = this._getInstance(tableRef, expiryTime);
-    
-    // Wait for any existing locks with timeout
-    const lockTimeout = 5000;
-    const lockStartTime = Date.now();
-    while (this._FILE_LOCKS.get(instance._cacheKey)) {
-        if (Date.now() - lockStartTime > lockTimeout) {
-            console.warn(`⚠️ Lock timeout for ${instance._cacheKey}, proceeding anyway`);
-            break;
+        if (!tableRef || (typeof tableRef !== 'string' && typeof tableRef !== 'object')) {
+            console.error("❌ [Failure] Invalid tableRef. Expected string or configuration object.");
+            throw new Error('Invalid tableRef: must be a string or object');
         }
-        await new Promise(r => setTimeout(r, 50));
-    }
-    
-    this._FILE_LOCKS.set(instance._cacheKey, true);
 
-    try {
-        const nowObj = new Date();
-        
-        // =====================================================================
-        // AUTO-DETECTION: If newFile is null, decide based on file status & DB
-        // =====================================================================
-        if (newFile === null) {
-            console.log("🔍 [Auto-Detect] newFile is null, checking file status...");
-            
-            const fileExists = fsSync.existsSync(instance.filePath);
-            
-            if (!fileExists) {
-                // No file = definitely CREATE mode
-                newFile = true;
-                console.log("📝 [Decision] File doesn't exist → CREATE mode (newFile=true)");
-            } 
-            else {
-                // File exists - check if we need to refresh from DB
-                let data = await instance._loadFromMemoryOrFile();
-                
-                if (!data || instance._isExpired(data)) {
-                    // Expired or corrupt = REFRESH from DB
+        const instance = this._getInstance(tableRef, expiryTime);
+
+        // Wait for any existing locks with timeout
+        const lockTimeout = 5000;
+        const lockStartTime = Date.now();
+        while (this._FILE_LOCKS.get(instance._cacheKey)) {
+            if (Date.now() - lockStartTime > lockTimeout) {
+                console.warn(`⚠️ Lock timeout for ${instance._cacheKey}, proceeding anyway`);
+                break;
+            }
+            await new Promise(r => setTimeout(r, 50));
+        }
+
+        this._FILE_LOCKS.set(instance._cacheKey, true);
+
+        try {
+            const nowObj = new Date();
+
+            // =====================================================================
+            // AUTO-DETECTION: If newFile is null, decide based on file status & DB
+            // =====================================================================
+            if (newFile === null) {
+                console.log("🔍 [Auto-Detect] newFile is null, checking file status...");
+
+                const fileExists = fsSync.existsSync(instance.filePath);
+
+                if (!fileExists) {
+                    // No file = definitely CREATE mode
                     newFile = true;
-                    console.log("🔄 [Decision] File expired/invalid → REFRESH from DB (newFile=true)");
-                }
-                else if (instance.hasValidViewName) {
-                    // Check DB count to determine if data is stale
-                    console.log("🔍 [Checking] Comparing local vs DB count...");
-                    const dbCount = await instance._getDbCount();
-                    const localLength = MetadataManager._getDataLength(data.data);
-                    
-                    if (dbCount !== null && dbCount !== localLength) {
-                        // Mismatch = REFRESH from DB
+                    console.log("📝 [Decision] File doesn't exist → CREATE mode (newFile=true)");
+                } else {
+                    // File exists - check if we need to refresh from DB
+                    let data = await instance._loadFromMemoryOrFile();
+
+                    if (!data || instance._isExpired(data)) {
+                        // Expired or corrupt = REFRESH from DB
                         newFile = true;
-                        console.log(`🔄 [Decision] Count mismatch (DB:${dbCount} vs Local:${localLength}) → REFRESH (newFile=true)`);
+                        console.log("🔄 [Decision] File expired/invalid → REFRESH from DB (newFile=true)");
+                    } else if (instance.hasValidViewName) {
+                        // Check DB count to determine if data is stale
+                        console.log("🔍 [Checking] Comparing local vs DB count...");
+                        const dbCount = await instance._getDbCount();
+                        const localLength = MetadataManager._getDataLength(data.data);
+
+                        if (dbCount !== null && dbCount !== localLength) {
+                            newFile = true;
+                            console.log(`🔄 [Decision] Count mismatch (DB:${dbCount} vs Local:${localLength}) → REFRESH (newFile=true)`);
+                        } else {
+                            newFile = false;
+                            console.log(`✅ [Decision] Counts match (${localLength}) → UPDATE mode (newFile=false)`);
+                        }
                     } else {
-                        // Counts match = UPDATE mode (upsert single entry)
-                        newFile = false;
-                        console.log(`✅ [Decision] Counts match (${localLength}) → UPDATE mode (newFile=false)`);
+                        // 🟢 FIX FOR DASHBOARDS (No View Name)
+                        // If no View Name AND no KeyName is provided, assume we want to Overwrite the object (Dashboard mode)
+                        if (keyName === null && keyValue === null) {
+                            newFile = true;
+                            console.log("⚙️ [Decision] Dashboard Mode (No View, No Keys) → OVERWRITE (newFile=true)");
+                        } else {
+                            // If keys are provided, we probably want to update a specific field in the file
+                            newFile = false;
+                            console.log("⚙️ [Decision] Local File Update (Key Provided) → UPDATE mode (newFile=false)");
+                        }
+                    }
+                }
+            }
+
+            // =====================================================================
+            // LOAD OR CREATE DATA STRUCTURE
+            // =====================================================================
+            let data = await instance._loadFromMemoryOrFile();
+
+            if (!data) {
+                console.log("📝 [Init] Creating new data structure");
+                data = instance._createCacheStructure([]); // Defaults to array, will be overwritten if object passed
+            }
+
+            // =====================================================================
+            // PROCESS SAVE BASED ON MODE
+            // =====================================================================
+
+            if (newFile === true) {
+                // ─────────────────────────────────────────────────────────────────
+                // MODE 1: COMPLETE REPLACEMENT (Create/Refresh from DB or full data)
+                // ─────────────────────────────────────────────────────────────────
+                console.log("🆕 [NewFile Mode] Complete replacement");
+
+                if (dataEntry === null) {
+                    // No data provided = fetch from DB
+                    if (instance.hasValidViewName) {
+                        console.log("📥 [Fetching] Loading fresh data from DB...");
+                        const freshData = await instance._fetchFullFromDb();
+                        data.data = freshData;
+                        console.log(`✅ [Loaded] ${freshData.length} records from DB`);
+                    } else {
+                        console.warn("⚠️ [Warning] No dataEntry and no view_name - creating empty structure");
+                        data.data = [];
                     }
                 } else {
-                    // No view name = can't check DB, default to UPDATE
-                    newFile = false;
-                    console.log("⚙️ [Decision] No view_name available → UPDATE mode (newFile=false)");
+                    // Data provided = use it directly (array or object)
+                    data.data = dataEntry;
+                    const count = Array.isArray(dataEntry) ? dataEntry.length :
+                        (typeof dataEntry === 'object' ? Object.keys(dataEntry).length : 1);
+                    console.log(`✅ [Replaced] Entire data structure (${count} items/keys)`);
                 }
-            }
-        }
 
-        // =====================================================================
-        // LOAD OR CREATE DATA STRUCTURE
-        // =====================================================================
-        let data = await instance._loadFromMemoryOrFile();
-        
-        if (!data) {
-            console.log("📝 [Init] Creating new data structure");
-            data = instance._createCacheStructure([]);
-        }
+                // Reset counter for new data
+                data.db_count_check_counter = instance.hasValidViewName ?
+                    CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER : null;
 
-        // =====================================================================
-        // PROCESS SAVE BASED ON MODE
-        // =====================================================================
-        
-        if (newFile === true) {
-            // ─────────────────────────────────────────────────────────────────
-            // MODE 1: COMPLETE REPLACEMENT (Create/Refresh from DB or full data)
-            // ─────────────────────────────────────────────────────────────────
-            console.log("🆕 [NewFile Mode] Complete replacement");
-            
-            if (dataEntry === null) {
-                // No data provided = fetch from DB
-                if (instance.hasValidViewName) {
-                    console.log("📥 [Fetching] Loading fresh data from DB...");
-                    const freshData = await instance._fetchFullFromDb();
-                    data.data = freshData;
-                    console.log(`✅ [Loaded] ${freshData.length} records from DB`);
+            } else {
+                // ─────────────────────────────────────────────────────────────────
+                // MODE 2: UPSERT (Update existing or append new entry)
+                // ─────────────────────────────────────────────────────────────────
+                console.log("🔄 [Upsert Mode] Update or insert single entry");
+
+                if (dataEntry === null) {
+                    console.warn("⚠️ [Warning] Upsert mode but no dataEntry - just refreshing metadata");
                 } else {
-                    console.warn("⚠️ [Warning] No dataEntry and no view_name - creating empty structure");
-                    data.data = [];
-                }
-            } else {
-                // Data provided = use it directly (array or object)
-                data.data = dataEntry;
-                const count = Array.isArray(dataEntry) ? dataEntry.length : 
-                             (typeof dataEntry === 'object' ? Object.keys(dataEntry).length : 1);
-                console.log(`✅ [Replaced] Entire data structure (${count} items)`);
-            }
-            
-            // Reset counter for new data
-            data.db_count_check_counter = instance.hasValidViewName ? 
-                CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER : null;
-            
-        } else {
-            // ─────────────────────────────────────────────────────────────────
-            // MODE 2: UPSERT (Update existing or append new entry)
-            // ─────────────────────────────────────────────────────────────────
-            console.log("🔄 [Upsert Mode] Update or insert single entry");
-            
-            if (dataEntry === null) {
-                console.warn("⚠️ [Warning] Upsert mode but no dataEntry - just refreshing metadata");
-            } else {
-                // Ensure data.data is an array for upsert operations
-                if (!Array.isArray(data.data)) {
-                    console.log("📋 [Convert] Converting data to array for upsert");
-                    data.data = [];
-                }
-                
-                if (keyName && keyValue !== null) {
-                    // Full upsert with explicit key
-                    const idx = data.data.findIndex(i => i && i[keyName] === keyValue);
-                    
-                    if (idx >= 0) {
-                        data.data[idx] = dataEntry;
-                        console.log(`✅ [Updated] Entry at index ${idx} with ${keyName}=${keyValue}`);
+                    // Ensure data.data is an array for upsert operations
+                    if (!Array.isArray(data.data)) {
+                        console.log("📋 [Convert] Converting data to array for upsert");
+                        data.data = [];
+                    }
+
+                    if (keyName && keyValue !== null) {
+                        // Full upsert with explicit key
+                        const idx = data.data.findIndex(i => i && i[keyName] === keyValue);
+
+                        if (idx >= 0) {
+                            data.data[idx] = dataEntry;
+                            console.log(`✅ [Updated] Entry at index ${idx} with ${keyName}=${keyValue}`);
+                        } else {
+                            data.data.push(dataEntry);
+                            console.log(`➕ [Created] New entry with ${keyName}=${keyValue}`);
+                        }
                     } else {
+                        // No key specified - just append
                         data.data.push(dataEntry);
-                        console.log(`➕ [Created] New entry with ${keyName}=${keyValue}`);
+                        console.log("➕ [Appended] Entry (no key specified)");
                     }
-                } else {
-                    // No key specified - just append
-                    data.data.push(dataEntry);
-                    console.log("➕ [Appended] Entry (no key specified)");
                 }
             }
-        }
 
-        // =====================================================================
-        // UPDATE METADATA
-        // =====================================================================
-        data.modified_at = nowObj.toISOString();
-        data.updated_at = nowObj.toISOString();
-        
-        // Update expiry on complete refresh or if expired
-        if (newFile === true || instance._isExpired(data)) {
-            data.expires_at = new Date(nowObj.getTime() + instance.ttlMs).toISOString();
-            console.log(`⏰ [TTL] Set new expiry: ${TimeParser.msToReadable(instance.ttlMs)}`);
-        }
+            // =====================================================================
+            // UPDATE METADATA
+            // =====================================================================
+            data.modified_at = nowObj.toISOString();
+            data.updated_at = nowObj.toISOString();
 
-        // =====================================================================
-        // SAVE TO DISK & CLEANUP
-        // =====================================================================
-        console.log("💾 [Saving] Writing to disk...");
-        await instance._saveLazy(data, true);
-        
-        // Invalidate indexes to force rebuild
-        try { 
-            _indexManager.invalidate(instance.tableName);
-            this._GROUP_INDEXES.clear(); // <--- CRITICAL FIX 2
-        } catch (e) {
-            console.warn("⚠️ Failed to invalidate index:", e.message);
+            // Update expiry on complete refresh or if expired
+            if (newFile === true || instance._isExpired(data)) {
+                data.expires_at = new Date(nowObj.getTime() + instance.ttlMs).toISOString();
+                console.log(`⏰ [TTL] Set new expiry: ${TimeParser.msToReadable(instance.ttlMs)}`);
+            }
+
+            // =====================================================================
+            // SAVE TO DISK & CLEANUP
+            // =====================================================================
+            console.log("💾 [Saving] Writing to disk...");
+            await instance._saveLazy(data, true);
+
+            // Invalidate indexes to force rebuild
+            try {
+                _indexManager.invalidate(instance.tableName);
+                this._GROUP_INDEXES.clear(); 
+            } catch (e) {
+                console.warn("⚠️ Failed to invalidate index:", e.message);
+            }
+
+            const dataLength = MetadataManager._getDataLength(data.data);
+            console.log(`✅ [Success] Saved ${dataLength} records for ${instance.tableName}`);
+
+            return data;
+
+        } catch (error) {
+            console.error("❌ [Critical Failure] Error in save():", error);
+            throw error;
+        } finally {
+            this._FILE_LOCKS.delete(instance._cacheKey);
+            console.log("🔓 [Unlock] Released file lock");
         }
-        
-        const dataLength = MetadataManager._getDataLength(data.data);
-        console.log(`✅ [Success] Saved ${dataLength} records for ${instance.tableName}`);
-        
-        return data;
-        
-    } catch (error) {
-        console.error("❌ [Critical Failure] Error in save():", error);
-        throw error;
-    } finally {
-        this._FILE_LOCKS.delete(instance._cacheKey);
-        console.log("🔓 [Unlock] Released file lock");
     }
-}
 
 // =============================================================================
 // USAGE EXAMPLES

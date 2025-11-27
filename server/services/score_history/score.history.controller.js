@@ -325,13 +325,9 @@ const ScoreHistoryController = {
                 folder_name: "score",
                 json_file_name:`score_${limit}.json`
             };
-            // const fileName = `score/score_${limit}.json`;
-            const ttlMs = 60 * 60 * 1000; 
-            // 1 hour in milliseconds
-            // Step 1: Try to get from local file cache
             
             const localData = await LocalJsonHelper.getAll(jsonFileDetails,"60m");
-            console.log("localData",localData)
+            // console.log("localData.length",localData.length)
             const cachedData = localData
             const getUserrank = await ScoreHistoryService.getUserRankByUserId(user_id)
             if (cachedData && cachedData.length!==0) {
