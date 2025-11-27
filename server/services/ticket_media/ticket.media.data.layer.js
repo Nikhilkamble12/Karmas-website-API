@@ -83,6 +83,16 @@ const TicketMediaDAL = {
         } catch (error) {
             throw error
         }
+    },getAllMediaWhoseNotExpired:async()=>{
+        try{
+           const getAllData = await db.sequelize.query(
+                `${ViewFieldTableVise.TICKET_MEDIA_FIELDS} where ticket_id = ${ticket_id}`,
+                { type: db.Sequelize.QueryTypes.SELECT }
+            )
+            return getAllData 
+        }catch(error){
+            throw error
+        }
     }
 }
 

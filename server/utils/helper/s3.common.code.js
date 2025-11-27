@@ -56,4 +56,21 @@ const s3 = new S3Client({
     }
   };
 
-  export default uploadFileToS3
+  const deleteVideoByUrl = async (url) => {
+  try {
+    // Extract key from S3 URL
+    const key = url.split(".com/")[1];
+
+    const params = {
+      Bucket: "karmasmedia", // your bucket name
+      Key: key,
+    };
+
+    await s3.send(new DeleteObjectCommand(params));
+    console.log(`✔ Deleted successfully: ${key}`);
+  } catch (err) {
+    console.error("✖ Delete failed:", err);
+  }
+};
+
+  export default { uploadFileToS3 , deleteVideoByUrl}

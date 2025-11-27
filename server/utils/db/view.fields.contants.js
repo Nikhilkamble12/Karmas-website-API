@@ -46,7 +46,7 @@ const ViewFieldTableWise = {
     NGO_REQUEST_MAPPING_FIELDS:` SELECT Request_Ngo_Id, RequestId, RequestName, request_user_id, user_name, ngo_id, ngo_name, ngo_logo_path, status_id, status_name, Reason, AssignedDate, ApprovalDate FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} `,
     NGO_TYPE_FIELDS:` SELECT ngo_type_id, ngo_type, is_active, created_by, created_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_TYPE} `,
     NOTIFICATION_HISTORY_FIELDS:` SELECT notification_history_id, token_id, user_id, user_image, ngo_id, request_id, post_id, notification_details, notification_type, is_viewed, image_object, is_active, created_by, created_at, modified_by, modified_at  FROM ${VIEW_NAME.GET_ALL_NOTIFICATION_HISTORY} `,
-    NGO_MEDIA_FIELDS:` SELECT ngo_media_id, ngo_id, ngo_name, ngo_type, media_type, media_url, sequence, created_at, is_active FROM ${VIEW_NAME.GET_ALL_NGO_MEDIA} `,
+    NGO_MEDIA_FIELDS:` SELECT ngo_media_id, ngo_id, ngo_name, ngo_type, media_type, media_url, sequence, s3_url, created_at, is_active is_active FROM ${VIEW_NAME.GET_ALL_NGO_MEDIA} `,
     NGO_MEDIA_LIKES_FIELDS:` SELECT like_id, ngo_media_id, user_id, user_name, is_liked, created_at FROM ${VIEW_NAME.GET_ALL_NGO_MEDIA_LIKES} `,
     NGO_MEDIA_COMMENTS_FIELDS:` SELECT comment_id, ngo_media_id, user_id, file_path, user_name, comment_text, total_comment, parent_id, parent_comment_text, created_at FROM ${VIEW_NAME.GET_ALL_NGO_MEDIA_COMMENTS} `,
     NGO_LIKES_FIELDS:` SELECT like_id, ngo_id, ngo_name, user_id, user_name, file_path, is_liked, created_at FROM ${VIEW_NAME.GET_ALL_NGO_LIKES} `,
@@ -56,7 +56,7 @@ const ViewFieldTableWise = {
 
     // -------> P
     POSTS_FIELDS:` SELECT post_id, user_id, description, created_at, total_likes, total_comments, user_name, full_name, role_id, role_name, file_path, is_active, is_blacklist, is_user_tagged, created_by, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_POSTS} `,
-    POST_MEDIA_FIELDS:` SELECT media_id, post_id, sequence, media_type, media_url, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_POST_MEDIA} `,
+    POST_MEDIA_FIELDS:` SELECT media_id, post_id, sequence, media_type, media_url, s3_url, created_at, is_active, created_by FROM ${VIEW_NAME.GET_ALL_POST_MEDIA} `,
     POST_COMMENT_LIKES:` SELECT like_id, user_id, comment_text, post_cmt_id, is_liked, created_at, is_active FROM ${VIEW_NAME.GET_ALL_POST_COMMENT_LIKE} `,
     PAGE_FIELDS:` SELECT page_id, parent_id, page_name, page_url, mobile_url, interface, module_name  FROM ${VIEW_NAME.GET_ALL_PAGE} `,
     PERMISSION_FIELDS:` SELECT permission_id, permission_values, permission FROM ${VIEW_NAME.GET_ALL_PERMISSION} `,
@@ -71,7 +71,7 @@ const ViewFieldTableWise = {
     REQUEST_FIELDS:` SELECT RequestId, request_user_id, request_user_name, request_user_file_path, RequestName, Age, Gender, SahaykaPhoneNo, SahaykaEmailID, category_id, category_name, Address, Pincode, Remark, Story, Problem, Solution, MessageToSahayak, RejectRemark, AssignedNGO, AssignedNGOName, CityId, City, DistrictId, District, StateId, State, CountryId, Country, status_id, status_name, request_type_id, request_type_name, is_user_tagged, total_likes, total_comments, is_active, is_blacklist, created_by, created_at, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_REQUEST} `,
     REQUEST_NGO_FIELDS:` SELECT Request_Ngo_Id, RequestId, RequestName, request_user_id, user_name, ngo_id, ngo_name, ngo_logo_path, status_id, status_name, Reason, AssignedDate, ApprovalDate FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} `,
     ROLE_MASTER_FIELDS:` SELECT role_id, role, menu_id, menu, is_active FROM ${VIEW_NAME.GET_ALL_ROLE_MASTER} `,
-    REQUEST_MEDIA_FIELDS:` SELECT request_media_id, RequestId, img_name, media_url, media_type, sequence, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_REQUEST_MEDIA} `,
+    REQUEST_MEDIA_FIELDS:` SELECT request_media_id, RequestId, img_name, media_url, media_type, sequence, s3_url, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_REQUEST_MEDIA} `,
     REQUEST_TYPE_FIELDS:` SELECT request_type_id, request_type_name, created_by, created_at, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_REQUEST_TYPE} `,
     REQUEST_COMMENTS:` SELECT comment_id, user_id, RequestName, request_id, comment_text, total_comment, parent_id, created_at, is_active, user_name, user_profile FROM ${VIEW_NAME.GET_ALL_REQUEST_COMMENTS} `,
     REQUEST_LIKES:` SELECT like_id, user_id, RequestName, request_id, is_liked, created_at, is_active, user_name, user_profile FROM ${VIEW_NAME.GET_ALL_REQUEST_LIKE} `,
@@ -95,7 +95,7 @@ const ViewFieldTableWise = {
     TABLE_MASTER_FIELDS: ` SELECT table_id, table_name, is_active FROM ${VIEW_NAME.GET_ALL_TABLE_MASTER}  `,
     TICKET_FIELDS : ` SELECT ticket_id, ticket_code, user_id, created_user_name, created_full_name, assigned_to, assigned_user_name, assigned_full_name, module_type_id, module_name, subject, description, status_id, status_name, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_TICKET} `,
     TICKET_MODULE_TYPE_FIELDS : ` SELECT module_type_id, module_name, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_TICKET_MODULE_TYPE} `,
-    TICKET_MEDIA_FIELDS: ` SELECT ticket_media_id, ticket_id, ticket_code, subject, sequence, media_type, media_url, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_TICKET_MEDIA} `,
+    TICKET_MEDIA_FIELDS: ` SELECT ticket_media_id, ticket_id, ticket_code, subject, media_type, media_url, sequence, s3_url, created_at, is_active, created_by FROM ${VIEW_NAME.GET_ALL_TICKET_MEDIA} `,
 
     //  ------> U
     USER_MASTER_FIELDS :` SELECT  user_id, user_name, password, full_name, role_id, role, is_account_public, email_id, mobile_no, gender, bio, enrolling_date, ngo_id, ngo_name, ngo_unique_id, file_name, file_path, bg_image, bg_image_path, reset_otp, reset_otp_expiry, google_id, is_active, first_time_login, is_blacklisted,

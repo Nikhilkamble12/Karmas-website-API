@@ -11,7 +11,7 @@ const {
   addMetaDataWhileCreateUpdate,
 } = commonPath;
 import fs from 'fs/promises'; // ✅ Correct for async/await usage
-import uploadFileToS3 from "../../utils/helper/s3.common.code.js";
+import uploadFileToS3Folder from "../../utils/helper/s3.common.code.js";
 import RequestService from "../requests/requests.service.js";
 import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
@@ -268,6 +268,9 @@ const RequestMediaController = {
             )
           );
       }
+      const getData = await RequestMediaService.getServiceById(id)
+      await uploadFileToS3Folder.deleteVideoByUrl(getData.s3_url)
+
       return res
         .status(responseCode.CREATED)
         .send(
@@ -364,7 +367,7 @@ const RequestMediaController = {
        // For example, 'post', 'request', etc.
       const s3BucketFileDynamic = `${folderType}/${data.RequestId}/${data.sequence}/${fileName}`
       // Upload the file to S3
-      const fileUrl = await uploadFileToS3( s3BucketFileDynamic, filePath,fileType);
+      const fileUrl = await uploadFileToS3Folder.uploadFileToS3( s3BucketFileDynamic, filePath,fileType);
       if (fileUrl.success) {
         
         // If the upload was successful, return the file URL or save it to the database
@@ -418,7 +421,7 @@ const RequestMediaController = {
     }else{
       const s3BucketFileDynamic = `${folderType}/${data.RequestId}/${data.sequence}/${fileName}`
       // Upload the file to S3
-      const fileUrl = await uploadFileToS3(s3BucketFileDynamic, filePath,fileType);
+      const fileUrl = await uploadFileToS3Folder.uploadFileToS3(s3BucketFileDynamic, filePath,fileType);
       console.log("fileUrl",fileUrl)
       if (fileUrl.success) {
         const fileUrlData = fileUrl.url;

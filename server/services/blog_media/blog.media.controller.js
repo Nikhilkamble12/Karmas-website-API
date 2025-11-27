@@ -1,6 +1,6 @@
 import BlogMediaService from "./blog.media.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
-import uploadFileToS3 from "../../utils/helper/s3.common.code.js";
+import uploadFileToS3Folder from "../../utils/helper/s3.common.code.js";
 // import autoTagMedia from "../../utils/helper/auto.tag.media.js";
 const {
   commonResponse,
@@ -254,6 +254,7 @@ const BlogMediaController = {
       // Also delete data from the JSON file
       // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
       if (deleteData === 0) {
+
         return res
           .status(responseCode.BAD_REQUEST)
           .send(
@@ -265,6 +266,8 @@ const BlogMediaController = {
             )
           );
       }
+      const getData = await BlogMediaService.getServiceById(id)
+      await uploadFileToS3Folder.deleteVideoByUrl(getData.media_url)
       return res
         .status(responseCode.CREATED)
         .send(
@@ -348,7 +351,7 @@ const BlogMediaController = {
      // For example, 'Blog', 'request', etc.
     const s3BucketFileDynamic = `${folderType}/${data.blog_id}/${data.sequence}/${fileName}`
     // Upload the file to S3
-    const fileUrl = await uploadFileToS3( s3BucketFileDynamic, filePath,fileType);
+    const fileUrl = await uploadFileToS3Folder.uploadFileToS3( s3BucketFileDynamic, filePath,fileType);
     if (fileUrl.success) {
       
       // If the upload was successful, return the file URL or save it to the database
@@ -396,7 +399,7 @@ const BlogMediaController = {
   }else{
     const s3BucketFileDynamic = `${folderType}/${data.blog_id}/${data.sequence}/${fileName}`
     // Upload the file to S3
-    const fileUrl = await uploadFileToS3(s3BucketFileDynamic, filePath,fileType);
+    const fileUrl = await uploadFileToS3Folder.uploadFileToS3(s3BucketFileDynamic, filePath,fileType);
     console.log("fileUrl",fileUrl)
     if (fileUrl.success) {
       const fileUrlData = fileUrl.url;

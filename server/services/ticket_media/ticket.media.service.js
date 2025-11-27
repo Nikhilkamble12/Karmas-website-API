@@ -53,6 +53,12 @@ const TicketMediaService = {
         } catch (error) {
             throw error;
         }
+    },getAllVideoWhoseExipyIsNullOrLess:async()=>{
+        try{
+            return await TicketMediaDAL
+        }catch(error){
+            throw error;
+        }
     }
 };
 

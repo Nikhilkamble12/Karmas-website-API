@@ -1,6 +1,6 @@
 import PostMediaService from "./postmedia.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
-import uploadFileToS3 from "../../utils/helper/s3.common.code.js";
+import uploadFileToS3Folder from "../../utils/helper/s3.common.code.js";
 // import autoTagMedia from "../../utils/helper/auto.tag.media.js";
 const {
   commonResponse,
@@ -265,6 +265,8 @@ const PostMediaController = {
             )
           );
       }
+      const getData = await PostMediaService.getServiceById(id)
+      await uploadFileToS3Folder.deleteVideoByUrl(getData.s3_url)
       return res
         .status(responseCode.CREATED)
         .send(
@@ -348,7 +350,7 @@ const PostMediaController = {
      // For example, 'post', 'request', etc.
     const s3BucketFileDynamic = `${folderType}/${data.post_id}/${data.sequence}/${fileName}`
     // Upload the file to S3
-    const fileUrl = await uploadFileToS3( s3BucketFileDynamic, filePath,fileType);
+    const fileUrl = await uploadFileToS3Folder.uploadFileToS3( s3BucketFileDynamic, filePath,fileType);
     if (fileUrl.success) {
       
       // If the upload was successful, return the file URL or save it to the database
@@ -396,7 +398,7 @@ const PostMediaController = {
   }else{
     const s3BucketFileDynamic = `${folderType}/${data.post_id}/${data.sequence}/${fileName}`
     // Upload the file to S3
-    const fileUrl = await uploadFileToS3(s3BucketFileDynamic, filePath,fileType);
+    const fileUrl = await uploadFileToS3Folder.uploadFileToS3(s3BucketFileDynamic, filePath,fileType);
     console.log("fileUrl",fileUrl)
     if (fileUrl.success) {
       const fileUrlData = fileUrl.url;
