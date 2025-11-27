@@ -413,6 +413,8 @@ const ScoreHistoryController = {
                         currentData.file_path= null
                     }
                 }
+                const getApprovedRequestCount = await ScoreHistoryService.getCountofTotalRequestAcceptedByUserId(user_id);
+                getUserrank[0].total_request_accepted = getApprovedRequestCount[0].total_accepted_requests || 0;
                  // Step 3: Save the data to local file cache
                  const mergedData = {
                     user_score_history : getScoreHistory,

@@ -1,6 +1,7 @@
 import ScoreHistoryModel from "./score.history.model.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessary components from commonPath
+import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 
 const ScoreHistoryDAL = {
     // Method to create a new record in the database
@@ -188,6 +189,17 @@ const ScoreHistoryDAL = {
             
         } catch (error) {
             
+        }
+    },getCountofTotalRequestAcceptedByUserId:async(user_id)=>{
+        try{
+            const getCountData = await db.sequelize.query(
+                ` SELECT COUNT(*) AS total_accepted_requests FROM massom.v_simple_score_history WHERE user_id = :user_id AND status_id = ${STATUS_MASTER.REQUEST_APPROVED}`,{
+                replacements:{user_id},
+                type:db.Sequelize.QueryTypes.SELECT
+            })
+            return getCountData
+        }catch(error){
+            throw error
         }
     }
 }

@@ -89,6 +89,13 @@ const ScoreHistoryService = {
         } catch (error) {
             throw error
         }
+    },
+    getCountofTotalRequestAcceptedByUserId:async(user_id)=>{
+        try{
+            return await ScoreHistoryDAL.getCountofTotalRequestAcceptedByUserId(user_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default ScoreHistoryService 
