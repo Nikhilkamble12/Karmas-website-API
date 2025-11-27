@@ -52,7 +52,7 @@ router.get(
     UserFollowingController.getDatabyFollowingUserId
 )
 router.get(
-    `${basePath}/getData/byPrivate`,
+    `${basePath}/getData/toaccept/byPrivate`,
     verifyToken,
     UserFollowingController.getListByFollowingUserToAccepted
 )
