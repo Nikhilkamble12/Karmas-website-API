@@ -303,7 +303,7 @@ const RequestsController = {
 
             // Delete data from the database
             const getDataById = await RequestService.getServiceById(id)
-            if(getDataById.created_at !== tokenData(req,res)){
+            if(getDataById.created_by !== tokenData(req,res)){
                 return res
                     .status(responseCode.BAD_REQUEST)
                     .send(
