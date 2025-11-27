@@ -1,24 +1,33 @@
 import { DataTypes } from "sequelize";
 
-const NgoMediaModel = (sequelize)=>{
-    return sequelize.define("ngo_media",{
-        ngo_media_id:{
+const NgoMediaModel = (sequelize) => {
+    return sequelize.define("ngo_media", {
+        ngo_media_id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true
-        }, sequence:{
-            type:DataTypes.INTEGER,
-            allowNull:true
-        }, ngo_id:{
-            type:DataTypes.INTEGER,
-            allowNull:true
-        }, media_type:{
-            type:DataTypes.STRING(255),
-            allowNull:true
-        }, media_url:{
-            type:DataTypes.STRING(255),
-            allowNull:true
-        }, is_active: {
+        }, sequence: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }, ngo_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }, media_type: {
+            type: DataTypes.STRING(255),
+            allowNull: true
+        }, media_url: {
+            type: DataTypes.STRING(255),
+            allowNull: true
+        },
+        s3_url: {
+            type: DataTypes.STRING(500),
+            allowNull: false,
+        },
+        expiry_time: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        is_active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
         },
@@ -47,7 +56,7 @@ const NgoMediaModel = (sequelize)=>{
             type: DataTypes.DATE,
             allowNull: true
         }
-    },{
+    }, {
         tableName: "ngo_media",
         paranoid: true,
         timestamps: false,

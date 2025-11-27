@@ -30,6 +30,14 @@ const RequestMediaModel = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
+      s3_url:{
+      type: DataTypes.STRING(500),
+      allowNull: false,
+    },
+      expiry_time:{
+      type:DataTypes.INTEGER,
+      allowNull:true
+    },
       is_active: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,

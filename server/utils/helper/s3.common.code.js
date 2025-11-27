@@ -1,5 +1,3 @@
-
-
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import fs from 'fs';
 import dotenv from 'dotenv';
@@ -33,6 +31,7 @@ const s3 = new S3Client({
         Body: fileStream,  // File body (streamed from local path)
         ContentType: fileType,  // MIME type
         ACL: 'public-read',     // Optional: Public read access
+        CacheControl: 'public, max-age=604800'  // 7 days
       };
   
       // Upload the file to S3 using PutObjectCommand
@@ -43,10 +42,11 @@ const s3 = new S3Client({
       if (data && data.ETag) {
          // Manually generate the URL based on the bucket name, region, and key
         const fileUrl = `https://${params.Bucket}.s3.ap-south-1.amazonaws.com/${params.Key}`;
+        const cdnUrl = `https://d3hj74qe63378x.cloudfront.net/${key}`;
         // const fileUrl = `https://${params.Bucket}.s3.${s3.config.region}.amazonaws.com/${params.Key}`;
-        return { success: true, url: fileUrl };  // Success: Return the URL
+        return { success: true, url: cdnUrl,s3_url:fileUrl,expiry_time:604800 };  // Success: Return the URL
       } else {
-        return { success: false, url: null };  // Failure: Return null for URL
+        return { success: false, url: null,s3_url:null,expiry_time:604800 };  // Failure: Return null for URL
       }
   
     } catch (err) {
