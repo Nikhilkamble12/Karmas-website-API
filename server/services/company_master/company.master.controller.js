@@ -145,13 +145,29 @@ const CompanyMasterController = {
             const localData = await LocalJsonHelper.getAll(TABLE_VIEW_FOLDER_MAP.company_master,"30d");
             if(localData!==null){
                 if(localData.length!==0){
+                    console.log("localData",localData)
+                const updatedCompanyData = await Promise.all(localData.map(async (currentData) => {
+                // Normalize file path
+                if (
+                    currentData.company_logo_path &&
+                    currentData.company_logo_path !== "null" &&
+                    currentData.company_logo_path !== ""
+                ) {
+                    currentData.company_logo_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.company_logo_path}`;
+                } else {
+                    currentData.company_logo_path = null;
+                }
+
+                return currentData;
+
+                }));
                   return res
                   .status(responseCode.OK)
                   .send(
                     commonResponse(
                       responseCode.OK,
                       responseConst.DATA_RETRIEVE_SUCCESS,
-                      localData
+                      updatedCompanyData
                     )
                   );
                 }
@@ -208,6 +224,7 @@ const CompanyMasterController = {
             }
             
         } catch (error) {
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
