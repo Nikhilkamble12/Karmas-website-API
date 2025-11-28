@@ -357,6 +357,8 @@ const PostMediaController = {
       const fileUrlData = fileUrl.url;
       const dataToStore = {
         media_url:fileUrlData,
+        s3_url:fileUrl.s3_url,
+        expiry_time:fileUrl.expiry_time,
         media_type:data.media_type,
         sequence:data.sequence,
         post_id:data.post_id,
@@ -404,6 +406,8 @@ const PostMediaController = {
       const fileUrlData = fileUrl.url;
     const dataToStore = {
       media_url:fileUrlData,
+      s3_url:fileUrl.s3_url,
+      expiry_time:fileUrl.expiry_time,
       media_type:data.media_type,
       sequence:data.sequence,
       post_id:data.post_id,
