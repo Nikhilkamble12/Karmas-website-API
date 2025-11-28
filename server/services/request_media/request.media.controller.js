@@ -359,9 +359,6 @@ const RequestMediaController = {
         )
       }
        // File name on the server
-      console.log("fileType",fileType)
-      console.log("folderType",folderType)
-      console.log("fileName",fileName)
       if(data.request_media_id && data.request_media_id!=="" && data.request_media_id!==0 && data.request_media_id!=="null"){
       // You can dynamically decide where to store the file, for example, 'post' or 'request'
        // For example, 'post', 'request', etc.
