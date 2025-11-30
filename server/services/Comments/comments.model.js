@@ -24,16 +24,11 @@ const CommentsModel = (sequelize)=>{
       total_comment:{
         type:DataTypes.INTEGER,
         allowNull:true,
-        defaultValue:false
+        defaultValue: 0 // <--- CHANGED from false to 0
       },
       parent_id: {
         type: DataTypes.INTEGER,
         allowNull: true,
-      },
-      created_at: {
-        type: DataTypes.DATE,
-        allowNull: false,
-        defaultValue: DataTypes.NOW,
       },
       is_active: {
         type: DataTypes.BOOLEAN,
@@ -42,6 +37,11 @@ const CommentsModel = (sequelize)=>{
       created_by: {
         type: DataTypes.INTEGER,
         allowNull: true,
+      },
+      created_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
       },
       modified_by: {
         type: DataTypes.INTEGER,

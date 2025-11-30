@@ -88,6 +88,12 @@ const RequestService = {
         }catch(error){
             throw error
         }
+    },UpdateRequestCount:async(RequestId, fieldName, amount)=>{
+        try{
+            return await RequestDAL.UpdateRequestCount(RequestId, fieldName, amount)
+        }catch(error){
+            throw error
+        }
     }
 }
 

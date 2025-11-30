@@ -76,6 +76,12 @@ const RequestMediaService = {
     }catch(error){
       throw error
     }
+  },getDataByMultipleRequestIdsByInForHomeScreen:async(request_ids)=>{
+    try{
+      return await RequestMediaDAL.getDataByMultipleRequestIdsByInForHomeScreen(request_ids)
+    }catch(error){
+      throw error
+    }
   }
 };
 

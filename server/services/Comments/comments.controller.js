@@ -7,142 +7,158 @@ import PostService from "../Posts/posts.service.js";
 import UserTokenService from "../user_tokens/user.tokens.service.js";
 import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
 import PostMediaService from "../PostMedia/postmedia.service.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
 
 const CommentsController = {
-     // Create A new Record 
-     create: async (req, res) => {
+    create: async (req, res) => {
         try {
             const data = req.body;
-            // Add metadata for creation (created by, created at)
-            await addMetaDataWhileCreateUpdate(data, req, res, false);
-            if(data.user_id==null ||data.user_id==undefined || data.user_id=="null" || data.user_id=="undefined" || data.user_id==0){
-                data.user_id = tokenData(req,res)
-            }
-            if(data.parent_id!==null && data.parent_id!==undefined && data.parent_id!=="null" && data.parent_id!=="undefined" && data.parent_id!==0 && data.parent_id!=="0"){
-                if(parseInt(data.parent_id)>0){
-                    const getDataByIdByView = await CommentService.getServiceById(data.parent_id)
-                    const UpdateComment = await CommentService.updateService(getDataByIdByView.comment_id,{total_comment:parseInt(getDataByIdByView.total_comment) + 1})
-                }
-            }
-            const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id)
-            if(getUserActivityData){
-                const total_comment = parseInt(getUserActivityData[0].total_comments_no) + 1
-                const userActivityUpdate = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_comments_no:total_comment})
-            }
-            // data.created_by=1,
-            // data.created_at = new Date()
-            // Create the record using ORM
-            const postData = await PostService.getServiceById(data.post_id);
-            if(postData) {
-                await PostService.updateService(postData.post_id,{total_comments:parseInt(postData.total_comments || 0) + 1})
-            }
-            const currentUser = await UserMasterService.getServiceById(data.user_id);
-            const template = notificationTemplates.postComment({ username : currentUser.user_name });
-            const createData = await CommentService.createService(data);
-            const postMediaData = await PostMediaService.getDatabyPostIdByView(data.post_id);
-            if(currentUser.file_path && currentUser.file_path!=="null" && currentUser.file_path!==""){
-                currentUser.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentUser.file_path}`;
-            } else {
-                currentUser.file_path = null;
-            }
-            if (createData) {
-                const getUserToken = await UserTokenService.GetTokensByUserIds(postData.user_id);
-                if(getUserToken.length!==0 && data.user_id !== postData.user_id){
-                    await sendTemplateNotification({templateKey:"PostComment-Notification",templateData:template,userIds:getUserToken,metaData:{comment_id:createData.dataValues.post_id,
-                    media_url: postMediaData.length!==0 ? postMediaData[0]?.media_url : null,
-                    user_profile : currentUser?.file_path,
-                    created_by:tokenData(req,res)}})
-                }
-                return res
-                    .status(responseCode.CREATED)
-                    .send(
-                        commonResponse(
-                            responseCode.CREATED,
-                            responseConst.SUCCESS_ADDING_RECORD
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_ADDING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-        } catch (error) {
-            console.log("error",error)
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
-        }
-    }, 
-    // update Record Into Db
-    update: async (req, res) => {
-        try {
-            const id = req.query.id
-            const data = req.body
-            const getCommentById = await CommentService.getServiceById(id)
-            if(getCommentById.parent_id==0){
-                if(data.parent_id>0){
-                    const updateComment = await CommentService.updateService(data.parent_id,{total_comment:parseInt(getCommentById.total_comment) + 1})
-                }
-            }
-            // Add metadata for modification (modified by, modified at)
-            await addMetaDataWhileCreateUpdate(data, req, res, true);
 
-            // Update the record using ORM
-            const updatedRowsCount = await CommentService.updateService(id, data);
-            // if (updatedRowsCount > 0) {
-            //     const newData = await CommentService.getServiceById(id);
-            //     // Update the JSON data in the file
-            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
-            // }
-            // Handle case where no records were updated
-            if (updatedRowsCount === 0) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_UPDATING_RECORD,
-                            null,
-                            true
-                        )
-                    );
+            // 1. Setup & Validation
+            await addMetaDataWhileCreateUpdate(data, req, res, false);
+
+            // Helper to check valid IDs (removes the messy if statements)
+            const isValidId = (id) => id && id !== "null" && id !== "undefined" && id != 0;
+
+            if (!isValidId(data.user_id)) {
+                data.user_id = tokenData(req, res);
             }
-            return res
-                .status(responseCode.CREATED)
-                .send(
-                    commonResponse(
-                        responseCode.CREATED,
-                        responseConst.SUCCESS_UPDATING_RECORD
-                    )
+
+            // 2. Pre-fetch Data (Parallel - Fail Fast)
+            const [postData, currentUser] = await Promise.all([
+                PostService.getServiceById(data.post_id),
+                UserMasterService.getServiceById(data.user_id)
+            ]);
+
+            if (!postData) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.POST_NOT_FOUND, null, true)
                 );
+            }
+
+            // 3. Create the Comment (Do this FIRST)
+            const createData = await CommentService.createService(data);
+
+            if (createData) {
+                // 4. Parallel Updates (Atomic Increments)
+                // We push all update promises into an array and await them together
+                const updateTasks = [];
+
+                // A. Update Post Count (Increment by 1)
+                // Assuming PostService has an increment function, otherwise use update with literal
+                updateTasks.push(PostService.CountUpdatePost(postData.post_id, 'total_comments', 1));
+
+                // B. Update User Activity (Increment by 1)
+                // We don't need to fetch -> read -> update. Just increment.
+                updateTasks.push(UserActivtyService.UpdateUserDataCount(data.user_id, 'total_comments_no', 1));
+
+                // C. Update Parent Comment Count (If this is a reply)
+                if (isValidId(data.parent_id)) {
+                    // Use your new helper function here!
+                    updateTasks.push(CommentService.IncrementCommentCount(data.parent_id, 'total_comment', 1));
+                }
+
+                // D. Send Notification (Async wrapper)
+                updateTasks.push((async () => {
+                    if (data.user_id === postData.user_id) return; // Don't notify self
+
+                    const getUserToken = await UserTokenService.GetTokensByUserIds(postData.user_id);
+                    if (getUserToken.length > 0) {
+                        const postMediaData = await PostMediaService.getDatabyPostIdByView(data.post_id);
+
+                        // Format Profile URL
+                        const profileUrl = (currentUser.file_path && currentUser.file_path !== "null")
+                            ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentUser.file_path}`
+                            : null;
+
+                        const template = notificationTemplates.postComment({ username: currentUser.user_name });
+
+                        await sendTemplateNotification({
+                            templateKey: "PostComment-Notification",
+                            templateData: template,
+                            userIds: getUserToken,
+                            metaData: {
+                                comment_id: createData.post_id || createData.dataValues?.post_id,
+                                media_url: postMediaData[0]?.media_url || null,
+                                user_profile: profileUrl,
+                                created_by: tokenData(req, res)
+                            }
+                        });
+                    }
+                })());
+
+                // Execute all updates simultaneously
+                await Promise.allSettled(updateTasks);
+
+
+
+                return res.status(responseCode.CREATED).send(
+                    commonResponse(responseCode.CREATED, responseConst.SUCCESS_ADDING_RECORD)
+                );
+            } else {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.ERROR_ADDING_RECORD, null, false)
+                );
+            }
+
+        } catch (error) {
+            console.log("error", error)
+            logger.error(`Error ---> ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+            );
+        }
+    }, update: async (req, res) => {
+        try {
+            const id = req.query.id;
+            const data = req.body;
+
+            // 1. Get current state of the comment
+            const currentComment = await CommentService.getServiceById(id);
+            if (!currentComment) {
+                return res.status(responseCode.BAD_REQUEST).send(commonResponse(responseCode.BAD_REQUEST, responseConst.COMMENT_NOT_FOUND, null, false));
+            }
+
+            // 2. Handle Parent ID Change (Moving a comment)
+            // If parent_id is in data AND it is different from existing parent
+            if (data.parent_id !== undefined && data.parent_id != currentComment.parent_id) {
+
+                const tasks = [];
+
+                // A. Increment the NEW Parent (if it exists and is not 0)
+                if (data.parent_id && data.parent_id != 0) {
+                    // We add 1 to the new parent's count
+                    tasks.push(CommentService.IncrementCommentCount(data.parent_id, 'total_comment', 1));
+                }
+
+                // B. Decrement the OLD Parent (if it existed and was not 0)
+                if (currentComment.parent_id && currentComment.parent_id != 0) {
+                    // We subtract 1 from the old parent's count
+                    tasks.push(CommentService.IncrementCommentCount(currentComment.parent_id, 'total_comment', -1));
+                }
+
+                await Promise.all(tasks);
+            }
+
+            // 3. Standard Update
+            await addMetaDataWhileCreateUpdate(data, req, res, true);
+            const updatedRowsCount = await CommentService.updateService(id, data);
+
+            if (updatedRowsCount === 0) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.ERROR_UPDATING_RECORD, null, true)
+                );
+            }
+
+            return res.status(responseCode.CREATED).send(
+                commonResponse(responseCode.CREATED, responseConst.SUCCESS_UPDATING_RECORD)
+            );
+
         } catch (error) {
             logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+            );
         }
     },
     // Retrieve all records 
@@ -280,70 +296,67 @@ const CommentsController = {
     // Delete A Record 
     deleteData: async (req, res) => {
         try {
-            const id = req.query.id
-            // Delete data from the database
-            const getDataByCommentId = await CommentService.getServiceById(id)
-            if(getDataByCommentId){
-                if(getDataByCommentId.parent_id!=="" && getDataByCommentId.parent_id!==null && getDataByCommentId.parent_id!=="null" && getDataByCommentId.parent_id!=="undefined" && getDataByCommentId.parent_id!==0 && getDataByCommentId.parent_id>0){
-                    const getParentData = await CommentService.getServiceById(getDataByCommentId.parent_id)
-                    const updateComment = await CommentService.updateService(getParentData.comment_id,{total_comment:parseInt(getParentData.total_comment) - 1})
-                }
-            }
-            const getUserActivityData = await UserActivtyService.getDataByUserId(getDataByCommentId.user_id)
-            if(getUserActivityData){
-                const total_comment = parseInt(getUserActivityData[0].total_comments_no) - 1
-                const userActivityUpdate = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_comments_no:total_comment})
-            }
-            const postData = await PostService.getServiceById(getDataByCommentId.post_id);
-            if(postData) {
-            await PostService.updateService(getDataByCommentId.post_id, {
-                total_comments: Math.max(0, parseInt(postData.total_comments || 0) - 1)
-            });
-        }
-            const deleteData = await CommentService.deleteByid(id, req, res)
-            // Also delete data from the JSON file
-            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
-            if (deleteData === 0) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_DELETING_RECORD,
-                            null,
-                            true
-                        )
-                    );
+            const id = req.query.id;
+
+            // 1. Get the Comment Data (Fail Fast)
+            // We need this to know the user_id, post_id, and parent_id
+            const commentToDelete = await CommentService.getServiceById(id);
+
+            if (!commentToDelete) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true)
+                );
             }
 
-            return res
-                .status(responseCode.CREATED)
-                .send(
-                    commonResponse(
-                        responseCode.CREATED,
-                        responseConst.SUCCESS_DELETING_RECORD
-                    )
-                );
+            // 2. Prepare Parallel Tasks
+            const tasks = [];
+
+            // A. Handle Parent Comment (If this was a reply)
+            // Simplified check: just checking if it exists and is > 0
+            if (commentToDelete.parent_id && commentToDelete.parent_id > 0) {
+                // Atomic Decrement (-1)
+                tasks.push(CommentService.IncrementCommentCount(commentToDelete.parent_id, 'total_comment', -1));
+            }
+
+            // B. Decrement User Activity Stats
+            if (commentToDelete.user_id) {
+                tasks.push(UserActivtyService.UpdateUserDataCount(commentToDelete.user_id, 'total_comments_no', -1));
+            }
+
+            // C. Decrement Post Stats
+            if (commentToDelete.post_id) {
+                tasks.push(PostService.CountUpdatePost(commentToDelete.post_id, 'total_comments', -1));
+            }
+
+            // D. Delete the Comment Record
+            // We push the delete operation into the same parallel queue
+            tasks.push(CommentService.deleteByid(id, req, res));
+
+            // 3. Execute All Operations Simultaneously
+
+            await Promise.allSettled(tasks);
+
+            // Note: verify deleteByid returns what you expect, 
+            // usually standard Sequelize destroy returns 1 if deleted, 0 if not.
+
+            return res.status(responseCode.CREATED).send(
+                commonResponse(responseCode.CREATED, responseConst.SUCCESS_DELETING_RECORD)
+            );
+
         } catch (error) {
             logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+            );
         }
-    },getCommentByPostIdAndParentId:async(req,res)=>{
-        try{
+    },
+    getCommentByPostIdAndParentId: async (req, res) => {
+        try {
             const post_id = req.query.post_id
             const parent_id = req.query.parent_id
             const limit = req.query.limit
             const offset = req.query.offset
-            const getCommentData = await CommentService.getCommentByPostOrParentId(post_id,parent_id,limit,offset)
+            const getCommentData = await CommentService.getCommentByPostOrParentId(post_id, parent_id, limit, offset)
             if (getCommentData.length !== 0) {
                 return res
                     .status(responseCode.OK)
@@ -366,7 +379,7 @@ const CommentsController = {
                         )
                     );
             }
-        }catch(error){
+        } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -379,10 +392,10 @@ const CommentsController = {
                     )
                 );
         }
-    },getCommentByUserId:async(req,res)=>{
-        try{
+    }, getCommentByUserId: async (req, res) => {
+        try {
             const user_id = req.query.user_id
-            const getAllUserData = await CommentService.getCommentByUserIdByView(user_id)
+            const getAllUserData = await CommentService.getCommentByUserId(user_id)
             if (getAllUserData.length !== 0) {
                 return res
                     .status(responseCode.OK)
@@ -405,7 +418,7 @@ const CommentsController = {
                         )
                     );
             }
-        }catch(error){
+        } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -416,7 +429,7 @@ const CommentsController = {
                         null,
                         true
                     )
-                );  
+                );
         }
     }
 }

@@ -104,7 +104,17 @@ const RequestCommentDAL = {
         } catch (error) {
             throw error
         }
+    },UpdateDataCount: async (comment_id, fieldName, amount) => {
+    try {
+        const result = await RequestCommentsModel(db.sequelize).increment(fieldName, { 
+            by: amount, 
+            where: { comment_id: comment_id } 
+        });
+        return result;
+    } catch (error) {
+        throw error;
     }
+},
 }
 
 export default RequestCommentDAL

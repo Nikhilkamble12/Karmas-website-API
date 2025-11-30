@@ -52,6 +52,12 @@ const NgoMediaCommentsService = {
         }catch(error){
             throw error
         }
+    },UpdateDataCount: async (comment_id, fieldName, amount) => {
+        try{
+            return await NgoMediaCommentsDAL.UpdateDataCount(comment_id, fieldName, amount)
+        }catch(error){
+            throw error
+        }
     }
 }
 

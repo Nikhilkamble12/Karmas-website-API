@@ -210,6 +210,12 @@
     },{
       "code":"1.0041",
       "message":"Data Is Missing Kindly Verify Your Data."
+    },{
+      "code":"1.0042",
+      "message":"Post not found."
+    },{
+      "code":"1.0043",
+      "message":"Like record not found."
     }
   ]
 }

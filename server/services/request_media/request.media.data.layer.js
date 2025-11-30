@@ -1,5 +1,6 @@
 import RequestMediaModel from "./request.media.model.js"; 
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
+import VIEW_NAME from "../../utils/db/view.constants.js";
 const { db, ViewFieldTableVise, tokenData } = commonPath; // Destructure necessary components from commonPath
 
 const RequestMediaDAL = {
@@ -152,6 +153,21 @@ const RequestMediaDAL = {
     }catch(error){
       throw error
     }
+  },getDataByMultipleRequestIdsByInForHomeScreen: async (requestIds) => {
+    if (!Array.isArray(requestIds) || requestIds.length === 0) return [];
+
+    const query = `
+      SELECT request_media_id, RequestId, img_name, media_url, media_type, sequence, s3_url FROM ${VIEW_NAME.GET_ALL_REQUEST_MEDIA} 
+      WHERE RequestId IN (:requestIds)
+        AND is_active = 1
+    `;
+
+    const media = await db.sequelize.query(query, {
+      replacements: { requestIds },
+      type: db.Sequelize.QueryTypes.SELECT,
+    });
+
+    return media ?? [];
   }
   };
 

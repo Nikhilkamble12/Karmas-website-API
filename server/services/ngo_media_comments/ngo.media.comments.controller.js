@@ -1,114 +1,97 @@
 import NgoMediaCommentsService from "./ngo.media.comments.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
 
 const NgoMediaCommentsController = {
     // Create A new Record 
     create: async (req, res) => {
         try {
             const data = req.body;
-            // Add metadata for creation (created by, created at)
+
+            // 1. Prepare Data
             await addMetaDataWhileCreateUpdate(data, req, res, false);
-            if(data.parent_id && parseInt(data.parent_id)>0){
-                const getCommentByParentId = await NgoMediaCommentsService.getServiceById(data.parent_id)
-                let total_comment = parseInt(getCommentByParentId.total_comment) + 1
-                const updateComment = await NgoMediaCommentsService.updateService(data.parent_id,{total_comment:total_comment})
-            }
-            // data.created_by=1,
-            // data.created_at = new Date()
-            // Create the record using ORM
+
+            // 2. Create the Comment FIRST (Fail Fast)
+            // We create it first to ensure valid ID and constraints before updating counters
             const createData = await NgoMediaCommentsService.createService(data);
+
             if (createData) {
-                return res
-                    .status(responseCode.CREATED)
-                    .send(
-                        commonResponse(
-                            responseCode.CREATED,
-                            responseConst.SUCCESS_ADDING_RECORD
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_ADDING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-        } catch (error) {
-            console.log("error",error)
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
+                // 3. Update Parent Counter (Atomic & Async)
+                // If this is a reply (has parent_id), atomically add +1 to the parent
+                if (data.parent_id && data.parent_id > 0) {
+                    await NgoMediaCommentsService.UpdateDataCount(data.parent_id, 'total_comment', 1);
+                }
+
+                return res.status(responseCode.CREATED).send(
+                    commonResponse(responseCode.CREATED, responseConst.SUCCESS_ADDING_RECORD)
                 );
+            } else {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.ERROR_ADDING_RECORD, null, true)
+                );
+            }
+
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+            );
         }
-    }, 
-    // update Record Into Db
+    },
+
     update: async (req, res) => {
         try {
-            const id = req.query.id
-            const data = req.body
-            // Add metadata for modification (modified by, modified at)
+            const id = req.query.id;
+            const data = req.body;
+
             await addMetaDataWhileCreateUpdate(data, req, res, true);
-            const getOlderData = await NgoMediaCommentsService.getServiceById(id)
-            if(getOlderData.parent_id == 0){
-                if(data.parent_id && parseInt(data.parent_id)>0){
-                const getCommentByParentId = await NgoMediaCommentsService.getServiceById(data.parent_id)
-                let total_comment = parseInt(getCommentByParentId.total_comment) + 1
-                const updateComment = await NgoMediaCommentsService.updateService(data.parent_id,{total_comment:total_comment})
-                }
-            }
-            // Update the record using ORM
-            const updatedRowsCount = await NgoMediaCommentsService.updateService(id, data);
-            // if (updatedRowsCount > 0) {
-            //     const newData = await NgoMediaCommentsService.getServiceById(id);
-            //     // Update the JSON data in the file
-            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
-            // }
-            // Handle case where no records were updated
-            if (updatedRowsCount === 0) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_UPDATING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-            return res
-                .status(responseCode.CREATED)
-                .send(
-                    commonResponse(
-                        responseCode.CREATED,
-                        responseConst.SUCCESS_UPDATING_RECORD
-                    )
+
+            // 1. Fetch current state to compare parent_ids
+            const currentComment = await NgoMediaCommentsService.getServiceById(id);
+
+            if (!currentComment) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true)
                 );
+            }
+
+            // 2. Handle Moving Comments (Changing Parent ID)
+            // We check if parent_id exists in payload AND if it is different from the DB
+            if (data.parent_id !== undefined && data.parent_id != currentComment.parent_id) {
+                const tasks = [];
+
+                // A. Increment New Parent (If valid)
+                if (data.parent_id && data.parent_id != 0) {
+                    tasks.push(NgoMediaCommentsService.UpdateDataCount(data.parent_id, 'total_comment', 1));
+                }
+
+                // B. Decrement Old Parent (If valid)
+                if (currentComment.parent_id && currentComment.parent_id != 0) {
+                    tasks.push(NgoMediaCommentsService.UpdateDataCount(currentComment.parent_id, 'total_comment', -1));
+                }
+
+                // Execute both counter updates in parallel
+                await Promise.all(tasks);
+            }
+
+            // 3. Update the Record
+            const updatedRowsCount = await NgoMediaCommentsService.updateService(id, data);
+
+            if (updatedRowsCount === 0) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.ERROR_UPDATING_RECORD, null, true)
+                );
+            }
+
+            return res.status(responseCode.CREATED).send(
+                commonResponse(responseCode.CREATED, responseConst.SUCCESS_UPDATING_RECORD)
+            );
+
         } catch (error) {
             logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+            );
         }
     },
     // Retrieve all records 
@@ -246,53 +229,76 @@ const NgoMediaCommentsController = {
     // Delete A Record 
     deleteData: async (req, res) => {
         try {
-            const id = req.query.id
-            // Delete data from the database
-            const getOlderData = await NgoMediaCommentsService.getServiceById(id)
-            if(getOlderData.parent_id && parseInt(getOlderData.parent_id) == 0){
-                const getCommentByParentId = await NgoMediaCommentsService.getServiceById(getOlderData.parent_id)
-                let total_comment = parseInt(getCommentByParentId.total_comment) + 1
-                const updateComment = await NgoMediaCommentsService.updateService(getOlderData.parent_id,{total_comment:total_comment})
-            }
-            const deleteData = await NgoMediaCommentsService.deleteByid(id, req, res)
-            // Also delete data from the JSON file
-            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
-            if (deleteData === 0) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_DELETING_RECORD,
-                            null,
-                            true
-                        )
-                    );
+            const id = req.query.id;
+
+            // 1. Fetch Data (Fail Fast)
+            // We need to know if this comment is a reply (has a parent)
+            const commentToDelete = await NgoMediaCommentsService.getServiceById(id);
+
+            if (commentToDelete && commentToDelete.length == 0 ) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
             }
 
-            return res
-                .status(responseCode.CREATED)
-                .send(
+            const tasks = [];
+
+            // 2. Decrement Parent Counter (Atomic)
+            // Logic Fix: We only decrement the parent's count if this was a REPLY (parent_id > 0).
+            if (commentToDelete.parent_id && parseInt(commentToDelete.parent_id) > 0) {
+                // We do NOT need to fetch the parent first. Just send the decrement command.
+                tasks.push(
+                    NgoMediaCommentsService.UpdateDataCount(commentToDelete.parent_id, 'total_comment', -1)
+                );
+            }
+
+            // 3. Delete the Comment Record
+            tasks.push(NgoMediaCommentsService.deleteByid(id, req, res));
+
+            // 4. Execute Simultaneously
+
+            const results = await Promise.allSettled(tasks);
+
+            // Check the result of the Delete operation (last task)
+            const deleteResult = results[results.length - 1];
+
+            if (deleteResult.status === 'fulfilled' && deleteResult.value !== 0) {
+                return res.status(responseCode.CREATED).send(
                     commonResponse(
                         responseCode.CREATED,
                         responseConst.SUCCESS_DELETING_RECORD
                     )
                 );
-        } catch (error) {
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
+            } else {
+                return res.status(responseCode.BAD_REQUEST).send(
                     commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
+                        responseCode.BAD_REQUEST,
+                        responseConst.ERROR_DELETING_RECORD,
                         null,
                         true
                     )
                 );
+            }
+
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
         }
-    },getByNgoMediaOnlyParentId:async(req,res)=>{
-        try{
+    },
+    getByNgoMediaOnlyParentId: async (req, res) => {
+        try {
             const ngo_media_id = req.query.ngo_media_id
             const getAllData = await NgoMediaCommentsService.getDataByMediaIdOnlyParent(ngo_media_id)
             if (getAllData.length !== 0) {
@@ -317,7 +323,7 @@ const NgoMediaCommentsController = {
                         )
                     );
             }
-        }catch(error){
+        } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -330,11 +336,11 @@ const NgoMediaCommentsController = {
                     )
                 );
         }
-    },getNgoMediaByNgoMediaIdAndParentId:async(req,res)=>{
-        try{
+    }, getNgoMediaByNgoMediaIdAndParentId: async (req, res) => {
+        try {
             const ngo_media_id = req.query.ngo_media_id
             const parent_id = req.query.parent_id
-            const getData = await NgoMediaCommentsService.getDataByMediaAndParentId(ngo_media_id,parent_id)
+            const getData = await NgoMediaCommentsService.getDataByMediaAndParentId(ngo_media_id, parent_id)
             if (getData.length !== 0) {
                 return res
                     .status(responseCode.OK)
@@ -357,7 +363,7 @@ const NgoMediaCommentsController = {
                         )
                     );
             }
-        }catch(error){
+        } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)

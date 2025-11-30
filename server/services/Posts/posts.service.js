@@ -58,6 +58,12 @@ const PostService = {
     } catch (error) {
       throw error
     }
+  },CountUpdatePost:async(post_id, fieldName, amount)=>{
+    try{
+      return await PostDAL.CountUpdatePost(post_id, fieldName, amount)
+    }catch(error){
+      throw error
+    }
   }
 };
 

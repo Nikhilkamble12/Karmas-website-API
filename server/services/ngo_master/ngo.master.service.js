@@ -72,6 +72,12 @@ const NgoMasterService = {
         }catch(error){
             throw error
         }
+    },UpdateDataCount: async (ngo_id, fieldName, amount) => {
+        try{
+            return NgoMasterDAL.UpdateDataCount(ngo_id,fieldName,amount)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default NgoMasterService

@@ -46,6 +46,12 @@ const ngoMediaService = {
         }catch(error){
             throw error
         }
+    },UpdateDataCount:async(ngo_media_id, fieldName, amount)=>{
+        try{
+            return await NgoMediaDAL.UpdateDataCount(ngo_media_id, fieldName, amount)
+        }catch(error){
+            throw error
+        }
     }
 }
 

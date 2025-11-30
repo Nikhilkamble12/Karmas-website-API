@@ -1,4 +1,5 @@
 import PostsModel from "./posts.model.js";
+import relationCache from "../../utils/helper/follow_blacklist_filter.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 const { db, ViewFieldTableVise, tokenData } = commonPath; // Destructure necessary components from commonPath
 
@@ -262,377 +263,597 @@ const PostDAL = {
 //     throw error;
 //   }
 // }
-getPostByUserIdForHome: async (user_id, limit = 20) => {
-  try {
-    const replacements = { user_id, limit: Number(limit) };
+// getPostByUserIdForHome: async (user_id, limit = 20) => {
+//   try {
+//     const replacements = { user_id, limit: Number(limit) };
 
-    // 1️⃣ Get already viewed post IDs from DB
-    const viewedQuery = `
-      SELECT post_id
-      FROM user_viewed_posts
-      WHERE user_id = :user_id
-        AND is_active = 1
-    `;
-    const viewedResults = await db.sequelize.query(viewedQuery, {
-      replacements: { user_id },
-      type: db.Sequelize.QueryTypes.SELECT,
-    });
-    let results = []
-    const already_viewed = viewedResults.map((r) => r.post_id);
-    let exclusionClause = "";
-    if (already_viewed.length > 0) {
-      exclusionClause = `AND vp.post_id NOT IN (:already_viewed)`;
-      replacements.already_viewed = already_viewed;
-    }
+//     // 1️⃣ Get already viewed post IDs from DB
+//     const viewedQuery = `
+//       SELECT post_id
+//       FROM user_viewed_posts
+//       WHERE user_id = :user_id
+//         AND is_active = 1
+//     `;
+//     const viewedResults = await db.sequelize.query(viewedQuery, {
+//       replacements: { user_id },
+//       type: db.Sequelize.QueryTypes.SELECT,
+//     });
+//     let results = []
+//     const already_viewed = viewedResults.map((r) => r.post_id);
+//     let exclusionClause = "";
+//     if (already_viewed.length > 0) {
+//       exclusionClause = `AND vp.post_id NOT IN (:already_viewed)`;
+//       replacements.already_viewed = already_viewed;
+//     }
 
-    // 2️⃣ Main Feed Query (optimized)
-    const query = `
-      SELECT * FROM (
-        (
-          -- Followed users' posts (excluding blacklisted)
-          SELECT vp.*
-          FROM massom.v_Posts vp
-          JOIN user_following uf 
-            ON uf.following_user_id = vp.user_id
-          WHERE uf.user_id = :user_id
-            AND uf.is_following = 1
-            AND uf.is_active = 1
-            AND vp.is_active = 1
-            AND vp.is_blacklist = 0
-            AND NOT EXISTS (
-              SELECT 1
-              FROM user_blacklist ub
-              WHERE ub.is_active = 1
-                AND (
-                  (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
-                  OR
-                  (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
-                )
-            )
-            ${exclusionClause}
-        )
-        UNION
-        (
-          -- Random discovery posts (optimized, non-followed, excluding blacklisted)
-          SELECT vp.*
-          FROM massom.v_Posts vp
-          JOIN (
-            SELECT FLOOR(RAND() * (SELECT MAX(post_id) FROM massom.v_Posts)) AS rand_id
-          ) AS r
-          JOIN user_master u ON u.user_id = vp.user_id
-          WHERE vp.post_id >= r.rand_id
-            AND vp.user_id NOT IN (
-              SELECT following_user_id 
-              FROM user_following 
-              WHERE user_id = :user_id
-                AND is_following = 1
-                AND is_active = 1
-            )
-            AND vp.is_active = 1
-            AND vp.is_blacklist = 0
-            AND u.is_account_public = 1 
-            AND u.is_blacklisted = 0        
-            AND NOT EXISTS (
-              SELECT 1
-              FROM user_blacklist ub
-              WHERE ub.is_active = 1
-                AND (
-                  (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
-                  OR
-                  (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
-                )
-            )
-            ${exclusionClause}
-          ORDER BY vp.post_id
-          LIMIT 20
-        )
-      ) AS combined_posts
-      ORDER BY created_at DESC
-      LIMIT :limit;
-    `;
+//     // 2️⃣ Main Feed Query (optimized)
+//     const query = `
+//       SELECT * FROM (
+//         (
+//           -- Followed users' posts (excluding blacklisted)
+//           SELECT vp.*
+//           FROM massom.v_Posts vp
+//           JOIN user_following uf 
+//             ON uf.following_user_id = vp.user_id
+//           WHERE uf.user_id = :user_id
+//             AND uf.is_following = 1
+//             AND uf.is_active = 1
+//             AND vp.is_active = 1
+//             AND vp.is_blacklist = 0
+//             AND NOT EXISTS (
+//               SELECT 1
+//               FROM user_blacklist ub
+//               WHERE ub.is_active = 1
+//                 AND (
+//                   (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
+//                   OR
+//                   (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
+//                 )
+//             )
+//             ${exclusionClause}
+//         )
+//         UNION
+//         (
+//           -- Random discovery posts (optimized, non-followed, excluding blacklisted)
+//           SELECT vp.*
+//           FROM massom.v_Posts vp
+//           JOIN (
+//             SELECT FLOOR(RAND() * (SELECT MAX(post_id) FROM massom.v_Posts)) AS rand_id
+//           ) AS r
+//           JOIN user_master u ON u.user_id = vp.user_id
+//           WHERE vp.post_id >= r.rand_id
+//             AND vp.user_id NOT IN (
+//               SELECT following_user_id 
+//               FROM user_following 
+//               WHERE user_id = :user_id
+//                 AND is_following = 1
+//                 AND is_active = 1
+//             )
+//             AND vp.is_active = 1
+//             AND vp.is_blacklist = 0
+//             AND u.is_account_public = 1 
+//             AND u.is_blacklisted = 0        
+//             AND NOT EXISTS (
+//               SELECT 1
+//               FROM user_blacklist ub
+//               WHERE ub.is_active = 1
+//                 AND (
+//                   (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
+//                   OR
+//                   (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
+//                 )
+//             )
+//             ${exclusionClause}
+//           ORDER BY vp.post_id
+//           LIMIT 20
+//         )
+//       ) AS combined_posts
+//       ORDER BY created_at DESC
+//       LIMIT :limit;
+//     `;
 
-    results = await db.sequelize.query(query, {
-      replacements,
-      type: db.Sequelize.QueryTypes.SELECT,
-    });
+//     results = await db.sequelize.query(query, {
+//       replacements,
+//       type: db.Sequelize.QueryTypes.SELECT,
+//     });
 
-    // 3️⃣ Mark fetched posts as viewed
-    if (results.length > 0) {
-      const insertValues = results
-        .map(
-          (vp) =>
-            `(${db.sequelize.escape(user_id)}, ${db.sequelize.escape(
-              vp.post_id
-            )}, 1, NOW(), NOW())`
-        )
-        .join(",");
+//     // 3️⃣ Mark fetched posts as viewed
+//     if (results.length > 0) {
+//       const insertValues = results
+//         .map(
+//           (vp) =>
+//             `(${db.sequelize.escape(user_id)}, ${db.sequelize.escape(
+//               vp.post_id
+//             )}, 1, NOW(), NOW())`
+//         )
+//         .join(",");
 
-      const insertQuery = `
-        INSERT INTO user_viewed_posts (user_id, post_id, is_active, created_at, modified_at)
-        VALUES ${insertValues}
-        ON DUPLICATE KEY UPDATE modified_at = NOW(), is_active = 1;
-      `;
+//       const insertQuery = `
+//         INSERT INTO user_viewed_posts (user_id, post_id, is_active, created_at, modified_at)
+//         VALUES ${insertValues}
+//         ON DUPLICATE KEY UPDATE modified_at = NOW(), is_active = 1;
+//       `;
 
-      await db.sequelize.query(insertQuery);
-    }else if(results.length == 0){
-       // --- SQL Query ---
-    const query22 = `
-      SELECT * FROM (
-        (
-          -- 1️⃣ Posts from followed users (not blacklisted)
-          SELECT vp.*
-          FROM massom.v_Posts vp
-          JOIN user_following uf 
-            ON uf.following_user_id = vp.user_id
-          WHERE uf.user_id = :user_id
-            AND uf.is_following = 1
-            AND uf.is_active = 1
-            AND vp.is_active = 1
-            AND vp.is_blacklist = 0
-            AND NOT EXISTS (
-              SELECT 1
-              FROM user_blacklist ub
-              WHERE ub.is_active = 1
-                AND (
-                  (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
-                  OR
-                  (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
-                )
-            )
+//       await db.sequelize.query(insertQuery);
+//     }else if(results.length == 0){
+//        // --- SQL Query ---
+//     const query22 = `
+//       SELECT * FROM (
+//         (
+//           -- 1️⃣ Posts from followed users (not blacklisted)
+//           SELECT vp.*
+//           FROM massom.v_Posts vp
+//           JOIN user_following uf 
+//             ON uf.following_user_id = vp.user_id
+//           WHERE uf.user_id = :user_id
+//             AND uf.is_following = 1
+//             AND uf.is_active = 1
+//             AND vp.is_active = 1
+//             AND vp.is_blacklist = 0
+//             AND NOT EXISTS (
+//               SELECT 1
+//               FROM user_blacklist ub
+//               WHERE ub.is_active = 1
+//                 AND (
+//                   (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
+//                   OR
+//                   (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
+//                 )
+//             )
             
-        )
-        UNION
-        (
-          -- 2️⃣ Random discovery posts (excluding followed & blacklisted users)
-          SELECT vp.*
-          FROM massom.v_Posts vp
-          WHERE vp.user_id NOT IN (
-              SELECT following_user_id 
-              FROM user_following 
-              WHERE user_id = :user_id
-                AND is_following = 1
-                AND is_active = 1
-          )
-            AND vp.is_active = 1
-            AND vp.is_blacklist = 0
-            AND NOT EXISTS (
-              SELECT 1
-              FROM user_blacklist ub
-              WHERE ub.is_active = 1
-                AND (
-                  (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
-                  OR
-                  (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
-                )
-            )
+//         )
+//         UNION
+//         (
+//           -- 2️⃣ Random discovery posts (excluding followed & blacklisted users)
+//           SELECT vp.*
+//           FROM massom.v_Posts vp
+//           WHERE vp.user_id NOT IN (
+//               SELECT following_user_id 
+//               FROM user_following 
+//               WHERE user_id = :user_id
+//                 AND is_following = 1
+//                 AND is_active = 1
+//           )
+//             AND vp.is_active = 1
+//             AND vp.is_blacklist = 0
+//             AND NOT EXISTS (
+//               SELECT 1
+//               FROM user_blacklist ub
+//               WHERE ub.is_active = 1
+//                 AND (
+//                   (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
+//                   OR
+//                   (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
+//                 )
+//             )
             
-          ORDER BY RAND()
-          LIMIT 20
-        )
-      ) AS combined_posts
-      ORDER BY created_at DESC
-      LIMIT :limit;
-    `;
+//           ORDER BY RAND()
+//           LIMIT 20
+//         )
+//       ) AS combined_posts
+//       ORDER BY created_at DESC
+//       LIMIT :limit;
+//     `;
 
-      results = await db.sequelize.query(query22, {
-      replacements,
-      type: db.Sequelize.QueryTypes.SELECT,
-    });
-    }
+//       results = await db.sequelize.query(query22, {
+//       replacements,
+//       type: db.Sequelize.QueryTypes.SELECT,
+//     });
+//     }
 
-    // 4️⃣ Return results
-    return results ?? [];
-  } catch (error) {
-    console.error("❌ Error in getPostsForUserFeed:", error);
-    throw error;
-  }
-},
-getVideoPostByUserIdForHomePage: async (user_id, limit = 20) => {
-  try {
-    const replacements = { user_id, limit: Number(limit) };
+//     // 4️⃣ Return results
+//     return results ?? [];
+//   } catch (error) {
+//     console.error("❌ Error in getPostsForUserFeed:", error);
+//     throw error;
+//   }
+// },
 
-    // 1️⃣ Get already viewed video IDs
-    const viewedQuery = `
-      SELECT post_id
-      FROM user_viewed_video
-      WHERE user_id = :user_id
-        AND is_active = 1
-    `;
-    const viewedResults = await db.sequelize.query(viewedQuery, {
-      replacements: { user_id },
-      type: db.Sequelize.QueryTypes.SELECT,
-    });
+getPostByUserIdForHome: async (user_id, limit = 20, batchIndex = 0) => {
+    try {
+      // ⏱️ START TIMER
+      const startTime = Date.now();
+      const limitNum = Number(limit);
+      
+      // Track specific durations
+      let fetchTime = 0;
+      let queryTime = 0;
+      let fallbackTime = 0;
 
-    let results = [];
-    const already_viewed = viewedResults.map((r) => r.post_id);
-    let exclusionClause = "";
-    if (already_viewed.length > 0) {
-      exclusionClause = `AND vp.post_id NOT IN (:already_viewed)`;
-      replacements.already_viewed = already_viewed;
-    }
+      // =========================================================
+      // 1️⃣ FAST DATA FETCHING (Parallel)
+      // =========================================================
+      
+      // A. Get User Relations from RAM Cache
+      const relationsPromise = relationCache.get(user_id, batchIndex);
 
-    // 2️⃣ Main video feed query
-    const query = `
-      SELECT * FROM (
-        (
-          -- Followed users' videos
-          SELECT DISTINCT vp.*
-          FROM massom.v_Posts vp
-          JOIN massom.v_PostMedia vpm ON vp.post_id = vpm.post_id
-          JOIN user_following uf ON uf.following_user_id = vp.user_id
-          WHERE vpm.media_type = 'video'
-            AND uf.user_id = :user_id
-            AND uf.is_following = 1
-            AND uf.is_active = 1
-            AND vp.is_active = 1
-            AND vp.is_blacklist = 0
-            AND NOT EXISTS (
-              SELECT 1
-              FROM user_blacklist ub
-              WHERE ub.is_active = 1
-                AND (
-                  (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
-                  OR
-                  (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
-                )
-            )
-            ${exclusionClause}
-        )
-        UNION
-        (
-          -- Random discovery videos
-          SELECT DISTINCT vp.*
-          FROM massom.v_Posts vp
-          JOIN massom.v_PostMedia vpm ON vp.post_id = vpm.post_id
-          JOIN (
-            SELECT FLOOR(RAND() * (SELECT MAX(post_id) FROM massom.v_Posts)) AS rand_id
-          ) AS r
-          WHERE vpm.media_type = 'video'
-            AND vp.post_id >= r.rand_id
-            AND vp.user_id NOT IN (
-              SELECT following_user_id 
-              FROM user_following 
-              WHERE user_id = :user_id
-                AND is_following = 1
-                AND is_active = 1
-            )
-            AND vp.is_active = 1
-            AND vp.is_blacklist = 0
-            AND NOT EXISTS (
-              SELECT 1
-              FROM user_blacklist ub
-              WHERE ub.is_active = 1
-                AND (
-                  (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
-                  OR
-                  (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
-                )
-            )
-            ${exclusionClause}
-          ORDER BY RAND()
-          LIMIT 20
-        )
-      ) AS combined_videos
-      ORDER BY created_at DESC
-      LIMIT :limit;
-    `;
+      // B. Get Viewed Posts from DB
+      const viewedPromise = db.sequelize.query(
+        `SELECT post_id FROM user_viewed_posts 
+         WHERE user_id = :uid AND is_active = 1 
+         ORDER BY modified_at DESC LIMIT 500`,
+        { replacements: { uid: user_id }, type: db.Sequelize.QueryTypes.SELECT, raw: true }
+      );
 
-    results = await db.sequelize.query(query, {
-      replacements,
-      type: db.Sequelize.QueryTypes.SELECT,
-    });
+      const [relationsData, viewedResults] = await Promise.all([relationsPromise, viewedPromise]);
 
-    // 3️⃣ Mark fetched videos as viewed
-    if (results.length > 0) {
-      const insertValues = results
-        .map(
-          (vp) =>
-            `(${db.sequelize.escape(user_id)}, ${db.sequelize.escape(
-              vp.post_id
-            )}, 1, NOW(), NOW())`
-        )
-        .join(",");
+      // ⏱️ LOG FETCH TIME
+      fetchTime = Date.now() - startTime;
 
-      const insertQuery = `
-        INSERT INTO user_viewed_video (user_id, post_id, is_active, created_at, modified_at)
-        VALUES ${insertValues}
-        ON DUPLICATE KEY UPDATE modified_at = NOW(), is_active = 1;
-      `;
+      const { following_ids, blacklist_ids } = relationsData;
+      const already_viewed = viewedResults.map((r) => r.post_id);
 
-      await db.sequelize.query(insertQuery);
-    } else if (results.length == 0) {
-      // 4️⃣ Fallback query if all videos already viewed
-      const query22 = `
+      // =========================================================
+      // 2️⃣ PREPARE SQL VARIABLES
+      // =========================================================
+
+      const discoveryExcludeIds = [...new Set([...following_ids, ...blacklist_ids, user_id])];
+
+      const replacements = {
+        user_id,
+        limit: limitNum,
+        following_ids: following_ids.length > 0 ? following_ids : [-1],
+        blacklist_ids: blacklist_ids.length > 0 ? blacklist_ids : [-1],
+        discovery_exclude_ids: discoveryExcludeIds.length > 0 ? discoveryExcludeIds : [-1],
+        already_viewed: already_viewed.length > 0 ? already_viewed : [-1]
+      };
+
+      // =========================================================
+      // 3️⃣ PRIMARY QUERY (Optimized)
+      // =========================================================
+      
+      const primaryQuery = `
         SELECT * FROM (
           (
-            -- Followed users' videos
-            SELECT DISTINCT vp.*
+            -- 🟢 FEED PART 1: FOLLOWING
+            SELECT vp.*, 1 as priority
             FROM massom.v_Posts vp
-            JOIN massom.v_PostMedia vpm ON vp.post_id = vpm.post_id
-            JOIN user_following uf ON uf.following_user_id = vp.user_id
-            WHERE vpm.media_type = 'video'
-              AND uf.user_id = :user_id
-              AND uf.is_following = 1
-              AND uf.is_active = 1
+            WHERE vp.user_id IN (:following_ids)
+              AND vp.user_id NOT IN (:blacklist_ids)
+              AND vp.post_id NOT IN (:already_viewed)
               AND vp.is_active = 1
               AND vp.is_blacklist = 0
-              AND NOT EXISTS (
-                SELECT 1
-                FROM user_blacklist ub
-                WHERE ub.is_active = 1
-                  AND (
-                    (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
-                    OR
-                    (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
-                  )
-              )
+            ORDER BY vp.created_at DESC
+            LIMIT :limit
           )
           UNION
           (
-            -- Random discovery videos
-            SELECT DISTINCT vp.*
+            -- 🔵 FEED PART 2: DISCOVERY (Smart Random)
+            SELECT vp.*, 0 as priority
             FROM massom.v_Posts vp
-            JOIN massom.v_PostMedia vpm ON vp.post_id = vpm.post_id
-            WHERE vpm.media_type = 'video'
-              AND vp.user_id NOT IN (
-                SELECT following_user_id 
-                FROM user_following 
-                WHERE user_id = :user_id
-                  AND is_following = 1
-                  AND is_active = 1
-              )
+            JOIN (
+                SELECT FLOOR(RAND() * (SELECT MAX(post_id) FROM massom.v_Posts)) AS rand_id
+            ) AS r
+            JOIN user_master u ON u.user_id = vp.user_id
+            WHERE vp.post_id >= r.rand_id
+              AND vp.user_id NOT IN (:discovery_exclude_ids)
+              AND vp.post_id NOT IN (:already_viewed)
               AND vp.is_active = 1
               AND vp.is_blacklist = 0
-              AND NOT EXISTS (
-                SELECT 1
-                FROM user_blacklist ub
-                WHERE ub.is_active = 1
-                  AND (
-                    (ub.user_id = vp.user_id AND ub.blacklisted_user_id = :user_id)
-                    OR
-                    (ub.user_id = :user_id AND ub.blacklisted_user_id = vp.user_id)
-                  )
-              )
-            ORDER BY RAND()
+              AND u.is_account_public = 1
+              AND u.is_blacklisted = 0
+            ORDER BY vp.post_id ASC
             LIMIT 20
           )
-        ) AS fallback_videos
-        ORDER BY RAND()
+        ) AS combined_posts
+        ORDER BY priority DESC, created_at DESC
         LIMIT :limit;
       `;
 
-      results = await db.sequelize.query(query22, {
+      // ⏱️ START QUERY TIMER
+      const queryStart = Date.now();
+      
+      let results = await db.sequelize.query(primaryQuery, {
         replacements,
         type: db.Sequelize.QueryTypes.SELECT,
       });
-    }
 
-    // 5️⃣ Return results
-    return results ?? [];
-  } catch (error) {
-    console.error("❌ Error in getVideoPostForHome:", error);
-    throw error;
-  }
+      // ⏱️ LOG QUERY TIME
+      queryTime = Date.now() - queryStart;
+
+      // =========================================================
+      // 4️⃣ FALLBACK LOGIC (If Primary Feed is Empty)
+      // =========================================================
+      
+      if (results.length === 0) {
+        console.log(`[Feed] User ${user_id} has viewed all new posts. Switching to Fallback.`);
+        
+        // ⏱️ START FALLBACK TIMER
+        const fallbackStart = Date.now();
+
+        const fallbackQuery = `
+          SELECT * FROM (
+            (
+              -- 🟡 FALLBACK 1: HISTORY
+              SELECT vp.*, 1 as priority
+              FROM massom.v_Posts vp
+              WHERE vp.user_id IN (:following_ids)
+                AND vp.user_id NOT IN (:blacklist_ids)
+                AND vp.is_active = 1
+                AND vp.is_blacklist = 0
+              ORDER BY vp.created_at DESC
+              LIMIT :limit
+            )
+            UNION
+            (
+              -- 🟣 FALLBACK 2: PURE DISCOVERY
+              SELECT vp.*, 0 as priority
+              FROM massom.v_Posts vp
+              JOIN user_master u ON u.user_id = vp.user_id
+              WHERE vp.user_id NOT IN (:discovery_exclude_ids)
+                AND vp.is_active = 1
+                AND vp.is_blacklist = 0
+                AND u.is_account_public = 1
+                AND u.is_blacklisted = 0
+              ORDER BY RAND()
+              LIMIT 20
+            )
+          ) AS fallback_posts
+          ORDER BY priority DESC, created_at DESC
+          LIMIT :limit;
+        `;
+
+        results = await db.sequelize.query(fallbackQuery, {
+          replacements,
+          type: db.Sequelize.QueryTypes.SELECT,
+        });
+
+        // ⏱️ LOG FALLBACK TIME
+        fallbackTime = Date.now() - fallbackStart;
+      }
+
+      // =========================================================
+      // 5️⃣ LOG VIEWED POSTS (Async / Fire & Forget)
+      // =========================================================
+      if (results.length > 0) {
+        (async () => {
+           try {
+             const values = results.map(vp => 
+               `(${user_id}, ${vp.post_id}, 1, NOW(), NOW())`
+             ).join(",");
+
+             await db.sequelize.query(`
+               INSERT INTO user_viewed_posts (user_id, post_id, is_active, created_at, modified_at)
+               VALUES ${values}
+               ON DUPLICATE KEY UPDATE modified_at = NOW(), is_active = 1;
+             `);
+           } catch (logErr) {
+             console.error("[Feed] View logging failed:", logErr.message);
+           }
+        })();
+      }
+
+      // =========================================================
+      // 6️⃣ FINAL PERFORMANCE LOG
+      // =========================================================
+      const totalTime = Date.now() - startTime;
+      
+      // This will print a clear report in your console:
+      // [Feed Perf] User: 101 | Total: 45ms | Fetch: 5ms | Query: 38ms | Fallback: 0ms | Results: 20
+      console.log(
+        `[Feed Perf] User: ${user_id} | ` +
+        `Total: ${totalTime}ms | ` +
+        `Fetch (Cache+DB): ${fetchTime}ms | ` +
+        `Main Query: ${queryTime}ms | ` +
+        `Fallback: ${fallbackTime}ms | ` +
+        `Results: ${results.length}`
+      );
+
+      return results;
+
+    } catch (error) {
+      console.error("❌ Error in getPostByUserIdForHome:", error);
+      throw error;
+    }
+},
+
+getVideoPostByUserIdForHomePage: async (user_id, limit = 20, batchIndex = 0) => {
+    try {
+      // ⏱️ START TIMER
+      const startTime = Date.now();
+      const limitNum = Number(limit);
+      
+      let fetchTime = 0, queryTime = 0, fallbackTime = 0;
+
+      // =========================================================
+      // 1️⃣ FAST DATA FETCHING (Parallel)
+      // =========================================================
+      
+      // A. Get User Relations from RAM Cache
+      const relationsPromise = relationCache.get(user_id, batchIndex);
+
+      // B. Get Viewed VIDEOS from DB (Note: Different table than Posts)
+      const viewedPromise = db.sequelize.query(
+        `SELECT post_id FROM user_viewed_video 
+         WHERE user_id = :uid AND is_active = 1 
+         ORDER BY modified_at DESC LIMIT 500`,
+        { replacements: { uid: user_id }, type: db.Sequelize.QueryTypes.SELECT, raw: true }
+      );
+
+      const [relationsData, viewedResults] = await Promise.all([relationsPromise, viewedPromise]);
+
+      fetchTime = Date.now() - startTime;
+
+      const { following_ids, blacklist_ids } = relationsData;
+      const already_viewed = viewedResults.map((r) => r.post_id);
+
+      // =========================================================
+      // 2️⃣ PREPARE SQL VARIABLES
+      // =========================================================
+
+      const discoveryExcludeIds = [...new Set([...following_ids, ...blacklist_ids, user_id])];
+
+      const replacements = {
+        user_id,
+        limit: limitNum,
+        following_ids: following_ids.length > 0 ? following_ids : [-1],
+        blacklist_ids: blacklist_ids.length > 0 ? blacklist_ids : [-1],
+        discovery_exclude_ids: discoveryExcludeIds.length > 0 ? discoveryExcludeIds : [-1],
+        already_viewed: already_viewed.length > 0 ? already_viewed : [-1]
+      };
+
+      // =========================================================
+      // 3️⃣ PRIMARY QUERY (Optimized for Video)
+      // =========================================================
+      
+      const primaryQuery = `
+        SELECT * FROM (
+          (
+            -- 🟢 FEED PART 1: FOLLOWING (Videos Only)
+            SELECT vp.*, 1 as priority
+            FROM massom.v_Posts vp
+            INNER JOIN massom.v_PostMedia vpm ON vp.post_id = vpm.post_id
+            WHERE vp.user_id IN (:following_ids)
+              AND vp.user_id NOT IN (:blacklist_ids)
+              AND vp.post_id NOT IN (:already_viewed)
+              AND vp.is_active = 1
+              AND vp.is_blacklist = 0
+              AND vpm.media_type = 'video' -- 🎥 Video Filter
+            ORDER BY vp.created_at DESC
+            LIMIT :limit
+          )
+          UNION
+          (
+            -- 🔵 FEED PART 2: DISCOVERY (Smart Random Videos)
+            SELECT vp.*, 0 as priority
+            FROM massom.v_Posts vp
+            INNER JOIN massom.v_PostMedia vpm ON vp.post_id = vpm.post_id
+            -- Optimized Random Selection
+            JOIN (
+                SELECT FLOOR(RAND() * (SELECT MAX(post_id) FROM massom.v_Posts)) AS rand_id
+            ) AS r
+            JOIN user_master u ON u.user_id = vp.user_id
+            WHERE vp.post_id >= r.rand_id
+              AND vp.user_id NOT IN (:discovery_exclude_ids)
+              AND vp.post_id NOT IN (:already_viewed)
+              AND vp.is_active = 1
+              AND vp.is_blacklist = 0
+              AND vpm.media_type = 'video' -- 🎥 Video Filter
+              AND u.is_account_public = 1
+              AND u.is_blacklisted = 0
+            ORDER BY vp.post_id ASC
+            LIMIT 20
+          )
+        ) AS combined_videos
+        ORDER BY priority DESC, created_at DESC
+        LIMIT :limit;
+      `;
+
+      const queryStart = Date.now();
+      
+      let results = await db.sequelize.query(primaryQuery, {
+        replacements,
+        type: db.Sequelize.QueryTypes.SELECT,
+      });
+
+      queryTime = Date.now() - queryStart;
+
+      // =========================================================
+      // 4️⃣ FALLBACK LOGIC (If Primary Feed is Empty)
+      // =========================================================
+      
+      if (results.length === 0) {
+        console.log(`[VideoFeed] User ${user_id} has viewed all new videos. Switching to Fallback.`);
+        
+        const fallbackStart = Date.now();
+
+        const fallbackQuery = `
+          SELECT * FROM (
+            (
+              -- 🟡 FALLBACK 1: HISTORY (Show followed videos again)
+              SELECT vp.*, 1 as priority
+              FROM massom.v_Posts vp
+              INNER JOIN massom.v_PostMedia vpm ON vp.post_id = vpm.post_id
+              WHERE vp.user_id IN (:following_ids)
+                AND vp.user_id NOT IN (:blacklist_ids)
+                AND vp.is_active = 1
+                AND vp.is_blacklist = 0
+                AND vpm.media_type = 'video'
+              ORDER BY vp.created_at DESC
+              LIMIT :limit
+            )
+            UNION
+            (
+              -- 🟣 FALLBACK 2: PURE DISCOVERY
+              SELECT vp.*, 0 as priority
+              FROM massom.v_Posts vp
+              INNER JOIN massom.v_PostMedia vpm ON vp.post_id = vpm.post_id
+              JOIN user_master u ON u.user_id = vp.user_id
+              WHERE vp.user_id NOT IN (:discovery_exclude_ids)
+                AND vp.is_active = 1
+                AND vp.is_blacklist = 0
+                AND vpm.media_type = 'video'
+                AND u.is_account_public = 1
+                AND u.is_blacklisted = 0
+              ORDER BY RAND() -- Safe on fallback because dataset is filtered
+              LIMIT 20
+            )
+          ) AS fallback_videos
+          ORDER BY priority DESC, created_at DESC
+          LIMIT :limit;
+        `;
+
+        results = await db.sequelize.query(fallbackQuery, {
+          replacements,
+          type: db.Sequelize.QueryTypes.SELECT,
+        });
+
+        fallbackTime = Date.now() - fallbackStart;
+      }
+
+      // =========================================================
+      // 5️⃣ LOG VIEWED VIDEOS (Async / Fire & Forget)
+      // =========================================================
+      if (results.length > 0) {
+        (async () => {
+           try {
+             const values = results.map(vp => 
+               `(${user_id}, ${vp.post_id}, 1, NOW(), NOW())`
+             ).join(",");
+
+             // ⚠️ NOTE: Inserting into user_viewed_video table
+             await db.sequelize.query(`
+               INSERT INTO user_viewed_video (user_id, post_id, is_active, created_at, modified_at)
+               VALUES ${values}
+               ON DUPLICATE KEY UPDATE modified_at = NOW(), is_active = 1;
+             `);
+           } catch (logErr) {
+             console.error("[VideoFeed] View logging failed:", logErr.message);
+           }
+        })();
+      }
+
+      // =========================================================
+      // 6️⃣ FINAL PERFORMANCE LOG
+      // =========================================================
+      const totalTime = Date.now() - startTime;
+      
+      console.log(
+        `[VideoFeed Perf] User: ${user_id} | ` +
+        `Total: ${totalTime}ms | ` +
+        `Fetch: ${fetchTime}ms | ` +
+        `Query: ${queryTime}ms | ` +
+        `Fallback: ${fallbackTime}ms | ` +
+        `Results: ${results.length}`
+      );
+
+      return results;
+
+    } catch (error) {
+      console.error("❌ Error in getVideoPostByUserIdForHomePage:", error);
+      throw error;
+    }
+  },
+// NEW: Atomic Increment/Decrement for Posts
+CountUpdatePost: async (post_id, fieldName, amount) => {
+    try {
+        return await PostsModel(db.sequelize).increment(fieldName, {
+            by: amount, // Pass negative number (e.g., -1) to decrement
+            where: { post_id: post_id },
+        });
+    } catch (error) {
+        throw error;
+    }
 },
 
 };

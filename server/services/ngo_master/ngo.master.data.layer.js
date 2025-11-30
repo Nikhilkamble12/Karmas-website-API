@@ -158,7 +158,17 @@ const NgoMasterDAL = {
         console.error("Error while searching NGOs: ", error);
         throw error;
     }
-}
+},UpdateDataCount: async (ngo_id, fieldName, amount) => {
+    try {
+        const result = await NgoMasterModel(db.sequelize).increment(fieldName, { 
+            by: amount, 
+            where: { ngo_id: ngo_id } 
+        });
+        return result;
+    } catch (error) {
+        throw error;
+    }
+},
 
 }
 export default NgoMasterDAL

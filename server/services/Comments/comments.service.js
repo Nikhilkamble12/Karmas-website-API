@@ -48,7 +48,13 @@ const CommentService = {
         }
     },getCommentByUserId:async(user_id,limit,offset)=>{
         try{
-            return await CommentsDAL
+            return await CommentsDAL.getCommentByUserIdByView(user_id,limit,offset)
+        }catch(error){
+            throw error
+        }
+    },IncrementCommentCount:async(comment_id, fieldName, amount)=>{
+        try{
+            return await CommentsDAL.IncrementDataCommentCount(comment_id, fieldName, amount)
         }catch(error){
             throw error
         }

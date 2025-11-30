@@ -54,6 +54,13 @@ const UserActivtyService = {
         }catch(error){
             throw error
         }
+    },UpdateUserDataCount:async(user_id, fieldName, amount)=>{
+        try{
+            return await UserActivityDAL.UpdateUserDataCount(user_id, fieldName, amount)
+        }catch(error){
+            throw error
+        }
     }
+
 }
 export default UserActivtyService

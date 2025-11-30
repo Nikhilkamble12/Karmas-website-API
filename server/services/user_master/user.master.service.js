@@ -101,6 +101,12 @@ const UserMasterService = {
         } catch (error) {
             throw error;
         }
+    },UpdateDataCount: async (user_id, fieldName, amount) => {
+        try{
+            return await UserMasterDAL.UpdateDataCount(user_id,fieldName,amount)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default UserMasterService

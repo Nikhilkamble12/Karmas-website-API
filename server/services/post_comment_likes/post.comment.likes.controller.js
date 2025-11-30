@@ -8,112 +8,96 @@ const PostCommentLikesController = {
     create: async (req, res) => {
         try {
             const data = req.body;
-            // Add metadata for creation (created by, created at)
+
+            // 1. Setup Data
             await addMetaDataWhileCreateUpdate(data, req, res, false);
-            if (data.is_liked) {
-                const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req, res))
-                const total_post_comment_likes_no = parseInt(getUserActivityData[0].total_post_comment_likes_no) + 1
-                const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_post_comment_likes_no: total_post_comment_likes_no })
-            }
-            // data.created_by=1,
-            // data.created_at = new Date()
-            // Create the record using ORM
+            const userId = await tokenData(req, res); // Get ID once
+            data.user_id = userId;
+
+            // 2. Create the Like Record
             const createData = await PostCommentLikesService.createService(data);
+
             if (createData) {
-                return res
-                    .status(responseCode.CREATED)
-                    .send(
-                        commonResponse(
-                            responseCode.CREATED,
-                            responseConst.SUCCESS_ADDING_RECORD
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_ADDING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-        } catch (error) {
-            console.log("error", error)
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
-        }
-    },
-    // update Record Into Db
-    update: async (req, res) => {
-        try {
-            const id = req.query.id
-            const data = req.body
-            // Add metadata for modification (modified by, modified at)
-            await addMetaDataWhileCreateUpdate(data, req, res, true);
-            const getOlderData = await PostCommentLikesService.getServiceById(id)
-            if (data.is_liked !== getOlderData.is_liked) {
-                const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req, res))
+                // 3. Update Counters in Parallel (Fire and Forget)
                 if (data.is_liked) {
-                    const total_likes = parseInt(getUserActivityData[0].total_post_comment_likes_no) + 1
-                    const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_post_comment_likes_no: total_likes })
-                } else {
-                    const total_likes = parseInt(getUserActivityData[0].total_post_comment_likes_no) - 1
-                    const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_post_comment_likes_no: total_likes })
+                    const tasks = [];
+
+                    // A. Increment User Activity (Total likes made by user)
+                    tasks.push(UserActivtyService.UpdateUserDataCount(userId, 'total_post_comment_likes_no', 1));
+
+                    await Promise.all(tasks);
                 }
+
+                return res.status(responseCode.CREATED).send(
+                    commonResponse(responseCode.CREATED, responseConst.SUCCESS_ADDING_RECORD)
+                );
+            } else {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.ERROR_ADDING_RECORD, null, true)
+                );
             }
 
-            // Update the record using ORM
-            const updatedRowsCount = await PostCommentLikesService.updateService(id, data);
-            // if (updatedRowsCount > 0) {
-            //     const newData = await PostCommentLikesService.getServiceById(id);
-            //     // Update the JSON data in the file
-            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
-            // }
-            // Handle case where no records were updated
-            if (updatedRowsCount === 0) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_UPDATING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-            return res
-                .status(responseCode.CREATED)
-                .send(
-                    commonResponse(
-                        responseCode.CREATED,
-                        responseConst.SUCCESS_UPDATING_RECORD
-                    )
-                );
         } catch (error) {
             logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+            );
+        }
+    },
+
+    update: async (req, res) => {
+        try {
+            const id = req.query.id;
+            const data = req.body;
+
+            await addMetaDataWhileCreateUpdate(data, req, res, true);
+
+            // 1. Get current state (Read Once)
+            const oldLikeData = await PostCommentLikesService.getServiceById(id);
+
+            if (!oldLikeData) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true)
                 );
+            }
+
+            // 2. Logic Check: Did status change?
+            if (data.is_liked !== undefined && data.is_liked !== oldLikeData.is_liked) {
+                const tasks = [];
+                const isNowLiked = Boolean(data.is_liked);
+                const userId = await tokenData(req, res);
+
+                if (isNowLiked) {
+                    // Changed from Dislike -> Like (Add 1)
+                    tasks.push(UserActivtyService.UpdateUserDataCount(userId, 'total_post_comment_likes_no', 1));
+                    // Optional: Increment Comment Count
+                    // tasks.push(PostCommentService.UpdateDataCount(oldLikeData.comment_id, 'total_likes', 1));
+                } else {
+                    // Changed from Like -> Dislike (Subtract 1)
+                    tasks.push(UserActivtyService.UpdateUserDataCount(userId, 'total_post_comment_likes_no', -1));
+                    // Optional: Decrement Comment Count
+                    // tasks.push(PostCommentService.UpdateDataCount(oldLikeData.comment_id, 'total_likes', -1));
+                }
+
+                // Add the record update to the task list
+                tasks.push(PostCommentLikesService.updateService(id, data));
+
+                // Run updates in parallel
+                await Promise.all(tasks);
+            } else {
+                // Status didn't change, just update metadata
+                await PostCommentLikesService.updateService(id, data);
+            }
+
+            return res.status(responseCode.CREATED).send(
+                commonResponse(responseCode.CREATED, responseConst.SUCCESS_UPDATING_RECORD)
+            );
+
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+            );
         }
     },
     // Retrieve all records 
@@ -251,53 +235,76 @@ const PostCommentLikesController = {
     // Delete A Record 
     deleteData: async (req, res) => {
         try {
-            const id = req.query.id
-            const getPostCommentLikeById = await PostCommentLikesService.getServiceById(id)
+            const id = req.query.id;
 
+            // 1. Fetch Data First (Fail Fast)
+            // We need to know who the user is and if they actually 'liked' it
+            const likeData = await PostCommentLikesService.getServiceById(id);
 
-            // Delete data from the database
-            const deleteData = await PostCommentLikesService.deleteByid(id, req, res)
-            // Also delete data from the JSON file
-            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
-            if (deleteData === 0) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_DELETING_RECORD,
-                            null,
-                            true
-                        )
-                    );
+            if (likeData && likeData.length == 0) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND, // Or "Record not found"
+                        null,
+                        true
+                    )
+                );
             }
-            if(getPostCommentLikeById && getPostCommentLikeById.is_liked){
-            const getUserActivityData = await UserActivtyService.getDataByUserId(getPostCommentLikeById.user_id)
-            const total_post_comment_likes_no = parseInt(getUserActivityData[0].total_post_comment_likes_no) - 1
-            const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_post_comment_likes_no: total_post_comment_likes_no })
+
+            const tasks = [];
+
+            // 2. Decrement Counter (Atomic)
+            // Only decrement if the record was actually a "Like"
+            if (likeData.is_liked) {
+                // We use -1 to decrement. 
+                // We do NOT need to fetch the User Activity data first.
+                tasks.push(
+                    UserActivtyService.UpdateUserDataCount(likeData.user_id, 'total_post_comment_likes_no', -1)
+                );
             }
-            return res
-                .status(responseCode.CREATED)
-                .send(
+
+            // 3. Delete the Record
+            // Push the delete operation into the same parallel queue
+            tasks.push(PostCommentLikesService.deleteByid(id, req, res));
+
+            // 4. Execute Operations Simultaneously
+            const results = await Promise.allSettled(tasks);
+
+            // Check the result of the Delete operation (it was the last task added)
+            const deleteResult = results[results.length - 1];
+
+            if (deleteResult.status === 'fulfilled' && deleteResult.value !== 0) {
+                return res.status(responseCode.CREATED).send(
                     commonResponse(
                         responseCode.CREATED,
                         responseConst.SUCCESS_DELETING_RECORD
                     )
                 );
-        } catch (error) {
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
+            } else {
+                return res.status(responseCode.BAD_REQUEST).send(
                     commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
+                        responseCode.BAD_REQUEST,
+                        responseConst.ERROR_DELETING_RECORD,
                         null,
                         true
                     )
                 );
+            }
+
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
         }
-    }, getPostCommentLikesByPostCommentId: async (req, res) => {
+    },
+    getPostCommentLikesByPostCommentId: async (req, res) => {
         try {
             const post_cmt_id = req.query.post_cmt_id
             const limit = req.query.limit
@@ -338,12 +345,12 @@ const PostCommentLikesController = {
                     )
                 );
         }
-    },getPostCommentLikesByUserIdByView:async(req,res)=>{
-        try{
+    }, getPostCommentLikesByUserIdByView: async (req, res) => {
+        try {
             const user_id = req.query.user_id
             const limit = req.query.limit
             const offset = req.query.offset
-            const PostCommentLikesByView = await PostCommentLikesService.getPostCommentLikesByUserId(user_id,limit,offset)
+            const PostCommentLikesByView = await PostCommentLikesService.getPostCommentLikesByUserId(user_id, limit, offset)
             if (PostCommentLikesByView.length !== 0) {
                 return res
                     .status(responseCode.OK)
@@ -366,7 +373,7 @@ const PostCommentLikesController = {
                         )
                     );
             }
-        }catch(error){
+        } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)

@@ -243,7 +243,17 @@ const UserMasterDAL = {
         } catch (error) {
             throw error;
         }
+    },UpdateDataCount: async (user_id, fieldName, amount) => {
+    try {
+        const result = await UserMasterModel(db.sequelize).increment(fieldName, { 
+            by: amount, 
+            where: { user_id: user_id } 
+        });
+        return result;
+    } catch (error) {
+        throw error;
     }
+},
 }
 
 export default UserMasterDAL

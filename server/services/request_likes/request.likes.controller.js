@@ -14,185 +14,175 @@ const RequestLikesController = {
     create: async (req, res) => {
         try {
             const data = req.body;
-            data.user_id = await tokenData(req, res);
 
-            // Add metadata for creation
+            // 1. Setup Data
+            const userId = await tokenData(req, res);
+            data.user_id = userId;
             await addMetaDataWhileCreateUpdate(data, req, res, false);
 
-            // Check if user has already liked/disliked this request
+            // 2. Check for Existing Interaction (Read Once)
             const existingLike = await RequestLikeService.getDataByUserIdandRequestId(data.user_id, data.request_id);
 
+            // ======================================================
+            // SCENARIO A: UPDATE EXISTING (Toggle)
+            // ======================================================
             if (existingLike && existingLike.length > 0) {
                 const oldLike = existingLike[0];
+                const tasks = [];
 
-                // ---- Case 1: dislike -> like ----
+                // Case 1: Dislike -> Like
                 if (!oldLike.is_liked && data.is_liked) {
-                    // Update user activity like count
-                    const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
-                    const total_request_like_no = parseInt(getUserActivityData[0].total_request_like_no ?? 0) + 1;
-                    await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no:total_request_like_no });
-
-                    // Update request total_likes
-                    const getRequestData = await RequestService.getServiceById(data.request_id);
-                    const total_likes = parseInt(getRequestData.total_likes ?? 0) + 1;
-                    await RequestService.updateService(data.request_id, { total_likes });
+                    tasks.push(UserActivtyService.UpdateUserDataCount(userId, 'total_request_like_no', 1));
+                    tasks.push(RequestService.UpdateRequestCount(data.request_id, 'total_likes', 1));
+                }
+                // Case 2: Like -> Dislike
+                else if (oldLike.is_liked && !data.is_liked) {
+                    tasks.push(UserActivtyService.UpdateUserDataCount(userId, 'total_request_like_no', -1));
+                    tasks.push(RequestService.UpdateRequestCount(data.request_id, 'total_likes', -1));
                 }
 
-                // ---- Case 2: like -> dislike ----
-                if (oldLike.is_liked && !data.is_liked) {
-                    const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
-                    const total_request_like_no = Math.max(0, parseInt(getUserActivityData[0].total_request_like_no ?? 0) - 1);
-                    await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no:total_request_like_no });
+                // Update the record itself
+                tasks.push(RequestLikeService.updateService(oldLike.like_id, data));
 
-                    const getRequestData = await RequestService.getServiceById(data.request_id);
-                    const total_likes = Math.max(0, parseInt(getRequestData.total_likes ?? 0) - 1);
-                    await RequestService.updateService(data.request_id, { total_likes });
-                }
+                // Execute in Parallel
+                await Promise.all(tasks);
 
-                // ---- Update the existing like record ----
-                await RequestLikeService.updateService(oldLike.like_id, data);
+                return res.status(responseCode.OK).send(
+                    commonResponse(responseCode.OK, responseConst.SUCCESS_UPDATING_RECORD)
+                );
+            }
 
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK, 
-                            responseConst.SUCCESS_UPDATING_RECORD
-                        )
-                    );
-            } 
-            // ---- New like entry ----
+            // ======================================================
+            // SCENARIO B: CREATE NEW
+            // ======================================================
             else {
-                // Increment total_request_like_no and total_likes if it’s a like
-                if (data.is_liked) {
-                    const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
-                    const total_request_like_no = parseInt(getUserActivityData[0].total_request_like_no ?? 0) + 1;
-                    await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no:total_request_like_no });
-
-                    const getRequestData = await RequestService.getServiceById(data.request_id);
-                    const total_likes = parseInt(getRequestData.total_likes ?? 0) + 1;
-                    await RequestService.updateService(data.request_id, { total_likes });
-                }
-
-                // Create new like record
+                // 1. Create Record First (Fail Fast)
                 const createData = await RequestLikeService.createService(data);
 
-                // ---- Send notification only for new likes ----
-                if (createData && data.is_liked) {
-                    const currentUser = await UserMasterService.getServiceById(data.user_id);
-                    const requestData = await RequestService.getServiceById(data.request_id);
-                    const getUserToken = await UserTokenService.GetTokensByUserIds(requestData.request_user_id);
-                    const requestMediaData = await RequestMediaService.getDataByRequestIdByView(data.request_id);
+                if (createData) {
+                    const tasks = [];
 
-                    if (currentUser.file_path && currentUser.file_path !== "null" && currentUser.file_path !== "") {
-                        currentUser.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentUser.file_path}`;
-                    } else {
-                        currentUser.file_path = null;
+                    // 2. Update Counters (Atomic & Parallel)
+                    if (data.is_liked) {
+                        tasks.push(UserActivtyService.UpdateUserDataCount(userId, 'total_request_like_no', 1));
+                        tasks.push(RequestService.UpdateRequestCount(data.request_id, 'total_likes', 1));
                     }
 
-                    const template = notificationTemplates.requestLiked({ username: currentUser.user_name });
+                    // 3. Notification Logic (Async Wrapper)
+                    if (data.is_liked) {
+                        tasks.push((async () => {
+                            // Fetch User and Request data in parallel for notification
+                            const [currentUser, requestData] = await Promise.all([
+                                UserMasterService.getServiceById(userId),
+                                RequestService.getServiceById(data.request_id)
+                            ]);
 
-                    if (requestData.request_user_id !== data.user_id && getUserToken.length !== 0) {
-                        await sendTemplateNotification({
-                            templateKey: "Requestliked-notification",
-                            templateData: template,
-                            userIds: getUserToken,
-                            metaData: {
-                                like_id: createData.dataValues.like_id,
-                                user_profile: currentUser?.file_path,
-                                media_url: requestMediaData.length !== 0 ? requestMediaData[0]?.media_url : null,
-                                created_by: data.user_id
+                            if (requestData && requestData.request_user_id !== userId) {
+                                const getUserToken = await UserTokenService.GetTokensByUserIds(requestData.request_user_id);
+
+                                if (getUserToken.length > 0) {
+                                    const requestMediaData = await RequestMediaService.getDataByRequestIdByView(data.request_id);
+
+                                    // Profile URL Logic
+                                    const profileUrl = (currentUser.file_path && currentUser.file_path !== "null")
+                                        ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentUser.file_path}`
+                                        : null;
+
+                                    const template = notificationTemplates.requestLiked({ username: currentUser.user_name });
+
+                                    await sendTemplateNotification({
+                                        templateKey: "Requestliked-notification",
+                                        templateData: template,
+                                        userIds: getUserToken,
+                                        metaData: {
+                                            like_id: createData.like_id || createData.dataValues?.like_id,
+                                            user_profile: profileUrl,
+                                            media_url: requestMediaData.length > 0 ? requestMediaData[0]?.media_url : null,
+                                            created_by: userId
+                                        }
+                                    });
+                                }
                             }
-                        });
+                        })());
                     }
-                }
 
-                return res
-                    .status(responseCode.CREATED)
-                    .send(
-                        commonResponse(
-                            responseCode.CREATED, 
-                            responseConst.SUCCESS_ADDING_RECORD
-                        )
+                    // Execute counters and notification logic simultaneously
+                    await Promise.allSettled(tasks);
+
+                    return res.status(responseCode.CREATED).send(
+                        commonResponse(responseCode.CREATED, responseConst.SUCCESS_ADDING_RECORD)
                     );
+                } else {
+                    return res.status(responseCode.BAD_REQUEST).send(
+                        commonResponse(responseCode.BAD_REQUEST, responseConst.ERROR_ADDING_RECORD, null, true)
+                    );
+                }
             }
 
         } catch (error) {
-            console.log("error", error);
             logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+            );
         }
     },
-    // update Record Into Db
+
     update: async (req, res) => {
         try {
-            const id = req.query.id
-            const data = req.body
-            // Add metadata for modification (modified by, modified at)
+            const id = req.query.id;
+            const data = req.body;
+
             await addMetaDataWhileCreateUpdate(data, req, res, true);
-            const getOlderData = await RequestLikeService.getServiceById(id)
-            if (data.is_liked !== getOlderData.is_liked) {
-                const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req, res))
-                if (data.is_liked) {
-                    const total_likes = parseInt(getUserActivityData[0].total_request_like_no) + 1
-                    const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no: total_likes })
-                } else {
-                    const total_likes = parseInt(getUserActivityData[0].total_request_like_no) - 1
-                    const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no: total_likes })
-                }
+
+            // 1. Get current state (Read Once)
+            const oldLikeData = await RequestLikeService.getServiceById(id);
+
+            if (!oldLikeData) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true)
+                );
             }
 
-            // Update the record using ORM
-            const updatedRowsCount = await RequestLikeService.updateService(id, data);
-            // if (updatedRowsCount > 0) {
-            //     const newData = await RequestLikeService.getServiceById(id);
-            //     // Update the JSON data in the file
-            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
-            // }
-            // Handle case where no records were updated
-            if (updatedRowsCount === 0) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_UPDATING_RECORD,
-                            null,
-                            true
-                        )
-                    );
+            // 2. Logic Check: Did status change?
+            if (data.is_liked !== undefined && data.is_liked !== oldLikeData.is_liked) {
+                const tasks = [];
+                const isNowLiked = Boolean(data.is_liked);
+                const userId = await tokenData(req, res);
+                // Ensure we have request_id (might not be in body for update)
+                const requestId = data.request_id || oldLikeData.request_id;
+
+                if (isNowLiked) {
+                    // Changed from Dislike -> Like (Add 1)
+                    tasks.push(UserActivtyService.UpdateUserDataCount(userId, 'total_request_like_no', 1));
+                    tasks.push(RequestService.UpdateRequestCount(requestId, 'total_likes', 1));
+                } else {
+                    // Changed from Like -> Dislike (Subtract 1)
+                    tasks.push(UserActivtyService.UpdateUserDataCount(userId, 'total_request_like_no', -1));
+                    tasks.push(RequestService.UpdateRequestCount(requestId, 'total_likes', -1));
+                }
+
+                // Add the record update to the task list
+                tasks.push(RequestLikeService.updateService(id, data));
+
+                // Run updates in parallel
+                await Promise.all(tasks);
+            } else {
+                // Status didn't change, just update metadata/record
+                await RequestLikeService.updateService(id, data);
             }
-            return res
-                .status(responseCode.CREATED)
-                .send(
-                    commonResponse(
-                        responseCode.CREATED,
-                        responseConst.SUCCESS_UPDATING_RECORD
-                    )
-                );
+
+            return res.status(responseCode.CREATED).send(
+                commonResponse(responseCode.CREATED, responseConst.SUCCESS_UPDATING_RECORD)
+            );
+
         } catch (error) {
             logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+            );
         }
     },
+
     // Retrieve all records 
     getAllByView: async (req, res) => {
         try {
@@ -328,56 +318,85 @@ const RequestLikesController = {
     // Delete A Record 
     deleteData: async (req, res) => {
         try {
-            const id = req.query.id
-            // Delete data from the database
-            const deleteData = await RequestLikeService.deleteByid(id, req, res)
-            // Also delete data from the JSON file
-            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
-            if (deleteData === 0) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_DELETING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-            const getDataById = await RequestLikeService.getServiceById(id)
-            // ---- Case 2: like -> dislike ----
-            if (getDataById.is_liked) {
-                const getUserActivityData = await UserActivtyService.getDataByUserId(getDataById.user_id);
-                const total_request_like_no = Math.max(0, parseInt(getUserActivityData[0].total_request_like_no ?? 0) - 1);
-                await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_request_like_no:total_request_like_no });
+            const id = req.query.id;
 
-                const getRequestData = await RequestService.getServiceById(getDataById.request_id);
-                const total_likes = Math.max(0, parseInt(getRequestData.total_likes ?? 0) - 1);
-                await RequestService.updateService(data.request_id, { total_likes });
+            // 1. Fetch First (Fail Fast)
+            // We MUST fetch the like data BEFORE deleting it to know the user_id and request_id
+            const likeData = await RequestLikeService.getServiceById(id);
+
+            if (likeData && likeData.length == 0) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
             }
-            return res
-                .status(responseCode.CREATED)
-                .send(
+
+            const tasks = [];
+
+            // 2. Decrement Counters (Atomic)
+            // Only decrement if the record was actually a "Like" (is_liked == true)
+            if (likeData.is_liked) {
+
+                // A. Decrement User Activity (Total likes by user)
+                // Fix: Use likeData.user_id, ensures accuracy even if Admin deletes it
+                tasks.push(
+                    UserActivtyService.UpdateUserDataCount(likeData.user_id, 'total_request_like_no', -1)
+                );
+
+                // B. Decrement Request Total Likes
+                // Fix: Use likeData.request_id, replaces the undefined 'data.request_id'
+                tasks.push(
+                    RequestService.UpdateRequestCount(likeData.request_id, 'total_likes', -1)
+                );
+            }
+
+            // 3. Delete the Record
+            // Push the delete operation into the same parallel queue
+            tasks.push(RequestLikeService.deleteByid(id, req, res));
+
+            // 4. Execute Simultaneously
+
+            const results = await Promise.allSettled(tasks);
+
+            // Check the result of the Delete operation (it was the last task added)
+            const deleteResult = results[results.length - 1];
+
+            if (deleteResult.status === 'fulfilled' && deleteResult.value !== 0) {
+                return res.status(responseCode.CREATED).send(
                     commonResponse(
                         responseCode.CREATED,
                         responseConst.SUCCESS_DELETING_RECORD
                     )
                 );
-        } catch (error) {
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
+            } else {
+                return res.status(responseCode.BAD_REQUEST).send(
                     commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
+                        responseCode.BAD_REQUEST,
+                        responseConst.ERROR_DELETING_RECORD,
                         null,
                         true
                     )
                 );
+            }
+
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
         }
-    }, getRequestLikeByRequestId: async (req, res) => {
+    },
+
+    getRequestLikeByRequestId: async (req, res) => {
         try {
             const request_id = req.query.request_id
             const limit = req.query.limit
@@ -418,12 +437,12 @@ const RequestLikesController = {
                     )
                 );
         }
-    },geRequestLikeByUserIdByView:async(req,res)=>{
-        try{
+    }, geRequestLikeByUserIdByView: async (req, res) => {
+        try {
             const user_id = req.query.user_id
             const limit = req.query.limit
             const offset = req.query.offset
-            const RequestLikeByView = await RequestLikeService.getRequestLikeByUserId(user_id,limit,offset)
+            const RequestLikeByView = await RequestLikeService.getRequestLikeByUserId(user_id, limit, offset)
             if (RequestLikeByView.length !== 0) {
                 return res
                     .status(responseCode.OK)
@@ -446,7 +465,7 @@ const RequestLikesController = {
                         )
                     );
             }
-        }catch(error){
+        } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)

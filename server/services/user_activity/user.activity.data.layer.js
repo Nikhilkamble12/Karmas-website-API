@@ -98,6 +98,27 @@ const UserActivityDAL = {
         }catch(error){
             throw error
         }
+    },UpdateUserDataCount: async (user_id, fieldName, amount) => {
+    try {
+        // Validation: Ensure amount is a number
+        const valueChange = parseInt(amount);
+        
+        if (isNaN(valueChange)) {
+            throw new Error("Amount must be a valid number");
+        }
+
+        // Sequelize .increment() handles negative numbers automatically!
+        // If amount is 1, it adds 1.
+        // If amount is -1, it subtracts 1.
+        const result = await CommentsModel(db.sequelize).increment(fieldName, { 
+            by: valueChange, 
+            where: { user_id: user_id } 
+        });
+
+        return result;
+    } catch (error) {
+        throw error;
     }
+},
 }
 export default UserActivityDAL

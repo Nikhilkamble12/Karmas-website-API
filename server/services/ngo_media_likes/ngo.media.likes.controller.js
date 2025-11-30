@@ -6,137 +6,136 @@ const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,ad
 
 const NgoMediaLikesController = {
     // Create A new Record 
-    create: async (req, res) => {
-        try {
-            const data = req.body;
-            // Add metadata for creation (created by, created at)
-            await addMetaDataWhileCreateUpdate(data, req, res, false);
-            const user_id = await tokenData(req,res)
-            const getDataByNgoMediaAndUserId = await NgoMediaLikesService.getDataByNgoMediaIdAndUserId(data.ngo_media_id,user_id)
-            if(getDataByNgoMediaAndUserId && getDataByNgoMediaAndUserId.length>0){
-                if(getDataByNgoMediaAndUserId && getDataByNgoMediaAndUserId[0].is_like==false){
-                    if(data.is_like == true){
-                        const getNgoData = await ngoMediaService.getServiceById(data.ngo_media_id)
-                        const total_likesCount = parseInt(getNgoData.total_likes ?? 0) + 1
-                        const updateNgo = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:total_likesCount})
-                    }
-                }else if(getDataByNgoMediaAndUserId && getDataByNgoMediaAndUserId[0].is_like==true){
-                    if(data.is_like==false){
-                        const getNgoData = await ngoMediaService.getServiceById(data.ngo_media_id)
-                        const total_likesCount = parseInt(getNgoData.total_likes ?? 0) - 1
-                        const updateNgo = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:total_likesCount}) 
-                    }
-                }
-                const updateNgoLikes = await NgoMediaLikesService.updateService(getDataByNgoMediaAndUserId[0].like_id,data)
+   create: async (req, res) => {
+    try {
+        const data = req.body;
+        
+        // 1. Setup & Metadata
+        if (!data.ngo_media_id) {
+             return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(responseCode.BAD_REQUEST, responseConst.NGO_MEDIA_ID_IS_REQUIRED, null, true)
+            );
+        }
+        
+        // Use tokenData to get user_id if not provided
+        if (!data.user_id) data.user_id = await tokenData(req, res);
+        
+        await addMetaDataWhileCreateUpdate(data, req, res, false);
+
+        // 2. Check for Existing Interaction (Read Once)
+        const existingLike = await NgoMediaLikesService.getDataByNgoMediaIdAndUserId(data.ngo_media_id, data.user_id);
+
+        // ======================================================
+        // SCENARIO A: UPDATE EXISTING (Toggle Like/Dislike)
+        // ======================================================
+        if (existingLike && existingLike.length > 0) {
+            const oldLike = existingLike[0];
+            const tasks = [];
+
+            // Case 1: Was Disliked (false) -> Now Liked (true)
+            if (!oldLike.is_like && data.is_like) {
+                // Atomic Increment (+1)
+                tasks.push(ngoMediaService.UpdateDataCount(data.ngo_media_id, 'total_likes', 1));
             }
-            // data.created_by=1,
-            // data.created_at = new Date()
-            // Create the record using ORM
+            // Case 2: Was Liked (true) -> Now Disliked (false)
+            else if (oldLike.is_like && !data.is_like) {
+                // Atomic Decrement (-1)
+                tasks.push(ngoMediaService.UpdateDataCount(data.ngo_media_id, 'total_likes', -1));
+            }
+
+            // Update the Like record itself
+            tasks.push(NgoMediaLikesService.updateService(oldLike.like_id, data));
+
+            // Execute in Parallel
+            await Promise.all(tasks);
+
+            return res.status(responseCode.OK).send(
+                commonResponse(responseCode.OK, responseConst.SUCCESS_UPDATING_RECORD)
+            );
+        } 
+        
+        // ======================================================
+        // SCENARIO B: CREATE NEW (First Interaction)
+        // ======================================================
+        else {
+            // 1. Create the record
             const createData = await NgoMediaLikesService.createService(data);
+
             if (createData) {
-                if(data.is_like == true){
-                    const getNgoMediaData = await ngoMediaService.getServiceById(data.ngo_media_id)
-                    const total_likesCount = parseInt(getNgoMediaData.total_likes ?? 0) + 1
-                    const updateNgo = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:total_likesCount})
+                // 2. If it is a Like, Increment Counter (Parallel/Fire-and-forget)
+                if (data.is_like) {
+                    await ngoMediaService.UpdateDataCount(data.ngo_media_id, 'total_likes', 1);
                 }
-                return res
-                    .status(responseCode.CREATED)
-                    .send(
-                        commonResponse(
-                            responseCode.CREATED,
-                            responseConst.SUCCESS_ADDING_RECORD
-                        )
-                    );
+
+                return res.status(responseCode.CREATED).send(
+                    commonResponse(responseCode.CREATED, responseConst.SUCCESS_ADDING_RECORD)
+                );
             } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_ADDING_RECORD,
-                            null,
-                            true
-                        )
-                    );
+                 return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.ERROR_ADDING_RECORD, null, true)
+                );
             }
-        } catch (error) {
-            console.log("error",error)
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
         }
-    }, 
-    // update Record Into Db
-    update: async (req, res) => {
-        try {
-            const id = req.query.id
-            const data = req.body
-            // Add metadata for modification (modified by, modified at)
-            await addMetaDataWhileCreateUpdate(data, req, res, true);
-            const getOlderData = await NgoMediaLikesService.getServiceById(id)
-            if(getOlderData && getOlderData.is_like==false){
-                    if(data.is_like == true){
-                        const getNgoData = await ngoMediaService.getServiceById(data.ngo_media_id)
-                        const total_likesCount = parseInt(getNgoData.total_likes ?? 0) + 1
-                        const updateNgo = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:total_likesCount})
-                    }
-                }else if(getOlderData && getOlderData.is_like==true){
-                    if(data.is_like==false){
-                        const getNgoData = await ngoMediaService.getServiceById(data.ngo_media_id)
-                        const total_likesCount = parseInt(getNgoData.total_likes ?? 0) - 1
-                        const updateNgo = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:total_likesCount}) 
-                    }
-                }
-            // Update the record using ORM
-            const updatedRowsCount = await NgoMediaLikesService.updateService(id, data);
-            // if (updatedRowsCount > 0) {
-            //     const newData = await NgoMediaLikesService.getServiceById(id);
-            //     // Update the JSON data in the file
-            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
-            // }
-            // Handle case where no records were updated
-            if (updatedRowsCount === 0) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_UPDATING_RECORD,
-                            null,
-                            true
-                        )
-                    );
+    } catch (error) {
+        logger.error(`Error ---> ${error}`);
+        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+        );
+    }
+},
+
+update: async (req, res) => {
+    try {
+        const id = req.query.id;
+        const data = req.body;
+
+        await addMetaDataWhileCreateUpdate(data, req, res, true);
+
+        // 1. Get current state
+        const oldLikeData = await NgoMediaLikesService.getServiceById(id);
+        
+        if (!oldLikeData) {
+            return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true)
+            );
+        }
+
+        // 2. Logic Check: Did status change?
+        if (data.is_like !== undefined && data.is_like !== oldLikeData.is_like) {
+            const tasks = [];
+            const isNowLiked = Boolean(data.is_like);
+            // Ensure we have media ID
+            const mediaId = data.ngo_media_id || oldLikeData.ngo_media_id;
+
+            if (isNowLiked) {
+                // Changed to Liked -> Add 1
+                tasks.push(ngoMediaService.UpdateDataCount(mediaId, 'total_likes', 1));
+            } else {
+                // Changed to Unliked -> Subtract 1
+                tasks.push(ngoMediaService.UpdateDataCount(mediaId, 'total_likes', -1));
             }
-            return res
-                .status(responseCode.CREATED)
-                .send(
-                    commonResponse(
-                        responseCode.CREATED,
-                        responseConst.SUCCESS_UPDATING_RECORD
-                    )
-                );
-        } catch (error) {
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
+
+            // Add the record update to the task list
+            tasks.push(NgoMediaLikesService.updateService(id, data));
+
+            // Run updates in parallel
+            await Promise.all(tasks);
+        } else {
+            // If status didn't change (e.g. just updating metadata), just update record
+            await NgoMediaLikesService.updateService(id, data);
         }
-    },
+
+        return res.status(responseCode.CREATED).send(
+            commonResponse(responseCode.CREATED, responseConst.SUCCESS_UPDATING_RECORD)
+        );
+
+    } catch (error) {
+        logger.error(`Error ---> ${error}`);
+        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+        );
+    }
+},
     // Retrieve all records 
     getAllByView: async (req, res) => {
         try {
@@ -271,52 +270,77 @@ const NgoMediaLikesController = {
     },
     // Delete A Record 
     deleteData: async (req, res) => {
-        try {
-            const id = req.query.id
-            // Delete data from the database
-            const deleteData = await NgoMediaLikesService.deleteByid(id, req, res)
-            // Also delete data from the JSON file
-            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
-            if (deleteData === 0) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_DELETING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-            const getDataById = await NgoMediaLikesService.getServiceById(id)
-            if(getDataById.is_liked == true){
-            const getNgoData = await ngoMediaService.getServiceById(data.ngo_media_id)
-            const total_likesCount = parseInt(getNgoData.total_likes ?? 0) - 1
-            const updateNgo = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:total_likesCount})
-            }
-            return res
-                .status(responseCode.CREATED)
-                .send(
-                    commonResponse(
-                        responseCode.CREATED,
-                        responseConst.SUCCESS_DELETING_RECORD
-                    )
-                );
-        } catch (error) {
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
+    try {
+        const id = req.query.id;
+
+        // 1. Fetch First (CRITICAL FIX)
+        // We must fetch the like data BEFORE deleting it to get the ngo_media_id
+        const likeData = await NgoMediaLikesService.getServiceById(id);
+
+        if (likeData && likeData.length == 0) {
+            return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(
+                    responseCode.BAD_REQUEST,
+                    responseConst.LIKE_RECORDS_NOT_FOUND, // Specific error message
+                    null,
+                    true
+                )
+            );
         }
-    },getNGoMediaLikeByNgoMediaId:async(req,res)=>{
+
+        const tasks = [];
+
+        // 2. Decrement Counter (Atomic)
+        // Check if is_like (or is_liked) was true. 
+        if (likeData.is_like || likeData.is_liked) {
+            // Atomic Decrement (-1)
+            tasks.push(
+                ngoMediaService.UpdateDataCount(likeData.ngo_media_id, 'total_likes', -1)
+            );
+        }
+
+        // 3. Delete the Record
+        // Push delete task to parallel queue
+        tasks.push(NgoMediaLikesService.deleteByid(id, req, res));
+
+        // 4. Execute Simultaneously
+        
+        const results = await Promise.allSettled(tasks);
+
+        // Check result of the delete operation (last task)
+        const deleteResult = results[results.length - 1];
+
+        if (deleteResult.status === 'fulfilled' && deleteResult.value !== 0) {
+            return res.status(responseCode.CREATED).send(
+                commonResponse(
+                    responseCode.CREATED,
+                    responseConst.SUCCESS_DELETING_RECORD
+                )
+            );
+        } else {
+             return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(
+                    responseCode.BAD_REQUEST,
+                    responseConst.ERROR_DELETING_RECORD,
+                    null,
+                    true
+                )
+            );
+        }
+
+    } catch (error) {
+        logger.error(`Error ---> ${error}`);
+        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(
+                responseCode.INTERNAL_SERVER_ERROR,
+                responseConst.INTERNAL_SERVER_ERROR,
+                null,
+                true
+            )
+        );
+    }
+},
+    getNGoMediaLikeByNgoMediaId:async(req,res)=>{
         try{
             const ngo_media_id = req.query.ngo_media_id
             const getAllData = await NgoMediaLikesService.getDataByNgoMediaId(ngo_media_id)
@@ -356,89 +380,92 @@ const NgoMediaLikesController = {
                     )
                 ); 
         }
-    },createOrUpdateNgoMediaLike:async(req,res)=>{
-        try{
-            const data = req.body
-            const user_id = await tokenData(req,res)
-            const checkWetherDataIsPresent = await NgoMediaLikesService.getDataByNgoMediaIdAndUserId(data.ngo_media_id,user_id)
-            const getDataByNgoMediaId = await ngoMediaService.getServiceById(data.ngo_media_id)
-            let media_total_likes = parseInt(getDataByNgoMediaId.total_likes) ?? 0
-            if(checkWetherDataIsPresent && checkWetherDataIsPresent.length>0){
-                if(checkWetherDataIsPresent[0].is_liked==false){
-                    if(data.is_like == true){
-                       media_total_likes += 1 
-                    }
-                }else if(checkWetherDataIsPresent[0].is_liked==false){
-                    if(data.is_like == false){
-                        media_total_likes -= 1 
-                    }
-                }
-            await addMetaDataWhileCreateUpdate(data, req, res, true);
-                const UpdateData = await NgoMediaLikesService.updateService(checkWetherDataIsPresent[0].like_id,data)
-                if (UpdateData === 0) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_UPDATING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-            const updateNgoMedia = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:media_total_likes})
-            return res
-                .status(responseCode.CREATED)
-                .send(
-                    commonResponse(
-                        responseCode.CREATED,
-                        responseConst.SUCCESS_UPDATING_RECORD
-                    )
-                );
-            }else{
-            await addMetaDataWhileCreateUpdate(data, req, res, false);
-                const createData = await NgoMediaLikesService.createService(data)
-                if (createData) {
-                if(data.is_like == true){
-                    media_total_likes += 1 
-                }
-                const updateNgoMedia = await ngoMediaService.updateService(data.ngo_media_id,{total_likes:media_total_likes})
-                return res
-                    .status(responseCode.CREATED)
-                    .send(
-                        commonResponse(
-                            responseCode.CREATED,
-                            responseConst.SUCCESS_ADDING_RECORD
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_ADDING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-            }
-        }catch(error){
-           logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );  
+    },
+   createOrUpdateNgoMediaLike: async (req, res) => {
+    try {
+        const data = req.body;
+        
+        // 1. Validation & Setup
+        if (!data.ngo_media_id) {
+             return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(responseCode.BAD_REQUEST, responseConst.NGO_MEDIA_ID_IS_REQUIRED, null, true)
+            );
         }
-    },getNgoMediaLikeByUserIdAndMediaId:async(req,res)=>{
+
+        // Get User ID (Assuming tokenData is async)
+        const user_id = await tokenData(req, res);
+        data.user_id = user_id;
+
+        // 2. Check for Existing Interaction (Read Once)
+        const existingLike = await NgoMediaLikesService.getDataByNgoMediaIdAndUserId(data.ngo_media_id, user_id);
+
+        // ======================================================
+        // SCENARIO A: UPDATE EXISTING (Toggle Like/Dislike)
+        // ======================================================
+        if (existingLike && existingLike.length > 0) {
+            const oldLike = existingLike[0];
+            const tasks = [];
+
+            // Case 1: Was Disliked (false) -> Now Liked (true)
+            if (!oldLike.is_like && data.is_like) {
+                // Atomic Increment (+1)
+                tasks.push(ngoMediaService.UpdateDataCount(data.ngo_media_id, 'total_likes', 1));
+            }
+            // Case 2: Was Liked (true) -> Now Disliked (false)
+            else if (oldLike.is_like && !data.is_like) {
+                // Atomic Decrement (-1)
+                tasks.push(ngoMediaService.UpdateDataCount(data.ngo_media_id, 'total_likes', -1));
+            }
+
+            // Only update metadata if status changed
+            if (oldLike.is_like !== data.is_like) {
+                await addMetaDataWhileCreateUpdate(data, req, res, true);
+                
+                // Update the Like record itself
+                tasks.push(NgoMediaLikesService.updateService(oldLike.like_id, data));
+
+                // Execute in Parallel
+                await Promise.all(tasks);
+            }
+
+            return res.status(responseCode.CREATED).send(
+                commonResponse(responseCode.CREATED, responseConst.SUCCESS_UPDATING_RECORD)
+            );
+        } 
+        
+        // ======================================================
+        // SCENARIO B: CREATE NEW (First Interaction)
+        // ======================================================
+        else {
+            await addMetaDataWhileCreateUpdate(data, req, res, false);
+
+            // 1. Create the record
+            const createData = await NgoMediaLikesService.createService(data);
+
+            if (createData) {
+                // 2. If it is a Like, Increment Counter (Parallel/Fire-and-forget)
+                if (data.is_like) {
+                    await ngoMediaService.UpdateDataCount(data.ngo_media_id, 'total_likes', 1);
+                }
+
+                return res.status(responseCode.CREATED).send(
+                    commonResponse(responseCode.CREATED, responseConst.SUCCESS_ADDING_RECORD)
+                );
+            } else {
+                 return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.ERROR_ADDING_RECORD, null, true)
+                );
+            }
+        }
+
+    } catch (error) {
+        logger.error(`Error ---> ${error}`);
+        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+        );
+    }
+}
+    ,getNgoMediaLikeByUserIdAndMediaId:async(req,res)=>{
         try{
             const ngo_media_id = req.query.ngo_media_id
             const user_id = await tokenData(req,res)

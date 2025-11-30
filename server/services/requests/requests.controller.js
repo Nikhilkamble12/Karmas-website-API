@@ -8,71 +8,82 @@ import RequestMediaService from "../request_media/request.media.service.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
 import notificationTemplates from "../../utils/helper/notification.templates.js";
 import UserTokenService from "../user_tokens/user.tokens.service.js";
+import uploadFileToS3Folder from "../../utils/helper/s3.common.code.js";
 import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
 import UserRequestStatsService from "../user_request_stats/user.request.stats.service.js";
 import RequestTagService from "../request_tag/request.tag.service.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+
+const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
 
 const RequestsController = {
     // Create A new Record 
     create: async (req, res) => {
         try {
             const data = req.body;
-            // Add metadata for creation (created by, created at)
-            await addMetaDataWhileCreateUpdate(data, req, res, false);
-            // data.created_by=1,
-            // data.created_at = new Date()
-            // Create the record using ORM
-            if(data.request_user_id == null  || data.request_user_id == "" || data.request_user_id == undefined || data.request_user_id == 0){
-                data.request_user_id = tokenData(req,res)
-                const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
-                const totalRequest = parseInt(getUserActivityData[0].total_requests_no) + 1
-                const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_requests_no:totalRequest})
+
+            // 1. Setup & Validation
+            // Ensure User ID is present
+            if (!data.request_user_id || data.request_user_id == "0" || data.request_user_id == "null") {
+                data.request_user_id = await tokenData(req, res);
             }
-            // const template = notificationTemplates.requestReceivedForEvaluation({requestName:data.RequestName})
-            data.status_id = STATUS_MASTER.REQUEST_DRAFT
+
+            await addMetaDataWhileCreateUpdate(data, req, res, false);
+
+            // Set Default Status
+            data.status_id = STATUS_MASTER.REQUEST_DRAFT;
+
+            // 2. Create the Request Record FIRST (Fail Fast)
+            // We create the record before updating counters. If this fails, the count remains correct.
             const createData = await RequestService.createService(data);
 
             if (createData) {
-               const UserReqest = await UserRequestStatsService.CreateOrUpdateData(data.request_user_id)
-                // const getUserById = await UserTokenService.GetTokensByUserIds(data.request_user_id)
-                // const sendNotifiction = await sendTemplateNotification({templateKey:"Request-Notification",templateData:template,userIds:getUserById,metaData:{request_id:createData.dataValues.RequestId,created_by:tokenData(req,res)}})
-                return res
-                    .status(responseCode.CREATED)
-                    .send(
-                        commonResponse(
-                            responseCode.CREATED,
-                            responseConst.SUCCESS_ADDING_RECORD,
-                            createData
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_ADDING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-        } catch (error) {
-            console.log("error",error)
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
+                const tasks = [];
+
+                // 3. Parallel Execution (Atomic Updates & Stats)
+
+                // A. Atomic Increment (Total Requests by User)
+                // No need to fetch the whole row, just add +1
+                tasks.push(UserActivtyService.UpdateUserDataCount(data.request_user_id, 'total_requests_no', 1));
+
+                // B. Update User Request Statistics
+                tasks.push(UserRequestStatsService.CreateOrUpdateData(data.request_user_id));
+
+                // C. Notifications (Commented out in your code, but if needed, add here)
+                // tasks.push(sendNotification(...));
+
+                // Execute tasks simultaneously
+                await Promise.allSettled(tasks);
+
+                return res.status(responseCode.CREATED).send(
                     commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
+                        responseCode.CREATED,
+                        responseConst.SUCCESS_ADDING_RECORD,
+                        createData
+                    )
+                );
+            } else {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.ERROR_ADDING_RECORD,
                         null,
                         true
                     )
                 );
+            }
+
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
         }
-    }, 
+    },
     // update Record Into Db
     update: async (req, res) => {
         try {
@@ -81,17 +92,17 @@ const RequestsController = {
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, true);
             const getRequestById = await RequestService.getServiceById(id)
-            if(getRequestById.status_id==STATUS_MASTER.REQUEST_DRAFT && getRequestById.request_user_id !== tokenData(req,res)){
-                return res 
-                .status(responseCode.BAD_REQUEST)
-                .send(
-                commonResponse(
-                    responseCode.BAD_REQUEST,
-                    responseConst.REQUEST_IS_INCOMPLETE,
-                    null,
-                    true
-                )
-            )
+            if (getRequestById.status_id == STATUS_MASTER.REQUEST_DRAFT && getRequestById.request_user_id !== tokenData(req, res)) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.REQUEST_IS_INCOMPLETE,
+                            null,
+                            true
+                        )
+                    )
             }
             // Update the record using ORM
             const updatedRowsCount = await RequestService.updateService(id, data);
@@ -178,14 +189,14 @@ const RequestsController = {
 
             // 3️⃣ Group tags by RequestId
             const tagsByRequest = allTags.reduce((acc, tag) => {
-            if (!acc[tag.request_id]) acc[tag.request_id] = [];
-            acc[tag.request_id].push(tag);
-            return acc;
+                if (!acc[tag.request_id]) acc[tag.request_id] = [];
+                acc[tag.request_id].push(tag);
+                return acc;
             }, {});
 
             // 4️⃣ Assign tags to each request
             for (const currentData of getAll) {
-            currentData.tagged_users = tagsByRequest[currentData.RequestId] || [];
+                currentData.tagged_users = tagsByRequest[currentData.RequestId] || [];
             }
 
 
@@ -212,7 +223,7 @@ const RequestsController = {
                     );
             }
         } catch (error) {
-            console.log("error",error)
+            console.log("error", error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -282,7 +293,7 @@ const RequestsController = {
                     );
             }
         } catch (error) {
-            console.log("error",error)
+            console.log("error", error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -297,88 +308,120 @@ const RequestsController = {
         }
     },
     // Delete A Record 
-    deleteData: async (req, res) => {
-        try {
-            const id = req.query.id
+deleteData: async (req, res) => {
+    try {
+        const id = req.query.id;
+        const currentUserId = tokenData(req, res);
 
-            // Delete data from the database
-            const getDataById = await RequestService.getServiceById(id)
-            if(getDataById.created_by !== tokenData(req,res)){
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.CANNOT_DELETE_REQUEST_AT_THIS_STAGE,
-                            null,
-                            true
-                        )
-                    );
-            }
-            if(getDataById.status_id == STATUS_MASTER.REQUEST_APPROVAL_PENDINNG || getDataById.status_id == STATUS_MASTER.REQUEST_REJECTED || getDataById.status_id == STATUS_MASTER.REQUEST_APPROVED){
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.CANNOT_DELETE_REQUEST_AT_THIS_STAGE,
-                            null,
-                            true
-                        )
-                    );
-            }
-            const getUserActivityData = await UserActivtyService.getDataByUserId(getDataById.request_user_id)
-            const updateUserActivityData = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_requests_no:parseInt(getUserActivityData[0].total_requests_no) - 1})
-            const deleteData = await RequestService.deleteByid(id, req, res)
-            const deleteRequestPost = await RequestMediaService.deleteDataByRequestId(id, req, res)
+        // 1. Fetch Request Data (Fail Fast)
+        const requestData = await RequestService.getServiceById(id);
 
-            // Also delete data from the JSON file
-            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
-            if (deleteData === 0) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_DELETING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-            if(getDataById.AssignedNGO && getDataById.AssignedNGO!==null && getDataById.AssignedNGO!==0){
-                const recalculate = await RequestNgoService.getRequestNgoCountByNgo(getDataById.AssignedNGO)
-                const updateNgo = await NgoMasterService.updateService(getDataById.AssignedNGO,{total_request_assigned:recalculate[0].total_ngo_request,total_request_completed:recalculate[0].total_request_approved_status,total_request_rejected:recalculate[0].total_request_rejected})
-            }
-            return res
-                .status(responseCode.CREATED)
-                .send(
-                    commonResponse(
-                        responseCode.CREATED,
-                        responseConst.SUCCESS_DELETING_RECORD
-                    )
-                );
-        } catch (error) {
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
+        if (requestData && requestData.length==0) {
+            return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true)
+            );
         }
-    },getRequestByUserId:async(req,res)=>{
-        try{
+
+        // 2. Authorization Check
+        if (requestData.created_by !== currentUserId) {
+            return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(responseCode.BAD_REQUEST, responseConst.CANNOT_DELETE_REQUEST_AT_THIS_STAGE, null, true)
+            );
+        }
+
+        // 3. Stage Validation (Cannot delete if Active/Approved/Rejected)
+        // Assuming DRAFT is the only deletable stage
+        const invalidStatuses = [
+            STATUS_MASTER.REQUEST_APPROVAL_PENDINNG, 
+            STATUS_MASTER.REQUEST_REJECTED, 
+            STATUS_MASTER.REQUEST_APPROVED
+        ];
+        
+        if (invalidStatuses.includes(parseInt(requestData.status_id))) {
+            return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(responseCode.BAD_REQUEST, responseConst.CANNOT_DELETE_REQUEST_AT_THIS_STAGE, null, true)
+            );
+        }
+
+        const tasks = [];
+
+        // 4. Decrement User Activity Stats (Atomic)
+        if (requestData.request_user_id) {
+            tasks.push(
+                UserActivtyService.UpdateUserDataCount(requestData.request_user_id, 'total_requests_no', -1)
+            );
+        }
+
+        // 5. Handle Media Deletion (S3 + DB)
+        // Fetch media list first
+        const requestMediaList = await RequestMediaService.getDataByRequestIdByView(id);
+        
+        if (requestMediaList && requestMediaList.length > 0) {
+            // A. Delete from S3 (Parallelize)
+            const s3Promises = requestMediaList.map(media => {
+                if (media.s3_url) {
+                    return uploadFileToS3Folder.deleteVideoByUrl(media.s3_url);
+                }
+            });
+            tasks.push(Promise.allSettled(s3Promises));
+
+            // B. Delete Media Records from DB
+            tasks.push(RequestMediaService.deleteDataByRequestId(id, req, res));
+        }
+
+        // 6. Delete Main Request Record
+        tasks.push(RequestService.deleteByid(id, req, res));
+
+        // 7. Execute Deletions Simultaneously
+        
+        const results = await Promise.allSettled(tasks);
+
+        // Check Main Delete Result (Last task added)
+        const mainDeleteResult = results[results.length - 1];
+
+        if (mainDeleteResult.status === 'fulfilled' && mainDeleteResult.value !== 0) {
+            
+            // 8. Post-Delete Cleanup: Recalculate NGO Stats (If assigned)
+            // This runs AFTER delete to ensure counts are accurate
+            if (requestData.AssignedNGO && requestData.AssignedNGO > 0) {
+                // Since this is a heavy recalculation, we don't await it to block the response
+                // Fire and Forget
+                (async () => {
+                    const stats = await RequestNgoService.getRequestNgoCountByNgo(requestData.AssignedNGO);
+                    if (stats && stats.length > 0) {
+                        await NgoMasterService.updateService(requestData.AssignedNGO, { 
+                            total_request_assigned: stats[0].total_ngo_request, 
+                            total_request_completed: stats[0].total_request_approved_status, 
+                            total_request_rejected: stats[0].total_request_rejected 
+                        });
+                    }
+                })();
+            }
+
+            return res.status(responseCode.CREATED).send(
+                commonResponse(responseCode.CREATED, responseConst.SUCCESS_DELETING_RECORD)
+            );
+        } else {
+             return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(responseCode.BAD_REQUEST, responseConst.ERROR_DELETING_RECORD, null, true)
+            );
+        }
+
+    } catch (error) {
+        logger.error(`Error ---> ${error}`);
+        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+        );
+    }
+},
+     getRequestByUserId: async (req, res) => {
+        try {
             const user_id = req.query.id
             const limit = req.query.limit
             const offset = req.query.offset
-            const getAllRequestByUserId = await RequestService.getAllRequestByUserId(user_id,limit,offset)
+            const getAllRequestByUserId = await RequestService.getAllRequestByUserId(user_id, limit, offset)
             if (getAllRequestByUserId.length !== 0) {
-                for(let i = 0;i<getAllRequestByUserId.length;i++){
+                for (let i = 0; i < getAllRequestByUserId.length; i++) {
                     let currentData = getAllRequestByUserId[i]
                     const getRequestMedia = await RequestMediaService.getDataByRequestIdByView(currentData.RequestId)
                     currentData.request_media = getRequestMedia
@@ -404,7 +447,7 @@ const RequestsController = {
                         )
                     );
             }
-        }catch(error){
+        } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -417,8 +460,8 @@ const RequestsController = {
                     )
                 );
         }
-    },getNgoRequstDataForMapping:async(req,res)=>{
-        try{
+    }, getNgoRequstDataForMapping: async (req, res) => {
+        try {
             const request_id = req.query.RequestId
             let fullData = []
             let ngoIds = []
@@ -427,128 +470,128 @@ const RequestsController = {
             let getDataByStateId = []
             let getAllDataByDistrictid = []
 
-            if(getRequestData.CityId){
-            getDataByCityId = await NgoStateDistrictMappingService.getAllNgoDataByCityId(getRequestData.CityId)
-            if(getDataByCityId.length>0){
-                for(let i=0;i<getDataByCityId.length;i++){
-                    const CurrentData = getDataByCityId[i]
-                    const NgoData = {
-                        Request_Ngo_Id:null,
-                        ngo_id:CurrentData.ngo_id,
-                        ngo_name:CurrentData.ngo_name,
-                        unique_id:CurrentData.unique_id,
-                        ngo_type_name:CurrentData.ngo_type_name,
-                        darpan_reg_date:CurrentData.darpan_reg_date,
-                        registration_no:CurrentData.registration_no,
-                        email:CurrentData.email,
-                        mobile_no:CurrentData.mobile_no,
-                        status_id:null
+            if (getRequestData.CityId) {
+                getDataByCityId = await NgoStateDistrictMappingService.getAllNgoDataByCityId(getRequestData.CityId)
+                if (getDataByCityId.length > 0) {
+                    for (let i = 0; i < getDataByCityId.length; i++) {
+                        const CurrentData = getDataByCityId[i]
+                        const NgoData = {
+                            Request_Ngo_Id: null,
+                            ngo_id: CurrentData.ngo_id,
+                            ngo_name: CurrentData.ngo_name,
+                            unique_id: CurrentData.unique_id,
+                            ngo_type_name: CurrentData.ngo_type_name,
+                            darpan_reg_date: CurrentData.darpan_reg_date,
+                            registration_no: CurrentData.registration_no,
+                            email: CurrentData.email,
+                            mobile_no: CurrentData.mobile_no,
+                            status_id: null
+                        }
+                        fullData.push(NgoData)
+                        ngoIds.push(CurrentData.ngo_id)
                     }
-                    fullData.push(NgoData)
-                    ngoIds.push(CurrentData.ngo_id)
                 }
             }
-            }
-            if(getRequestData.districtId){
-            getAllDataByDistrictid = await NgoStateDistrictMappingService.getAllNgoDataByDistrictId(getRequestData.districtId,ngoIds)
-            if( getAllDataByDistrictid.length>0){
-                for(let i=0;i<getAllDataByDistrictid.length;i++){
-                    const CurrentData = getAllDataByDistrictid[i]
-                    const NgoData = {
-                        Request_Ngo_Id:null,
-                        ngo_id:CurrentData.ngo_id,
-                        ngo_name:CurrentData.ngo_name,
-                        unique_id:CurrentData.unique_id,
-                        ngo_type_name:CurrentData.ngo_type_name,
-                        darpan_reg_date:CurrentData.darpan_reg_date,
-                        registration_no:CurrentData.registration_no,
-                        email:CurrentData.email,
-                        mobile_no:CurrentData.mobile_no,
-                        status_id:null
+            if (getRequestData.districtId) {
+                getAllDataByDistrictid = await NgoStateDistrictMappingService.getAllNgoDataByDistrictId(getRequestData.districtId, ngoIds)
+                if (getAllDataByDistrictid.length > 0) {
+                    for (let i = 0; i < getAllDataByDistrictid.length; i++) {
+                        const CurrentData = getAllDataByDistrictid[i]
+                        const NgoData = {
+                            Request_Ngo_Id: null,
+                            ngo_id: CurrentData.ngo_id,
+                            ngo_name: CurrentData.ngo_name,
+                            unique_id: CurrentData.unique_id,
+                            ngo_type_name: CurrentData.ngo_type_name,
+                            darpan_reg_date: CurrentData.darpan_reg_date,
+                            registration_no: CurrentData.registration_no,
+                            email: CurrentData.email,
+                            mobile_no: CurrentData.mobile_no,
+                            status_id: null
+                        }
+                        fullData.push(NgoData)
+                        ngoIds.push(CurrentData.ngo_id)
                     }
-                    fullData.push(NgoData)
-                    ngoIds.push(CurrentData.ngo_id)
                 }
             }
-            }
-            if(getRequestData.StateId){
-            getDataByStateId = await NgoStateDistrictMappingService.getAllNgoDataByStateId(getRequestData.StateId,ngoIds)
-            if( getDataByStateId.length>0){
-                for(let i=0;i<getDataByStateId.length;i++){
-                    const CurrentData = getDataByStateId[i]
-                    const NgoData = {
-                        Request_Ngo_Id:null,
-                        ngo_id:CurrentData.ngo_id,
-                        ngo_name:CurrentData.ngo_name,
-                        unique_id:CurrentData.unique_id,
-                        ngo_type_name:CurrentData.ngo_type_name,
-                        darpan_reg_date:CurrentData.darpan_reg_date,
-                        registration_no:CurrentData.registration_no,
-                        email:CurrentData.email,
-                        mobile_no:CurrentData.mobile_no,
-                        status_id:null
+            if (getRequestData.StateId) {
+                getDataByStateId = await NgoStateDistrictMappingService.getAllNgoDataByStateId(getRequestData.StateId, ngoIds)
+                if (getDataByStateId.length > 0) {
+                    for (let i = 0; i < getDataByStateId.length; i++) {
+                        const CurrentData = getDataByStateId[i]
+                        const NgoData = {
+                            Request_Ngo_Id: null,
+                            ngo_id: CurrentData.ngo_id,
+                            ngo_name: CurrentData.ngo_name,
+                            unique_id: CurrentData.unique_id,
+                            ngo_type_name: CurrentData.ngo_type_name,
+                            darpan_reg_date: CurrentData.darpan_reg_date,
+                            registration_no: CurrentData.registration_no,
+                            email: CurrentData.email,
+                            mobile_no: CurrentData.mobile_no,
+                            status_id: null
+                        }
+                        fullData.push(NgoData)
+                        ngoIds.push(CurrentData.ngo_id)
                     }
-                    fullData.push(NgoData)
-                    ngoIds.push(CurrentData.ngo_id)
                 }
-            }
             }
             const getDataByCountryId = await NgoStateDistrictMappingService.getAllRemainingNgo(ngoIds)
-            if(getDataByCountryId.length>0){
-                for(let i=0;i<getDataByCountryId.length;i++){
+            if (getDataByCountryId.length > 0) {
+                for (let i = 0; i < getDataByCountryId.length; i++) {
                     const CurrentData = getDataByCountryId[i]
                     const NgoData = {
-                        Request_Ngo_Id:null,
-                        ngo_id:CurrentData.ngo_id,
-                        ngo_name:CurrentData.ngo_name,
-                        unique_id:CurrentData.unique_id,
-                        ngo_type_name:CurrentData.ngo_type_name,
-                        darpan_reg_date:CurrentData.darpan_reg_date,
-                        registration_no:CurrentData.registration_no,
-                        email:CurrentData.email,
-                        mobile_no:CurrentData.mobile_no,
-                        status_id:null
+                        Request_Ngo_Id: null,
+                        ngo_id: CurrentData.ngo_id,
+                        ngo_name: CurrentData.ngo_name,
+                        unique_id: CurrentData.unique_id,
+                        ngo_type_name: CurrentData.ngo_type_name,
+                        darpan_reg_date: CurrentData.darpan_reg_date,
+                        registration_no: CurrentData.registration_no,
+                        email: CurrentData.email,
+                        mobile_no: CurrentData.mobile_no,
+                        status_id: null
                     }
                     fullData.push(NgoData)
                     ngoIds.push(CurrentData.ngo_id)
                 }
             }
             const getFinalNgos = await NgoMasterService.getAllNgoWhichAreNotSelected(ngoIds)
-            if(getFinalNgos.length>0){
-                for(let i=0;i<getFinalNgos.length;i++){
+            if (getFinalNgos.length > 0) {
+                for (let i = 0; i < getFinalNgos.length; i++) {
                     const CurrentData = getFinalNgos[i]
                     const NgoData = {
-                        Request_Ngo_Id:null,
-                        ngo_id:CurrentData.ngo_id,
-                        ngo_name:CurrentData.ngo_name,
-                        unique_id:CurrentData.unique_id,
-                        ngo_type_name:CurrentData.ngo_type_name,
-                        darpan_reg_date:CurrentData.darpan_reg_date,
-                        registration_no:CurrentData.registration_no,
-                        email:CurrentData.email,
-                        mobile_no:CurrentData.mobile_no,
-                        status_id:null
+                        Request_Ngo_Id: null,
+                        ngo_id: CurrentData.ngo_id,
+                        ngo_name: CurrentData.ngo_name,
+                        unique_id: CurrentData.unique_id,
+                        ngo_type_name: CurrentData.ngo_type_name,
+                        darpan_reg_date: CurrentData.darpan_reg_date,
+                        registration_no: CurrentData.registration_no,
+                        email: CurrentData.email,
+                        mobile_no: CurrentData.mobile_no,
+                        status_id: null
                     }
                     fullData.push(NgoData)
                     ngoIds.push(CurrentData.ngo_id)
                 }
             }
             const requestData = await RequestNgoService.getAllNgoByRequestIdOnly(request_id)
-            if(requestData.length!==0){
-            // Loop through fullData and update status_id if ngo_id matches
-            fullData.forEach((ngo) => {
-                const matchedRequest = requestData.find(req => req.ngo_id === ngo.ngo_id);
-                if (matchedRequest) {
-                    ngo.Request_Ngo_Id = matchedRequest.Request_Ngo_Id
-                    ngo.Reason = matchedRequest.Reason
-                    ngo.status_id = matchedRequest.status_id; // Update status_id if found
-                    ngo.status_name = matchedRequest.status_name
-                }else{
-                    ngo.Reason = null
-                    ngo.Request_Ngo_Id = null
-                    ngo.status_name = null
-                }
-            });
+            if (requestData.length !== 0) {
+                // Loop through fullData and update status_id if ngo_id matches
+                fullData.forEach((ngo) => {
+                    const matchedRequest = requestData.find(req => req.ngo_id === ngo.ngo_id);
+                    if (matchedRequest) {
+                        ngo.Request_Ngo_Id = matchedRequest.Request_Ngo_Id
+                        ngo.Reason = matchedRequest.Reason
+                        ngo.status_id = matchedRequest.status_id; // Update status_id if found
+                        ngo.status_name = matchedRequest.status_name
+                    } else {
+                        ngo.Reason = null
+                        ngo.Request_Ngo_Id = null
+                        ngo.status_name = null
+                    }
+                });
             }
 
             if (fullData.length !== 0) {
@@ -573,8 +616,8 @@ const RequestsController = {
                         )
                     );
             }
-        }catch(error){
-            console.log("error",error)
+        } catch (error) {
+            console.log("error", error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -587,84 +630,89 @@ const RequestsController = {
                     )
                 );
         }
-    },getRequestDataByDescUserWise:async(req,res)=>{
-        try{
-            const user_id = tokenData(req,res)
+    }, getRequestDataByDescUserWise: async (req, res) => {
+        try {
+            const user_id = tokenData(req, res)
             const limit = req.query.limit
             const already_viewed = req.query.already_viewed
-            const getAllRequest = await RequestService.getRequestsForUserFeed(user_id,limit,already_viewed)
-            // Extract all request IDs first
+            const getAllRequest = await RequestService.getRequestsForUserFeed(user_id, limit, already_viewed)
+            // OPTIMIZATION 1: Early Exit
+            // If no requests found, return immediately. 
+            // Do not waste resources fetching media or processing arrays.
+            if (!getAllRequest || getAllRequest.length === 0) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
+            }
+
+            // 2. Extract IDs
             const requestIds = getAllRequest.map(r => r.RequestId);
 
-            // Fetch all media at once
-            const allRequestMedia = await RequestMediaService.getDataByMultipleRequestIds(requestIds);
+            // 3. Fetch Media
+            const allRequestMedia = await RequestMediaService.getDataByMultipleRequestIdsByInForHomeScreen(requestIds);
 
-            // Group media by RequestId
-            const mediaByRequest = allRequestMedia.reduce((acc, media) => {
-            if (!acc[media.RequestId]) acc[media.RequestId] = [];
-            acc[media.RequestId].push(media);
-            return acc;
-            }, {});
+            // OPTIMIZATION 2: Use a Map for Grouping
+            // Maps are generally more performant than Objects for frequent additions/retrievals
+            const mediaMap = new Map();
 
-            // Now enrich all requests in a single pass
-        const updatedRequestData = getAllRequest.map(currentData => {
-        // Normalize file path
-        if (
-            currentData.request_user_file_path &&
-            currentData.request_user_file_path !== "null" &&
-            currentData.request_user_file_path !== ""
-        ) {
-            currentData.request_user_file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.request_user_file_path}`;
-        } else {
-            currentData.request_user_file_path = null;
-        }
-
-        // Attach grouped media
-        currentData.request_media = mediaByRequest[currentData.RequestId] ?? [];
-
-        return currentData;
-        });
-
-            if (getAllRequest.length !== 0) {
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            updatedRequestData
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
+            // Single pass to group media
+            for (const media of allRequestMedia) {
+                const rid = media.RequestId;
+                if (!mediaMap.has(rid)) {
+                    mediaMap.set(rid, []);
+                }
+                mediaMap.get(rid).push(media);
             }
-        }catch(error){
-            console.log("error",error)
-            logger.error(`Error ---> ${error}`);
-            return res
-            .status(responseCode.INTERNAL_SERVER_ERROR)
-            .send(
+
+            // OPTIMIZATION 3: Pre-calculate static strings
+            // Avoid accessing process.env inside the loop repeatedly
+            const resourceBaseUrl = `${process.env.GET_LIVE_CURRENT_URL}/resources/`;
+
+            // 4. Enrich Data
+            // We mutate the object in place to avoid creating a new array copy (saving memory)
+            getAllRequest.forEach(currentData => {
+                // Normalize path
+                if (currentData.request_user_file_path && currentData.request_user_file_path !== "null") {
+                    currentData.request_user_file_path = resourceBaseUrl + currentData.request_user_file_path;
+                } else {
+                    currentData.request_user_file_path = null;
+                }
+
+                // Attach Media (O(1) lookup)
+                currentData.request_media = mediaMap.get(currentData.RequestId) || [];
+            });
+
+            // 5. Success Response
+            return res.status(responseCode.OK).send(
                 commonResponse(
-                    responseCode.INTERNAL_SERVER_ERROR,
-                    responseConst.INTERNAL_SERVER_ERROR,
-                    null,
-                    true
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    getAllRequest
                 )
             );
+        } catch (error) {
+            console.log("error", error)
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
         }
-    },getRequestByNgoId: async (req, res) => {
+    }, getRequestByNgoId: async (req, res) => {
         try {
             const ngo_id = req.query.ngo_id;
-            if(!ngo_id || ngo_id==""){
+            if (!ngo_id || ngo_id == "") {
                 return res
                     .status(responseCode.BAD_REQUEST)
                     .send(
@@ -680,55 +728,55 @@ const RequestsController = {
             const getData = await RequestService.GetRequestByNgoId(ngo_id);
 
             if (!getData || getData.length === 0) {
-            return res
-                .status(responseCode.BAD_REQUEST)
-                .send(
-                commonResponse(
-                    responseCode.BAD_REQUEST,
-                    responseConst.DATA_NOT_FOUND,
-                    null,
-                    true
-                )
-                );
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
             }
 
-            
+
             const updatedData = await Promise.all(
-            getData.map(async (request) => {
-                const request_media = await RequestMediaService.getDataByRequestIdByView(request.RequestId);
-                return {
-                ...request,
-                request_media: request_media ?? null,
-                };
-            })
+                getData.map(async (request) => {
+                    const request_media = await RequestMediaService.getDataByRequestIdByView(request.RequestId);
+                    return {
+                        ...request,
+                        request_media: request_media ?? null,
+                    };
+                })
             );
 
-           
+
             return res
-            .status(responseCode.OK)
-            .send(
-                commonResponse(
-                responseCode.OK,
-                responseConst.DATA_RETRIEVE_SUCCESS,
-                updatedData
-                )
-            );
+                .status(responseCode.OK)
+                .send(
+                    commonResponse(
+                        responseCode.OK,
+                        responseConst.DATA_RETRIEVE_SUCCESS,
+                        updatedData
+                    )
+                );
 
         } catch (error) {
             console.error("Error:", error);
             logger.error(`Error ---> ${error}`);
             return res
-            .status(responseCode.INTERNAL_SERVER_ERROR)
-            .send(
-                commonResponse(
-                responseCode.INTERNAL_SERVER_ERROR,
-                responseConst.INTERNAL_SERVER_ERROR,
-                null,
-                true
-                )
-            );
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
         }
-    },getAllVideoRequestByUserIdForHome: async(req,res)=>{
+    }, getAllVideoRequestByUserIdForHome: async (req, res) => {
         try {
             const user_id = tokenData(req, res);
             const limit = req.query.limit;
@@ -745,57 +793,57 @@ const RequestsController = {
 
             // 4️⃣ Group media by RequestId
             const mediaByRequest = allRequestMedia.reduce((acc, media) => {
-            if (!acc[media.RequestId]) acc[media.RequestId] = [];
-            acc[media.RequestId].push(media);
-            return acc;
+                if (!acc[media.RequestId]) acc[media.RequestId] = [];
+                acc[media.RequestId].push(media);
+                return acc;
             }, {});
 
             // 5️⃣ Attach media & normalize user file path
             const updatedRequestData = getAllRequestVideos.map(currentData => {
-            if (
-                currentData.request_user_file_path &&
-                currentData.request_user_file_path !== "null" &&
-                currentData.request_user_file_path !== ""
-            ) {
-                currentData.request_user_file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.request_user_file_path}`;
-            } else {
-                currentData.request_user_file_path = null;
-            }
+                if (
+                    currentData.request_user_file_path &&
+                    currentData.request_user_file_path !== "null" &&
+                    currentData.request_user_file_path !== ""
+                ) {
+                    currentData.request_user_file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.request_user_file_path}`;
+                } else {
+                    currentData.request_user_file_path = null;
+                }
 
-            currentData.request_media = mediaByRequest[currentData.RequestId] ?? [];
-            return currentData;
+                currentData.request_media = mediaByRequest[currentData.RequestId] ?? [];
+                return currentData;
             });
 
             // 6️⃣ Response
             if (getAllRequestVideos.length !== 0) {
-            return res.status(responseCode.OK).send(
-                commonResponse(
-                responseCode.OK,
-                responseConst.DATA_RETRIEVE_SUCCESS,
-                updatedRequestData
-                )
-            );
+                return res.status(responseCode.OK).send(
+                    commonResponse(
+                        responseCode.OK,
+                        responseConst.DATA_RETRIEVE_SUCCESS,
+                        updatedRequestData
+                    )
+                );
             } else {
-            return res.status(responseCode.BAD_REQUEST).send(
-                commonResponse(
-                responseCode.BAD_REQUEST,
-                responseConst.DATA_NOT_FOUND,
-                null,
-                true
-                )
-            );
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
             }
 
         } catch (error) {
             console.log("error", error);
             logger.error(`Error ---> ${error}`);
             return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
-            commonResponse(
-                responseCode.INTERNAL_SERVER_ERROR,
-                responseConst.INTERNAL_SERVER_ERROR,
-                null,
-                true
-            )
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
             );
         }
     }

@@ -104,7 +104,19 @@ const CommentsDAL = {
         }catch(error){
             throw error
         }
-      }
+      },// Method to safely increment a specific column (e.g., total_comment)
+        IncrementDataCommentCount: async (comment_id, fieldName, amount = 1) => {
+            try {
+                // This runs: UPDATE Comments SET fieldName = fieldName + amount WHERE comment_id = X
+                const result = await CommentsModel(db.sequelize).increment(fieldName, { 
+                    by: amount, 
+                    where: { comment_id: comment_id } 
+                });
+                return result;
+            } catch (error) {
+                throw error;
+            }
+        },
       
 }
 export default CommentsDAL // Export the CommentsDAL object for use in the controller

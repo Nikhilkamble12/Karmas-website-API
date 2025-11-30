@@ -116,215 +116,188 @@ const LikesController = {
   //       );
   //   }
   // },
-  create: async (req, res) => {
+create: async (req, res) => {
     try {
         const data = req.body;
-       // Validate required fields
+
+        // 1. Validation
         if (!data.post_id) {
-          return res
-            .status(responseCode.BAD_REQUEST)
-            .send(
-              commonResponse(
-                responseCode.BAD_REQUEST,
-                "post_id is required",
-                null,
-                true
-              )
+            return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(responseCode.BAD_REQUEST, responseConst.POST_ID_IS_REQUIRED, null, true)
             );
         }
 
-        if (!data.user_id || data.user_id === "null" || data.user_id === "undefined" || data.user_id === 0) {
-          data.user_id = tokenData(req, res);
+        // Helper for ID validation
+        const isValidId = (id) => id && id !== "null" && id !== "undefined" && id !== 0;
+
+        if (!isValidId(data.user_id)) {
+            data.user_id = tokenData(req, res);
         }
 
-        // Add metadata (created_by, updated_by, etc.)
         await addMetaDataWhileCreateUpdate(data, req, res, false);
 
-        // Check if the user already liked/disliked this post
+        // 2. Check for existing interaction (Read Once)
         const existingLike = await LikesService.getDataByUserIdAndPostId(data.user_id, data.post_id);
 
+        // ======================================================
+        // SCENARIO A: UPDATE EXISTING (User clicked Like/Dislike again)
+        // ======================================================
         if (existingLike && existingLike.length > 0) {
             const oldLike = existingLike[0];
-            // ---- Case 1.1: dislike → like ----
-            if (!oldLike.is_liked && parseInt(data.is_liked)) {
-                // Increment user total post likes
-                const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
-                const total_post_like_no = parseInt(getUserActivityData[0].total_likes_no ?? 0) + 1;
-                await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_likes_no : total_post_like_no });
-                // Increment post total likes
-                const getPostData = await PostService.getServiceById(data.post_id);
-                const total_likes = parseInt(getPostData.total_likes ?? 0) + 1;
-                await PostService.updateService(data.post_id, { total_likes });
-            }
-            // ---- Case 1.2: like → dislike ----
-            if (oldLike.is_liked && !parseInt(data.is_liked)) {
-                const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
-                const total_post_like_no = Math.max(0, parseInt(getUserActivityData[0].total_likes_no ?? 0) - 1);
-                await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_likes_no : total_post_like_no });
+            const tasks = [];
 
-                const getPostData = await PostService.getServiceById(data.post_id);
-                const total_likes = Math.max(0, parseInt(getPostData.total_likes ?? 0) - 1);
-                await PostService.updateService(data.post_id, { total_likes });
+            // Case 1: Changing from Disliked (false) to Liked (true)
+            if (!oldLike.is_liked && data.is_liked) {
+                // Increment counters in parallel
+                tasks.push(UserActivtyService.UpdateUserDataCount(data.user_id, 'total_likes_no', 1));
+                tasks.push(PostService.CountUpdatePost(data.post_id, 'total_likes', 1));
+            }
+            // Case 2: Changing from Liked (true) to Disliked (false)
+            else if (oldLike.is_liked && !data.is_liked) {
+                // Decrement counters in parallel
+                tasks.push(UserActivtyService.UpdateUserDataCount(data.user_id, 'total_likes_no', -1));
+                tasks.push(PostService.CountUpdatePost(data.post_id, 'total_likes', -1));
             }
 
-            // Update existing like record
-            await LikesService.updateService(oldLike.like_id, data);
+            // Update the actual Like record
+            tasks.push(LikesService.updateService(oldLike.like_id, data));
 
-            return res
-                .status(responseCode.OK)
-                .send(
-                    commonResponse(
-                        responseCode.OK,
-                        responseConst.SUCCESS_UPDATING_RECORD
-                    )
-                );
-        } else {
-            if (data.is_liked ) {
-                // Increment user total post likes
-                const getUserActivityData = await UserActivtyService.getDataByUserId(data.user_id);
-                const total_post_like_no = parseInt(getUserActivityData[0].total_likes_no ?? 0) + 1;
-                await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_likes_no : total_post_like_no });
+            // Execute all DB ops at once
+            await Promise.all(tasks);
 
-                // Increment post total likes
-                const getPostData = await PostService.getServiceById(data.post_id);
-                const total_likes = parseInt(getPostData.total_likes ?? 0) + 1;
-                await PostService.updateService(data.post_id, { total_likes });
-            }
-
-            // Create new like record
+            return res.status(responseCode.OK).send(
+                commonResponse(responseCode.OK, responseConst.SUCCESS_UPDATING_RECORD)
+            );
+        } 
+        
+        // ======================================================
+        // SCENARIO B: CREATE NEW (First time interaction)
+        // ======================================================
+        else {
+            // 1. Create the record first
             const createData = await LikesService.createSerive(data);
 
-            // ---- Send notification only for new likes ----
-            if (createData && data.is_liked) {
-                const currentUser = await UserMasterService.getServiceById(data.user_id);
-                const postData = await PostService.getServiceById(data.post_id);
-                const postMediaData = await PostMediaService.getDatabyPostIdByView(data.post_id);
-                const getUserToken = await UserTokenService.GetTokensByUserIds(postData.user_id);
+            if (createData) {
+                const tasks = [];
 
-                // Format user profile image
-                if (currentUser.file_path && currentUser.file_path !== "null" && currentUser.file_path !== "") {
-                    currentUser.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentUser.file_path}`;
-                } else {
-                    currentUser.file_path = null;
+                // 2. If it is a "Like", increment counters
+                if (data.is_liked) {
+                    tasks.push(UserActivtyService.UpdateUserDataCount(data.user_id, 'total_likes_no', 1));
+                    tasks.push(PostService.CountUpdatePost(data.post_id, 'total_likes', 1));
                 }
 
-                const template = notificationTemplates.postLiked({ username: currentUser.user_name });
+                // 3. Handle Notification (Async - Fire and Forget logic within Promise.all)
+                if (data.is_liked) {
+                    tasks.push((async () => {
+                        const [postData, currentUser] = await Promise.all([
+                            PostService.getServiceById(data.post_id),
+                            UserMasterService.getServiceById(data.user_id)
+                        ]);
 
-                if (postData.user_id !== data.user_id && getUserToken.length !== 0) {
-                    await sendTemplateNotification({
-                        templateKey: "Postliked-notification",
-                        templateData: template,
-                        userIds: getUserToken,
-                        metaData: {
-                            like_id: createData.dataValues.like_id,
-                            user_profile: currentUser?.file_path,
-                            media_url: postMediaData.length !== 0 ? postMediaData[0]?.media_url : null,
-                            created_by: data.user_id
+                        // Only notify if liking someone else's post
+                        if (postData && postData.user_id !== data.user_id) {
+                            const getUserToken = await UserTokenService.GetTokensByUserIds(postData.user_id);
+                            
+                            if (getUserToken.length > 0) {
+                                const postMediaData = await PostMediaService.getDatabyPostIdByView(data.post_id);
+                                
+                                // Clean Profile URL
+                                const profileUrl = (currentUser.file_path && currentUser.file_path !== "null") 
+                                    ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentUser.file_path}` 
+                                    : null;
+
+                                const template = notificationTemplates.postLiked({ username: currentUser.user_name });
+                                
+                                await sendTemplateNotification({
+                                    templateKey: "Postliked-notification",
+                                    templateData: template,
+                                    userIds: getUserToken,
+                                    metaData: {
+                                        like_id: createData.like_id || createData.dataValues?.like_id,
+                                        user_profile: profileUrl,
+                                        media_url: postMediaData[0]?.media_url || null,
+                                        created_by: data.user_id
+                                    }
+                                });
+                            }
                         }
-                    });
+                    })());
                 }
-            }
 
-            return res
-                .status(responseCode.CREATED)
-                .send(
-                    commonResponse(
-                        responseCode.CREATED,
-                        responseConst.SUCCESS_ADDING_RECORD
-                    )
+                // Execute Counter updates + Notification logic simultaneously
+                await Promise.allSettled(tasks);
+
+                return res.status(responseCode.CREATED).send(
+                    commonResponse(responseCode.CREATED, responseConst.SUCCESS_ADDING_RECORD)
                 );
+            }
         }
-
     } catch (error) {
-        console.log("error", error);
         logger.error(`Error ---> ${error}`);
-        return res
-            .status(responseCode.INTERNAL_SERVER_ERROR)
-            .send(
-                commonResponse(
-                    responseCode.INTERNAL_SERVER_ERROR,
-                    responseConst.INTERNAL_SERVER_ERROR,
-                    null,
-                    true
-                )
-            );
+        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+        );
     }
 },
 
-  // Update an existing record by its ID
-  update: async (req, res) => {
+update: async (req, res) => {
     try {
-      const data = req.body;
-      const id = req.query.id;
-      // Add metadata to update (updated_by, updated_at,)
-      await addMetaDataWhileCreateUpdate(data, req, res, true);
-      const getOlderData = await LikesService.getServiceById(id)
-      if(data.is_liked !== getOlderData.is_liked){
-        const getUserActivityData = await UserActivtyService.getDataByUserId(tokenData(req,res))
-        const postData = await PostService.getServiceById(data.post_id)
-        if(data.is_liked){
-          const total_likes = parseInt(getUserActivityData[0].total_likes_no) + 1
-          const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes_no:total_likes})
-          if(postData) {
-          await PostService.updateService(data.post_id,
-            {
-              total_likes: parseInt(postData.total_likes || 0) + 1           
-            }
-          )
+        const data = req.body;
+        const id = req.query.id;
+        
+        await addMetaDataWhileCreateUpdate(data, req, res, true);
+        
+        // 1. Get current state to compare
+        const oldLikeData = await LikesService.getServiceById(id);
+        
+        if (!oldLikeData) {
+            return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true)
+            );
         }
-        }else{
-          const total_likes = parseInt(getUserActivityData[0].total_likes_no) - 1
-          const updateUserActivity = await UserActivtyService.updateService(getUserActivityData[0].user_activity_id,{total_likes_no:total_likes})
 
-           if(postData) {
-            await PostService.updateService(getOlderData.post_id, {
-              total_likes: Math.max(0, parseInt(post.total_likes || 0) - 1) // Ensure count doesn't go below 0
-            });
-          }
+        // 2. Check if status changed (True <-> False)
+        // We only touch the counters if the status actually flipped
+        if (data.is_liked !== undefined && data.is_liked !== oldLikeData.is_liked) {
+            const tasks = [];
+            
+            // Assuming data.is_liked is boolean. If string "0"/"1", cast it first.
+            const isNowLiked = Boolean(data.is_liked); 
+
+            if (isNowLiked) {
+                // Changed to Liked -> Increment
+                tasks.push(UserActivtyService.UpdateUserDataCount(tokenData(req, res), 'total_likes_no', 1));
+                tasks.push(PostService.CountUpdatePost(oldLikeData.post_id, 'total_likes', 1));
+            } else {
+                // Changed to Unliked -> Decrement
+                tasks.push(UserActivtyService.UpdateUserDataCount(tokenData(req, res), 'total_likes_no', -1));
+                tasks.push(PostService.CountUpdatePost(oldLikeData.post_id, 'total_likes', -1));
+            }
+
+            // Execute counter updates in parallel
+            await Promise.all(tasks);
         }
-      }
-      // data.updated_by=1,
-      // data.updated_at = new Date()
-      // Update the record using ORM
-      const updatedRowsCount = await LikesService.updateService(id, data);
-      // if (updatedRowsCount > 0) {
-      //     const newData = await LikeService.getServiceById(id);
-      //     // Update the JSON data in the file
-      //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
-      // }
-      // Handle case where no records were updated
-      if (updatedRowsCount === 0) {
-        return res
-          .status(responseCode.BAD_REQUEST)
-          .send(
-            commonResponse(
-              responseCode.BAD_REQUEST,
-              responseConst.ERROR_UPDATING_RECORD,
-              null,
-              true
-            )
-          );
-      }
-      return res
-        .status(responseCode.OK)
-        .send(
-          commonResponse(responseCode.OK, responseConst.SUCCESS_UPDATING_RECORD)
+
+        // 3. Update the record
+        const updatedRowsCount = await LikesService.updateService(id, data);
+
+        if (updatedRowsCount === 0) {
+            return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(responseCode.BAD_REQUEST, responseConst.ERROR_UPDATING_RECORD, null, true)
+            );
+        }
+
+        return res.status(responseCode.OK).send(
+            commonResponse(responseCode.OK, responseConst.SUCCESS_UPDATING_RECORD)
         );
+
     } catch (error) {
-      console.log("error", error);
-      logger.error(`Error --> ${error}`);
-      return res
-        .status(responseCode.INTERNAL_SERVER_ERROR)
-        .send(
-          commonResponse(
-            responseCode.INTERNAL_SERVER_ERROR,
-            responseConst.ERROR_UPDATING_RECORD,
-            null,
-            true
-          )
+        logger.error(`Error --> ${error}`);
+        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.ERROR_UPDATING_RECORD, null, true)
         );
     }
-  },
+},
   // Retrieve all records
   getAllByView: async (req, res) => {
     try {
@@ -458,62 +431,84 @@ const LikesController = {
     }
   },
   // delete a record 
-  deleteData: async (req, res) => {
+deleteData: async (req, res) => {
     try {
-      const id = req.query.id;
-      // Delete data from the database
-      const deleteData = await LikesService.deleteById(id, req, res);
+        const id = req.query.id;
 
-      const likeData = await LikesService.getServiceById(id);
-      // Also delete data from the JSON file
-      // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
-      if (deleteData !== 0 && likeData && likeData.is_liked) {
-        // Update post total likes
-        const post = await PostService.getServiceById(likeData.post_id);
-        if(post) {
-          await PostService.updateService(likeData.post_id, {
-            total_likes: Math.max(0, parseInt(post.total_likes || 0) - 1)
-          });
+        // 1. Fetch First (CRITICAL FIX)
+        // We must fetch the like data BEFORE deleting it, otherwise we don't know 
+        // which post_id or user_id to update.
+        const likeData = await LikesService.getServiceById(id);
+
+        if (likeData && likeData.length ==0) {
+            return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(
+                    responseCode.BAD_REQUEST,
+                    responseConst.DATA_NOT_FOUND,
+                    null,
+                    true
+                )
+            );
         }
-        const getUserActivityData = await UserActivtyService.getDataByUserId(likeData.user_id);
-        const total_post_like_no = Math.max(0, parseInt(getUserActivityData[0].total_likes_no ?? 0) - 1);
-        await UserActivtyService.updateService(getUserActivityData[0].user_activity_id, { total_likes_no : total_post_like_no });
-      }
-      
-      if (deleteData === 0) {
-        return res
-          .status(responseCode.BAD_REQUEST)
-          .send(
-            commonResponse(
-              responseCode.BAD_REQUEST,
-              responseConst.ERROR_DELETING_RECORD,
-              null,
-              true
-            )
-          );
-      }
-      return res
-        .status(responseCode.OK)
-        .send(
-          commonResponse(
-            responseCode.OK,
-            responseConst.SUCCESS_DELETING_RECORD
-          )
-        );
+
+        const tasks = [];
+
+        // 2. Decrement Counters (Only if it was a "Like")
+        // If is_liked was false (Dislike), we shouldn't decrement the "Total Likes" count.
+        if (likeData.is_liked) {
+            
+            // A. Atomic Decrement Post Likes
+            if (likeData.post_id) {
+                tasks.push(PostService.CountUpdatePost(likeData.post_id, 'total_likes', -1));
+            }
+
+            // B. Atomic Decrement User Activity Likes
+            if (likeData.user_id) {
+                tasks.push(UserActivtyService.UpdateUserDataCount(likeData.user_id, 'total_likes_no', -1));
+            }
+        }
+
+        // 3. Delete the Record
+        // We run the delete in parallel with the counter updates
+        tasks.push(LikesService.deleteById(id, req, res));
+
+        // 4. Execute All Simultaneously
+        
+        const results = await Promise.allSettled(tasks);
+
+        // Check if the Delete task (last one) succeeded
+        // Assuming deleteById returns > 0 on success
+        const deleteResult = results[results.length - 1]; 
+        
+        // Note: Promise.allSettled wraps result in { status: 'fulfilled', value: ... }
+        if (deleteResult.status === 'fulfilled' && deleteResult.value !== 0) {
+            return res.status(responseCode.OK).send(
+                commonResponse(responseCode.OK, responseConst.SUCCESS_DELETING_RECORD)
+            );
+        } else {
+             return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(
+                    responseCode.BAD_REQUEST,
+                    responseConst.ERROR_DELETING_RECORD,
+                    null,
+                    true
+                )
+            );
+        }
+
     } catch (error) {
-      logger.error(`Error ---> ${error}`);
-      return res
-        .status(responseCode.INTERNAL_SERVER_ERROR)
-        .send(
-          commonResponse(
-            responseCode.INTERNAL_SERVER_ERROR,
-            responseConst.INTERNAL_SERVER_ERROR,
-            null,
-            true
-          )
+        logger.error(`Error ---> ${error}`);
+        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(
+                responseCode.INTERNAL_SERVER_ERROR,
+                responseConst.INTERNAL_SERVER_ERROR,
+                null,
+                true
+            )
         );
     }
-  },getLikesbyPostId:async(req,res)=>{
+},
+  getLikesbyPostId:async(req,res)=>{
     try{
       const post_id = req.query.post_id
       const limit = req.query.limit
