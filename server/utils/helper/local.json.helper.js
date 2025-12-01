@@ -1094,6 +1094,27 @@ export class OptimizedLocalJsonDB {
         const instance = this._getInstance(tableRef, expiryTime);
         let data = await instance._loadFromMemoryOrFile();
 
+        // =========================================================
+        // 🗑️ EXPIRY CHECK: Delete Record if Expired
+        // =========================================================
+        // This ensures the stale file is physically removed before refetching
+        if (data && instance._isExpired(data)) {
+            console.log(`⏳ [Expiry] Cache expired for ${instance.tableName}. Deleting record...`);
+            
+            // 1. Delete file and memory entry
+            await this.invalidate(tableRef, expiryTime); 
+            
+            // 2. Clear Group Indexes associated with this table
+            this._GROUP_INDEXES.forEach((val, key) => {
+                if (key.startsWith(`${instance.tableName}:`)) this._GROUP_INDEXES.delete(key);
+            });
+
+            // 3. Reset data to null to trigger fresh DB fetch below
+            data = null; 
+        }
+        // =========================================================
+
+
         if (!data) {
             if (!instance.hasValidViewName) return [];
             const freshData = await instance._fetchFullFromDb();
