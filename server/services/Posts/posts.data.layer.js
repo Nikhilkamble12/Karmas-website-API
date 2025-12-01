@@ -454,7 +454,10 @@ getPostByUserIdForHome: async (user_id, limit = 20, batchIndex = 0) => {
     try {
       // ⏱️ START TIMER
       const startTime = Date.now();
-      const limitNum = Number(limit);
+      let limitNum = parseInt(limit);
+      if (isNaN(limitNum) || limitNum <= 0) {
+          limitNum = 20; // Default fallback
+      }
       
       // Track specific durations
       let fetchTime = 0;
