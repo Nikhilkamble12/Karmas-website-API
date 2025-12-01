@@ -497,7 +497,7 @@ getRequestsForUserFeed: async (user_id, limit = 20, batchIndex = 0) => {
           (
             -- 🟢 PART 1: FOLLOWED USERS
             SELECT r.*, 1 as priority
-            FROM v_Requests r
+            FROM ${VIEW_NAME.GET_ALL_REQUEST} r
             WHERE r.request_user_id IN (:following_ids)
               AND r.request_user_id NOT IN (:blacklist_ids)
               AND r.RequestId NOT IN (:already_viewed)
@@ -510,7 +510,7 @@ getRequestsForUserFeed: async (user_id, limit = 20, batchIndex = 0) => {
           (
             -- 🔵 PART 2: DISCOVERY (Smart Random)
             SELECT r.*, 0 as priority
-            FROM v_Requests r
+            FROM ${VIEW_NAME.GET_ALL_REQUEST} r
             -- Optimized Random Selection
             JOIN (
                 SELECT FLOOR(RAND() * (SELECT MAX(RequestId) FROM v_Requests)) AS rand_id
@@ -551,7 +551,7 @@ getRequestsForUserFeed: async (user_id, limit = 20, batchIndex = 0) => {
             (
               -- 🟡 FALLBACK 1: HISTORY (Show followed again)
               SELECT r.*, 1 as priority
-              FROM v_Requests r
+              FROM ${VIEW_NAME.GET_ALL_REQUEST} r
               WHERE r.request_user_id IN (:following_ids)
                 AND r.request_user_id NOT IN (:blacklist_ids)
                 AND r.is_active = 1
@@ -563,7 +563,7 @@ getRequestsForUserFeed: async (user_id, limit = 20, batchIndex = 0) => {
             (
               -- 🟣 FALLBACK 2: PURE DISCOVERY
               SELECT r.*, 0 as priority
-              FROM v_Requests r
+              FROM ${VIEW_NAME.GET_ALL_REQUEST} r
               WHERE r.request_user_id NOT IN (:discovery_exclude_ids)
                 AND r.is_active = 1
                 AND r.is_blacklist = 0
@@ -884,8 +884,8 @@ getRequestVideosForUserFeed: async (user_id, limit = 20, batchIndex = 0) => {
           (
             -- 🟢 PART 1: FOLLOWING (Videos Only)
             SELECT r.*, 1 as priority
-            FROM v_Requests r
-            INNER JOIN v_Request_Media rm ON r.RequestId = rm.RequestId
+            FROM ${VIEW_NAME.GET_ALL_REQUEST} r
+            INNER JOIN ${VIEW_NAME.GET_ALL_REQUEST_MEDIA} rm ON r.RequestId = rm.RequestId
             WHERE r.request_user_id IN (:following_ids)
               AND r.request_user_id NOT IN (:blacklist_ids)
               AND r.RequestId NOT IN (:already_viewed)
@@ -899,11 +899,11 @@ getRequestVideosForUserFeed: async (user_id, limit = 20, batchIndex = 0) => {
           (
             -- 🔵 PART 2: DISCOVERY (Smart Random)
             SELECT r.*, 0 as priority
-            FROM v_Requests r
-            INNER JOIN v_Request_Media rm ON r.RequestId = rm.RequestId
+            FROM ${VIEW_NAME.GET_ALL_REQUEST} r
+            INNER JOIN ${VIEW_NAME.GET_ALL_REQUEST_MEDIA} rm ON r.RequestId = rm.RequestId
             -- Optimized Random Selection
             JOIN (
-                SELECT FLOOR(RAND() * (SELECT MAX(RequestId) FROM v_Requests)) AS rand_id
+                SELECT FLOOR(RAND() * (SELECT MAX(RequestId) FROM ${VIEW_NAME.GET_ALL_REQUEST_MEDIA})) AS rand_id
             ) AS rnd
             WHERE r.RequestId >= rnd.rand_id
               AND r.request_user_id NOT IN (:discovery_exclude_ids)
@@ -942,8 +942,8 @@ getRequestVideosForUserFeed: async (user_id, limit = 20, batchIndex = 0) => {
             (
               -- 🟡 FALLBACK 1: HISTORY (Show followed again)
               SELECT r.*, 1 as priority
-              FROM v_Requests r
-              INNER JOIN v_Request_Media rm ON r.RequestId = rm.RequestId
+              FROM ${VIEW_NAME.GET_ALL_REQUEST} r
+              INNER JOIN ${VIEW_NAME.GET_ALL_REQUEST_MEDIA} rm ON r.RequestId = rm.RequestId
               WHERE r.request_user_id IN (:following_ids)
                 AND r.request_user_id NOT IN (:blacklist_ids)
                 AND r.is_active = 1
@@ -956,8 +956,8 @@ getRequestVideosForUserFeed: async (user_id, limit = 20, batchIndex = 0) => {
             (
               -- 🟣 FALLBACK 2: PURE DISCOVERY
               SELECT r.*, 0 as priority
-              FROM v_Requests r
-              INNER JOIN v_Request_Media rm ON r.RequestId = rm.RequestId
+              FROM ${VIEW_NAME.GET_ALL_REQUEST} r
+              INNER JOIN ${VIEW_NAME.GET_ALL_REQUEST_MEDIA} rm ON r.RequestId = rm.RequestId
               WHERE r.request_user_id NOT IN (:discovery_exclude_ids)
                 AND r.is_active = 1
                 AND r.is_blacklist = 0

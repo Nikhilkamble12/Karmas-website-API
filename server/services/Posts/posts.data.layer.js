@@ -1,6 +1,7 @@
 import PostsModel from "./posts.model.js";
 import relationCache from "../../utils/helper/follow_blacklist_filter.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
+import VIEW_NAME from "../../utils/db/view.constants.js";
 const { db, ViewFieldTableVise, tokenData } = commonPath; // Destructure necessary components from commonPath
 
 const PostDAL = {
@@ -507,7 +508,7 @@ getPostByUserIdForHome: async (user_id, limit = 20, batchIndex = 0) => {
           (
             -- 🟢 FEED PART 1: FOLLOWING
             SELECT vp.*, 1 as priority
-            FROM massom.v_Posts vp
+            FROM massom.${VIEW_NAME.GET_ALL_POSTS} vp
             WHERE vp.user_id IN (:following_ids)
               AND vp.user_id NOT IN (:blacklist_ids)
               AND vp.post_id NOT IN (:already_viewed)
@@ -520,9 +521,9 @@ getPostByUserIdForHome: async (user_id, limit = 20, batchIndex = 0) => {
           (
             -- 🔵 FEED PART 2: DISCOVERY (Smart Random)
             SELECT vp.*, 0 as priority
-            FROM massom.v_Posts vp
+            FROM massom.${VIEW_NAME.GET_ALL_POSTS} vp
             JOIN (
-                SELECT FLOOR(RAND() * (SELECT MAX(post_id) FROM massom.v_Posts)) AS rand_id
+                SELECT FLOOR(RAND() * (SELECT MAX(post_id) FROM massom.${VIEW_NAME.GET_ALL_POSTS})) AS rand_id
             ) AS r
             JOIN user_master u ON u.user_id = vp.user_id
             WHERE vp.post_id >= r.rand_id
@@ -566,7 +567,7 @@ getPostByUserIdForHome: async (user_id, limit = 20, batchIndex = 0) => {
             (
               -- 🟡 FALLBACK 1: HISTORY
               SELECT vp.*, 1 as priority
-              FROM massom.v_Posts vp
+              FROM massom.${VIEW_NAME.GET_ALL_POSTS} vp
               WHERE vp.user_id IN (:following_ids)
                 AND vp.user_id NOT IN (:blacklist_ids)
                 AND vp.is_active = 1
@@ -578,7 +579,7 @@ getPostByUserIdForHome: async (user_id, limit = 20, batchIndex = 0) => {
             (
               -- 🟣 FALLBACK 2: PURE DISCOVERY
               SELECT vp.*, 0 as priority
-              FROM massom.v_Posts vp
+              FROM massom.${VIEW_NAME.GET_ALL_POSTS} vp
               JOIN user_master u ON u.user_id = vp.user_id
               WHERE vp.user_id NOT IN (:discovery_exclude_ids)
                 AND vp.is_active = 1
@@ -701,8 +702,8 @@ getVideoPostByUserIdForHomePage: async (user_id, limit = 20, batchIndex = 0) => 
           (
             -- 🟢 FEED PART 1: FOLLOWING (Videos Only)
             SELECT vp.*, 1 as priority
-            FROM massom.v_Posts vp
-            INNER JOIN massom.v_PostMedia vpm ON vp.post_id = vpm.post_id
+            FROM massom.${VIEW_NAME.GET_ALL_POSTS} vp
+            INNER JOIN massom.${VIEW_NAME.GET_ALL_POST_MEDIA} vpm ON vp.post_id = vpm.post_id
             WHERE vp.user_id IN (:following_ids)
               AND vp.user_id NOT IN (:blacklist_ids)
               AND vp.post_id NOT IN (:already_viewed)
@@ -716,11 +717,11 @@ getVideoPostByUserIdForHomePage: async (user_id, limit = 20, batchIndex = 0) => 
           (
             -- 🔵 FEED PART 2: DISCOVERY (Smart Random Videos)
             SELECT vp.*, 0 as priority
-            FROM massom.v_Posts vp
-            INNER JOIN massom.v_PostMedia vpm ON vp.post_id = vpm.post_id
+            FROM massom.${VIEW_NAME.GET_ALL_POSTS} vp
+            INNER JOIN massom.${VIEW_NAME.GET_ALL_POST_MEDIA} vpm ON vp.post_id = vpm.post_id
             -- Optimized Random Selection
             JOIN (
-                SELECT FLOOR(RAND() * (SELECT MAX(post_id) FROM massom.v_Posts)) AS rand_id
+                SELECT FLOOR(RAND() * (SELECT MAX(post_id) FROM massom.${VIEW_NAME.GET_ALL_POSTS})) AS rand_id
             ) AS r
             JOIN user_master u ON u.user_id = vp.user_id
             WHERE vp.post_id >= r.rand_id
