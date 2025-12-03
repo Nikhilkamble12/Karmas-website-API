@@ -634,7 +634,8 @@ getRequestsForUserFeed: async (user_id, limit = 20, batchIndex = 0) => {
           SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_PENDING} THEN 1 ELSE 0 END) AS total_request_pending_status,
           SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
           SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected,
-          SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_DRAFT} THEN 1 ELSE 0 END) AS total_request_draft
+          SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_DRAFT} THEN 1 ELSE 0 END) AS total_request_draft,
+          SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_ADMIN_APPROVED} THEN 1 ELSE 0 END) AS total_request_admin
         FROM ${VIEW_NAME.GET_ALL_REQUEST}
         `,
         { type: db.Sequelize.QueryTypes.SELECT }
@@ -1028,15 +1029,30 @@ getSumOfTotalRequestByNgoId: async (ngo_id) => {
     try {
         const getData = await db.sequelize.query(
             `SELECT 
-                (SELECT COUNT(RequestId) FROM ${VIEW_NAME.GET_ALL_REQUEST}) AS total_request_global,
-                (SELECT SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_DRAFT} THEN 1 ELSE 0 END) 
-                 FROM ${VIEW_NAME.GET_ALL_REQUEST}) AS total_request_draft,
-                COUNT(*) as total_request_assigned_to_ngo,
-                SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_PENDING} THEN 1 ELSE 0 END) AS total_request_pending_status,
-                SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
-                SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected
-            FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} 
-            WHERE ngo_id = :ngo_id`,
+            -- 🔹 Global Aggregated Counts (Runs Only Once)
+            g.total_request_global,
+            g.total_request_draft,
+            g.total_admin_approved,
+
+            -- 🔹 NGO-Specific Counts
+            COUNT(*) AS total_request_assigned_to_ngo,
+            SUM(CASE WHEN n.status_id = ${STATUS_MASTER.REQUEST_PENDING} THEN 1 ELSE 0 END) AS total_request_pending_status,
+            SUM(CASE WHEN n.status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
+            SUM(CASE WHEN n.status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected
+
+            FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} n
+
+            -- 🔥 One-Time Global Summary
+            CROSS JOIN (
+                SELECT 
+                    COUNT(RequestId) AS total_request_global,
+                    SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_DRAFT} THEN 1 ELSE 0 END) AS total_request_draft,
+                    SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_ADMIN_APPROVED} THEN 1 ELSE 0 END) AS total_admin_approved
+                FROM ${VIEW_NAME.GET_ALL_REQUEST}
+            ) g
+
+            WHERE n.ngo_id = :ngo_id;
+            `,
             { 
                 type: db.Sequelize.QueryTypes.SELECT,
                 replacements: { ngo_id }

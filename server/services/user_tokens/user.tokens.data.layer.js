@@ -240,7 +240,39 @@ const UserTokenDAL = {
       }
     }
   );
-},
+},getTokenByRoleIdInList: async (role_id_list) => {
+  try {
+ 
+
+    // Ensure role_id_list is array
+    const roleIds = Array.isArray(role_id_list)
+      ? role_id_list
+      : String(role_id_list).split(",").map(id => Number(id.trim()));
+
+    const placeholders = roleIds.map(() => "?").join(",");
+
+    const query = `
+      ${ViewFieldTableVise.USER_TOKEN_FIELDS}
+      WHERE role_id IN (${placeholders})
+      AND (
+        (is_android = 1 AND is_android_on = 1 AND android_token IS NOT NULL)
+        OR
+        (is_web = 1 AND is_web_on = 1 AND web_token IS NOT NULL)
+      )
+    `;
+
+    const rawData = await db.sequelize.query(query, {
+      replacements: roleIds,
+      type: db.Sequelize.QueryTypes.SELECT
+    });
+
+    return mapTokenResults(rawData);
+
+  } catch (error) {
+    throw error;
+  }
+}
+
 }
 
 export default UserTokenDAL

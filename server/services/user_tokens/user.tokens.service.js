@@ -70,6 +70,12 @@ const UserTokenService = {
         }catch(error){
             throw error
         }
+    },getTokenByRoleIdInList:async(role_ids)=>{
+        try{
+            return await UserTokenDAL.getTokenByRoleIdInList(role_ids)
+        }catch(error){
+            throw error
+        }
     }
 }
 

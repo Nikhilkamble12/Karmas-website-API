@@ -627,9 +627,10 @@ const RequestNgoController = {
 
             // E. Notifications (Async/Parallel)
             tasks.push((async () => {
-                const [userTokens, adminTokens, requestMedia] = await Promise.all([
+                const [userTokens, adminTokens,NgoToken, requestMedia] = await Promise.all([
                     UserTokenService.GetTokensByUserIds(requestDetails.request_user_id),
                     UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN),
+                    UserTokenService.getTokenByRoleIdInList([ROLE_MASTER.NGO,ROLE_MASTER.NGO_USER]),
                     RequestMediaService.getDataByRequestAndSequence(RequestId, 1)
                 ]);
 
@@ -638,7 +639,7 @@ const RequestNgoController = {
                     requestName: requestNgoDetails.RequestName 
                 });
                 
-                const allTokens = [...userTokens, ...adminTokens];
+                const allTokens = [...userTokens, ...adminTokens,...NgoToken];
                 
                 await sendTemplateNotification({
                     templateKey: "Request-Approved",
