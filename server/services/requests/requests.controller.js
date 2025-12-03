@@ -460,177 +460,177 @@ deleteData: async (req, res) => {
                     )
                 );
         }
-    }, getNgoRequstDataForMapping: async (req, res) => {
-        try {
-            const request_id = req.query.RequestId
-            let fullData = []
-            let ngoIds = []
-            const getRequestData = await RequestService.getServiceById(request_id)
-            let getDataByCityId = []
-            let getDataByStateId = []
-            let getAllDataByDistrictid = []
+    }, 
+getNgoRequstDataForMapping :async (req, res) => {
+    try {
+        const request_id = req.query.RequestId;
+        const transformNgoData = (ngoList) => {
+            return ngoList.map(ngo => ({
+                Request_Ngo_Id: null,
+                ngo_id: ngo.ngo_id,
+                ngo_name: ngo.ngo_name,
+                unique_id: ngo.unique_id,
+                ngo_type_name: ngo.ngo_type_name,
+                darpan_reg_date: ngo.darpan_reg_date,
+                registration_no: ngo.registration_no,
+                email: ngo.email,
+                mobile_no: ngo.mobile_no,
+                status_id: null,
+                Reason: null,
+                status_name: null
+            }));
+        };
+        const mergeRequestStatus = (ngoList, requestData) => {
+        if (!requestData || requestData.length === 0) {
+            return ngoList;
+        }
 
-            if (getRequestData.CityId) {
-                getDataByCityId = await NgoStateDistrictMappingService.getAllNgoDataByCityId(getRequestData.CityId)
-                if (getDataByCityId.length > 0) {
-                    for (let i = 0; i < getDataByCityId.length; i++) {
-                        const CurrentData = getDataByCityId[i]
-                        const NgoData = {
-                            Request_Ngo_Id: null,
-                            ngo_id: CurrentData.ngo_id,
-                            ngo_name: CurrentData.ngo_name,
-                            unique_id: CurrentData.unique_id,
-                            ngo_type_name: CurrentData.ngo_type_name,
-                            darpan_reg_date: CurrentData.darpan_reg_date,
-                            registration_no: CurrentData.registration_no,
-                            email: CurrentData.email,
-                            mobile_no: CurrentData.mobile_no,
-                            status_id: null
-                        }
-                        fullData.push(NgoData)
-                        ngoIds.push(CurrentData.ngo_id)
-                    }
-                }
-            }
-            if (getRequestData.districtId) {
-                getAllDataByDistrictid = await NgoStateDistrictMappingService.getAllNgoDataByDistrictId(getRequestData.districtId, ngoIds)
-                if (getAllDataByDistrictid.length > 0) {
-                    for (let i = 0; i < getAllDataByDistrictid.length; i++) {
-                        const CurrentData = getAllDataByDistrictid[i]
-                        const NgoData = {
-                            Request_Ngo_Id: null,
-                            ngo_id: CurrentData.ngo_id,
-                            ngo_name: CurrentData.ngo_name,
-                            unique_id: CurrentData.unique_id,
-                            ngo_type_name: CurrentData.ngo_type_name,
-                            darpan_reg_date: CurrentData.darpan_reg_date,
-                            registration_no: CurrentData.registration_no,
-                            email: CurrentData.email,
-                            mobile_no: CurrentData.mobile_no,
-                            status_id: null
-                        }
-                        fullData.push(NgoData)
-                        ngoIds.push(CurrentData.ngo_id)
-                    }
-                }
-            }
-            if (getRequestData.StateId) {
-                getDataByStateId = await NgoStateDistrictMappingService.getAllNgoDataByStateId(getRequestData.StateId, ngoIds)
-                if (getDataByStateId.length > 0) {
-                    for (let i = 0; i < getDataByStateId.length; i++) {
-                        const CurrentData = getDataByStateId[i]
-                        const NgoData = {
-                            Request_Ngo_Id: null,
-                            ngo_id: CurrentData.ngo_id,
-                            ngo_name: CurrentData.ngo_name,
-                            unique_id: CurrentData.unique_id,
-                            ngo_type_name: CurrentData.ngo_type_name,
-                            darpan_reg_date: CurrentData.darpan_reg_date,
-                            registration_no: CurrentData.registration_no,
-                            email: CurrentData.email,
-                            mobile_no: CurrentData.mobile_no,
-                            status_id: null
-                        }
-                        fullData.push(NgoData)
-                        ngoIds.push(CurrentData.ngo_id)
-                    }
-                }
-            }
-            const getDataByCountryId = await NgoStateDistrictMappingService.getAllRemainingNgo(ngoIds)
-            if (getDataByCountryId.length > 0) {
-                for (let i = 0; i < getDataByCountryId.length; i++) {
-                    const CurrentData = getDataByCountryId[i]
-                    const NgoData = {
-                        Request_Ngo_Id: null,
-                        ngo_id: CurrentData.ngo_id,
-                        ngo_name: CurrentData.ngo_name,
-                        unique_id: CurrentData.unique_id,
-                        ngo_type_name: CurrentData.ngo_type_name,
-                        darpan_reg_date: CurrentData.darpan_reg_date,
-                        registration_no: CurrentData.registration_no,
-                        email: CurrentData.email,
-                        mobile_no: CurrentData.mobile_no,
-                        status_id: null
-                    }
-                    fullData.push(NgoData)
-                    ngoIds.push(CurrentData.ngo_id)
-                }
-            }
-            const getFinalNgos = await NgoMasterService.getAllNgoWhichAreNotSelected(ngoIds)
-            if (getFinalNgos.length > 0) {
-                for (let i = 0; i < getFinalNgos.length; i++) {
-                    const CurrentData = getFinalNgos[i]
-                    const NgoData = {
-                        Request_Ngo_Id: null,
-                        ngo_id: CurrentData.ngo_id,
-                        ngo_name: CurrentData.ngo_name,
-                        unique_id: CurrentData.unique_id,
-                        ngo_type_name: CurrentData.ngo_type_name,
-                        darpan_reg_date: CurrentData.darpan_reg_date,
-                        registration_no: CurrentData.registration_no,
-                        email: CurrentData.email,
-                        mobile_no: CurrentData.mobile_no,
-                        status_id: null
-                    }
-                    fullData.push(NgoData)
-                    ngoIds.push(CurrentData.ngo_id)
-                }
-            }
-            const requestData = await RequestNgoService.getAllNgoByRequestIdOnly(request_id)
-            if (requestData.length !== 0) {
-                // Loop through fullData and update status_id if ngo_id matches
-                fullData.forEach((ngo) => {
-                    const matchedRequest = requestData.find(req => req.ngo_id === ngo.ngo_id);
-                    if (matchedRequest) {
-                        ngo.Request_Ngo_Id = matchedRequest.Request_Ngo_Id
-                        ngo.Reason = matchedRequest.Reason
-                        ngo.status_id = matchedRequest.status_id; // Update status_id if found
-                        ngo.status_name = matchedRequest.status_name
-                    } else {
-                        ngo.Reason = null
-                        ngo.Request_Ngo_Id = null
-                        ngo.status_name = null
-                    }
-                });
-            }
+        const requestMap = new Map(
+            requestData.map(req => [req.ngo_id, req])
+        );
 
-            if (fullData.length !== 0) {
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            fullData
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
+        return ngoList.map(ngo => {
+            const matchedRequest = requestMap.get(ngo.ngo_id);
+            if (matchedRequest) {
+                return {
+                    ...ngo,
+                    Request_Ngo_Id: matchedRequest.Request_Ngo_Id,
+                    Reason: matchedRequest.Reason,
+                    status_id: matchedRequest.status_id,
+                    status_name: matchedRequest.status_name
+                };
             }
-        } catch (error) {
-            console.log("error", error)
-            logger.error(`Error ---> ${error}`);
+            return ngo;
+        });
+        };
+        // Validate request_id
+        if (!request_id) {
             return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .status(responseCode.BAD_REQUEST)
                 .send(
                     commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
+                        responseCode.BAD_REQUEST,
+                        'Request ID is required',
                         null,
                         true
                     )
                 );
         }
-    }, getRequestDataByDescUserWise: async (req, res) => {
+
+        // Fetch request details
+        const requestData = await RequestService.getServiceById(request_id);
+        
+        if (!requestData) {
+            return res
+                .status(responseCode.NOT_FOUND)
+                .send(
+                    commonResponse(
+                        responseCode.NOT_FOUND,
+                        'Request not found',
+                        null,
+                        true
+                    )
+                );
+        }
+
+        let fullData = [];
+        const ngoIds = new Set(); // Use Set for O(1) lookup
+
+        // Helper to add NGOs and track IDs
+        const addNgoData = (ngoList) => {
+            const transformed = transformNgoData(ngoList);
+            transformed.forEach(ngo => {
+                if (!ngoIds.has(ngo.ngo_id)) {
+                    fullData.push(ngo);
+                    ngoIds.add(ngo.ngo_id);
+                }
+            });
+        };
+
+        // Fetch NGOs in hierarchical order: City -> District -> State -> Country -> Remaining
+        
+        // 1. City level
+        if (requestData.CityId) {
+            const cityNgos = await NgoStateDistrictMappingService.getAllNgoDataByCityId(
+                requestData.CityId
+            );
+            addNgoData(cityNgos);
+        }
+
+        // 2. District level (excluding already fetched)
+        if (requestData.districtId) {
+            const districtNgos = await NgoStateDistrictMappingService.getAllNgoDataByDistrictId(
+                requestData.districtId,
+                Array.from(ngoIds)
+            );
+            addNgoData(districtNgos);
+        }
+
+        // 3. State level (excluding already fetched)
+        if (requestData.StateId) {
+            const stateNgos = await NgoStateDistrictMappingService.getAllNgoDataByStateId(
+                requestData.StateId,
+                Array.from(ngoIds)
+            );
+            addNgoData(stateNgos);
+        }
+
+        // 4. Country level (remaining NGOs in mapping)
+        const countryNgos = await NgoStateDistrictMappingService.getAllRemainingNgo(
+            Array.from(ngoIds)
+        );
+        addNgoData(countryNgos);
+
+        // 5. All other NGOs not yet selected
+        const remainingNgos = await NgoMasterService.getAllNgoWhichAreNotSelected(
+            Array.from(ngoIds)
+        );
+        addNgoData(remainingNgos);
+
+        // Merge request status information
+        const requestStatusData = await RequestNgoService.getAllNgoByRequestIdOnly(request_id);
+        fullData = mergeRequestStatus(fullData, requestStatusData);
+
+        // Return response
+        if (fullData.length > 0) {
+            return res
+                .status(responseCode.OK)
+                .send(
+                    commonResponse(
+                        responseCode.OK,
+                        responseConst.DATA_RETRIEVE_SUCCESS,
+                        fullData
+                    )
+                );
+        } else {
+            return res
+                .status(responseCode.NOT_FOUND)
+                .send(
+                    commonResponse(
+                        responseCode.NOT_FOUND,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
+        }
+    } catch (error) {
+        console.error('Error in getNgoRequestDataForMapping:', error);
+        logger.error(`Error ---> ${error}`);
+        
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
+    }
+},
+    getRequestDataByDescUserWise: async (req, res) => {
         try {
             const user_id = tokenData(req, res)
             const limit = req.query.limit

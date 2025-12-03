@@ -48,19 +48,19 @@ const NgoStateDistrictMappingService = {
         }
     },getAllNgoDataByCityId:async(city_id)=>{
         try{
-            return await NgoOfficeDistrictMappingDAL.getNgoDataByCityId(city_id)
+            return await NgoOfficeDistrictMappingDAL.getAllNgoDataByCityId(city_id)
         }catch(error){
             throw error
         }
     },getAllNgoDataByDistrictId:async(district_id,ngo_id)=>{
         try{
-            return await NgoOfficeDistrictMappingDAL.getNgoDataByDistrictId(district_id,ngo_id)
+            return await NgoOfficeDistrictMappingDAL.getAllNgoDataByDistrictId(district_id,ngo_id)
         }catch(error){
             throw error
         }
     },getAllNgoDataByStateId:async(state_id,ngo_id)=>{
         try{
-            return await NgoOfficeDistrictMappingDAL.getNgoDataByStateId(state_id,ngo_id)
+            return await NgoOfficeDistrictMappingDAL.getAllNgoDataByStateId(state_id,ngo_id)
         }catch(error){
             throw error
         }

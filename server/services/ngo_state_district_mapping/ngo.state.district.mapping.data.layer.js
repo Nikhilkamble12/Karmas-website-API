@@ -58,29 +58,82 @@ const NgoOfficeDistrictMappingDAL = {
         }catch(error){
             throw error
         }
-    },getNgoDataByCityId:async(city_id)=>{
-        try{
-            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.NGO_STATE_DISTRICT_MAPPING_FILDS} where city_id = ${city_id} `,{type:db.Sequelize.QueryTypes.SELECT})
-            return getDataById
-        }catch(error){
-            throw error
+    },
+    getAllNgoDataByCityId: async (city_id) => {
+        try {
+            const getDataById = await db.sequelize.query(
+                `${ViewFieldTableVise.NGO_STATE_DISTRICT_MAPPING_FILDS} WHERE city_id = :cityId`,
+                {
+                    replacements: { cityId: city_id },
+                    type: db.Sequelize.QueryTypes.SELECT
+                }
+            );
+            
+            // Remove duplicates by ngo_id
+            const uniqueData = Object.values(
+                getDataById.reduce((acc, row) => {
+                    acc[row.ngo_id] = row;
+                    return acc;
+                }, {})
+            );
+            
+            return uniqueData;
+        } catch (error) {
+            throw error;
         }
-    },getNgoDataByDistrictId:async(district_id,ngoId)=>{
-        try{
-            const ngoIdCondition = ngoId && ngoId.length > 0 ? `AND ngo_id NOT IN (${ngoId.join(",")})` : "";
-            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.NGO_STATE_DISTRICT_MAPPING_FILDS} where district_id = ${district_id} ${ngoIdCondition} `,{type:db.Sequelize.QueryTypes.SELECT})
-            return getDataById 
-        }catch(error){
-            throw error
+    },
+    getAllNgoDataByDistrictId: async (district_id, excludeNgoIds = []) => {
+        try {
+            let query = `${ViewFieldTableVise.NGO_STATE_DISTRICT_MAPPING_FILDS} WHERE district_id = :districtId`;
+            const replacements = { districtId: district_id };
+
+            if (excludeNgoIds.length > 0) {
+                query += ` AND ngo_id NOT IN (:excludeIds)`;
+                replacements.excludeIds = excludeNgoIds;
+            }
+
+            const getDataById = await db.sequelize.query(query, {
+                replacements,
+                type: db.Sequelize.QueryTypes.SELECT
+            });
+
+            const uniqueData = Object.values(
+                getDataById.reduce((acc, row) => {
+                    acc[row.ngo_id] = row;
+                    return acc;
+                }, {})
+            );
+
+            return uniqueData;
+        } catch (error) {
+            throw error;
         }
-    },getNgoDataByStateId:async(state_id,ngoId)=>{
-        try{
-              // If ngoId is empty or undefined, ignore the NOT IN clause
-            const ngoIdCondition = ngoId && ngoId.length > 0 ? `AND ngo_id NOT IN (${ngoId.join(",")})` : "";
-            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.NGO_STATE_DISTRICT_MAPPING_FILDS} where state_id = ${state_id} ${ngoIdCondition} `,{type:db.Sequelize.QueryTypes.SELECT})
-            return getDataById 
-        }catch(error){
-            throw error
+    },
+    getAllNgoDataByStateId: async (state_id, excludeNgoIds = []) => {
+        try {
+            let query = `${ViewFieldTableVise.NGO_STATE_DISTRICT_MAPPING_FILDS} WHERE state_id = :stateId`;
+            const replacements = { stateId: state_id };
+
+            if (excludeNgoIds.length > 0) {
+                query += ` AND ngo_id NOT IN (:excludeIds)`;
+                replacements.excludeIds = excludeNgoIds;
+            }
+
+            const getDataById = await db.sequelize.query(query, {
+                replacements,
+                type: db.Sequelize.QueryTypes.SELECT
+            });
+
+            const uniqueData = Object.values(
+                getDataById.reduce((acc, row) => {
+                    acc[row.ngo_id] = row;
+                    return acc;
+                }, {})
+            );
+
+            return uniqueData;
+        } catch (error) {
+            throw error;
         }
     },getRemaingNgoData:async(ngoId)=>{
         try{
@@ -91,6 +144,7 @@ const NgoOfficeDistrictMappingDAL = {
             throw error
         }
     }
+
 }
 
 export default NgoOfficeDistrictMappingDAL
