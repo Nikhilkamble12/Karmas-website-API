@@ -110,7 +110,7 @@ const UserActivityDAL = {
         // Sequelize .increment() handles negative numbers automatically!
         // If amount is 1, it adds 1.
         // If amount is -1, it subtracts 1.
-        const result = await CommentsModel(db.sequelize).increment(fieldName, { 
+        const result = await UserActivityModel(db.sequelize).increment(fieldName, { 
             by: valueChange, 
             where: { user_id: user_id } 
         });
