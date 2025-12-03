@@ -241,34 +241,12 @@ const RequestsController = {
     getByIdByView: async (req, res) => {
         try {
             const Id = req.query.id
-            // Fetch data by ID from JSON
-            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"city_id",Id)
-            // if(getJsonDatabyId!==null){
-            //   return res
-            //     .status(responseCode.OK)
-            //     .send(
-            //       commonResponse(
-            //         responseCode.OK,
-            //         responseConst.DATA_RETRIEVE_SUCCESS,
-            //         getJsonDatabyId
-            //       )
-            //     );
-            // }
-
             // If not found in JSON, fetch data from the database
             const getDataByid = await RequestService.getServiceById(Id)
             const getRequestMedia = await RequestMediaService.getDataByRequestIdByView(Id)
             getDataByid.request_media = getRequestMedia
             const getTagedUsers = await RequestTagService.getAllTagByRequestd(Id)
             getDataByid.tagged_users = getTagedUsers
-            // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
-            // // Store the data in JSON for future retrieval
-            // if(fileStatus==false){
-            //   const DataToSave=await RequestService.getAllService()
-            //   if(DataToSave.length!==0){
-            //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
-            //   }
-            // }
             // Return the fetched data or handle case where no data is found
             if (getDataByid.length !== 0) {
                 return res
