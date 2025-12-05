@@ -46,6 +46,12 @@ const BlogMediaService = {
     }catch(error){
       throw error
     }
+  },getDatabyInBlogIdByView:async(blog_id)=>{
+    try{
+      return await BlogMediaDAL.getDataByINBlogIdByView(blog_id)
+    }catch(error){
+      throw error
+    }
   }
 };
 

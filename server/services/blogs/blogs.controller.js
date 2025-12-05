@@ -1,5 +1,6 @@
 import BlogsService from "./blogs.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
+import BlogMediaService from "../blog_media/blog.media.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const BlogsController = {
@@ -103,70 +104,69 @@ const BlogsController = {
     },
     // Retrieve all records 
     getAllByView: async (req, res) => {
-        try {
-            // Fetch local data from JSON
-            // const GetAllJson = await CommanJsonFunction.getAllData(CITY_FOLDER,CITY_JSON)
-            // if(GetAllJson!==null){
-            //     if(GetAllJson.length!==0){
-            //       return res
-            //       .status(responseCode.OK)
-            //       .send(
-            //         commonResponse(
-            //           responseCode.OK,
-            //           responseConst.DATA_RETRIEVE_SUCCESS,
-            //           GetAllJson
-            //         )
-            //       );
-            //     }
-            //   }
-            // Fetch data from the database if JSON is empty
-            const getAll = await BlogsService.getAllService()
+    try {
+        // Fetch data from the database
+        const getAll = await BlogsService.getAllService();
 
-            // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
-            // // Store the data in JSON for future retrieval
-            // if(fileStatus==false){
-            //   const DataToSave=await BlogsService.getAllService()
-            //   if(DataToSave.length!==0){
-            //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
-            //   }
-            // }
-            // Return fetched data or handle case where no data is found
-            if (getAll.length !== 0) {
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            getAll
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
-            }
-        } catch (error) {
-            logger.error(`Error ---> ${error}`);
+        // Check if data exists
+        if (getAll.length !== 0) {
+            
+            // FIX 1: Correctly extract IDs (remove curly braces for implicit return)
+            const blogIds = getAll.map((element) => element.blog_id);
+            
+            // Fetch media for all these blogs
+            const getAllBlogMediaUsingId = await BlogMediaService.getDatabyInBlogIdByView(blogIds);
+
+            // FIX 2: Merge the media into the blog objects
+            // We map over the blogs and find the matching media for each one
+            const finalData = getAll.map((blog) => {
+                // Find all media items that belong to this specific blog
+                const mediaForThisBlog = getAllBlogMediaUsingId.filter(media => media.blog_id === blog.blog_id);
+                
+                // Return the blog object with a new 'media' property attached
+                // Note: If 'blog' is a Sequelize instance, use blog.toJSON() or blog.dataValues
+                return {
+                    ...blog, 
+                    media: mediaForThisBlog
+                };
+            });
+
             return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .status(responseCode.OK)
                 .send(
                     commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
+                        responseCode.OK,
+                        responseConst.DATA_RETRIEVE_SUCCESS,
+                        finalData // Return the combined data, not just 'getAll'
+                    )
+                );
+        } else {
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND,
                         null,
                         true
                     )
                 );
         }
-    },
+    } catch (error) {
+        console.log("error",error)
+        logger.error(`Error ---> ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
+    }
+},
     // Retrieve a record by its ID
     getByIdByView: async (req, res) => {
         try {

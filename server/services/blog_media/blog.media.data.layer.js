@@ -76,6 +76,16 @@ const BlogMediaDAL = {
     }catch(error){
       throw error
     }
+  },getDataByINBlogIdByView:async(blog_id)=>{
+    try{
+      const getDataById = await db.sequelize.query(
+        ` ${ViewFieldTableVise.Blog_MEDIA_FIELDS} where blog_id IN (${blog_id}) `,
+        { type: db.Sequelize.QueryTypes.SELECT } // Return the retrieved data
+      );
+      return getDataById ?? [];
+    }catch(error){
+      throw error
+    }
   }
 }
 
