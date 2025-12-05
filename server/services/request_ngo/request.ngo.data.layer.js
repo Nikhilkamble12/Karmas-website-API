@@ -133,7 +133,7 @@ const RequestNgoDAL = {
             SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
             SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected
             FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} where ngo_id = ${ngo_id}`,{type:db.Sequelize.QueryTypes.SELECT})
-            return getData
+            return getData[0] ?? []
         }catch(error){
             throw error
         }

@@ -105,6 +105,7 @@ webDashBoardData: async(req, res) => {
             );
         }
     } catch(error) {
+        console.log("error",error)
         logger.error(`Error ---> ${error}`);
         return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
             commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
@@ -160,13 +161,14 @@ getNgoCount:async(req,res)=>{
             RequestCount = await RequestService.getCountOfTotalRequest()
         }
         if (RequestCount.length !== 0) {
+                console.log("RequestCount",RequestCount)
                 return res
                     .status(responseCode.OK)
                     .send(
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            RequestCount[0]
+                            RequestCount
                         )
                     );
             } else {

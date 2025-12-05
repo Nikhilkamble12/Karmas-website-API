@@ -128,35 +128,75 @@ const ScoreHistoryDAL = {
         } catch (error) {
             throw error
         }
-    }, ScoreDashBoardCount: async () => {
-        try {
-            const getScoreHistory = await db.sequelize.query(
-                ` SELECT 
-            -- Losing scorers
-            SUM(CASE WHEN difference < 0 THEN 1 ELSE 0 END) AS score_losing_scorers_count,
-            -- Gaining scorers
-            SUM(CASE WHEN difference >= 0 THEN 1 ELSE 0 END) AS score_gaining_scorers_count,
-            -- Zero scorers this month (week1_score = 0)
-            SUM(CASE WHEN week1_score = 0 THEN 1 ELSE 0 END) AS score_zero_weekly_scorers_count,
-            SUM(CASE WHEN total_score = 0 THEN 1 ELSE 0 END) AS score_zero_total_scorers_count,
-            -- Top scorers this month (max week1_score)
-            (SELECT COUNT(*) 
-                FROM massom.v_weekly_user_scores v
-                WHERE v.week1_score = (SELECT MAX(week1_score) FROM massom.v_weekly_user_scores)
-            ) AS score_top_scorers_this_month,
-            -- Top active scorers (max total_score)
-            (SELECT COUNT(*) 
-                FROM massom.v_weekly_user_scores v
-                WHERE v.total_score = (SELECT MAX(total_score) FROM massom.v_weekly_user_scores)
-            ) AS score_top_active_scorers
-            FROM massom.v_weekly_user_scores;
-            `, { type: db.Sequelize.QueryTypes.SELECT }
+    }, 
+    // ScoreDashBoardCount: async () => {
+    //     try {
+    //         const getScoreHistory = await db.sequelize.query(
+    //             ` SELECT 
+    //         -- Losing scorers
+    //         SUM(CASE WHEN difference < 0 THEN 1 ELSE 0 END) AS score_losing_scorers_count,
+    //         -- Gaining scorers
+    //         SUM(CASE WHEN difference >= 0 THEN 1 ELSE 0 END) AS score_gaining_scorers_count,
+    //         -- Zero scorers this month (week1_score = 0)
+    //         SUM(CASE WHEN week1_score = 0 THEN 1 ELSE 0 END) AS score_zero_weekly_scorers_count,
+    //         SUM(CASE WHEN total_score = 0 THEN 1 ELSE 0 END) AS score_zero_total_scorers_count,
+    //         SUM(CASE WHEN total_score > 0  THEN 1 ELSE 0 END) AS score_greater_than_zero_total_scorers_count,
+    //         -- Top scorers this month (max week1_score)
+    //         (SELECT COUNT(*) 
+    //             FROM massom.v_weekly_user_scores v
+    //             WHERE v.week1_score = (SELECT MAX(week1_score) FROM massom.v_weekly_user_scores)
+    //         ) AS score_top_scorers_this_month,
+    //         -- Top active scorers (max total_score)
+    //         (SELECT COUNT(*) 
+    //             FROM massom.v_weekly_user_scores v
+    //             WHERE v.total_score = (SELECT MAX(total_score) FROM massom.v_weekly_user_scores)
+    //         ) AS score_top_active_scorers
+    //         FROM massom.v_weekly_user_scores;
+    //         `, { type: db.Sequelize.QueryTypes.SELECT }
+    //         )
+    //         return getScoreHistory
+    //     } catch (error) {
+    //         throw error
+    //     }
+    // }
+    ScoreDashBoardCount: async () => {
+    try {
+        const getScoreHistory = await db.sequelize.query(
+            `
+            WITH score_data AS (
+                SELECT 
+                    week1_score,
+                    total_score,
+                    difference
+                FROM massom.v_weekly_user_scores
+            ),
+            max_values AS (
+                SELECT
+                    MAX(week1_score) AS max_week1_score,
+                    MAX(total_score) AS max_total_score
+                FROM score_data
             )
-            return getScoreHistory
-        } catch (error) {
-            throw error
-        }
-    },getDataBySearchFilter:async(user_name)=>{
+            SELECT
+                count(*) AS total_score_count,
+                SUM(CASE WHEN difference < 0 THEN 1 ELSE 0 END) AS score_losing_scorers_count,
+                SUM(CASE WHEN difference >= 0 THEN 1 ELSE 0 END) AS score_gaining_scorers_count,
+                SUM(CASE WHEN week1_score = 0 THEN 1 ELSE 0 END) AS score_zero_weekly_scorers_count,
+                SUM(CASE WHEN total_score = 0 THEN 1 ELSE 0 END) AS score_zero_total_scorers_count,
+                SUM(CASE WHEN total_score > 0  THEN 1 ELSE 0 END) AS score_greater_than_zero_total_scorers_count,
+                SUM(CASE WHEN week1_score = (SELECT max_week1_score FROM max_values) THEN 1 END) AS score_top_scorers_this_month,
+                SUM(CASE WHEN total_score = (SELECT max_total_score FROM max_values) THEN 1 END) AS score_top_active_scorers
+            FROM score_data;
+            `,
+            { type: db.Sequelize.QueryTypes.SELECT }
+        );
+
+        return getScoreHistory;
+    } catch (error) {
+        throw error;
+    }
+}
+
+    ,getDataBySearchFilter:async(user_name)=>{
         try{
             const getData = await db.sequelize.query(` SELECT * FROM v_weekly_user_scores where user_name like ${user_name} `,{type:db.Sequelize.QueryTypes.SELECT})
             return getData

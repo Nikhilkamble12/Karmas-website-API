@@ -1025,24 +1025,58 @@ getRequestVideosForUserFeed: async (user_id, limit = 20, batchIndex = 0) => {
 
 
 
+// getSumOfTotalRequestByNgoId: async (ngo_id) => {
+//     try {
+//         const getData = await db.sequelize.query(
+//             `SELECT 
+//             -- 🔹 Global Aggregated Counts (Runs Only Once)
+//             g.total_request_global,
+//             g.total_request_draft,
+//             g.total_admin_approved,
+
+//             -- 🔹 NGO-Specific Counts
+//             COUNT(*) AS total_request_assigned_to_ngo,
+//             SUM(CASE WHEN n.status_id = ${STATUS_MASTER.REQUEST_PENDING} THEN 1 ELSE 0 END) AS total_request_pending_status,
+//             SUM(CASE WHEN n.status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
+//             SUM(CASE WHEN n.status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected
+
+//             FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} n
+
+//             -- 🔥 One-Time Global Summary
+//             CROSS JOIN (
+//                 SELECT 
+//                     COUNT(RequestId) AS total_request_global,
+//                     SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_DRAFT} THEN 1 ELSE 0 END) AS total_request_draft,
+//                     SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_ADMIN_APPROVED} THEN 1 ELSE 0 END) AS total_admin_approved
+//                 FROM ${VIEW_NAME.GET_ALL_REQUEST}
+//             ) g
+
+//             WHERE n.ngo_id = :ngo_id;
+//             `,
+//             { 
+//                 type: db.Sequelize.QueryTypes.SELECT,
+//                 replacements: { ngo_id }
+//             }
+//         );
+//         return getData[0];
+//     } catch (error) {
+//         throw error;
+//     }
+// },
+
 getSumOfTotalRequestByNgoId: async (ngo_id) => {
     try {
         const getData = await db.sequelize.query(
             `SELECT 
-            -- 🔹 Global Aggregated Counts (Runs Only Once)
-            g.total_request_global,
-            g.total_request_draft,
-            g.total_admin_approved,
+                g.total_request_global,
+                g.total_request_draft,
+                g.total_admin_approved,
 
-            -- 🔹 NGO-Specific Counts
-            COUNT(*) AS total_request_assigned_to_ngo,
-            SUM(CASE WHEN n.status_id = ${STATUS_MASTER.REQUEST_PENDING} THEN 1 ELSE 0 END) AS total_request_pending_status,
-            SUM(CASE WHEN n.status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
-            SUM(CASE WHEN n.status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected
-
+                COUNT(*) AS total_request_assigned_to_ngo,
+                SUM(CASE WHEN n.status_id = ${STATUS_MASTER.REQUEST_PENDING} THEN 1 ELSE 0 END) AS total_request_pending_status,
+                SUM(CASE WHEN n.status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
+                SUM(CASE WHEN n.status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected
             FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} n
-
-            -- 🔥 One-Time Global Summary
             CROSS JOIN (
                 SELECT 
                     COUNT(RequestId) AS total_request_global,
@@ -1050,19 +1084,27 @@ getSumOfTotalRequestByNgoId: async (ngo_id) => {
                     SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_ADMIN_APPROVED} THEN 1 ELSE 0 END) AS total_admin_approved
                 FROM ${VIEW_NAME.GET_ALL_REQUEST}
             ) g
-
-            WHERE n.ngo_id = :ngo_id;
+            WHERE n.ngo_id = :ngo_id
+            GROUP BY 
+                g.total_request_global,
+                g.total_request_draft,
+                g.total_admin_approved;
             `,
             { 
                 type: db.Sequelize.QueryTypes.SELECT,
                 replacements: { ngo_id }
             }
         );
+
         return getData[0];
     } catch (error) {
         throw error;
     }
-},// NEW: Atomic Increment/Decrement for Requests
+},
+
+
+
+// NEW: Atomic Increment/Decrement for Requests
 UpdateRequestCount: async (RequestId, fieldName, amount) => {
     try {
         return await RequestModel(db.sequelize).increment(fieldName, {
