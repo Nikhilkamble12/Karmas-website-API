@@ -406,7 +406,10 @@ let AuthController = {
         ));
       }
       const getUserOtpLogs = await UserOtpLogsService.matchOtpByUserIdTypeAndCode(user.user_id,OTP_TYPE_MASTER.RESET_PASSWORD,otp)
-      if (!getUserOtpLogs.reset_otp || !getUserOtpLogs.reset_otp_expiry) {
+      console.log("getUserOtpLogs",getUserOtpLogs)
+      console.log(!getUserOtpLogs.otp_code)
+      console.log(!getUserOtpLogs.expiry_at)
+      if (!getUserOtpLogs.otp_code || !getUserOtpLogs.expiry_at) {
         return res.status(400).send(commonResponse(
           responseCode.BAD_REQUEST,
           RESPONSE_CONSTANTS.KINDLY_REGENRATE_OTP,
@@ -415,7 +418,7 @@ let AuthController = {
         ));
       }
 
-      if (getUserOtpLogs.reset_otp !== otp) {
+      if (getUserOtpLogs.otp_code !== otp) {
         return res.status(400).send(commonResponse(
           responseCode.BAD_REQUEST,
           RESPONSE_CONSTANTS.INVALID_OTP_KINDLY_RECHECK,
@@ -455,7 +458,7 @@ let AuthController = {
       ));
     }
     const getResetOtp = await UserOtpLogsService.matchOtpByUserIdTypeAndCode(user.user_id,OTP_TYPE_MASTER.RESET_PASSWORD,otp)
-    if (getResetOtp.reset_otp !== otp) {
+    if (getResetOtp.otp_code !== otp) {
       return res.status(400).send(commonResponse(
         responseCode.BAD_REQUEST,
         RESPONSE_CONSTANTS.INVALID_OTP_KINDLY_RECHECK,
