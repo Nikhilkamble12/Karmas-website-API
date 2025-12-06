@@ -53,6 +53,7 @@ const ViewFieldTableWise = {
     NGO_LEVELS_FIELDS:` SELECT ngo_level_id, level_name, description, total_modules, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_NGO_LEVEL} `,
     NGO_DESIGNATION_MASTER_FIELDS: ` SELECT ngo_designation_id, ngo_id, designation_name, is_active, created_by FROM ${VIEW_NAME.GET_ALL_NGO_DESIGNATION_MASTER} `,
     NGO_USER_MASTER_FIELDS:` SELECT ngo_user_id, user_id, user_name, full_name, file_name, file_path, bg_image, bg_image_path, designation_id, designation_name, user_joining_date, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_NGO_USER_MASTER} `,
+    NGO_REGISTRATION_FIELDS:` SELECT ngo_registration_id, ngo_name, unique_id, darpan_reg_date, ngo_type, registration_no, act_name, city_of_registration_id, state_of_registration_id, country_of_registration_id, date_of_registration, address, city_id, state_id, country_id, telephone, mobile_no, website_url, email, ngo_logo, ngo_logo_path, pan_cad_file_name, pan_card_file_url, crs_regis_file_name, crs_regis_file_path, digital_signature_file_name, digital_signature_file_path, stamp_file_name, stamp_file_path, status_id, is_admin_accepted, is_reapproval, reason, remarks, accepted_at, is_active, created_by, created_at  FROM ${VIEW_NAME.GET_ALL_NGO_REGISTRATION} `,
 
     // -------> P
     POSTS_FIELDS:` SELECT post_id, user_id, description, created_at, total_likes, total_comments, user_name, full_name, role_id, role_name, file_path, is_active, is_blacklist, is_user_tagged, created_by, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_POSTS} `,

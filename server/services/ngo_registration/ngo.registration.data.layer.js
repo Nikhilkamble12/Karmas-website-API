@@ -1,22 +1,22 @@
-import NgoUserMasterModel from "./ngo.user.master.model.js";
-import commonPath from "../../middleware/comman_path/comman.path.js";
+import NgoRegistrationModel from "./ngo.registration.model.js";
+import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 const { db, ViewFieldTableVise, tokenData } = commonPath; // Destructure necessary components from commonPath
 
-const NgoUserMasterDAL = {
+const NgoRegistrationDAL = {
     // Method to create a new record in the database
   CreateData: async (data) => {
     try {
-      const createdData = await NgoUserMasterModel(db.sequelize).create(data);
+      const createdData = await NgoRegistrationModel(db.sequelize).create(data);
       return createdData; // Return the created data
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
   },
   // Method to update an existing record by its ID
-  UpdateData: async (ngo_user_id, data) => {
+  UpdateData: async (ngo_registration_id, data) => {
     try {
-      const updateData = await NgoUserMasterModel(db.sequelize).update(data, {
-        where: { ngo_user_id: ngo_user_id }, 
+      const updateData = await NgoRegistrationModel(db.sequelize).update(data, {
+        where: { ngo_registration_id: ngo_registration_id }, 
       }); // Return the result of the update operation
       return updateData;
     } catch (error) {
@@ -27,7 +27,7 @@ const NgoUserMasterDAL = {
   getAllDataByView: async () => {
     try {
       const getAllData = await db.sequelize.query(
-        `${ViewFieldTableVise.NGO_USER_MASTER_FIELDS}`,
+        `${ViewFieldTableVise.NGO_REGISTRATION_FIELDS}`,
         { type: db.Sequelize.QueryTypes.SELECT } 
       );
       return getAllData; // Return the retrieved data
@@ -36,10 +36,10 @@ const NgoUserMasterDAL = {
     }
   },
   // Method to retrieve a specific record by its ID
-  getDataByIdByView: async (ngo_user_id) => {
+  getDataByIdByView: async (ngo_registration_id) => {
     try {
       const getDataById = await db.sequelize.query(
-        ` ${ViewFieldTableVise.NGO_USER_MASTER_FIELDS} where ngo_user_id  = ${ngo_user_id} `,
+        ` ${ViewFieldTableVise.NGO_REGISTRATION_FIELDS} where ngo_registration_id  = ${ngo_registration_id} `,
         { type: db.Sequelize.QueryTypes.SELECT }
       );
       return getDataById[0] ?? [];  // Return the retrieved data
@@ -48,9 +48,9 @@ const NgoUserMasterDAL = {
     }
   },
   // Method to mark a record as deleted (soft delete)
-  deleteDataById: async (ngo_user_id, req, res) => {
+  deleteDataById: async (ngo_registration_id, req, res) => {
     try {
-      const [deleteDataById] = await NgoUserMasterModel(db.sequelize).update(
+      const [deleteDataById] = await NgoRegistrationModel(db.sequelize).update(
         {
           is_active: 0,
           deleted_by: tokenData(req, res),
@@ -58,7 +58,7 @@ const NgoUserMasterDAL = {
         },
         {
           where: {
-            ngo_user_id: ngo_user_id,
+            ngo_registration_id: ngo_registration_id,
           },
         }
       );
@@ -67,17 +67,6 @@ const NgoUserMasterDAL = {
       throw error; // Throw error for handling in the controller
     }
   },
-  getDataByUserIdByView: async (user_id) => {
-    try {
-      const getDataById = await db.sequelize.query(
-        ` ${ViewFieldTableVise.NGO_USER_MASTER_FIELDS} where user_id  = ${user_id} `,
-        { type: db.Sequelize.QueryTypes.SELECT }
-      );
-      return getDataById ?? [];  // Return the retrieved data
-    } catch (error) {
-      throw error; // Throw error for handling in the controller
-    }
-  },
 }
 
-export default NgoUserMasterDAL
+export default NgoRegistrationDAL

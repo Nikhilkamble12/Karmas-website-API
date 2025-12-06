@@ -55,6 +55,7 @@ import BugTypeModel from "./bug_type/bug.type.model.js";
 import TicketMediaModel from "./ticket_media/ticket.media.model.js";
 import NgoDesignationMasterModel from "./ngo_designation_master/ngo.designation.master.model.js";
 import NgoUserMasterModel from "./ngo_user_master/ngo.user.master.model.js";
+import NgoRegistrationModel from "./ngo_registration/ngo.registration.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -140,6 +141,7 @@ db.BugTypeModel = BugTypeModel(sequelize,Sequelize);
 db.TicketMediaModel = TicketMediaModel(sequelize,Sequelize);
 db.NgoDesignationMasterModel = NgoDesignationMasterModel(sequelize,Sequelize);
 db.NgoUserMasterModel = NgoUserMasterModel(sequelize,Sequelize);
+db.NgoRegistrationModel = NgoRegistrationModel(sequelize,Sequelize);
 
 
 export default db
