@@ -1,7 +1,7 @@
 import AuthService from "./auth.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import BonusMasterService from "../bonus_master/bonus.master.service.js";
-import { BONUS_MASTER, STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
+import { BONUS_MASTER, OTP_TYPE_MASTER, STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
 import UserMasterService from "../user_master/user.master.service.js";
 import ScoreHistoryService from "../score_history/score.history.service.js";
@@ -12,6 +12,7 @@ import UserTokenService from "../user_tokens/user.tokens.service.js";
 import GroupRolePagePermissionService from "../access_control/group_role_page_permission/group.role.page.permission.service.js";
 import MenuService from "../access_control/menu/menu.service.js";
 import RoleMasterService from "../access_control/role_master/role.master.service.js";
+import UserOtpLogsService from "../user_otp_log/user.otp.log.service.js";
 // import RoleService from "../access_control/role/role.service.js";
 const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate, JWT } = commonPath
 
@@ -28,6 +29,7 @@ let AuthController = {
       } else {
         userData = await AuthService.checkWetherUserIsPresent(user_name.trim())
       }
+
       // else getbyusername 
       // let userData = await AuthService.checkWetherUserIsPresent(user_name.trim())
       // const hash = await argon2Verify.hashArgon(password);
@@ -40,6 +42,19 @@ let AuthController = {
             commonResponse(
               responseCode.UNAUTHORIZED,
               responseConst.INVALID_USERNAME,
+              null,
+              true
+            )
+          );
+      }
+      if (userData.is_authenticated == 0) {
+        logger.error(`User with name or Id ${user_name || google_id} not found`);
+        return res
+          .status(responseCode.UNAUTHORIZED)
+          .send(
+            commonResponse(
+              responseCode.UNAUTHORIZED,
+              responseConst.VERIFICATION_REMAINING,
               null,
               true
             )
@@ -342,11 +357,16 @@ let AuthController = {
 
       const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
       const expiry = new Date(Date.now() + 20 * 60000); // 20 minutes validity
-
-      await UserMasterService.updateService(user.user_id, {
-        reset_otp: otp,
-        reset_otp_expiry: expiry
-      });
+      const otpdataToCreate = {
+        user_id:user.user_id,
+        otp_code:otp,
+        otp_type_id:OTP_TYPE_MASTER.RESET_PASSWORD,
+        expiry_at : expiry,
+        is_used:false,
+        used_at:null,
+      }
+      await addMetaDataWhileCreateUpdate(otpdataToCreate, req, res, false);
+      await UserOtpLogsService.createService(otpdataToCreate);
 
       const { subject, html } = await CommonEmailtemplate.PasswordResetMail({
         username: user.username || user.fullname || email,
@@ -385,8 +405,8 @@ let AuthController = {
           true
         ));
       }
-
-      if (!user.reset_otp || !user.reset_otp_expiry) {
+      const getUserOtpLogs = await UserOtpLogsService.matchOtpByUserIdTypeAndCode(user.user_id,OTP_TYPE_MASTER.RESET_PASSWORD,otp)
+      if (!getUserOtpLogs.reset_otp || !getUserOtpLogs.reset_otp_expiry) {
         return res.status(400).send(commonResponse(
           responseCode.BAD_REQUEST,
           RESPONSE_CONSTANTS.KINDLY_REGENRATE_OTP,
@@ -395,23 +415,10 @@ let AuthController = {
         ));
       }
 
-      if (user.reset_otp !== otp) {
+      if (getUserOtpLogs.reset_otp !== otp) {
         return res.status(400).send(commonResponse(
           responseCode.BAD_REQUEST,
           RESPONSE_CONSTANTS.INVALID_OTP_KINDLY_RECHECK,
-          null,
-          true
-        ));
-      }
-
-      if (new Date() > new Date(user.reset_otp_expiry)) {
-        await UserMasterService.updateService(user.user_id, {
-          reset_otp: null,
-          reset_otp_expiry: null
-        });
-        return res.status(400).send(commonResponse(
-          responseCode.BAD_REQUEST,
-          RESPONSE_CONSTANTS.OTP_HAS_EXPIRED,
           null,
           true
         ));
@@ -447,8 +454,8 @@ let AuthController = {
         true
       ));
     }
-
-    if (user.reset_otp !== otp) {
+    const getResetOtp = await UserOtpLogsService.matchOtpByUserIdTypeAndCode(user.user_id,OTP_TYPE_MASTER.RESET_PASSWORD,otp)
+    if (getResetOtp.reset_otp !== otp) {
       return res.status(400).send(commonResponse(
         responseCode.BAD_REQUEST,
         RESPONSE_CONSTANTS.INVALID_OTP_KINDLY_RECHECK,
@@ -457,24 +464,10 @@ let AuthController = {
       ));
     }
 
-    if (new Date() > new Date(user.reset_otp_expiry)) {
-      await UserMasterService.updateService(user.user_id, {
-        reset_otp: null,
-        reset_otp_expiry: null
-      });
-      return res.status(400).send(commonResponse(
-        responseCode.BAD_REQUEST,
-        RESPONSE_CONSTANTS.OTP_HAS_EXPIRED,
-        null,
-        true
-      ));
-    }
-
     await UserMasterService.updateService(user.user_id, {
       password: newPassword, 
-      reset_otp: null,
-      reset_otp_expiry: null
     });
+    await UserOtpLogsService.updateService(getResetOtp.otp_id,{is_used:1,used_at:new Date(Date.now())})
 
     const { subject, html } = await CommonEmailtemplate.PasswordHasBeenUpdatedSuccessfully({
       username: user.username || user.fullname || email

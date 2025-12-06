@@ -75,6 +75,8 @@ GET_ALL_TICKET_MEDIA: "v_ticket_media",
 GET_ALL_NGO_DESIGNATION_MASTER : "v_ngo_designation_master",
 GET_ALL_NGO_USER_MASTER : "v_ngo_user_master",
 GET_ALL_NGO_REGISTRATION : "v_ngo_registration",
+GET_ALL_OTP_TYPE_MASTER : "v_otp_type_master",
+GET_ALL_USER_OTP_LOGS : "v_user_otp_log",
 
 }
 export default VIEW_NAME

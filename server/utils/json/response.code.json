@@ -216,6 +216,9 @@
     },{
       "code":"1.0043",
       "message":"Like record not found."
+    },{
+      "code":"1.0044",
+      "message":"You're almost there! Complete your verification to unlock everything."
     }
   ]
 }

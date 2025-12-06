@@ -75,6 +75,7 @@ const RESPONSE_CONSTANTS = {
     USER_IS_ALREADY_BLOCKED: "User is Already Block.",              // 400: Redundant action
     CANNOT_BLOCK_YOURSELF: "You cannot block yourself.",            // 400: Logic guard
     BLACKLISTED_USER_ID_REQUIRED: "Blacklisted user ID is required.", // 400: Missing param
+    VERIFICATION_REMAINING:"You're almost there! Complete your verification to unlock everything.",
 
     // ============================================================
     // POSTS & COMMENTS

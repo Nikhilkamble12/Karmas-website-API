@@ -56,6 +56,8 @@ import TicketMediaModel from "./ticket_media/ticket.media.model.js";
 import NgoDesignationMasterModel from "./ngo_designation_master/ngo.designation.master.model.js";
 import NgoUserMasterModel from "./ngo_user_master/ngo.user.master.model.js";
 import NgoRegistrationModel from "./ngo_registration/ngo.registration.model.js";
+import OtpTypeMasterModel from "./otp_type_master/otp.type.master.model.js";
+import UserOtpLogModel from "./user_otp_log/user.otp.log.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -142,6 +144,8 @@ db.TicketMediaModel = TicketMediaModel(sequelize,Sequelize);
 db.NgoDesignationMasterModel = NgoDesignationMasterModel(sequelize,Sequelize);
 db.NgoUserMasterModel = NgoUserMasterModel(sequelize,Sequelize);
 db.NgoRegistrationModel = NgoRegistrationModel(sequelize,Sequelize);
+db.OtpTypeMasterModel = OtpTypeMasterModel(sequelize,Sequelize);
+db.UserOtpLogModel = UserOtpLogModel(sequelize,Sequelize);
 
 
 export default db
