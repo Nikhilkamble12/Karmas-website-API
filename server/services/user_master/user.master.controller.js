@@ -909,13 +909,13 @@ create: async (req, res) => {
 
             // 2. Generate Email Template
             const emailContent = await CommonEmailtemplate.EmailVerificationRequestSent({
-                email_id: getDataById.email_id,
+                email_id: getUserByEmail.email_id,
                 otp: otp,
-                username: getDataById.full_name || "User", // Assuming 'full_name' exists, else default
+                username: getUserByEmail.full_name || "User", // Assuming 'full_name' exists, else default
                 validity: "20 min"
             });
             // 3. Send Email (You need to implement the actual sending helper)
-            await sendEmail({to:getDataById.email_id, subject:emailContent.subject,text:null, html:emailContent.html});
+            await sendEmail({to:getUserByEmail.email_id, subject:emailContent.subject,text:null, html:emailContent.html});
             // logger.info(`Email sent to ${getDataById.email_id}`);
 
             // 4. Calculate Expiry (Current Time + 20 Minutes)
@@ -924,7 +924,7 @@ create: async (req, res) => {
 
             // 5. Save OTP Log
             const CreateOtpData = {
-                user_id: user_id,
+                user_id: getUserByEmail.user_id,
                 otp_code: otp,
                 otp_type_id: OTP_TYPE_MASTER.EMAIL_VERIFY,
                 expiry_at: expiryTime, // Saves as Date object

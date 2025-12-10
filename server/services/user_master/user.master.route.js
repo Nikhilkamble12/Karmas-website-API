@@ -78,5 +78,13 @@ router.get(
     verifyToken,
     UserMasterController.getAllByViewWithPagination
 )
+router.post(
+    `${basePath}/sendOtp`,
+    UserMasterController.resendVerificaionOtp
+)
+router.post(
+    `${basePath}/verifyProfile`,
+    UserMasterController.verfiyYouProfile
+)
 // Export the router for use in other parts of the application
 export default router
