@@ -53,7 +53,188 @@ const CommonEmailtemplate = {
       } catch (error) {
         throw error;
       }
+    },
+  EmailVerificationRequestSent: async ({ email_id, otp, username = "User", validity = "20 min" }) => {
+    try {
+      const subject = `Action Required: Verify your email`;
+      
+      const html = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Verify Email</title>
+          </head>
+        <body style="margin:0;padding:0;background-color:#f9fafb;font-family:'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;color:#333333;">
+          
+          <div style="display:none;font-size:1px;color:#f9fafb;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">
+            Use code ${otp} to verify your Karmas account.
+          </div>
+
+          <table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;background-color:#f9fafb;">
+            <tr>
+              <td align="center" style="padding:40px 20px;">
+                
+                <div style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.08);overflow:hidden;border:1px solid #f0f0f0;">
+                  
+                  <div style="background:linear-gradient(135deg, #10b981 0%, #059669 100%);padding:40px 30px;text-align:center;">
+                    <div style="margin-bottom:15px;">
+                      <span style="font-size:42px;background:#ffffff;border-radius:50%;padding:12px 18px;color:#059669;box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+                        &#128274; </span>
+                    </div>
+                    <h1 style="margin:0;color:#ffffff;font-size:26px;font-weight:700;letter-spacing:-0.5px;">Verify your email</h1>
+                    <p style="margin:10px 0 0;color:rgba(255,255,255,0.9);font-size:16px;">Secure your Karmas account</p>
+                  </div>
+
+                  <div style="padding:40px 30px;text-align:center;">
+                    <p style="margin:0 0 24px 0;color:#374151;font-size:16px;line-height:1.6;">
+                      Hi <strong>${username}</strong>,
+                    </p>
+                    <p style="margin:0 0 32px 0;color:#4b5563;font-size:16px;line-height:1.6;">
+                      Thanks for joining <strong>Karmas</strong>! We just need to verify your email address to complete your registration.
+                    </p>
+
+                    <div style="background-color:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:24px;margin-bottom:32px;display:inline-block;min-width:200px;">
+                      <p style="margin:0 0 8px 0;color:#166534;font-size:12px;text-transform:uppercase;font-weight:700;letter-spacing:1px;">Verification Code</p>
+                      <span style="font-family:'Courier New', Courier, monospace;font-size:36px;font-weight:700;letter-spacing:6px;color:#15803d;display:block;">${otp}</span>
+                    </div>
+
+                    <p style="margin:0;color:#6b7280;font-size:14px;line-height:1.5;">
+                      This code will expire in <strong>${validity}</strong>.<br>
+                      If you didn't attempt to sign up, you can safely ignore this email.
+                    </p>
+                  </div>
+
+                  <div style="background-color:#f8fafc;padding:24px;text-align:center;border-top:1px solid #f1f5f9;">
+                    <p style="margin:0 0 8px 0;color:#9ca3af;font-size:12px;">Need help? <a href="#" style="color:#10b981;text-decoration:none;">Contact Support</a></p>
+                    <p style="margin:0;color:#cbd5e1;font-size:12px;">&copy; ${new Date().getFullYear()} Karmas Team.</p>
+                  </div>
+                </div>
+                
+                <div style="height:40px;"></div>
+                
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `;
+      
+      return { subject, html };
+    } catch (error) {
+      throw error;
     }
+},EmailVefiicationCompletedSuccessFully: async ({ email_id, username = "Friend" }) => {
+    try {
+      const subject = `Welcome home, ${username}! 🌱`;
+      
+      const html = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Welcome to Karmas</title>
+          </head>
+        <body style="margin:0;padding:0;background-color:#f8fafc;font-family:'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;color:#333333;">
+          
+          <table role="presentation" style="width:100%;border-collapse:collapse;border:0;border-spacing:0;background-color:#f8fafc;">
+            <tr>
+              <td align="center" style="padding:40px 20px;">
+                
+                <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.08);overflow:hidden;border:1px solid #f1f5f9;">
+                  
+                  <div style="background-color:#ffffff;padding:40px 30px 20px;text-align:center;">
+                    <div style="margin-bottom:20px;">
+                        <span style="font-size:50px;line-height:1;">✨</span>
+                    </div>
+                    <h1 style="margin:0 0 10px;color:#10b981;font-size:28px;font-weight:800;letter-spacing:-0.5px;">Welcome to the Family!</h1>
+                    <p style="margin:0;color:#64748b;font-size:16px;font-weight:500;">Verification Complete</p>
+                  </div>
+
+                  <div style="padding:0 40px;text-align:center;">
+                    <p style="margin:0 0 24px;color:#334155;font-size:16px;line-height:1.6;">
+                      Hi <strong>${username}</strong>,
+                    </p>
+                    <p style="margin:0 0 30px;color:#475569;font-size:16px;line-height:1.6;">
+                      We are thrilled to have you here. <strong>Karmas</strong> isn't just an app; it's a movement where kindness connects us. You are now part of a global community dedicated to making a difference.
+                    </p>
+                  </div>
+
+                  <div style="padding:0 30px 20px;">
+                    <p style="text-align:center;color:#94a3b8;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:25px;">Your Journey Begins Here</p>
+                    
+                    <table role="presentation" style="width:100%;border-collapse:collapse;margin-bottom:25px;">
+                      <tr>
+                        <td width="50" valign="top">
+                           <div style="background-color:#eff6ff;width:40px;height:40px;border-radius:10px;text-align:center;line-height:40px;">
+                             <span style="font-size:20px;">🔍</span>
+                           </div>
+                        </td>
+                        <td style="padding-left:15px;">
+                          <strong style="color:#1e293b;font-size:16px;display:block;margin-bottom:4px;">Discover & Connect</strong>
+                          <span style="color:#64748b;font-size:14px;line-height:1.5;">Find friends, passionate volunteers, and verified NGOs near you. Build your network of goodness.</span>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <table role="presentation" style="width:100%;border-collapse:collapse;margin-bottom:25px;">
+                      <tr>
+                        <td width="50" valign="top">
+                           <div style="background-color:#fdf4ff;width:40px;height:40px;border-radius:10px;text-align:center;line-height:40px;">
+                             <span style="font-size:20px;">💬</span>
+                           </div>
+                        </td>
+                        <td style="padding-left:15px;">
+                          <strong style="color:#1e293b;font-size:16px;display:block;margin-bottom:4px;">Engage with Purpose</strong>
+                          <span style="color:#64748b;font-size:14px;line-height:1.5;">Post questions, share your stories, and interact deeply with a community that cares.</span>
+                        </td>
+                      </tr>
+                    </table>
+
+                     <div style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);border-radius:16px;padding:25px;margin-top:10px;border:1px solid #a7f3d0;">
+                      <table role="presentation" style="width:100%;border-collapse:collapse;">
+                        <tr>
+                          <td width="50" valign="top">
+                             <div style="background-color:#ffffff;width:40px;height:40px;border-radius:50%;text-align:center;line-height:40px;box-shadow:0 4px 6px rgba(0,0,0,0.05);">
+                               <span style="font-size:20px;">🏆</span>
+                             </div>
+                          </td>
+                          <td style="padding-left:15px;">
+                            <strong style="color:#065f46;font-size:16px;display:block;margin-bottom:4px;">Complete Milestones</strong>
+                            <span style="color:#047857;font-size:14px;line-height:1.5;">Every good deed counts. Track your impact, unlock levels, and earn amazing rewards as you grow.</span>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+
+                  </div>
+
+                  <div style="padding:20px 30px 40px;text-align:center;">
+                    <a href="https://yourwebsite.com/dashboard" style="display:inline-block;padding:18px 40px;background-color:#10b981;color:#ffffff;text-decoration:none;border-radius:50px;font-weight:700;font-size:16px;box-shadow:0 10px 20px rgba(16, 185, 129, 0.25);transition:all 0.3s ease;">
+                      Start Your Impact Journey
+                    </a>
+                  </div>
+
+                  <div style="background-color:#f8fafc;padding:30px;text-align:center;border-top:1px solid #f1f5f9;">
+                    <p style="margin:0 0 10px;color:#94a3b8;font-size:13px;font-style:italic;">"Small acts, when multiplied by millions of people, can transform the world."</p>
+                    <p style="margin:0;color:#cbd5e1;font-size:12px;">&copy; ${new Date().getFullYear()} Karmas Team.</p>
+                  </div>
+                </div>
+                
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
+      `;
+
+      return { subject, html };
+    } catch (error) {
+      throw error;
+    }
+}
   };
   
 export default CommonEmailtemplate;

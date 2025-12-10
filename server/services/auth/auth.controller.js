@@ -7,7 +7,6 @@ import UserMasterService from "../user_master/user.master.service.js";
 import ScoreHistoryService from "../score_history/score.history.service.js";
 import CommonEmailtemplate from "../../utils/helper/common.email.templates.js";
 import sendEmail from "../../utils/helper/comman.email.function.js";
-import RESPONSE_CONSTANTS from "../../utils/constants/response/response.constant.js";
 import UserTokenService from "../user_tokens/user.tokens.service.js";
 import GroupRolePagePermissionService from "../access_control/group_role_page_permission/group.role.page.permission.service.js";
 import MenuService from "../access_control/menu/menu.service.js";
@@ -275,7 +274,7 @@ let AuthController = {
   //       return res.status(400).send(
   //         commonResponse(
   //           responseCode.BAD_REQUEST,
-  //           RESPONSE_CONSTANTS.KINDLY_REGENRATE_OTP,
+  //           responseConst.KINDLY_REGENRATE_OTP,
   //           null,
   //           true
   //         )
@@ -286,7 +285,7 @@ let AuthController = {
   //       return res.status(400).send(
   //         commonResponse(
   //           responseCode.BAD_REQUEST,
-  //           RESPONSE_CONSTANTS.INVALID_OTP_KINDLY_RECHECK,
+  //           responseConst.INVALID_OTP_KINDLY_RECHECK,
   //           null,
   //           true
   //         )
@@ -301,7 +300,7 @@ let AuthController = {
   //       return res.status(400).send(
   //         commonResponse(
   //           responseCode.BAD_REQUEST,
-  //           RESPONSE_CONSTANTS.OTP_HAS_EXPIRED,
+  //           responseConst.OTP_HAS_EXPIRED,
   //           null,
   //           true
   //         )
@@ -326,7 +325,7 @@ let AuthController = {
   //       .status(200)
   //       .send(commonResponse(
   //         responseCode.OK,
-  //         RESPONSE_CONSTANTS.PASSWORD_UPDATED_SUCCESSFULLY,
+  //         responseConst.PASSWORD_UPDATED_SUCCESSFULLY,
   //          null
   //         ));
   //   } catch (error) {
@@ -409,7 +408,7 @@ let AuthController = {
       if (getUserOtpLogs==null || !getUserOtpLogs.otp_code || !getUserOtpLogs.expiry_at) {
         return res.status(400).send(commonResponse(
           responseCode.BAD_REQUEST,
-          RESPONSE_CONSTANTS.KINDLY_REGENRATE_OTP,
+          responseConst.KINDLY_REGENRATE_OTP,
           null,
           true
         ));
@@ -418,7 +417,7 @@ let AuthController = {
       if (getUserOtpLogs.otp_code !== otp) {
         return res.status(400).send(commonResponse(
           responseCode.BAD_REQUEST,
-          RESPONSE_CONSTANTS.INVALID_OTP_KINDLY_RECHECK,
+          responseConst.INVALID_OTP_KINDLY_RECHECK,
           null,
           true
         ));
@@ -427,7 +426,7 @@ let AuthController = {
       // ✅ OTP is valid
       return res.status(200).send(commonResponse(
         responseCode.OK,
-        RESPONSE_CONSTANTS.OTP_VERIFIED_SUCCESSFULLY,
+        responseConst.OTP_VERIFIED_SUCCESSFULLY,
         null
       ));
 
@@ -458,7 +457,7 @@ let AuthController = {
     if (getUserOtpLogs==null) {
         return res.status(400).send(commonResponse(
           responseCode.BAD_REQUEST,
-          RESPONSE_CONSTANTS.KINDLY_REGENRATE_OTP,
+          responseConst.KINDLY_REGENRATE_OTP,
           null,
           true
         ));
@@ -466,7 +465,7 @@ let AuthController = {
     if (getResetOtp.otp_code !== otp) {
       return res.status(400).send(commonResponse(
         responseCode.BAD_REQUEST,
-        RESPONSE_CONSTANTS.INVALID_OTP_KINDLY_RECHECK,
+        responseConst.INVALID_OTP_KINDLY_RECHECK,
         null,
         true
       ));
@@ -485,7 +484,7 @@ let AuthController = {
 
     return res.status(200).send(commonResponse(
       responseCode.OK,
-      RESPONSE_CONSTANTS.PASSWORD_UPDATED_SUCCESSFULLY,
+      responseConst.PASSWORD_UPDATED_SUCCESSFULLY,
       null
     ));
 

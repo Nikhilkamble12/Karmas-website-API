@@ -1,40 +1,43 @@
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
-import { ROLE_MASTER } from "../../utils/constants/id_constant/id.constants.js";
+import { OTP_TYPE_MASTER, ROLE_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 import getBase64FromFile from "../../utils/helper/base64.retrive.data.js";
 import saveBase64ToFile from "../../utils/helper/base64ToFile.js";
 import getCurrentIndianTime from "../../utils/helper/get.current.time.ist.js";
 import NgoUserMasterService from "../ngo_user_master/ngo.user.master.service.js"
 import UserActivtyService from "../user_activity/user.activity.service.js";
+import CommonEmailtemplate from "../../utils/helper/common.email.templates.js";
+import sendEmail from "../../utils/helper/comman.email.function.js";
 import UserBlackListService from "../user_blacklist/user.blacklist.service.js";
+import UserOtpLogsService from "../user_otp_log/user.otp.log.service.js";
 import UserMasterService from "./user.master.service.js";
 const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
 
 const UserMasterController = {
     // Create A new Record 
-    create: async (req, res) => {
-        try {
-            const data = req.body;
-            const currentTime = await getCurrentIndianTime()
-            // Add metadata for creation (created by, created at)
-            // await addMetaDataWhileCreateUpdate(data, req, res, false);
-            const accessToken = req.get("x-access-token");
+create: async (req, res) => {
+    try {
+        const data = req.body;
+        const currentTime = await getCurrentIndianTime()
+        // Add metadata for creation (created by, created at)
+        // await addMetaDataWhileCreateUpdate(data, req, res, false);
+        const accessToken = req.get("x-access-token");
 
-            if (accessToken && accessToken !== "null" && accessToken!=="") {
+        if (accessToken && accessToken !== "null" && accessToken !== "") {
             const tokenUser = await tokenData(req, res);
             data.created_by = tokenUser;
             data.created_at = currentTime
-            } else {
+        } else {
             data.created_by = 1;
             data.created_at = currentTime
-            }
+        }
 
-            // data.created_by=1,
-            // data.created_at = new Date()
-            // Create the record using ORM
-            data.first_time_login = true
-            const createData = await UserMasterService.createService(data);
-            if(createData?.success==false){
-                 return res
+        // Create the record using ORM
+        data.first_time_login = true
+        data.is_authenticated = false
+        const createData = await UserMasterService.createService(data);
+
+        if (createData?.success == false) {
+            return res
                 .status(responseCode.BAD_REQUEST)
                 .send(
                     commonResponse(
@@ -44,113 +47,144 @@ const UserMasterController = {
                         true
                     )
                 );
-            }
-            // If user creation failed
-            if (!createData) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_ADDING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-
-                let file_path = null, bg_image_path = null;
-                if (data.Base64File !== null && data.Base64File !== "" && data.Base64File !== 0 && data.Base64File !== undefined && data.file_name && data.file_name !== "" && data.file_name !== 0) {
-                    const user_id = createData.dataValues.user_id
-                    await saveBase64ToFile(
-                        data.Base64File,
-                        "user_master/" + user_id,
-                        currentTime().replace(/ /g, "_").replace(/:/g, "-") +
-                        "_" +
-                        data.file_name
-                    );
-                    const upload_page_1 = data.file_name
-                        ? `user_master/${user_id}/${currentTime()
-                            .replace(/ /g, "_")
-                            .replace(/:/g, "-")}_${data.file_name}`
-                        : null;
-                    file_path = upload_page_1
-                    //    const updateUserMaster = await UserMasterService.updateService(createData.dataValues.user_id,{file_path:upload_page_1})
-                } else {
-                    file_path = null
-                }
-
-                if (data.bg_image_file !== null && data.bg_image_file !== "" && data.bg_image_file !== 0 && data.bg_image_file !== undefined && data.bg_image && data.bg_image !== "" && data.bg_image !== 0) {
-                    await saveBase64ToFile(
-                        data.bg_image_file,
-                        "user_master/" + createData.dataValues.user_id + "/bg_image",
-                        currentTime().replace(/ /g, "_").replace(/:/g, "-") +
-                        "_" +
-                        data.bg_image
-                    );
-                    const upload_page_2 = data.bg_image
-                        ? `user_master/${createData.dataValues.user_id}/bg_image/${currentTime()
-                            .replace(/ /g, "_")
-                            .replace(/:/g, "-")}_${data.bg_image}`
-                        : null;
-                    bg_image_path = upload_page_2
-                    //    const updateUserMaster = await UserMasterService.updateService(createData.dataValues.user_id,{bg_image_path:upload_page_2})
-                }
-
-                const updateData = {
-                    file_path: file_path ?? null,
-                    bg_image_path: bg_image_path ?? null
-                };
-                //console.log("updateData",updateData)
-                const updateUserMaster = await UserMasterService.updateService(createData.dataValues.user_id, updateData);
-
-                const user_id = createData.dataValues.user_id
-                const userActvityCreate = {
-                    user_id: user_id,
-                    created_by:user_id,
-                    created_at :currentTime
-                }
-                // await addMetaDataWhileCreateUpdate(userActvityCreate, req, res, false);
-                const UserActivity = await UserActivtyService.createService(userActvityCreate)
-                if(data.role_id == ROLE_MASTER.NGO || data.role_id == ROLE_MASTER.NGO_USER){
-                    const createNgoUserData = {
-                        user_id : user_id,
-                        designation_id:data.designation_id ?? null,
-                        user_joining_date:data.user_joining_date ?? null,
-                    }
-                    addMetaDataWhileCreateUpdate(createNgoUserData,req,res,false)
-                    const createData = await NgoUserMasterService.createService(createNgoUserData)
-                }
-                return res
-                    .status(responseCode.CREATED)
-                    .send(
-                        commonResponse(
-                            responseCode.CREATED,
-                            responseConst.SUCCESS_ADDING_RECORD
-                        )
-                    );
-            
-        } catch (error) {
-            console.log("error", error)
-            logger.error(`Error ---> ${error}`);
+        }
+        // If user creation failed
+        if (!createData) {
             return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .status(responseCode.BAD_REQUEST)
                 .send(
                     commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
+                        responseCode.BAD_REQUEST,
+                        responseConst.ERROR_ADDING_RECORD,
                         null,
                         true
                     )
                 );
         }
 
-    },
+        // --- File Upload Logic (Kept as is) ---
+        let file_path = null, bg_image_path = null;
+        if (data.Base64File !== null && data.Base64File !== "" && data.Base64File !== 0 && data.Base64File !== undefined && data.file_name && data.file_name !== "" && data.file_name !== 0) {
+            const user_id = createData.dataValues.user_id
+            // Note: Ensure currentTime is a function if calling currentTime(), otherwise use the variable
+            await saveBase64ToFile(
+                data.Base64File,
+                "user_master/" + user_id,
+                currentTime.replace(/ /g, "_").replace(/:/g, "-") + "_" + data.file_name
+            );
+            file_path = data.file_name ?
+                `user_master/${user_id}/${currentTime.replace(/ /g, "_").replace(/:/g, "-")}_${data.file_name}` :
+                null;
+        } else {
+            file_path = null
+        }
+
+        if (data.bg_image_file !== null && data.bg_image_file !== "" && data.bg_image_file !== 0 && data.bg_image_file !== undefined && data.bg_image && data.bg_image !== "" && data.bg_image !== 0) {
+            await saveBase64ToFile(
+                data.bg_image_file,
+                "user_master/" + createData.dataValues.user_id + "/bg_image",
+                currentTime.replace(/ /g, "_").replace(/:/g, "-") + "_" + data.bg_image
+            );
+            bg_image_path = data.bg_image ?
+                `user_master/${createData.dataValues.user_id}/bg_image/${currentTime.replace(/ /g, "_").replace(/:/g, "-")}_${data.bg_image}` :
+                null;
+        }
+
+        const updateData = {
+            file_path: file_path ?? null,
+            bg_image_path: bg_image_path ?? null
+        };
+
+        await UserMasterService.updateService(createData.dataValues.user_id, updateData);
+        // --------------------------------------
+
+        const user_id = createData.dataValues.user_id
+        const userActvityCreate = {
+            user_id: user_id,
+            created_by: user_id,
+            created_at: currentTime
+        }
+
+        await UserActivtyService.createService(userActvityCreate)
+
+        if (data.role_id == ROLE_MASTER.NGO || data.role_id == ROLE_MASTER.NGO_USER) {
+            const createNgoUserData = {
+                user_id: user_id,
+                designation_id: data.designation_id ?? null,
+                user_joining_date: data.user_joining_date ?? null,
+            }
+            await addMetaDataWhileCreateUpdate(createNgoUserData, req, res, false)
+            await NgoUserMasterService.createService(createNgoUserData)
+        }
+
+        // --- OTP AND EMAIL LOGIC START ---
+        const getDataById = await UserMasterService.getServiceById(user_id)
+
+        if (getDataById) {
+            // 1. Generate 6 Digit Random Number
+            const otp = Math.floor(100000 + Math.random() * 900000);
+
+            // 2. Generate Email Template
+            const emailContent = await CommonEmailtemplate.EmailVerificationRequestSent({
+                email_id: getDataById.email_id,
+                otp: otp,
+                username: getDataById.full_name || "User", // Assuming 'full_name' exists, else default
+                validity: "20 min"
+            });
+            // 3. Send Email (You need to implement the actual sending helper)
+            await sendEmail({to:getDataById.email_id, subject:emailContent.subject,text:null, html:emailContent.html});
+            // logger.info(`Email sent to ${getDataById.email_id}`);
+
+            // 4. Calculate Expiry (Current Time + 20 Minutes)
+            const expiryTime = new Date();
+            expiryTime.setMinutes(expiryTime.getMinutes() + 20);
+
+            // 5. Save OTP Log
+            const CreateOtpData = {
+                user_id: user_id,
+                otp_code: otp,
+                otp_type_id: OTP_TYPE_MASTER.EMAIL_VERIFY,
+                expiry_at: expiryTime, // Saves as Date object
+                is_used: 0,
+                attempt_count: 0,
+                max_attempt_limit: 5,
+            }
+
+            await addMetaDataWhileCreateUpdate(CreateOtpData, req, res, false)
+            await UserOtpLogsService.createService(CreateOtpData)
+        }
+        // --- OTP AND EMAIL LOGIC END ---
+
+        return res
+            .status(responseCode.CREATED)
+            .send(
+                commonResponse(
+                    responseCode.CREATED,
+                    responseConst.SUCCESS_ADDING_RECORD
+                )
+            );
+
+    } catch (error) {
+        console.log("error", error)
+        logger.error(`Error ---> ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
+    }
+},
     // update Record Into Db
     update: async (req, res) => {
         try {
             const id = req.query.id
             const data = req.body
+            const getDataById = await UserMasterService.getServiceById(id)
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, true);
             if (data.Base64File !== null && data.Base64File !== "" && data.Base64File !== 0 && data.Base64File !== undefined && data.file_name && data.file_name !== "" && data.file_name !== 0) {
@@ -187,8 +221,8 @@ const UserMasterController = {
             }
             // Update the record using ORM
             const updatedRowsCount = await UserMasterService.updateService(id, data);
-            if(updatedRowsCount?.success==false){
-                 return res
+            if (updatedRowsCount?.success == false) {
+                return res
                     .status(responseCode.BAD_REQUEST)
                     .send(
                         commonResponse(
@@ -199,6 +233,11 @@ const UserMasterController = {
                         )
                     );
             }
+
+            if (getDataById && (getDataById.role_id == ROLE_MASTER.NGO || getDataById.role_id == ROLE_MASTER.NGO_USER)) {
+                const UpdateNgoUser = await NgoUserMasterService.createOrUpdateData(id, data, req, res)
+            }
+
             // if (updatedRowsCount > 0) {
             //     const newData = await UserMasterService.getServiceById(id);
             //     // Update the JSON data in the file
@@ -542,7 +581,7 @@ const UserMasterController = {
             const DataToUpdate = {
                 is_blacklisted: req.body.is_blacklisted,
                 blacklist_reason: req.body.blacklist_reason,
-                blacklisted_by : tokenUser
+                blacklisted_by: tokenUser
             }
             await addMetaDataWhileCreateUpdate(DataToUpdate, req, res, true);
             const updatedRowsCount = await UserMasterService.updateService(user_id, DataToUpdate);
@@ -623,11 +662,11 @@ const UserMasterController = {
                     )
                 );
         }
-    },checkWetherUsernamePresent:async(req,res)=>{
-        try{
-            const user_name =  req.query.user_name
+    }, checkWetherUsernamePresent: async (req, res) => {
+        try {
+            const user_name = req.query.user_name
             const checkUserNamePresnt = await UserMasterService.getUserDataByUserName(user_name)
-            if(checkUserNamePresnt.length>0){
+            if (checkUserNamePresnt.length > 0) {
                 return res
                     .status(responseCode.BAD_REQUEST)
                     .send(
@@ -638,7 +677,7 @@ const UserMasterController = {
                             true
                         )
                     );
-            }else{
+            } else {
                 return res
                     .status(responseCode.OK)
                     .send(
@@ -650,7 +689,7 @@ const UserMasterController = {
                         )
                     );
             }
-        }catch(error){
+        } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -703,8 +742,8 @@ const UserMasterController = {
                 );
         }
 
-    },UserDataByNgoId:async(req,res)=>{
-        try{
+    }, UserDataByNgoId: async (req, res) => {
+        try {
             const ngo_id = req.query.ngo_id
             const getDataByUser = await UserMasterService.getUserByNgoId(ngo_id)
             if (getDataByUser.length > 0) {
@@ -729,7 +768,7 @@ const UserMasterController = {
                         )
                     );
             }
-        }catch(error){
+        } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -742,7 +781,7 @@ const UserMasterController = {
                     )
                 );
         }
-    }, 
+    },
     getAllByViewWithPagination: async (req, res) => {
         try {
             const limit = req.query.limit ? parseInt(req.query.limit) : 5;
@@ -760,6 +799,189 @@ const UserMasterController = {
                     )
                 );
         } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    }, verfiyYouProfile: async (req, res) => {
+        try {
+            const { email, otp } = req.body
+            if (!email || email == null || email == "") {
+                return res.status(404).send(commonResponse(
+                    responseCode.NOT_FOUND,
+                    responseConst.USER_NOT_FOUND,
+                    null,
+                    true
+                ));
+            }
+            const getDatabyUser = await UserMasterService.getUserByEmailIdByView(email)
+            if(getDatabyUser.length == 0){
+                return res.status(404).send(commonResponse(
+                    responseCode.NOT_FOUND,
+                    responseConst.USER_NOT_FOUND,
+                    null,
+                    true
+                ));
+            }
+            const getOtp = await UserOtpLogsService.matchOtpByUserIdTypeAndCode(getDatabyUser.user_id,OTP_TYPE_MASTER.EMAIL_VERIFY,otp)
+            if(getOtp == null){
+                return res.status(400).send(commonResponse(
+                responseCode.BAD_REQUEST,
+                responseConst.KINDLY_REGENRATE_OTP,
+                null,
+                true
+                ));
+            }else{
+                const updateSuccess = await UserMasterService.updateService(getDatabyUser.user_id,{is_authenticated : true})
+                if (updateSuccess === 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_UPDATING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+            // 2. Generate Email Template
+            const emailContent = await CommonEmailtemplate.EmailVefiicationCompletedSuccessFully({
+                email_id: getDatabyUser.email_id,
+                username: getDatabyUser.full_name || "User", // Assuming 'full_name' exists, else default
+            });
+            // 3. Send Email (You need to implement the actual sending helper)
+            await sendEmail({to:getDatabyUser.email_id, subject:emailContent.subject,text:null, html:emailContent.html});
+            return res
+                .status(responseCode.CREATED)
+                .send(
+                    commonResponse(
+                        responseCode.CREATED,
+                        responseConst.SUCCESS_UPDATING_RECORD
+                    )
+                );
+            }
+
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    },resendVerificaionOtp:async(req,res)=>{
+        try{
+            const {email} = req.body
+            if (!email || email == null || email == "") {
+                return res.status(404).send(commonResponse(
+                    responseCode.NOT_FOUND,
+                    responseConst.EMAIL_IS_MANDATORY,
+                    null,
+                    true
+                ));
+            }
+            const getUserByEmail = await UserMasterService.getUserByEmailIdByView(email)
+            if(!getUserByEmail || !getUserByEmail.email_id){
+               return res.status(404).send(commonResponse(
+                    responseCode.NOT_FOUND,
+                    responseConst.EMAIL_IS_MANDATORY,
+                    null,
+                    true
+                )); 
+            }
+            const getOtp = await UserOtpLogsService.getOtpByNotUsed(getUserByEmail.user_id,OTP_TYPE_MASTER.EMAIL_VERIFY)
+            // 1. Generate 6 Digit Random Number
+            const otp = Math.floor(100000 + Math.random() * 900000);
+
+            // 2. Generate Email Template
+            const emailContent = await CommonEmailtemplate.EmailVerificationRequestSent({
+                email_id: getDataById.email_id,
+                otp: otp,
+                username: getDataById.full_name || "User", // Assuming 'full_name' exists, else default
+                validity: "20 min"
+            });
+            // 3. Send Email (You need to implement the actual sending helper)
+            await sendEmail({to:getDataById.email_id, subject:emailContent.subject,text:null, html:emailContent.html});
+            // logger.info(`Email sent to ${getDataById.email_id}`);
+
+            // 4. Calculate Expiry (Current Time + 20 Minutes)
+            const expiryTime = new Date();
+            expiryTime.setMinutes(expiryTime.getMinutes() + 20);
+
+            // 5. Save OTP Log
+            const CreateOtpData = {
+                user_id: user_id,
+                otp_code: otp,
+                otp_type_id: OTP_TYPE_MASTER.EMAIL_VERIFY,
+                expiry_at: expiryTime, // Saves as Date object
+                is_used: 0,
+                attempt_count: 0,
+                max_attempt_limit: 5,
+            }
+
+            if(getOtp && getOtp !== null){
+            await addMetaDataWhileCreateUpdate(CreateOtpData, req, res, true)
+            const updatedRowsCount = await UserOtpLogsService.updateService(CreateOtpData.user_id,CreateOtpData)
+            if (updatedRowsCount === 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_UPDATING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+            return res
+                .status(responseCode.CREATED)
+                .send(
+                    commonResponse(
+                        responseCode.CREATED,
+                        responseConst.SUCCESS_UPDATING_RECORD
+                    )
+                );
+            }else{
+            await addMetaDataWhileCreateUpdate(CreateOtpData, req, res, false)
+            const createData = await UserOtpLogsService.createService(CreateOtpData)
+            if (createData) {
+                return res
+                    .status(responseCode.CREATED)
+                    .send(
+                        commonResponse(
+                            responseCode.CREATED,
+                            responseConst.SUCCESS_ADDING_RECORD
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_ADDING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+            }
+        }catch(error){
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)

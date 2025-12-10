@@ -47,6 +47,12 @@ const NgoUserMasterService = {
         }catch(error){
             throw error
         }
+    },createOrUpdateData:async(user_id, data,req,res)=>{
+        try{
+            return await NgoUserMasterDAL.CreateOrUpdateData(user_id, data,req,res)
+        }catch(error){
+            throw error
+        }
     }
 }
 

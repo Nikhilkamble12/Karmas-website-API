@@ -77,7 +77,43 @@ const NgoUserMasterDAL = {
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
-  },
+  },CreateOrUpdateData: async (user_id, data,req,res) => {
+  try {
+    const Model = NgoUserMasterModel(db.sequelize);
+
+    // 1️⃣ Check if record exists
+    const existingRecord = await Model.findOne({ where: { user_id } });
+
+    if (existingRecord) {
+      // 2️⃣ UPDATE Flow
+      data.modified_at = new Date();
+      data.modified_by = data.modified_by ?? user_id; // or tokenData(req,res)
+
+      await Model.update(data, { where: { user_id } });
+
+      return {
+        status: "updated",
+        data: await Model.findOne({ where: { user_id } })
+      };
+    }
+
+    // 3️⃣ CREATE Flow  
+    data.user_id = user_id;
+    data.created_at = new Date();
+    data.created_by = data.created_by ?? user_id;
+
+    const newRecord = await Model.create(data);
+
+    return {
+      status: "created",
+      data: newRecord
+    };
+
+  } catch (error) {
+    throw error;
+  }
+}
+
 }
 
 export default NgoUserMasterDAL
