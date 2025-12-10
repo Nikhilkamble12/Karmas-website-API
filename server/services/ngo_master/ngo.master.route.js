@@ -79,4 +79,9 @@ router.get(
     verifyToken,
     NgoMasterController.SearchNgoByName
 )
+
+router.get(
+    `${basePath}/getAll`,
+    NgoMasterController.getAllNgoData
+)
 export default router

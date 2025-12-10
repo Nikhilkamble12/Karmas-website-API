@@ -824,7 +824,75 @@ getNgoRequstDataForMapping :async (req, res) => {
                 )
             );
         }
+    },
+    getAllRequests: async (req, res) => {
+    try {
+        const limit = req.query.limit ? parseInt(req.query.limit) : 20;
+        const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
+        // 1️⃣ Fetch paginated requests from database
+        const getAll = await RequestService.getAllServiceWithPagination(limit, offset);
+
+        // 2️⃣ Early exit if no data found
+        if (!getAll || getAll.length === 0) {
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
+        }
+
+        // // 3️⃣ Extract all RequestIds
+        // const requestIds = getAll.map(item => item.RequestId);
+
+        // // 4️⃣ Fetch all media for these RequestIds in one batch
+        // const allRequestMedia = await RequestMediaService.getDataByMultipleRequestIdsByInForHomeScreen(requestIds);
+
+        // // 5️⃣ Group media by RequestId using Map for O(1) lookup
+        // const mediaByRequest = new Map();
+        // allRequestMedia.forEach(media => {
+        //     if (!mediaByRequest.has(media.RequestId)) {
+        //         mediaByRequest.set(media.RequestId, []);
+        //     }
+        //     mediaByRequest.get(media.RequestId).push(media);
+        // });
+
+        // // 6️⃣ Attach media to each request
+        // getAll.forEach(currentData => {
+        //     currentData.request_media = mediaByRequest.get(currentData.RequestId) || [];
+        // });
+
+        // // 7️⃣ Success response
+        return res
+            .status(responseCode.OK)
+            .send(
+                commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    getAll
+                )
+            );
+
+    } catch (error) {
+        console.log("error", error);
+        logger.error(`Error ---> ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
     }
+}
 }
 
 export default RequestsController

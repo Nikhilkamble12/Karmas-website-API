@@ -1115,5 +1115,17 @@ UpdateRequestCount: async (RequestId, fieldName, amount) => {
         throw error;
     }
 },
+
+getAllDataByViewWithPagination: async (limit, offset) => {
+    try {
+        const query = `${ViewFieldTableVise.REQUEST_FIELDS} ORDER BY RequestId DESC LIMIT ${offset}, ${limit}`;
+        const getAllData = await db.sequelize.query(query, {
+            type: db.Sequelize.QueryTypes.SELECT
+        });
+        return getAllData;
+    } catch (error) {
+        throw error;
+    }
+},
 };
 export default RequestDAL;

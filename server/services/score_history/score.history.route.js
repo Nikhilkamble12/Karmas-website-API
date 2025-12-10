@@ -60,6 +60,11 @@ router.get(
     verifyToken,
     ScoreHistoryController.SearchUserScoreByUserName
 )
+//
+router.get(
+    `${basePath}/get/topScorers`,
+    ScoreHistoryController.getTopScorersFromCache
+)
 
 // Export the router for use in other parts of the application
 export default router

@@ -1121,6 +1121,72 @@ const NgoMasterController = {
                     )
                 );
         }
+    },
+    getAllNgoData: async (req, res) => {
+        try {
+            // Fetch local data from JSON
+            // const GetAllJson = await CommanJsonFunction.getAllData(CITY_FOLDER,CITY_JSON)
+            // if(GetAllJson!==null){
+            //     if(GetAllJson.length!==0){
+            //       return res
+            //       .status(responseCode.OK)
+            //       .send(
+            //         commonResponse(
+            //           responseCode.OK,
+            //           responseConst.DATA_RETRIEVE_SUCCESS,
+            //           GetAllJson
+            //         )
+            //       );
+            //     }
+            //   }
+            const limit = req.query.limit;
+            const offset = req.query.offset;
+            // Fetch data from the database if JSON is empty
+            const getAll = await NgoMasterService.getAllServiceWithLimit(limit, offset)
+            // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
+            // // Store the data in JSON for future retrieval
+            // if(fileStatus==false){
+            //   const DataToSave=await NgoMasterService.getAllService()
+            //   if(DataToSave.length!==0){
+            //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
+            //   }
+            // }
+            // Return fetched data or handle case where no data is found
+            if(getAll.length !== 0){
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getAll
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
     }
 }
 export default NgoMasterController

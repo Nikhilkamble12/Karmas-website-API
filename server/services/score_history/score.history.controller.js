@@ -565,7 +565,124 @@ const ScoreHistoryController = {
                 )
             );
         }
+    }, getTopScorersFromCache: async (req, res) => {
+    try {
+        const limit = 10;
+
+        // Validate limit
+        if (isNaN(limit) || limit < 1 || limit > 100) {
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        "Limit must be between 1 and 100",
+                        null,
+                        true
+                    )
+                );
+        }
+
+        // Define JSON file details
+        const jsonFileDetails = {
+            view_name: null,
+            folder_name: "score",
+            json_file_name: `score_${limit}.json`
+        };
+
+        // Try to get data from local cache
+        const cachedData = await LocalJsonHelper.getAll(jsonFileDetails, "60m");
+
+        if (cachedData && cachedData.topScorers && cachedData.topScorers.length > 0) {
+            // Sort by rank
+            const sortedScorers = cachedData.topScorers.sort((a, b) => a.rank - b.rank);
+
+            // Format file paths
+            const baseUrl = process.env.GET_LIVE_CURRENT_URL;
+            const formattedScorers = sortedScorers.map(scorer => ({
+                ...scorer,
+                file_path: scorer.file_path && 
+                          scorer.file_path !== "" && 
+                          scorer.file_path !== "null"
+                    ? `${baseUrl}/resources/${scorer.file_path}`
+                    : null
+            }));
+
+            const response = {
+                topScorers: formattedScorers,
+                cached: true,
+                total: formattedScorers.length
+            };
+
+            return res
+                .status(responseCode.OK)
+                .send(
+                    commonResponse(
+                        responseCode.OK,
+                        responseConst.DATA_RETRIEVE_SUCCESS,
+                        response
+                    )
+                );
+        }
+
+        // If cache miss, fetch from database
+        const getData = await ScoreHistoryService.getScoreDasHBoardDataByLimit(limit);
+
+        if (!getData || getData.length === 0) {
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
+        }
+
+        // Save to cache for future requests
+        await LocalJsonHelper.save(
+            jsonFileDetails,
+            getData,
+            null,
+            null,
+            true,
+            null,
+            "15d"
+        );
+
+        const response = {
+            topScorers: getData.topScorers || getData,
+            cached: false,
+            total: getData.topScorers ? getData.topScorers.length : getData.length
+        };
+
+        return res
+            .status(responseCode.OK)
+            .send(
+                commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    response
+                )
+            );
+
+    } catch (error) {
+        console.log("error", error);
+        logger.error(`Error in getTopScorersFromCache: ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
     }
+}
 }
 
 export default ScoreHistoryController

@@ -35,7 +35,10 @@ app.use((req, res, next) => {
   }
   next();
 });
-app.use(helmet());
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginEmbedderPolicy: false,
+}));
 app.use(cors());
 app.use(morgan("dev"));
 // Debug Mode (turn on/off)

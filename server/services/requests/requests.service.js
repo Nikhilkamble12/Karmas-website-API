@@ -94,7 +94,14 @@ const RequestService = {
         }catch(error){
             throw error
         }
+    },
+    getAllServiceWithPagination: async (limit, offset) => {
+    try {
+        return await RequestDAL.getAllDataByViewWithPagination(limit, offset)
+    } catch (error) {
+        throw error
     }
+},
 }
 
 export default RequestService
