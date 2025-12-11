@@ -219,6 +219,27 @@
     },{
       "code":"1.0044",
       "message":"You're almost there! Complete your verification to unlock everything."
+    },{
+      "code":"1.0045",
+      "message":"Invalid Status Id."
+    },{
+      "code":"1.0046",
+      "message":"NGO registration not found."
+    },{
+      "code":"1.0047",
+      "message":"NGO approved successfully."
+    },{
+      "code":"1.0048",
+      "message":"NGO registration rejected."
+    },{
+      "code":"1.0049",
+      "message":"NGO registration reopened."
+    },{
+      "code":"1.0050",
+      "message":"Cannot Update Data After Approval. You Can Login And Modify."
+    },{
+      "code":"1.0051",
+      "message":"NGO Registration Already Completed."
     }
   ]
 }

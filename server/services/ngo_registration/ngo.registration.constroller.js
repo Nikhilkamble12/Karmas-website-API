@@ -1,8 +1,24 @@
 import NgoRegistrationService from "./ngo.registration.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import saveBase64ToFile from "../../utils/helper/base64ToFile.js";
-import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
+import { ROLE_MASTER, STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
+import NgoMasterService from "../ngo_master/ngo.master.service.js";
+import UserMasterService from "../user_master/user.master.service.js";
+import CommonEmailtemplate from "../../utils/helper/common.email.templates.js";
 const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
+import crypto from "crypto";
+import sendEmail from "../../utils/helper/comman.email.function.js";
+function generateRandomPassword(length = 10) {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$&";
+    let result = "";
+    const bytes = crypto.randomBytes(length);
+
+    for (let i = 0; i < length; i++) {
+        result += chars[bytes[i] % chars.length];
+    }
+    return result;
+}
+
 
 
 const NgoRegistrationController = {
@@ -319,19 +335,334 @@ const NgoRegistrationController = {
                     )
                 );
         }
-    },updateStatusOfRegistration:async(req,res)=>{
-        try{
-            const ngo_registration_id = req.query.ngo_registration_id
-            const getData = await NgoRegistrationService.getServiceById(ngo_registration_id)
-            const data = req.body
-            if(data.status_id = STATUS_MASTER.NGO_REGISTRATION_APPROVED){
+    }, updateStatusOfRegistration: async (req, res) => {
+        try {
+            const ngo_registration_id = req.query.ngo_registration_id;
+            const data = req.body;  // status_id comes from body
 
-            }else if(data.status_id = STATUS_MASTER.NGO_REGISTRATION_REJECTED ){
-
-            }else if(data.status_id = STATUS_MASTER.NGO_REGISTRATION_REOPEN){
-                
+            // Fetch Registration Data
+            const registration = await NgoRegistrationService.getServiceById(ngo_registration_id);
+            if (!registration) {
+                return res.status(404).send(commonResponse(404, responseConst.NGO_REGISTRATION_NOT_FOUND));
             }
-        }catch(error){
+
+            if (registration.status_id == STATUS_MASTER.NGO_REGISTRATION_APPROVED) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.NGO_REGISTRATION_ALREADY_COMPLETED,
+                            null,
+                            true
+                        )
+                    );
+            }
+            // --------------------------------------------------------------------
+            // STATUS-WISE OPERATIONS
+            // --------------------------------------------------------------------
+
+            // NGO APPROVED → Create USER + NGO
+            if (data.status_id == STATUS_MASTER.NGO_REGISTRATION_APPROVED) {
+
+                // Build NGO Master Payload
+                const ngoPayload = {
+                    ngo_name: registration.ngo_name,
+                    unique_id: registration.unique_id,
+                    darpan_reg_date: registration.darpan_reg_date,
+                    ngo_type: registration.ngo_type,
+                    registration_no: registration.registration_no,
+                    act_name: registration.act_name,
+
+                    city_of_registration_id: registration.city_of_registration_id,
+                    state_of_registration_id: registration.state_of_registration_id,
+                    country_of_registration_id: registration.country_of_registration_id,
+
+                    date_of_registration: registration.date_of_registration,
+                    address: registration.address,
+
+                    city_id: registration.city_id,
+                    state_id: registration.state_id,
+                    country_id: registration.country_id,
+
+                    telephone: registration.telephone,
+                    mobile_no: registration.mobile_no,
+                    website_url: registration.website_url,
+                    email: registration.email,
+
+                    ngo_logo: registration.ngo_logo,
+                    ngo_logo_path: registration.ngo_logo_path,
+
+                    pan_cad_file_name: registration.pan_cad_file_name,
+                    pan_card_file_url: registration.pan_card_file_url,
+                    crs_regis_file_name: registration.crs_regis_file_name,
+                    crs_regis_file_path: registration.crs_regis_file_path,
+                    digital_signature_file_name: registration.digital_signature_file_name,
+                    digital_signature_file_path: registration.digital_signature_file_path,
+                    stamp_file_name: registration.stamp_file_name,
+                    stamp_file_path: registration.stamp_file_path,
+
+                    // Mandatory system fields for ngo_master
+                    total_request_assigned: 0,
+                    total_request_completed: 0,
+                    total_request_rejected: 0,
+                    total_ngo_likes: 0,
+
+                    status_id: STATUS_MASTER.ACTIVE,
+                    is_blacklist: 0,
+                    blacklist_reason: null,
+                    remarks: registration.remarks || null,
+
+                    is_active: 1,
+                    created_by: req.user_id,
+                    created_at: new Date()
+                };
+
+
+                // Create NGO entry
+                const createdNgo = await NgoMasterService.createService(ngoPayload);
+
+                // Build User Master Payload
+                const randomPassword = generateRandomPassword(10);
+
+                const userPayload = {
+                    user_name: registration.email,
+                    password: randomPassword,
+                    full_name: registration.ngo_name,
+                    role_id: ROLE_MASTER.NGO,
+                    is_account_public: 1,
+
+                    email_id: registration.email,
+                    mobile_no: registration.mobile_no,
+
+                    gender: registration.gender || null,
+                    bio: null,
+                    enrolling_date: new Date(),
+                    ngo_id: createdNgo.ngo_id,
+                    first_time_login: 1,
+
+                    file_name: registration.ngo_logo,
+                    file_path: registration.ngo_logo_path,
+
+                    google_id: null,
+                    is_blacklisted: 0,
+                    ngo_level_id: null,
+                    blacklist_reason: null,
+                    total_follower: 0,
+                    total_score: 0,
+                    is_authenticated: 1,
+
+                    is_active: 1,
+                    created_by: req.user_id,
+                    created_at: new Date()
+                };
+
+
+                // Create User entry
+                const createdUser = await UserMasterService.createService(userPayload);
+
+                // Finally update NGO Registration status
+                await NgoRegistrationService.updateService(ngo_registration_id,
+                    { status_id: data.status_id, is_admin_accepted: true, modified_at: new Date(), modified_by: req.user_id },
+                );
+                const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationApprovedSuccessfully({ email_id: registration.email, username: registration.ngo_name, password: randomPassword })
+                await sendEmail({ to: registration.email_id, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
+                return res.send(commonResponse(200, responseConst.NGO_APPROVED_SUCCESSFULLY, { ngo: createdNgo, user: createdUser }));
+            }
+
+            // NGO REJECTED
+            else if (data.status_id === STATUS_MASTER.NGO_REGISTRATION_REJECTED) {
+
+                await NgoRegistrationService.updateService(ngo_registration_id,
+                    {
+                        is_admin_accepted: false,
+                        status_id: data.status_id,
+                        remarks: data.remarks || null,
+                        modified_by: req.user_id,
+                        modified_at: new Date()
+                    }
+                );
+                const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationRejected({ email_id: registration.email, username: registration.ngo_name, reason: registration.reason })
+                await sendEmail({ to: registration.email_id, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
+                return res.send(commonResponse(200, responseConst.NGO_REGISTRATION_REJECTED));
+            }
+
+            // NGO REOPEN
+            else if (data.status_id === STATUS_MASTER.NGO_REGISTRATION_REOPEN) {
+
+                await NgoRegistrationService.update(ngo_registration_id,
+                    {
+                        is_admin_accepted: false,
+                        status_id: data.status_id,
+                        modified_by: req.user_id,
+                        modified_at: new Date()
+                    }
+                );
+                const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationResubmitRequired({ email_id: registration.email, username: registration.ngo_name, reason: registration.reason })
+                await sendEmail({ to: registration.email_id, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
+                return res.send(commonResponse(200, responseConst.NGO_REGISTRATION_REOPEND));
+            }
+
+            // INVALID STATUS
+            else {
+                return res.status(400).send(commonResponse(400, responseConst));
+            }
+
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    }, ValidateEmailAndSendOtp: async (req, res) => {
+        try {
+            const { email_id } = req.body
+            const checkWetherEmailPresent = await NgoRegistrationService.getDataByEmailId(email_id)
+            if (checkWetherEmailPresent.length == 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.NGO_REGISTRATION_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+            if (checkWetherEmailPresent[0].status_id == STATUS_MASTER.NGO_REGISTRATION_APPROVED) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.NGO_REGISTRATION_ALREADY_COMPLETED,
+                            null,
+                            true
+                        )
+                    );
+            }
+            // 1. Generate 6 Digit Random Number
+            const otp = Math.floor(100000 + Math.random() * 900000);
+
+            // 2. Generate Email Template
+            const emailContent = await CommonEmailtemplate.EmailVerificationRequestSent({
+                email_id: checkWetherEmailPresent.email,
+                otp: otp,
+                username: checkWetherEmailPresent.ngo_name || "User", // Assuming 'full_name' exists, else default
+                validity: "20 min"
+            });
+            // 3. Send Email (You need to implement the actual sending helper)
+            await sendEmail({ to: checkWetherEmailPresent.email, subject: emailContent.subject, text: null, html: emailContent.html });
+            // logger.info(`Email sent to ${getDataById.email_id}`);
+
+            // 4. Calculate Expiry (Current Time + 20 Minutes)
+            const expiryTime = new Date();
+            expiryTime.setMinutes(expiryTime.getMinutes() + 20);
+
+            // 5. Save OTP Log
+            const updateNgoRegistration = {
+                email_otp: otp,
+            }
+
+            if (otp && otp !== null) {
+                await addMetaDataWhileCreateUpdate(updateNgoRegistration, req, res, false)
+                const updatedRowsCount = await NgoRegistrationService.updateService(checkWetherEmailPresent.ngo_registration_id, updateNgoRegistration)
+                if (updatedRowsCount === 0) {
+                    return res
+                        .status(responseCode.BAD_REQUEST)
+                        .send(
+                            commonResponse(
+                                responseCode.BAD_REQUEST,
+                                responseConst.ERROR_UPDATING_RECORD,
+                                null,
+                                true
+                            )
+                        );
+                }
+                return res
+                    .status(responseCode.CREATED)
+                    .send(
+                        commonResponse(
+                            responseCode.CREATED,
+                            responseConst.SUCCESS_UPDATING_RECORD
+                        )
+                    );
+
+            }
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    }, verifyOtpByData: async (req, res) => {
+        try {
+            const { email_id, otp } = req.body
+            const checkWetherEmailPresent = await NgoRegistrationService.getDataByEmailId(email_id)
+            if (checkWetherEmailPresent.length == 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.NGO_REGISTRATION_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+            if (checkWetherEmailPresent[0].status_id == STATUS_MASTER.NGO_REGISTRATION_APPROVED) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.NGO_REGISTRATION_ALREADY_COMPLETED,
+                            null,
+                            true
+                        )
+                    );
+            }
+            if(otp == checkWetherEmailPresent[0].email_otp){
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.OTP_VERIFIED_SUCCESSFULLY,
+                            null,
+                            true
+                        )
+                    );
+            }else{
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.INVALID_OTP_KINDLY_RECHECK,
+                            null,
+                            true
+                        )
+                    );
+            }
+
+        } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -345,6 +676,7 @@ const NgoRegistrationController = {
                 );
         }
     }
+
 }
 
 export default NgoRegistrationController

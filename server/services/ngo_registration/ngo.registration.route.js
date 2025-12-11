@@ -36,6 +36,25 @@ router.delete(
     verifyToken,
     NgoRegistrationController.deleteData
 )
+// Router Update Status
+router.put(
+    `${basePath}/update/status`,
+    verifyToken,
+    NgoRegistrationController.updateStatusOfRegistration
+)
+// Router 
+router.post(
+    `${basePath}/resend/otp`,
+    verifyToken,
+    NgoRegistrationController.ValidateEmailAndSendOtp
+)
+// Router To Verify OTP
+router.post(
+    `${basePath}/verify/otp`,
+    verifyToken,
+    NgoRegistrationController.verifyOtpByData
+)
+
 
 
 // Export the router for use in other parts of the application

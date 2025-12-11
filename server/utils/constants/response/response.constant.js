@@ -33,6 +33,7 @@ const RESPONSE_CONSTANTS = {
     EMAIL_IS_READY_TO_USE: "Email Ready To Use.",                   // 200: Registration email check passed
     USERNAME_ALREADY_IN_USE: "User Name Already In Use.",           // 409: Registration duplicate username
     USERNAME_IS_READY_TO_USE: "User Name Ready To Use.",            // 200: Registration username check passed
+    INVALID_STATUS_ID:"Invalid Status Id.",
     
     // --- OTP Specific ---
     INVALID_OTP_KINDLY_RECHECK: "Invalid Otp Kindly Recheck.",      // 400: OTP mismatch
@@ -56,6 +57,7 @@ const RESPONSE_CONSTANTS = {
     UNIQUE_CONSTRANTS_FAILED: "A record with this unique constraint already exists.", // 409: SQL Unique Error
     DATA_IS_AMBIGIOUS: "More Than One Record Found.",               // 409: Expected single result, got many
     INVALID_DATA: "INVALID DATA FOUND, RECHECK THE DATA.",          // 400: Corrupt data format
+    CANNOT_UPDATE_DATA_AT_THIS_STEP:"Cannot Update Data After Approval. You Can Login And Modify.",
 
     // ============================================================
     // USER MODULE & PROFILE
@@ -96,6 +98,11 @@ const RESPONSE_CONSTANTS = {
     NGO_ALREDY_ASSIGNED_TO_REQUEST: "Ngo Already Assigned to Request.", // 409: Duplicate assignment
     AGENT_CONTRACT_NOT_FOUND: "Agent Contract Not Found.",          // 404: Agent logic,
     NGO_MEDIA_ID_IS_REQUIRED:"NGO Media Id is required.",
+    NGO_REGISTRATION_NOT_FOUND:"NGO registration not found.",
+    NGO_APPROVED_SUCCESSFULLY:"NGO approved successfully.",
+    NGO_REGISTRATION_REJECTED:"NGO registration rejected.",
+    NGO_REGISTRATION_REOPEND:"NGO registration reopened.",
+    NGO_REGISTRATION_ALREADY_COMPLETED:"NGO Registration Already Completed.",
 
     // ============================================================
     // GIFTS & COUPONS

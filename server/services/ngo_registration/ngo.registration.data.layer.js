@@ -66,7 +66,17 @@ const NgoRegistrationDAL = {
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
-  },
+  },getDataByEmailId:async(email_id)=>{
+    try{
+        const getAllData = await db.sequelize.query(
+        `${ViewFieldTableVise.NGO_REGISTRATION_FIELDS} where email = ${email_id}`,
+        { type: db.Sequelize.QueryTypes.SELECT } 
+      );
+      return getAllData;
+    }catch(error){
+        throw error
+    }
+  }
 }
 
 export default NgoRegistrationDAL

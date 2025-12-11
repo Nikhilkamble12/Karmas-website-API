@@ -40,7 +40,13 @@ const NgoRegistrationService = {
         } catch (error) {
             throw error
         }
-    },
+    },getDataByEmailId:async(email_id)=>{
+        try{
+            return await NgoRegistrationDAL.getDataByEmailId(email_id)
+        }catch(error){
+            throw error
+        }
+    }
 }
 
 export default NgoRegistrationService

@@ -234,7 +234,213 @@ const CommonEmailtemplate = {
     } catch (error) {
       throw error;
     }
+},NgoRegistrationApprovedSuccessfully: async ({ email_id, username = "Friend",password }) => {
+  try {
+    const subject = `Your NGO Registration is Approved! 🌟`;
+
+    const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>NGO Registration Approved</title>
+    </head>
+
+    <body style="margin:0;padding:0;background-color:#f8fafc;font-family:'Segoe UI',Helvetica,Arial,sans-serif;color:#333;">
+      <table role="presentation" width="100%" style="border-collapse:collapse;background:#f8fafc;">
+        <tr>
+          <td align="center" style="padding:40px 20px;">
+            
+            <div style="max-width:600px;background:#fff;border-radius:20px;border:1px solid #f1f5f9;box-shadow:0 20px 40px rgba(0,0,0,0.08);overflow:hidden;">
+
+              <div style="padding:40px 30px 20px;text-align:center;">
+                <div style="font-size:50px;margin-bottom:20px;">🎉</div>
+                <h1 style="margin:0;color:#10b981;font-size:28px;font-weight:800;">Registration Approved</h1>
+                <p style="margin:5px 0 0;color:#64748b;font-size:16px;">Your NGO is now verified</p>
+              </div>
+
+              <div style="padding:0 40px;text-align:center;">
+                <p style="color:#334155;font-size:16px;line-height:1.6;">
+                  Dear <strong>${username}</strong>,
+                </p>
+                <p style="margin:0 0 25px;color:#475569;font-size:16px;line-height:1.6;">
+                  Congratulations! Your NGO registration has been successfully reviewed and approved.  
+                  You now have access to all features including volunteer management, posts, and milestone tracking.
+                </p>
+              </div>
+              <p style="margin:0 0 30px;color:#475569;font-size:16px;line-height:1.6;">
+                Your account has been successfully created. Below are your login credentials:
+              </p>
+
+              <div style="background:#f1f5f9;padding:15px;border-radius:10px;margin-bottom:25px;text-align:center;">
+                <p style="margin:0;color:#1e293b;font-size:15px;font-weight:600;">
+                  <strong>Email:</strong> ${email_id}<br>
+                  <strong>Password:</strong> ${password}
+                </p>
+              </div>
+
+
+              <div style="padding:20px 30px 40px;text-align:center;">
+                <a href="https://yourwebsite.com/ngo-dashboard"
+                   style="display:inline-block;padding:16px 40px;background-color:#10b981;color:#fff;text-decoration:none;border-radius:50px;font-size:16px;font-weight:700;box-shadow:0 10px 20px rgba(16,185,129,0.25);">
+                  Go to Your NGO Dashboard
+                </a>
+              </div>
+
+              <div style="background:#f8fafc;padding:25px;text-align:center;border-top:1px solid #f1f5f9;">
+                <p style="margin:0;color:#94a3b8;font-size:13px;">
+                  Thank you for choosing Karmas to amplify your impact.
+                </p>
+                <p style="margin:5px 0 0;color:#cbd5e1;font-size:12px;">© ${new Date().getFullYear()} Karmas Team.</p>
+              </div>
+
+            </div>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+    `;
+
+    return { subject, html };
+
+  } catch (error) {
+    throw error;
+  }
+},NgoRegistrationRejected: async ({ email_id, username = "Friend", reason = "Your submission did not meet the required criteria." }) => {
+  try {
+    const subject = `NGO Registration Review Result – Action Needed ❗`;
+
+    const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Registration Rejected</title>
+    </head>
+
+    <body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+      <table width="100%" style="border-collapse:collapse;background:#f8fafc;">
+        <tr>
+          <td align="center" style="padding:40px 20px;">
+
+            <div style="max-width:600px;background:#ffffff;border-radius:20px;box-shadow:0 20px 40px rgba(0,0,0,0.08);border:1px solid #f1f5f9;overflow:hidden;">
+
+              <div style="padding:40px 30px 20px;text-align:center;">
+                <div style="font-size:50px;margin-bottom:15px;">⚠️</div>
+                <h1 style="margin:0;color:#dc2626;font-size:26px;font-weight:800;">Registration Review Failed</h1>
+                <p style="color:#64748b;font-size:15px;margin-top:5px;">We need additional corrections</p>
+              </div>
+
+              <div style="padding:0 40px;text-align:center;">
+                <p style="color:#334155;font-size:16px;">Hello <strong>${username}</strong>,</p>
+                <p style="color:#475569;font-size:16px;line-height:1.6;margin-bottom:25px;">
+                  Unfortunately, your NGO registration could not be approved at this time.
+                </p>
+
+                <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:20px;margin-bottom:30px;">
+                  <strong style="color:#b91c1c;font-size:16px;">Reason:</strong>
+                  <p style="color:#7f1d1d;font-size:15px;margin:10px 0 0;">${reason}</p>
+                </div>
+              </div>
+
+              <div style="padding:20px 30px 40px;text-align:center;">
+                <a href="https://yourwebsite.com/support"
+                   style="display:inline-block;padding:14px 35px;background:#dc2626;color:#ffffff;border-radius:50px;font-size:15px;font-weight:700;text-decoration:none;box-shadow:0 8px 15px rgba(220,38,38,0.25);">
+                  Contact Support
+                </a>
+              </div>
+
+              <div style="background:#f8fafc;text-align:center;padding:25px;border-top:1px solid #f1f5f9;">
+                <p style="margin:0;color:#94a3b8;font-size:13px;font-style:italic;">
+                  We are here to help you complete your registration.
+                </p>
+                <p style="margin-top:5px;color:#cbd5e1;font-size:12px;">© ${new Date().getFullYear()} Karmas Team.</p>
+              </div>
+
+            </div>
+
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+    `;
+
+    return { subject, html };
+
+  } catch (error) {
+    throw error;
+  }
+},NgoRegistrationResubmitRequired: async ({ email_id, username = "Friend", reason = "Some documents were missing or unclear." }) => {
+  try {
+    const subject = `NGO Registration Requires Re-Submission 🔄`;
+
+    const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Resubmission Needed</title>
+    </head>
+
+    <body style="margin:0;padding:0;background:#f8fafc;font-family:'Segoe UI',Helvetica,Arial,sans-serif;">
+      <table width="100%" style="border-collapse:collapse;background:#f8fafc;">
+        <tr>
+          <td align="center" style="padding:40px 20px;">
+
+            <div style="max-width:600px;background:#fff;border-radius:20px;border:1px solid #f1f5f9;box-shadow:0 20px 40px rgba(0,0,0,0.08);overflow:hidden;">
+
+              <div style="padding:40px 30px 20px;text-align:center;">
+                <div style="font-size:50px;margin-bottom:20px;">🔄</div>
+                <h1 style="margin:0;color:#0ea5e9;font-size:28px;font-weight:800;">Resubmission Needed</h1>
+                <p style="margin:5px 0 0;color:#64748b;font-size:15px;">Some corrections are required</p>
+              </div>
+
+              <div style="padding:0 40px;text-align:center;">
+                <p style="color:#334155;font-size:16px;">Hi <strong>${username}</strong>,</p>
+                <p style="color:#475569;font-size:16px;line-height:1.6;margin-bottom:25px;">
+                  Your NGO registration was reviewed, but we need additional details to proceed.
+                </p>
+
+                <div style="background:#eff6ff;border:1px solid #bae6fd;border-radius:12px;padding:20px;margin-bottom:30px;">
+                  <strong style="color:#0369a1;font-size:16px;">Required Fixes:</strong>
+                  <p style="color:#075985;font-size:15px;margin-top:10px;">${reason}</p>
+                </div>
+              </div>
+
+              <div style="padding:20px 30px 40px;text-align:center;">
+                <a href="https://yourwebsite.com/resubmit"
+                   style="display:inline-block;padding:16px 40px;background:#0ea5e9;color:#fff;text-decoration:none;border-radius:50px;font-size:16px;font-weight:700;box-shadow:0 10px 20px rgba(14,165,233,0.25);">
+                  Resubmit Registration
+                </a>
+              </div>
+
+              <div style="background:#f8fafc;padding:25px;text-align:center;border-top:1px solid #f1f5f9;">
+                <p style="margin:0;color:#94a3b8;font-size:13px;">We appreciate your quick response.</p>
+                <p style="margin-top:5px;color:#cbd5e1;font-size:12px;">© ${new Date().getFullYear()} Karmas Team.</p>
+              </div>
+
+            </div>
+
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+    `;
+
+    return { subject, html };
+
+  } catch (error) {
+    throw error;
+  }
 }
+
+
   };
   
 export default CommonEmailtemplate;

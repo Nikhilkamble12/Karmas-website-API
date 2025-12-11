@@ -59,6 +59,7 @@ const NgoRegistrationModel = (sequelize) => {
         is_reapproval: { type: DataTypes.TINYINT, defaultValue: 0 },
         reason: { type: DataTypes.STRING(500), allowNull: true },
         remarks: { type: DataTypes.STRING(500), allowNull: true },
+        email_otp:{type:DataTypes.STRING,allowNull:true},
         accepted_at: { type: DataTypes.DATE, allowNull: true },
 
         is_active: { type: DataTypes.BOOLEAN, defaultValue: true },
