@@ -45,7 +45,7 @@ const NgoRegistrationController = {
             const updateData = {};
 
             // Only call saveBase64ToFile if data exists
-            if (data.ngo_logo_file) {
+            if (data.ngo_logo_file && data.ngo_logo_file!=="") {
                 updateData.ngo_logo_path = await saveBase64ToFile(
                     data.ngo_logo_file,
                     `ngo_registration/${ngo_registration_id}/logo`,
@@ -54,7 +54,7 @@ const NgoRegistrationController = {
                 if (data.ngo_logo) updateData.ngo_logo = data.ngo_logo;
             }
 
-            if (data.pan_file) {
+            if (data.pan_file && data.pan_file!=="") {
                 updateData.pan_card_file_url = await saveBase64ToFile(
                     data.pan_file,
                     `ngo_registration/${ngo_registration_id}/pan`,
@@ -63,7 +63,7 @@ const NgoRegistrationController = {
                 if (data.pan_cad_file_name) updateData.pan_cad_file_name = data.pan_cad_file_name;
             }
 
-            if (data.crs_regis_file) {
+            if (data.crs_regis_file && data.crs_regis_file!=="") {
                 updateData.crs_regis_file_path = await saveBase64ToFile(
                     data.crs_regis_file,
                     `ngo_registration/${ngo_registration_id}/crs_regis`,
@@ -72,7 +72,7 @@ const NgoRegistrationController = {
                 if (data.crs_regis_file_name) updateData.crs_regis_file_name = data.crs_regis_file_name;
             }
 
-            if (data.digital_signature_file) {
+            if (data.digital_signature_file && data.digital_signature_file!=="") {
                 updateData.digital_signature_file_path = await saveBase64ToFile(
                     data.digital_signature_file,
                     `ngo_registration/${ngo_registration_id}/digital_signature`,
@@ -81,7 +81,7 @@ const NgoRegistrationController = {
                 if (data.digital_signature_file_name) updateData.digital_signature_file_name = data.digital_signature_file_name;
             }
 
-            if (data.stamp_file) {
+            if (data.stamp_file && data.stamp_file!=="") {
                 updateData.stamp_file_path = await saveBase64ToFile(
                     data.stamp_file,
                     `ngo_registration/${ngo_registration_id}/stamp`,
@@ -107,10 +107,6 @@ const NgoRegistrationController = {
             );
         }
     },
-
-
-
-
     // update Record Into Db
     update: async (req, res) => {
         try {
@@ -125,7 +121,7 @@ const NgoRegistrationController = {
 
             // Helper function to save file if present
             const saveFileIfPresent = async (file, folder, fileName, fieldPathName, fieldFileName) => {
-                if (file) {
+                if (file && file!=="") {
                     const savedPath = await saveBase64ToFile(file, `ngo_registration/${id}/${folder}`, fileName);
                     updateData[fieldPathName] = savedPath;
                     if (fileName) updateData[fieldFileName] = fileName;
