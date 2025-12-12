@@ -898,7 +898,7 @@ create: async (req, res) => {
             if(!getUserByEmail || !getUserByEmail.email_id){
                return res.status(404).send(commonResponse(
                     responseCode.NOT_FOUND,
-                    responseConst.EMAIL_IS_MANDATORY,
+                    responseConst.EMAIL_NOT_FOUND,
                     null,
                     true
                 )); 

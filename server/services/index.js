@@ -66,12 +66,36 @@ const environment = process.env.NODE_ENV || "development";
 
 const config = await dbConfig[environment];
 // Initialize a new Sequelize instance with the selected configuration
+// const sequelize = new Sequelize(config.DB, config.USER, config.PASSWORD, {
+//   host: config.HOST,
+//   dialect: config.DIALECT,
+//   port: config.PORT ?? 3306,
+//   operatorsAliases: 0,
+//   // benchmark: true,
+//   pool: {
+//     max: config.pool.max,
+//     min: config.pool.min,
+//     acquire: config.pool.acquire,
+//     idle: config.pool.idle,
+//   }
+// });
+
 const sequelize = new Sequelize(config.DB, config.USER, config.PASSWORD, {
   host: config.HOST,
   dialect: config.DIALECT,
   port: config.PORT ?? 3306,
   operatorsAliases: 0,
-  // benchmark: true,
+  
+  // ✅ 1. Enable benchmarking to measure time
+  benchmark: true, 
+
+  // ✅ 2. Custom Logger to show SQL + Time
+  logging: (sql, timing) => {
+    // You can use console.log, or your custom 'logger' from the previous step
+    // Example output: "⏱️ [15ms] Executing (default): SELECT * FROM Users..."
+    console.log(`⏱️  [${timing}ms] ${sql}`); 
+  },
+
   pool: {
     max: config.pool.max,
     min: config.pool.min,

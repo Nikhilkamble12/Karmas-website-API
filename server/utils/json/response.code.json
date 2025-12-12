@@ -147,99 +147,166 @@
     {
       "code": "1.0023",
       "message": "Password updated Successfully."
-    },{
-      "code":"1.0024",
-      "message":"OTP has not been generated yet. Kindly Regenerate."
-    },{
-      "code":"1.0025",
-      "message":"User Limit Has Been Exceeded."
-    },{
-      "code":"1.0026",
-      "message":"Sos Not Yet Created."
-    },{
-      "code":"3.0008",
-      "message":"You Have Been Blocked By Admin."
-    },{
-      "code":"3.0009",
-      "message":"Account Has Been Blacklisted."
-    },{
-      "code":"3.0010",
-      "message":"A record with this unique constraint already exists."
-    },{
-      "code":"1.0027",
-      "message":"User Name Already In Use."
-    },{
-      "code":"1.0028",
-      "message":"User Name Ready To Use."
-    },{
-      "code":"1.0029",
-      "message":"You have already redeemed this coupon."
-    },{
-      "code":"1.0030",
-      "message":"No coupons are currently available for this gift"
-    },{
-      "code":"1.0031",
-      "message":"User is Already Block."
-    },{
-      "code":"1.0032",
-      "message":"Request not Yet Completed."
-    },{
-      "code":"1.0033",
-      "message":"Gift Not Found."
-    },{
-      "code":"1.0034",
-      "message":"User Is Not Eligible For Gift."
-    },{
-      "code":"1.0035",
-      "message":"The specified user ID does not exist. Please verify and try again."
-    },{
-      "code":"1.0036",
-      "message":"Cannot update the status. Check Final Status."
-    },{
-      "code":"1.0037",
-      "message":"Cannot delete request at this stage."
-    },{
-      "code":"1.0038",
-      "message":"Invalid follow_id parameter"
-    },{
-      "code":"1.0039",
-      "message":"is_accepted must be a boolean value"
-    },{
-      "code":"1.0040",
-      "message":"User activity data not found"
-    },{
-      "code":"1.0041",
-      "message":"Data Is Missing Kindly Verify Your Data."
-    },{
-      "code":"1.0042",
-      "message":"Post not found."
-    },{
-      "code":"1.0043",
-      "message":"Like record not found."
-    },{
-      "code":"1.0044",
-      "message":"You're almost there! Complete your verification to unlock everything."
-    },{
-      "code":"1.0045",
-      "message":"Invalid Status Id."
-    },{
-      "code":"1.0046",
-      "message":"NGO registration not found."
-    },{
-      "code":"1.0047",
-      "message":"NGO approved successfully."
-    },{
-      "code":"1.0048",
-      "message":"NGO registration rejected."
-    },{
-      "code":"1.0049",
-      "message":"NGO registration reopened."
-    },{
-      "code":"1.0050",
-      "message":"Cannot Update Data After Approval. You Can Login And Modify."
-    },{
-      "code":"1.0051",
-      "message":"NGO Registration Already Completed."
+    },
+    {
+      "code": "1.0024",
+      "message": "OTP has not been generated yet. Kindly Regenerate."
+    },
+    {
+      "code": "1.0025",
+      "message": "User Limit Has Been Exceeded."
+    },
+    {
+      "code": "1.0026",
+      "message": "Sos Not Yet Created."
+    },
+    {
+      "code": "3.0008",
+      "message": "You Have Been Blocked By Admin."
+    },
+    {
+      "code": "3.0009",
+      "message": "Account Has Been Blacklisted."
+    },
+    {
+      "code": "3.0010",
+      "message": "A record with this unique constraint already exists."
+    },
+    {
+      "code": "1.0027",
+      "message": "User Name Already In Use."
+    },
+    {
+      "code": "1.0028",
+      "message": "User Name Ready To Use."
+    },
+    {
+      "code": "1.0029",
+      "message": "You have already redeemed this coupon."
+    },
+    {
+      "code": "1.0030",
+      "message": "No coupons are currently available for this gift"
+    },
+    {
+      "code": "1.0031",
+      "message": "User is Already Block."
+    },
+    {
+      "code": "1.0032",
+      "message": "Request not Yet Completed."
+    },
+    {
+      "code": "1.0033",
+      "message": "Gift Not Found."
+    },
+    {
+      "code": "1.0034",
+      "message": "User Is Not Eligible For Gift."
+    },
+    {
+      "code": "1.0035",
+      "message": "The specified user ID does not exist. Please verify and try again."
+    },
+    {
+      "code": "1.0036",
+      "message": "Cannot update the status. Check Final Status."
+    },
+    {
+      "code": "1.0037",
+      "message": "Cannot delete request at this stage."
+    },
+    {
+      "code": "1.0038",
+      "message": "Invalid follow_id parameter"
+    },
+    {
+      "code": "1.0039",
+      "message": "is_accepted must be a boolean value"
+    },
+    {
+      "code": "1.0040",
+      "message": "User activity data not found"
+    },
+    {
+      "code": "1.0041",
+      "message": "Data Is Missing Kindly Verify Your Data."
+    },
+    {
+      "code": "1.0042",
+      "message": "Post not found."
+    },
+    {
+      "code": "1.0043",
+      "message": "Like record not found."
+    },
+    {
+      "code": "1.0044",
+      "message": "You're almost there! Complete your verification to unlock everything."
+    },
+    {
+      "code": "1.0045",
+      "message": "Invalid Status Id."
+    },
+    {
+      "code": "1.0046",
+      "message": "NGO registration not found."
+    },
+    {
+      "code": "1.0047",
+      "message": "NGO approved successfully."
+    },
+    {
+      "code": "1.0048",
+      "message": "NGO registration rejected."
+    },
+    {
+      "code": "1.0049",
+      "message": "NGO registration reopened."
+    },
+    {
+      "code": "1.0050",
+      "message": "Cannot Update Data After Approval. You Can Login And Modify."
+    },
+    {
+      "code": "1.0051",
+      "message": "NGO Registration Already Completed."
+    },
+    {
+      "code": "1.0052",
+      "message": "Email Not Found."
+    },
+    {
+      "code": "1.0053",
+      "message": "No Token Provided."
+    },
+    {
+      "code": "1.0054",
+      "message": "Token Has Expired. Please Login Again."
+    },
+    {
+      "code": "1.0055",
+      "message": "Invalid Token Signature. Please Login Again."
+    },
+    {
+      "code": "1.0056",
+      "message": "Malformed Token. Please Login Again."
+    },
+    {
+      "code": "1.0057",
+      "message": "Invalid Token Algorithm."
+    },
+    {
+      "code": "1.0058",
+      "message": "Token Not Yet Valid. Please Check System Time."
+    },
+    {
+      "code": "1.0059",
+      "message": "Invalid Token Payload. Please Login Again."
+    },
+    {
+      "code": "1.0060",
+      "message": "Unauthorized Access. Please Login."
     }
   ]
 }
