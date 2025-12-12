@@ -66,6 +66,7 @@ const RequestCommentController = {
                                 templateData: template,
                                 userIds: getUserToken,
                                 metaData: {
+                                    request_id:createData.request_id || createData.dataValues?.request_id,
                                     comment_id: createData.request_comment_id || createData.dataValues?.request_comment_id,
                                     user_profile: profileUrl,
                                     media_url: requestMediaData.length > 0 ? requestMediaData[0]?.media_url : null,

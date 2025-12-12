@@ -29,7 +29,7 @@ const PostTagController = {
                 templateData:NotificationDetails.description,
                 getUserToken, // This should be an array of objects like { token: 'fcm_token', user_id: 'user_id' }
                 metaData : {
-                    tagged_user_image_path:getDataById.tagged_user_image_path,user_image_path:getDataById.user_image_path
+                    post_id:getDataById.post_id,tagged_user_image_path:getDataById.tagged_user_image_path,user_image_path:getDataById.user_image_path
                 }})
                 return res
                     .status(responseCode.CREATED)

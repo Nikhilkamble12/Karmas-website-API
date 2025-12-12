@@ -41,6 +41,7 @@ export class WebSocketServerManager {
     this.wsRoutesCache = null;
     this.wss = null;
     this.intervals = [];
+    this.isShuttingDown = false;
   }
 
   async initialize(server, wsRoutesCache) {
@@ -65,7 +66,6 @@ export class WebSocketServerManager {
     this.setupConnectionHandler();
     this.setupHeartbeat();
     this.setupMetrics();
-    this.gracefulShutdown();
 
     logger.info('✅ WebSocket server initialized');
     return this.wss;
@@ -172,15 +172,43 @@ export class WebSocketServerManager {
 
   setupHeartbeat() {
     const interval = setInterval(() => {
-      this.wss.clients.forEach((ws) => {
-        if (ws.isAlive === false) {
-          this.connectionManager.remove(ws.sessionKey);
-          return ws.terminate();
+      try {
+        // Use ConnectionManager instead of wss.clients since clientTracking is false
+        if (!this.connectionManager?.connections) {
+          return;
         }
+
+        // Convert Map to array to safely iterate
+        const connections = Array.from(this.connectionManager.connections.values());
         
-        ws.isAlive = false;
-        ws.ping();
-      });
+        connections.forEach((conn) => {
+          const ws = conn.ws;
+          
+          // Check if WebSocket exists and is open
+          if (!ws || ws.readyState !== 1) { // 1 = OPEN
+            this.connectionManager.remove(conn.sessionKey);
+            return;
+          }
+
+          // Check if client is still alive
+          if (ws.isAlive === false) {
+            this.connectionManager.remove(conn.sessionKey);
+            return ws.terminate();
+          }
+          
+          // Mark as not alive and send ping
+          ws.isAlive = false;
+          try {
+            ws.ping();
+          } catch (err) {
+            logger.error('Error sending ping:', err);
+            this.connectionManager.remove(conn.sessionKey);
+            ws.terminate();
+          }
+        });
+      } catch (error) {
+        logger.error('Heartbeat error:', error);
+      }
     }, this.config.heartbeatInterval);
 
     this.intervals.push(interval);
@@ -188,31 +216,38 @@ export class WebSocketServerManager {
 
   setupMetrics() {
     const interval = setInterval(() => {
-      const metrics = this.connectionManager.getMetrics();
-      const queueMetrics = this.messageQueue.getMetrics();
-      const circuitState = this.circuitBreaker.getState();
-      
-      logger.info('WebSocket Metrics:', {
-        ...metrics,
-        queue: queueMetrics,
-        circuit: circuitState
-      });
-      
-      const memUsage = process.memoryUsage();
-      if (memUsage.heapUsed / memUsage.heapTotal > 0.9) {
-        logger.warn('High memory usage:', memUsage);
+      try {
+        const metrics = this.connectionManager.getMetrics();
+        const queueMetrics = this.messageQueue.getMetrics();
+        const circuitState = this.circuitBreaker.getState();
+        
+        logger.info('WebSocket Metrics:', {
+          ...metrics,
+          queue: queueMetrics,
+          circuit: circuitState
+        });
+        
+        const memUsage = process.memoryUsage();
+        // Change this line in your current setupMetrics():
+        if (memUsage.heapUsed / memUsage.heapTotal > 0.9) {
+          logger.warn('High memory usage:', memUsage);
+        }
+
+        // To this (only warn if heap is >95% AND >200MB):
+        const heapUsedMB = memUsage.heapUsed / 1024 / 1024;
+        const heapPercent = memUsage.heapUsed / memUsage.heapTotal;
+
+        if (heapPercent > 0.95 && heapUsedMB > 200) {
+          logger.warn('High memory usage:', memUsage);
+        }
+      } catch (error) {
+        logger.error('Metrics error:', error);
       }
     }, this.config.metricsInterval);
 
     this.intervals.push(interval);
   }
 
-  async gracefulShutdown() {
-    await this.shutdown();
-    // Don't call process.exit() here - let the main shutdown handler do it
-  }
-
-  // ✅ REPLACE YOUR shutdown() METHOD WITH THIS:
   async shutdown() {
     if (this.isShuttingDown) {
       return; // Prevent multiple shutdown calls
@@ -223,7 +258,7 @@ export class WebSocketServerManager {
     
     try {
       // 1. Clear all intervals
-      if (this.intervals && this.intervals.length > 0) {
+      if (this.intervals?.length > 0) {
         logger.info(`Clearing ${this.intervals.length} intervals...`);
         this.intervals.forEach(interval => {
           if (interval) clearInterval(interval);
@@ -232,55 +267,54 @@ export class WebSocketServerManager {
       }
       
       // 2. Cleanup managers
-      if (this.rateLimiter && typeof this.rateLimiter.destroy === 'function') {
+      if (this.rateLimiter?.destroy) {
         logger.info('Cleaning up rate limiter...');
         this.rateLimiter.destroy();
       }
       
       // 3. Close all WebSocket connections
-      if (this.wss) {
-        // Since clientTracking is false, we need to use connectionManager
-        if (this.connectionManager && this.connectionManager.connections) {
-          const connections = Array.from(this.connectionManager.connections.values());
-          logger.info(`Closing ${connections.length} WebSocket connections...`);
-          
-          await Promise.allSettled(
-            connections.map(conn => 
-              new Promise((resolve) => {
-                try {
-                  const ws = conn.ws;
-                  if (ws && ws.readyState === 1) { // OPEN state
-                    ws.send(JSON.stringify({ 
-                      event: 'server_shutdown', 
-                      data: 'Server is shutting down' 
-                    }), () => {
-                      ws.close();
-                      resolve();
-                    });
-                    
-                    // Force close after 2 seconds
-                    setTimeout(() => {
-                      if (ws.readyState !== 3) { // Not CLOSED
-                        ws.terminate();
-                      }
-                      resolve();
-                    }, 2000);
-                  } else {
+      if (this.wss && this.connectionManager?.connections) {
+        const connections = Array.from(this.connectionManager.connections.values());
+        logger.info(`Closing ${connections.length} WebSocket connections...`);
+        
+        await Promise.allSettled(
+          connections.map(conn => 
+            new Promise((resolve) => {
+              try {
+                const ws = conn.ws;
+                if (ws?.readyState === 1) { // OPEN state
+                  ws.send(JSON.stringify({ 
+                    event: 'server_shutdown', 
+                    data: 'Server is shutting down' 
+                  }), () => {
+                    ws.close();
                     resolve();
-                  }
-                } catch (err) {
-                  logger.error('Error closing connection:', err);
+                  });
+                  
+                  // Force close after 2 seconds
+                  setTimeout(() => {
+                    if (ws.readyState !== 3) { // Not CLOSED
+                      ws.terminate();
+                    }
+                    resolve();
+                  }, 2000);
+                } else {
                   resolve();
                 }
-              })
-            )
-          );
-          
-          // Clear connection manager
-          this.connectionManager.connections.clear();
-        }
+              } catch (err) {
+                logger.error('Error closing connection:', err);
+                resolve();
+              }
+            })
+          )
+        );
         
-        // 4. Close WebSocket server
+        // Clear connection manager
+        this.connectionManager.connections.clear();
+      }
+      
+      // 4. Close WebSocket server
+      if (this.wss) {
         await new Promise((resolve) => {
           this.wss.close((err) => {
             if (err) {
@@ -302,7 +336,8 @@ export class WebSocketServerManager {
       logger.info('✅ WebSocket shutdown complete');
     } catch (error) {
       logger.error('Error during WebSocket shutdown:', error);
-    }}
+    }
+  }
 
   getConnectionManager() {
     return this.connectionManager;

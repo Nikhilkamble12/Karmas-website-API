@@ -78,6 +78,7 @@ const CommentsController = {
                             templateData: template,
                             userIds: getUserToken,
                             metaData: {
+                                post_id:data.post_id,
                                 comment_id: createData.post_id || createData.dataValues?.post_id,
                                 media_url: postMediaData[0]?.media_url || null,
                                 user_profile: profileUrl,

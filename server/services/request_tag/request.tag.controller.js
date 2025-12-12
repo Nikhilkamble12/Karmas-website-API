@@ -40,7 +40,7 @@ const ReqestTagController = {
                 const sendNotification = await sendTemplateNotification({templateKey:notificatioTemplate.title,
                 templateData:notificatioTemplate.title,
                 tokenData, // This should be an array of objects like { token: 'fcm_token', user_id: 'user_id' }
-                metaData:{tagged_user_image_path:getRequestTagById.tagged_user_image_path,user_image_path:getRequestTagById.user_image_path}})
+                metaData:{request_id:getRequestTagById.request_id,tagged_user_image_path:getRequestTagById.tagged_user_image_path,user_image_path:getRequestTagById.user_image_path}})
                 return res
                     .status(responseCode.CREATED)
                     .send(
