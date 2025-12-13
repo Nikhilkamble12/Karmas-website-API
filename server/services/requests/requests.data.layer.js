@@ -632,6 +632,7 @@ getRequestsForUserFeed: async (user_id, limit = 20, batchIndex = 0) => {
         `SELECT 
           COUNT(RequestId) AS total_request_global,
           SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_PENDING} THEN 1 ELSE 0 END) AS total_request_pending_status,
+          SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVAL_PENDINNG} THEN 1 ELSE 0 END) AS total_request_ngo_approval_pending,
           SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
           SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected,
           SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_DRAFT} THEN 1 ELSE 0 END) AS total_request_draft,
