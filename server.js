@@ -314,12 +314,20 @@ app.use(
   })
 );
 
+// app.use(
+//   cors({
+//     origin: process.env.CORS_ORIGIN || "*",
+//     credentials: true,
+//     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   })
+// );
+
+// Use it for temprory
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "*",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: "*",
+    credentials: false,
   })
 );
 
@@ -562,7 +570,7 @@ function setupGracefulShutdown(server, wsManager) {
           shutdownTimer.log("close-server", "🌐");
           resolve();
         });
-        
+
         // Force close after 10 seconds
         setTimeout(() => {
           logger.warn('Forcing server close');
@@ -605,7 +613,7 @@ function setupGracefulShutdown(server, wsManager) {
   process.on("uncaughtException", (err) => {
     logger.error("Uncaught Exception:", err);
     console.error("\n❌ Uncaught Exception:", err);
-    
+
     // Only shutdown on critical errors
     const criticalErrors = ['EADDRINUSE', 'EACCES', 'ENOMEM'];
     if (criticalErrors.includes(err.code)) {
@@ -616,7 +624,7 @@ function setupGracefulShutdown(server, wsManager) {
   process.on("unhandledRejection", (reason, promise) => {
     logger.error("Unhandled Rejection:", { reason, promise });
     console.error("\n❌ Unhandled Rejection:", reason);
-    
+
     // Don't exit in production on unhandled rejections
     if (process.env.NODE_ENV !== "production") {
       // Log but don't shutdown unless it's critical
