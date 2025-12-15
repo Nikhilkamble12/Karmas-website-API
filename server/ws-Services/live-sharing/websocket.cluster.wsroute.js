@@ -10,7 +10,6 @@ const activeSos = {
                 folder_name: "Sos",
                 json_file_name:"sos.current.json"
                 }
-const saveCurrentUserSos = "Sos/sos.current.json"
 import WebSocket from "ws";
 
 function getTimeDifference(lastCapturedTime, currentTime) {

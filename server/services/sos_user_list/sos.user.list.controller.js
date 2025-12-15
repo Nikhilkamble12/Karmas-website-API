@@ -278,7 +278,12 @@ const SosUserListController = {
     },getDatabyUserId:async(req,res)=>{
         try{
             const user_id = req.query.user_id
-            const getDataById = await LocalJsonHelper.getAll(TABLE_VIEW_FOLDER_MAP.sos_user_list,"15d","user_id",user_id)
+            const fileDetails2 = {
+                view_name: null,
+                folder_name: "sos_user",
+                json_file_name:getSosUserJsonFileName(createData.dataValues.sos_user_id)
+                }
+            const getDataById = await LocalJsonHelper.getAll(fileDetails2,"15d","user_id",user_id)
             console.log("getDataById",getDataById)
             if(getDataById && getDataById.length!==0 && getDataById.length>0){
                 getDataById.forEach(entry => {

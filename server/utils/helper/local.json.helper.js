@@ -1,5 +1,6 @@
 /**
  * Enhanced High-Performance Local JSON Cache System (Node.js - ES6 Modules)
+ * ✅ Corrected to handle 'conditions' from config
  */
 
 import { promises as fs } from 'fs';
@@ -154,8 +155,6 @@ export class MemoryCache {
         this._accessTimes.set(key, Date.now() / 1000);
         this._cacheSizes.set(key, estimatedSize);
         const dataValue = value.data || [];
-        const dataLength = Array.isArray(dataValue) ? dataValue.length : (typeof dataValue === 'object' ? Object.values(dataValue).flat().length : 0);
-        const sizeMb = (estimatedSize / (1024 * 1024)).toFixed(2);
         // console.log(`✅ Cached ${key}: ${dataLength} entries, ${sizeMb}MB`);
         return { cached: true, reason: `cached` };
     }
@@ -238,6 +237,8 @@ export class MetadataManager {
         return {
             name: data.name,
             view_name: data.view_name,
+            // ✅ Store conditions in metadata for transparency
+            conditions: data.conditions || null,
             created_at: data.created_at,
             updated_at: data.updated_at,
             expires_at: data.expires_at,
@@ -278,22 +279,57 @@ export class DatabaseHelper {
         return true;
     }
 
-    static async getDbCount(viewName) {
+    // ✅ HELPER: Build WHERE clause safely including Boolean support
+    static _buildWhereClause(conditions) {
+        if (!conditions || typeof conditions !== 'object' || Object.keys(conditions).length === 0) {
+            return '';
+        }
+
+        const whereClauses = [];
+        for (const [key, value] of Object.entries(conditions)) {
+            // Validate column name (prevent SQL injection)
+            if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key)) continue;
+            
+            if (value === null) {
+                whereClauses.push(`${key} IS NULL`);
+            } 
+            // ✅ HANDLE BOOLEAN (Sequelize/DB often need 1/0 or TRUE/FALSE)
+            else if (typeof value === 'boolean') {
+                whereClauses.push(`${key} = ${value ? 1 : 0}`); 
+            }
+            else if (typeof value === 'number') {
+                whereClauses.push(`${key} = ${value}`);
+            } else {
+                const escapedValue = String(value).replace(/'/g, "''");
+                whereClauses.push(`${key} = '${escapedValue}'`);
+            }
+        }
+        
+        return whereClauses.length > 0 ? ` WHERE ${whereClauses.join(' AND ')}` : '';
+    }
+
+    static async getDbCount(viewName, conditions = null) {
         if (!CacheConfig.ENABLE_DB_OPERATIONS || !this.isValidViewName(viewName)) return null;
         try {
+            let query = `SELECT COUNT(*) as count FROM ${viewName}`;
+            query += this._buildWhereClause(conditions);
+            
             const result = await db.sequelize.query(
-                `SELECT COUNT(*) as count FROM ${viewName}`, 
+                query, 
                 { type: QueryTypes.SELECT, timeout: CacheConfig.DB_QUERY_TIMEOUT, raw: true }
             );
             return parseInt(result[0]?.count || 0, 10);
         } catch (e) { return null; }
     }
 
-    static async fetchAllFromDb(viewName) {
+    static async fetchAllFromDb(viewName, conditions = null) {
         if (!CacheConfig.ENABLE_DB_OPERATIONS || !this.isValidViewName(viewName)) return [];
         try {
+            let query = `SELECT * FROM ${viewName}`;
+            query += this._buildWhereClause(conditions);
+            
             return await db.sequelize.query(
-                `SELECT * FROM ${viewName}`, 
+                query, 
                 { type: QueryTypes.SELECT, timeout: CacheConfig.DB_QUERY_TIMEOUT, raw: true }
             ) || [];
         } catch (e) { return []; }
@@ -314,7 +350,6 @@ export class OptimizedLocalJsonDB {
     static _FILE_LOCKS = new Map();
     static _writeTimeout = null;
 
-    // ✅ FIXED CONSTRUCTOR (Dynamic Paths Supported)
     constructor(configOrName, expiryTime = "15d") {
         let mapping;
         
@@ -337,7 +372,8 @@ export class OptimizedLocalJsonDB {
                 mapping = {
                     folder_name: folderName,
                     json_file_name: fileName,
-                    view_name: null // Dynamic paths have no view by default
+                    view_name: null,
+                    conditions: null // Default for dynamic
                 };
                 this.tableName = configOrName;
             }
@@ -355,6 +391,9 @@ export class OptimizedLocalJsonDB {
         this.viewName = mapping.view_name || null;
         this.folderName = mapping.folder_name || this.tableName;
         
+        // ✅ EXTRACT CONDITIONS
+        this.conditions = mapping.conditions || null;
+
         let jsonFileName = mapping.json_file_name || mapping.file_name || `${this.tableName}.json`;
         this.jsonFileName = jsonFileName.replace('.json5', '.json');
         
@@ -445,12 +484,14 @@ export class OptimizedLocalJsonDB {
 
     async _getDbCount() {
         if (!this.hasValidViewName) return null;
-        return await DatabaseHelper.getDbCount(this.viewName);
+        // ✅ PASS CONDITIONS
+        return await DatabaseHelper.getDbCount(this.viewName, this.conditions);
     }
 
     async _fetchFullFromDb() {
         if (!this.hasValidViewName) return [];
-        return await DatabaseHelper.fetchAllFromDb(this.viewName);
+        // ✅ PASS CONDITIONS
+        return await DatabaseHelper.fetchAllFromDb(this.viewName, this.conditions);
     }
 
     async _needsRefresh(data) {
@@ -478,6 +519,8 @@ export class OptimizedLocalJsonDB {
         return {
             name: this.tableName,
             view_name: this.viewName || null,
+            // ✅ STORE CONDITIONS IN FILE
+            conditions: this.conditions,
             created_at: now.toISOString(),
             updated_at: now.toISOString(),
             expires_at: expiresAtDate.toISOString(),
@@ -496,19 +539,13 @@ export class OptimizedLocalJsonDB {
         const instance = this._getInstance(tableRef, expiryTime);
         let data = await instance._loadFromMemoryOrFile();
 
-        // 🗑️ EXPIRY CHECK: Delete Record if Expired
+        // 🗑️ EXPIRY CHECK
         if (data && instance._isExpired(data)) {
             console.log(`⏳ [Expiry] Cache expired for ${instance.tableName}. Deleting record...`);
-            
-            // 1. Delete file and memory entry
             await this.invalidate(tableRef, expiryTime); 
-            
-            // 2. Clear Group Indexes
             this._GROUP_INDEXES.forEach((val, key) => {
                 if (key.startsWith(`${instance.tableName}:`)) this._GROUP_INDEXES.delete(key);
             });
-
-            // 3. Reset data
             data = null; 
         }
 
@@ -541,8 +578,10 @@ export class OptimizedLocalJsonDB {
                 data.modified_at = nowObj.toISOString();
                 data.updated_at = nowObj.toISOString();
                 data.expires_at = new Date(nowObj.getTime() + instance.ttlMs).toISOString();
-                
                 data.db_count_check_counter = CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER;
+                // ✅ UPDATE CONDITIONS ON REFRESH
+                data.conditions = instance.conditions; 
+                
                 await instance._saveLazy(data, true);
                 _indexManager.buildIndex(instance.tableName, 'id', freshData);
             }
@@ -583,12 +622,8 @@ export class OptimizedLocalJsonDB {
 
     /**
      * Smart Save Method
-     * - Handles dynamic paths.
-     * - Handles expiry deletion.
-     * - Handles explicit overwrites.
      */
     static async save(tableRef, dataEntry = null, keyName = null, keyValue = null, newFile = null, expiryTime = "15d") {
-        // 1. Validate Input
         const refLog = typeof tableRef === 'string' ? tableRef : JSON.stringify(tableRef);
         console.log(`🟢 [Start] save() called for: ${refLog}`);
 
@@ -598,7 +633,7 @@ export class OptimizedLocalJsonDB {
 
         const instance = this._getInstance(tableRef, expiryTime);
 
-        // 2. Manage Locks
+        // Manage Locks
         const lockTimeout = 5000;
         const lockStartTime = Date.now();
         while (this._FILE_LOCKS.get(instance._cacheKey)) {
@@ -610,16 +645,14 @@ export class OptimizedLocalJsonDB {
         try {
             const nowObj = new Date();
 
-            // 🛑 HANDLE EXPLICIT NEW FILE REQUEST (Delete Old)
             if (newFile === true) {
                 console.log("🗑️ [Explicit New] Deleting old file/cache before processing...");
                 await this.invalidate(tableRef, expiryTime); 
             }
 
-            // 📥 LOAD DATA
             let data = await instance._loadFromMemoryOrFile();
 
-            // 🚨 RECOVERY: Missing file but View exists
+            // 🚨 RECOVERY
             if (!data && instance.hasValidViewName) {
                 console.log(`📂 [Recovery] File missing for ${instance.tableName}, fetching from DB...`);
                 try {
@@ -644,7 +677,7 @@ export class OptimizedLocalJsonDB {
             // 🔍 AUTO-DETECT MODE
             if (newFile === null) {
                 if (instance._isExpired(data)) {
-                    console.log("🔄 [Auto] Data expired -> REFRESH mode (Wiping old data)");
+                    console.log("🔄 [Auto] Data expired -> REFRESH mode");
                     newFile = true; 
                 } 
                 else if (instance.hasValidViewName) {
@@ -666,8 +699,6 @@ export class OptimizedLocalJsonDB {
             }
 
             // 💾 EXECUTE SAVE LOGIC
-            
-            // --- MODE A: REFRESH / OVERWRITE ---
             if (newFile === true) {
                 console.log("🆕 [Mode] Overwrite / Refresh");
                 
@@ -684,24 +715,19 @@ export class OptimizedLocalJsonDB {
                 
                 data.db_count_check_counter = instance.hasValidViewName ? 
                     CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER : null;
+                // Update conditions on refresh
+                data.conditions = instance.conditions;
             } 
-            
-            // --- MODE B: UPSERT (Update/Insert Single Entry) ---
             else {
                 console.log("🔄 [Mode] Upsert (Modify specific entry)");
-                
                 if (dataEntry !== null) {
                     if (!Array.isArray(data.data)) data.data = [];
-
                     if (keyName && keyValue !== null) {
                         const idx = data.data.findIndex(i => i && String(i[keyName]) === String(keyValue));
-
                         if (idx >= 0) {
                             data.data[idx] = dataEntry; 
-                            console.log(`✅ Updated index ${idx} (Key: ${keyName}=${keyValue})`);
                         } else {
                             data.data.push(dataEntry); 
-                            console.log(`➕ Appended new entry (Key: ${keyName}=${keyValue})`);
                         }
                     } else {
                         data.data.push(dataEntry);
@@ -718,7 +744,6 @@ export class OptimizedLocalJsonDB {
             }
 
             await instance._saveLazy(data, true);
-            
             try { 
                 _indexManager.invalidate(instance.tableName);
                 this._GROUP_INDEXES.clear();

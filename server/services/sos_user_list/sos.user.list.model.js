@@ -1,22 +1,22 @@
 import { DataTypes } from "sequelize";
 
-const SosUserListModel = (sequelize)=>{
+const SosUserListModel = (sequelize) => {
     return sequelize.define(
-        "sos_user_list",{
-            sos_user_id:{
+        "sos_user_list", {
+        sos_user_id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true
-            }, user_id:{
-            type:DataTypes.INTEGER,
-            allowNull:true
-            }, contact_user_id:{
-            type:DataTypes.INTEGER,
-            allowNull:true
-            },is_currently_active:{
-                type:DataTypes.BOOLEAN,
-                allowNull:true
-            }, is_active: {
+        }, user_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }, contact_user_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }, is_currently_active: {
+            type: DataTypes.BOOLEAN,
+            allowNull: true
+        }, is_active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
         },
@@ -45,8 +45,8 @@ const SosUserListModel = (sequelize)=>{
             type: DataTypes.DATE,
             allowNull: true
         }
-        },{
-            tableName: "sos_user_list",
+    }, {
+        tableName: "sos_user_list",
         paranoid: true,
         timestamps: false,
         defaultScope: {
@@ -62,7 +62,7 @@ const SosUserListModel = (sequelize)=>{
                 ],
             },
         },
-        }
+    }
     )
 }
 
