@@ -1,54 +1,53 @@
-import TempUserMasterController from "./temp.user.master.controller.js";
+import TempEmailVerificationController from "./temp.email.verification.controller.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 const {express,verifyToken,basePathRoute} = commonPath
 
 // Define the base path for routes
-const basePath=`${basePathRoute}/temp_user_master`
+const basePath=`${basePathRoute}/email_verification`
 const router = express.Router()
 // Route to create a new record
 
 router.post(
     `${basePath}/create`,
-    // verifyToken,
-    TempUserMasterController.create
+    verifyToken,
+    TempEmailVerificationController.create
 )
 // Route to update an existing record by ID
 router.put(
     `${basePath}/update`,
     verifyToken,
-    TempUserMasterController.update
+    TempEmailVerificationController.update
 )
 // Route to retrieve all records
 router.get(
     `${basePath}`,
     verifyToken,
-    TempUserMasterController.getAllByView
+    TempEmailVerificationController.getAll
 )
 // Route to retrieve a record by ID
 router.get(
     `${basePath}/getById`,
     verifyToken,
-    TempUserMasterController.getByIdByView
+    TempEmailVerificationController.getById
 )
 // Route to delete a record by ID
 router.delete(
     `${basePath}/delete`,
     verifyToken,
-    TempUserMasterController.deleteData
+    TempEmailVerificationController.delete
 )
-//  Router to Reset Data 
+// Router To Resesnd otp 
 router.post(
-    `${basePath}/resenOtp`,
-    verifyToken,
-    TempUserMasterController.verifyOtp
-) 
-// Router to Verify Otp
-router.post(
-    `${basePath}/verifyData`,
-    verifyToken,
-    TempUserMasterController.verifyOtp
+    `${basePath}/resendOtp/email`,
+    TempEmailVerificationController.resendOtp
 )
+// Router To Verify otp 
+router.post(
+    `${basePath}/verifyOtp`,
+    TempEmailVerificationController.verifyOtp
+)
+
+
 
 // Export the router for use in other parts of the application
 export default router
-

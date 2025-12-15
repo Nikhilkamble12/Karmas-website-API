@@ -33,7 +33,12 @@ create: async (req, res) => {
 
         // Create the record using ORM
         data.first_time_login = true
+        if(data.google_id && data.google_id!=="" && data.google_id!==null){
+        data.is_authenticated = true
+        }else{
         data.is_authenticated = false
+        }
+        
         const createData = await UserMasterService.createService(data);
 
         if (createData?.success == false) {

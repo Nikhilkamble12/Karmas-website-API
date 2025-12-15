@@ -58,6 +58,7 @@ import NgoUserMasterModel from "./ngo_user_master/ngo.user.master.model.js";
 import NgoRegistrationModel from "./ngo_registration/ngo.registration.model.js";
 import OtpTypeMasterModel from "./otp_type_master/otp.type.master.model.js";
 import UserOtpLogModel from "./user_otp_log/user.otp.log.model.js";
+import TempEmailVerificationModel from "./temp_email_verification/temp.email.verification.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -170,6 +171,7 @@ db.NgoUserMasterModel = NgoUserMasterModel(sequelize,Sequelize);
 db.NgoRegistrationModel = NgoRegistrationModel(sequelize,Sequelize);
 db.OtpTypeMasterModel = OtpTypeMasterModel(sequelize,Sequelize);
 db.UserOtpLogModel = UserOtpLogModel(sequelize,Sequelize);
+db.TempEmailVerificationModel = TempEmailVerificationModel(sequelize,Sequelize);
 
 
 export default db

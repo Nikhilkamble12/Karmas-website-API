@@ -100,7 +100,7 @@ const ViewFieldTableWise = {
     TICKET_FIELDS: ` SELECT ticket_id, ticket_code, user_id, created_user_name, created_full_name, assigned_to, assigned_user_name, assigned_full_name, module_type_id, module_name, subject, description, status_id, status_name, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_TICKET} `,
     TICKET_MODULE_TYPE_FIELDS: ` SELECT module_type_id, module_name, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_TICKET_MODULE_TYPE} `,
     TICKET_MEDIA_FIELDS: ` SELECT ticket_media_id, ticket_id, ticket_code, subject, media_type, media_url, sequence, s3_url, created_at, is_active, created_by FROM ${VIEW_NAME.GET_ALL_TICKET_MEDIA} `,
-    TEMP_USER_MASTER_FIELDS: ` SELECT user_id, user_name, password, full_name, role_id, email_id, mobile_no, gender, bio, enrolling_date, ngo_id, file_name, file_path, ngo_level_id, is_active, created_by, created_at ${VIEW_NAME.GET_ALL_TEMP_USER_MASTER} `,
+    TEMP_EMAIL_VERIFICATION_FIELDS: ` SELECT id, email_id, otp, created_at, expires_at FROM temp_email_verification `,
 
     //  ------> U
     USER_MASTER_FIELDS: ` SELECT  user_id, user_name, password, full_name, role_id, role, is_account_public, email_id, mobile_no, gender, bio, enrolling_date, ngo_id, ngo_name, ngo_unique_id, file_name, file_path, bg_image, bg_image_path,

@@ -307,6 +307,9 @@
     {
       "code": "1.0060",
       "message": "Unauthorized Access. Please Login."
+    },{
+      "code":"1.0061",
+      "message":"User Already Verifyied."
     }
   ]
 }

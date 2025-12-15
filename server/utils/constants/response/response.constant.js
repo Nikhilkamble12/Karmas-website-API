@@ -49,7 +49,7 @@ const RESPONSE_CONSTANTS = {
     OTP_VERIFIED_SUCCESSFULLY: "OTP Verified Successfully.",        // 200: OTP flow success
     OTP_GENERATED_SUCCESSFULLY: "OTP Generated Successfully. Kindly Check E-mail.", // 200: OTP sent
     KINDLY_REGENRATE_OTP: "OTP has not been generated yet. Kindly Regenerate.", // 400: Flow error
-
+    USER_ALREADY_VERIFIED:"User Already Verifyied.",
     // ============================================================
     // DATABASE CRUD OPERATIONS (General)
     // ============================================================

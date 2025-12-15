@@ -8,6 +8,9 @@ import CommonEmailtemplate from "../../utils/helper/common.email.templates.js";
 const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
 import crypto from "crypto";
 import sendEmail from "../../utils/helper/comman.email.function.js";
+
+
+
 function generateRandomPassword(length = 10) {
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$&";
     let result = "";
@@ -656,8 +659,7 @@ const NgoRegistrationController = {
                             true
                         )
                     );
-            }
-
+                }
         } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
