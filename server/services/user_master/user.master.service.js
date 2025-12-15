@@ -107,6 +107,12 @@ const UserMasterService = {
         }catch(error){
             throw error
         }
+    },checkIfEmailOrUsernameExists:async(email_id, user_name)=>{
+        try{
+            return await UserMasterDAL.checkIfEmailOrUsernameExists(email_id, user_name)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default UserMasterService

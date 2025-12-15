@@ -121,14 +121,12 @@
 
 
 // ============================================================================
-// FILE: websocket.js (Main entry point - simplified)
+// FILE: websocket.js (Main entry point)
 // ============================================================================
 import { WebSocketServerManager } from './server/websocket/core/WebSocketServer.js';
 import { loadWsRoutes } from './server/middleware/ws_route_middleware/wsRouterLoader.js';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import cluster from 'cluster';
-import { cpus } from 'os';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -140,36 +138,17 @@ let wsServerManager = null;
 async function setupWebSocket(server) {
   console.log("🛠️ Setting up WebSocket server...");
   
-  // Clustering support
-  if (cluster.isMaster && process.env.CLUSTER_MODE === 'true') {
-    const numWorkers = process.env.WS_WORKERS || cpus().length;
-    console.log(`🔧 Master spawning ${numWorkers} workers`);
-    
-    for (let i = 0; i < numWorkers; i++) {
-      cluster.fork();
-    }
-    
-    cluster.on('exit', (worker) => {
-      console.log(`Worker ${worker.process.pid} died. Spawning new...`);
-      cluster.fork();
-    });
-    
-    return null;
-  }
-
-  // Load routes once
+  // Load routes once and cache
   if (!wsRoutesCache) {
     wsRoutesCache = await loadWsRoutes(baseDirs);
-    console.log(`📦 Loaded ${wsRoutesCache.size} routes`);
+    console.log(`📦 Loaded ${wsRoutesCache.size} WebSocket routes`);
   }
 
-  // Initialize WebSocket server
+  // Initialize WebSocket server with basic config
   wsServerManager = new WebSocketServerManager({
-    maxConnections: parseInt(process.env.MAX_CONNECTIONS) || 10000,
-    rateLimit: {
-      tokens: parseInt(process.env.RATE_LIMIT_TOKENS) || 100,
-      interval: parseInt(process.env.RATE_LIMIT_INTERVAL) || 60000
-    }
+    maxConnections: parseInt(process.env.MAX_CONNECTIONS) || 5000,
+    heartbeatInterval: 30000, // 30 seconds
+    maxPayloadSize: 100 * 1024 // 100KB
   });
 
   await wsServerManager.initialize(server, wsRoutesCache);

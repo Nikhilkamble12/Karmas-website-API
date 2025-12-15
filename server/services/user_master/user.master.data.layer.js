@@ -253,7 +253,31 @@ const UserMasterDAL = {
     } catch (error) {
         throw error;
     }
+},checkIfEmailOrUsernameExists: async (email_id, user_name) => {
+    try {
+        const result = await db.sequelize.query(
+            `
+            SELECT 
+                email_id,
+                user_name
+            FROM user_master
+            WHERE email_id = :email_id
+               OR user_name = :user_name
+            LIMIT 1
+            `,
+            {
+                replacements: { email_id, user_name },
+                type: db.Sequelize.QueryTypes.SELECT,
+            }
+        );
+
+        return result[0] ?? null;
+
+    } catch (error) {
+        throw error;
+    }
 },
+
 }
 
 export default UserMasterDAL

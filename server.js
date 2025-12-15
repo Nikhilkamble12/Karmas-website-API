@@ -306,13 +306,13 @@ app.use((req, res, next) => {
 });
 
 // ✅ Security middleware (cached configuration)
-app.use(
-  helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" },
-    crossOriginEmbedderPolicy: false,
-    contentSecurityPolicy: false, // Configure as needed
-  })
-);
+// app.use(
+//   helmet({
+//     crossOriginResourcePolicy: { policy: "cross-origin" },
+//     crossOriginEmbedderPolicy: false,
+//     contentSecurityPolicy: false, // Configure as needed
+//   })
+// );
 
 // app.use(
 //   cors({
@@ -339,14 +339,14 @@ if (ENABLE_REQUEST_LOGGING) {
 // ✅ Body parsers with optimized limits
 app.use(
   express.json({
-    limit: process.env.JSON_LIMIT || "10mb", // ✅ Reduced from 100mb for better performance
+    limit: process.env.JSON_LIMIT || "100mb", // ✅ Reduced from 100mb for better performance
     strict: true,
   })
 );
 
 app.use(
   express.urlencoded({
-    limit: process.env.URLENCODED_LIMIT || "10mb",
+    limit: process.env.URLENCODED_LIMIT || "100mb",
     extended: true,
     parameterLimit: 1000, // ✅ More reasonable than MAX_SAFE_INTEGER
   })
@@ -573,19 +573,19 @@ function setupGracefulShutdown(server, wsManager) {
 
         // Force close after 10 seconds
         setTimeout(() => {
-          logger.warn('Forcing server close');
+          logger.warn("Forcing server close");
           resolve();
         }, 10000);
       });
 
       // 2. Close WebSocket connections
-      if (wsManager && typeof wsManager.shutdown === 'function') {
+      if (wsManager && typeof wsManager.shutdown === "function") {
         shutdownTimer.start("close-websockets");
         try {
           await wsManager.shutdown();
           shutdownTimer.log("close-websockets", "🔌");
         } catch (err) {
-          logger.error('Error closing WebSockets:', err);
+          logger.error("Error closing WebSockets:", err);
           shutdownTimer.end("close-websockets");
         }
       }
@@ -615,7 +615,7 @@ function setupGracefulShutdown(server, wsManager) {
     console.error("\n❌ Uncaught Exception:", err);
 
     // Only shutdown on critical errors
-    const criticalErrors = ['EADDRINUSE', 'EACCES', 'ENOMEM'];
+    const criticalErrors = ["EADDRINUSE", "EACCES", "ENOMEM"];
     if (criticalErrors.includes(err.code)) {
       shutdown("UNCAUGHT_EXCEPTION");
     }
@@ -632,6 +632,26 @@ function setupGracefulShutdown(server, wsManager) {
     }
   });
 }
+
+// Add to your server startup (not in WebSocket class)
+setInterval(() => {
+  const mem = process.memoryUsage();
+  const heapUsedMB = mem.heapUsed / 1024 / 1024;
+  const heapTotalMB = mem.heapTotal / 1024 / 1024;
+
+  if (heapUsedMB > 500) {
+    // Warn if >500MB
+    console.warn(
+      `⚠️ High memory: ${heapUsedMB.toFixed(0)}MB / ${heapTotalMB.toFixed(0)}MB`
+    );
+
+    // Force GC if available (run node with --expose-gc)
+    if (global.gc) {
+      global.gc();
+      console.log("🗑️ Manual GC triggered");
+    }
+  }
+}, 120000); // Check every 2 minutes
 
 // ============================================================================
 // START THE SERVER

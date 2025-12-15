@@ -1,46 +1,29 @@
 // ============================================================================
 // FILE: server/websocket/core/WebSocketServer.js
+// Lightweight version - removed heavy features
 // ============================================================================
 import { WebSocketServer as WS } from 'ws';
 import jwt from 'jsonwebtoken';
 import url from 'url';
 import logger from '../../config/winston_logs/winston.js';
-import { ConnectionManager } from '../managers/ConnectionManager.js';
-import { RateLimiter } from '../managers/RateLimiter.js';
-import { MessageQueue } from '../managers/MessageQueue.js';
-import { CircuitBreaker } from '../middleware/CircuitBreaker.js';
-import { MessageHandler } from '../handlers/MessageHandler.js';
 
 export class WebSocketServerManager {
   constructor(config = {}) {
     this.config = {
       wsAuthPath: config.wsAuthPath || '/api/v1/wsauth',
       jwtSecret: config.jwtSecret || process.env.JWT_SECRET,
-      maxPayloadSize: config.maxPayloadSize || 100 * 1024,
+      maxPayloadSize: config.maxPayloadSize || 100 * 1024, // 100KB
       maxConnections: config.maxConnections || 10000,
       heartbeatInterval: config.heartbeatInterval || 30000,
-      metricsInterval: config.metricsInterval || 60000,
       ...config
     };
 
-    // Initialize managers
-    this.connectionManager = new ConnectionManager();
-    this.rateLimiter = new RateLimiter({
-      tokensPerInterval: config.rateLimit?.tokens || 100,
-      interval: config.rateLimit?.interval || 60000
-    });
-    this.messageQueue = new MessageQueue({
-      maxSize: config.queue?.maxSize || 10000,
-      batchSize: config.queue?.batchSize || 10
-    });
-    this.circuitBreaker = new CircuitBreaker({
-      failureThreshold: config.circuit?.threshold || 100,
-      timeout: config.circuit?.timeout || 30000
-    });
-
-    this.wsRoutesCache = null;
+    // Simple connection tracking - Map of userId -> Set of connections
+    this.connections = new Map();
+    this.totalConnections = 0;
+    
     this.wss = null;
-    this.intervals = [];
+    this.heartbeatInterval = null;
     this.isShuttingDown = false;
   }
 
@@ -49,23 +32,14 @@ export class WebSocketServerManager {
     
     this.wss = new WS({ 
       noServer: true,
-      perMessageDeflate: false,
+      perMessageDeflate: false, // Disable compression to reduce CPU
       maxPayload: this.config.maxPayloadSize,
-      clientTracking: false,
-      backlog: 1000
+      clientTracking: false // We track manually for efficiency
     });
-
-    this.messageHandler = new MessageHandler(
-      this.connectionManager,
-      this.rateLimiter,
-      this.messageQueue,
-      this.wsRoutesCache
-    );
 
     this.setupUpgradeHandler(server);
     this.setupConnectionHandler();
     this.setupHeartbeat();
-    this.setupMetrics();
 
     logger.info('✅ WebSocket server initialized');
     return this.wss;
@@ -73,18 +47,10 @@ export class WebSocketServerManager {
 
   setupUpgradeHandler(server) {
     server.on('upgrade', (req, socket, head) => {
-      // Circuit breaker check
-      if (!this.circuitBreaker.canProceed()) {
+      // Quick connection limit check
+      if (this.totalConnections >= this.config.maxConnections) {
         socket.write('HTTP/1.1 503 Service Unavailable\r\n\r\n');
         socket.destroy();
-        return;
-      }
-
-      // Connection limit check
-      if (this.connectionManager.connections.size >= this.config.maxConnections) {
-        socket.write('HTTP/1.1 503 Service Unavailable\r\nRetry-After: 60\r\n\r\n');
-        socket.destroy();
-        logger.warn('Max connections reached');
         return;
       }
 
@@ -106,31 +72,23 @@ export class WebSocketServerManager {
           return;
         }
 
-        const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
-        
         jwt.verify(token, this.config.jwtSecret, { algorithms: ['HS256'] }, (err, decoded) => {
           if (err) {
             socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
             socket.destroy();
-            this.circuitBreaker.recordFailure();
             return;
           }
-
-          this.circuitBreaker.recordSuccess();
 
           this.wss.handleUpgrade(req, socket, head, (ws) => {
             ws.user = decoded;
             ws.isAlive = true;
             ws.deviceId = deviceId;
-            ws.clientIp = clientIp;
-            ws.connectedAt = Date.now();
             this.wss.emit('connection', ws, req);
           });
         });
       } catch (error) {
         logger.error("Upgrade error:", error);
         socket.destroy();
-        this.circuitBreaker.recordFailure();
       }
     });
   }
@@ -140,206 +98,191 @@ export class WebSocketServerManager {
       const userId = ws.user.user_id;
       const deviceId = ws.deviceId;
       
-      this.connectionManager.add(userId, ws, deviceId);
+      // Add to connections
+      if (!this.connections.has(userId)) {
+        this.connections.set(userId, new Set());
+      }
+      this.connections.get(userId).add(ws);
+      this.totalConnections++;
       
-      logger.info(`✅ User ${userId} connected [${deviceId}]`);
+      // Store userId on ws for easy cleanup
+      ws.userId = userId;
+      
+      logger.info(`✅ User ${userId} connected [${deviceId}] - Total: ${this.totalConnections}`);
 
-      ws.on('message', (message) => {
-        this.messageHandler.handleMessage(ws, message);
+      ws.on('message', async (message) => {
+        try {
+          const { event, eventPath, data } = JSON.parse(message);
+          
+          // Built-in ping-pong
+          if (event === 'ping') {
+            ws.send(JSON.stringify({ event: 'pong', timestamp: Date.now() }));
+            return;
+          }
+
+          // Find handler
+          const handler = eventPath ? this.wsRoutesCache.get(eventPath) : this.wsRoutesCache.get(event);
+          
+          if (handler) {
+            const wsRequest = {
+              event,
+              eventPath,
+              data,
+              user: ws.user
+            };
+            await handler(ws, wsRequest);
+          } else {
+            ws.send(JSON.stringify({ event: 'error', data: `Unknown event: ${event}` }));
+          }
+        } catch (err) {
+          logger.error(`Message error for user ${userId}:`, err);
+          ws.send(JSON.stringify({ event: 'error', data: 'Invalid message format' }));
+        }
       });
 
       ws.on('close', () => {
-        this.connectionManager.remove(ws.sessionKey);
-        logger.info(`❌ User ${userId} disconnected [${deviceId}]`);
+        this.removeConnection(ws);
+        logger.info(`❌ User ${userId} disconnected [${deviceId}] - Total: ${this.totalConnections}`);
       });
 
       ws.on('error', (err) => {
         logger.error(`WebSocket error for user ${userId}:`, err);
-        this.connectionManager.remove(ws.sessionKey);
-        this.connectionManager.metrics.errors++;
+        this.removeConnection(ws);
       });
 
       ws.on('pong', () => {
         ws.isAlive = true;
       });
     });
+  }
 
-    this.wss.on('error', (err) => {
-      logger.error("WebSocket server error:", err);
-      this.connectionManager.metrics.errors++;
-    });
+  removeConnection(ws) {
+    const userId = ws.userId;
+    if (userId && this.connections.has(userId)) {
+      const userConns = this.connections.get(userId);
+      userConns.delete(ws);
+      
+      // Remove user entry if no connections left
+      if (userConns.size === 0) {
+        this.connections.delete(userId);
+      }
+    }
+    this.totalConnections--;
   }
 
   setupHeartbeat() {
-    const interval = setInterval(() => {
-      try {
-        // Use ConnectionManager instead of wss.clients since clientTracking is false
-        if (!this.connectionManager?.connections) {
-          return;
-        }
-
-        // Convert Map to array to safely iterate
-        const connections = Array.from(this.connectionManager.connections.values());
-        
-        connections.forEach((conn) => {
-          const ws = conn.ws;
-          
-          // Check if WebSocket exists and is open
-          if (!ws || ws.readyState !== 1) { // 1 = OPEN
-            this.connectionManager.remove(conn.sessionKey);
-            return;
+    this.heartbeatInterval = setInterval(() => {
+      const deadConnections = [];
+      
+      // Iterate through all connections
+      for (const [userId, wsSet] of this.connections.entries()) {
+        for (const ws of wsSet) {
+          if (ws.readyState !== 1) { // Not OPEN
+            deadConnections.push(ws);
+            continue;
           }
 
-          // Check if client is still alive
           if (ws.isAlive === false) {
-            this.connectionManager.remove(conn.sessionKey);
-            return ws.terminate();
+            deadConnections.push(ws);
+            ws.terminate();
+            continue;
           }
           
-          // Mark as not alive and send ping
           ws.isAlive = false;
-          try {
-            ws.ping();
-          } catch (err) {
-            logger.error('Error sending ping:', err);
-            this.connectionManager.remove(conn.sessionKey);
-            ws.terminate();
-          }
-        });
-      } catch (error) {
-        logger.error('Heartbeat error:', error);
+          ws.ping();
+        }
       }
-    }, this.config.heartbeatInterval);
 
-    this.intervals.push(interval);
+      // Cleanup dead connections
+      deadConnections.forEach(ws => this.removeConnection(ws));
+      
+    }, this.config.heartbeatInterval);
   }
 
-  setupMetrics() {
-    const interval = setInterval(() => {
-      try {
-        const metrics = this.connectionManager.getMetrics();
-        const queueMetrics = this.messageQueue.getMetrics();
-        const circuitState = this.circuitBreaker.getState();
-        
-        logger.info('WebSocket Metrics:', {
-          ...metrics,
-          queue: queueMetrics,
-          circuit: circuitState
-        });
-        
-        const memUsage = process.memoryUsage();
-        // Change this line in your current setupMetrics():
-        if (memUsage.heapUsed / memUsage.heapTotal > 0.9) {
-          logger.warn('High memory usage:', memUsage);
-        }
+  // Send message to specific user (all their devices)
+  sendToUser(userId, message) {
+    const userConns = this.connections.get(userId);
+    if (!userConns) return false;
 
-        // To this (only warn if heap is >95% AND >200MB):
-        const heapUsedMB = memUsage.heapUsed / 1024 / 1024;
-        const heapPercent = memUsage.heapUsed / memUsage.heapTotal;
+    const msgStr = typeof message === 'string' ? message : JSON.stringify(message);
+    let sent = 0;
 
-        if (heapPercent > 0.95 && heapUsedMB > 200) {
-          logger.warn('High memory usage:', memUsage);
-        }
-      } catch (error) {
-        logger.error('Metrics error:', error);
+    for (const ws of userConns) {
+      if (ws.readyState === 1) { // OPEN
+        ws.send(msgStr);
+        sent++;
       }
-    }, this.config.metricsInterval);
+    }
 
-    this.intervals.push(interval);
+    return sent > 0;
+  }
+
+  // Broadcast to all connections
+  broadcast(message) {
+    const msgStr = typeof message === 'string' ? message : JSON.stringify(message);
+    let sent = 0;
+
+    for (const wsSet of this.connections.values()) {
+      for (const ws of wsSet) {
+        if (ws.readyState === 1) {
+          ws.send(msgStr);
+          sent++;
+        }
+      }
+    }
+
+    return sent;
+  }
+
+  getMetrics() {
+    return {
+      totalConnections: this.totalConnections,
+      uniqueUsers: this.connections.size
+    };
   }
 
   async shutdown() {
-    if (this.isShuttingDown) {
-      return; // Prevent multiple shutdown calls
-    }
+    if (this.isShuttingDown) return;
     this.isShuttingDown = true;
 
     logger.info('🛑 Shutting down WebSocket server...');
     
-    try {
-      // 1. Clear all intervals
-      if (this.intervals?.length > 0) {
-        logger.info(`Clearing ${this.intervals.length} intervals...`);
-        this.intervals.forEach(interval => {
-          if (interval) clearInterval(interval);
-        });
-        this.intervals = [];
-      }
-      
-      // 2. Cleanup managers
-      if (this.rateLimiter?.destroy) {
-        logger.info('Cleaning up rate limiter...');
-        this.rateLimiter.destroy();
-      }
-      
-      // 3. Close all WebSocket connections
-      if (this.wss && this.connectionManager?.connections) {
-        const connections = Array.from(this.connectionManager.connections.values());
-        logger.info(`Closing ${connections.length} WebSocket connections...`);
-        
-        await Promise.allSettled(
-          connections.map(conn => 
-            new Promise((resolve) => {
-              try {
-                const ws = conn.ws;
-                if (ws?.readyState === 1) { // OPEN state
-                  ws.send(JSON.stringify({ 
-                    event: 'server_shutdown', 
-                    data: 'Server is shutting down' 
-                  }), () => {
-                    ws.close();
-                    resolve();
-                  });
-                  
-                  // Force close after 2 seconds
-                  setTimeout(() => {
-                    if (ws.readyState !== 3) { // Not CLOSED
-                      ws.terminate();
-                    }
-                    resolve();
-                  }, 2000);
-                } else {
-                  resolve();
-                }
-              } catch (err) {
-                logger.error('Error closing connection:', err);
-                resolve();
-              }
-            })
-          )
-        );
-        
-        // Clear connection manager
-        this.connectionManager.connections.clear();
-      }
-      
-      // 4. Close WebSocket server
-      if (this.wss) {
-        await new Promise((resolve) => {
-          this.wss.close((err) => {
-            if (err) {
-              logger.error('Error closing WebSocket server:', err);
-            } else {
-              logger.info('✅ WebSocket server closed successfully');
-            }
-            resolve();
-          });
-          
-          // Force close after 5 seconds
-          setTimeout(() => {
-            logger.warn('Forcing WebSocket server close');
-            resolve();
-          }, 5000);
-        });
-      }
-      
-      logger.info('✅ WebSocket shutdown complete');
-    } catch (error) {
-      logger.error('Error during WebSocket shutdown:', error);
+    // Clear heartbeat
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
     }
-  }
 
-  getConnectionManager() {
-    return this.connectionManager;
+    // Close all connections
+    const closePromises = [];
+    for (const wsSet of this.connections.values()) {
+      for (const ws of wsSet) {
+        if (ws.readyState === 1) {
+          closePromises.push(
+            new Promise((resolve) => {
+              ws.send(JSON.stringify({ event: 'server_shutdown' }), () => {
+                ws.close();
+                resolve();
+              });
+              setTimeout(resolve, 1000); // Force resolve after 1s
+            })
+          );
+        }
+      }
+    }
+
+    await Promise.allSettled(closePromises);
+    this.connections.clear();
+    this.totalConnections = 0;
+
+    // Close server
+    if (this.wss) {
+      await new Promise((resolve) => {
+        this.wss.close(() => {
+          logger.info('✅ WebSocket server closed');
+          resolve();
+        });
+        setTimeout(resolve, 3000); // Force resolve after 3s
+      });
+    }
   }
 }

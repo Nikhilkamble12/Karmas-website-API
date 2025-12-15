@@ -853,7 +853,7 @@ create: async (req, res) => {
                         )
                     );
             }
-            // 2. Generate Email Template
+                        // 2. Generate Email Template
             const emailContent = await CommonEmailtemplate.EmailVefiicationCompletedSuccessFully({
                 email_id: getDatabyUser.email_id,
                 username: getDatabyUser.full_name || "User", // Assuming 'full_name' exists, else default
