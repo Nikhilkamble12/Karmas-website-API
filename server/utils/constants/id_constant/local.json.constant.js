@@ -327,13 +327,13 @@ const TABLE_VIEW_FOLDER_MAP = {
         view_name: "v_sos_main",
         folder_name: "sos_main",
         json_file_name: "sos_main.json5",
-        conditions: {  }
+        conditions: { is_sos_on:true}
     },
     "sos_user_list": {
         view_name: "v_active_sos_contacts",
         folder_name: "sos_user_list",
         json_file_name: "sos_user_list.json5",
-        conditions:  { is_active: true,is_sos_on:true }
+        conditions:  {}
     },
     "state_master": {
         view_name: "v_state_master",

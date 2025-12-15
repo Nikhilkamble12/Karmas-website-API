@@ -373,7 +373,9 @@ const SosMainController = {
                     const createData = await SosMainService.createService(data)
                     if (createData) {
                         const checkWhoseSosIsOn = await SosMainService.getByUserIdOnlyActive(user_id)
+                        if(checkWhoseSosIsOn.length>0){
                         await LocalJsonHelper.save(TABLE_VIEW_FOLDER_MAP.sos_main,checkWhoseSosIsOn[0],"sos_id",createData.dataValues.sos_id,false,"15d")
+                        }
                         return res
                             .status(responseCode.CREATED)
                             .send(
