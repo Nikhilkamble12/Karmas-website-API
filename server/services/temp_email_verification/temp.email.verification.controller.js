@@ -256,7 +256,7 @@ const TempEmailVerificationController = {
         // 2. CHECK: Is Account Already In Use?
         // If the user exists in the main user table, they shouldn't be verifying a signup OTP.
         const existingUser = await UserMasterService.getUserByEmailIdByView(email_id);
-        if (existingUser && existingUser.length>0) {
+        if (existingUser && existingUser.length!==0) {
             return res.status(responseCode.CONFLICT).send( // 409 Conflict
                 commonResponse(
                     responseCode.CONFLICT,
