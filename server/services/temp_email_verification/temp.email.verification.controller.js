@@ -197,7 +197,8 @@ const TempEmailVerificationController = {
 
         // Block if already verified
         const verifiedUser = await UserMasterService.getUserByEmailIdByView(email_id);
-        if (verifiedUser && verifiedUser.length>0) {
+        console.log("verifiedUser",verifiedUser)
+        if (verifiedUser && verifiedUser.length!==0) {
             return res.status(responseCode.BAD_REQUEST).send(
                 commonResponse(
                     responseCode.BAD_REQUEST,
