@@ -675,7 +675,7 @@ const NgoRegistrationController = {
         }
     }, getDataByEmailId: async (req, res) => {
         try {
-            const { email_id } = req.body
+            const { email_id } = req.query
             const getData = await NgoRegistrationService.getDataByEmailId(email_id)
             if (getData.length !== 0) {
                 return res
