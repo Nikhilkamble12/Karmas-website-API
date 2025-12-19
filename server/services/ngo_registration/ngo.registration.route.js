@@ -55,6 +55,12 @@ router.post(
     NgoRegistrationController.verifyOtpByData
 )
 
+router.get(
+    `${basePath}/getByEmail`,
+    verifyToken,
+    NgoRegistrationController.getDataByEmailId
+)
+
 
 
 // Export the router for use in other parts of the application
