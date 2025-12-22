@@ -493,6 +493,7 @@ create: async (req, res) => {
                 } else {
                     getDataByid.Bg_Base64File = null
                 }
+                delete getDataByid.password
                 return res
                     .status(responseCode.OK)
                     .send(
