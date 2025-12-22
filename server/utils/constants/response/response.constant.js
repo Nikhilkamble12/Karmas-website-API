@@ -25,7 +25,7 @@ const RESPONSE_CONSTANTS = {
     // ============================================================
     LOGGED_IN_SUCCESFULLY: "Logged In Successfully",                // 200: Login success
     ERROR_LOG_IN: "An error occurred while Logging In.",            // 400: Login flow error
-    INVALID_CREDENTIAL: "Invalid Credential",                       // 401: Wrong username/password
+    INVALID_CREDENTIAL: "Invalid Credential.",                       // 401: Wrong username/password
     WRONG_CREDENTIAL: "Invalid Credential.",                        // 401: Duplicate of above (Legacy)
     JWT_EXPIRED: "JWT token has expired",                           // 401: Token time limit reached
     UNVERIFIED_TOKEN: "Failed to verify JWT token",                 // 401: Token signature invalid

@@ -42,7 +42,7 @@ const validateUser = (userData, user_name, google_id) => {
     return {
       valid: false,
       code: responseCode.UNAUTHORIZED,
-      message: responseConst.INVALID_USERNAME,
+      message: responseConst.INVALID_CREDENTIAL,
     };
   }
 
@@ -343,7 +343,7 @@ let AuthController = {
           .send(
             commonResponse(
               responseCode.UNAUTHORIZED,
-              responseConst.INVALID_PASSWORD,
+              responseConst.INVALID_CREDENTIAL,
               null,
               true
             )
