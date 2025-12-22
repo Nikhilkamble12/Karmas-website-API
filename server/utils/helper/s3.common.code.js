@@ -30,7 +30,7 @@ const uploadFileToS3 = async (s3FolderPath, localFilePath, fileType) => {
 
     // Set up the S3 upload parameters
     const params = {
-      Bucket: "karmasmedia", // Your S3 Bucket name
+      Bucket: "karmas-media-live", // Your S3 Bucket name
       Key: key, // S3 object key (file path)
       Body: fileStream, // File body (streamed from local path)
       ContentType: fileType, // MIME type
