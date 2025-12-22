@@ -31,7 +31,9 @@ const NgoRegistrationController = {
             const data = req.body;
 
             // Add metadata (created_by, created_at)
-            await addMetaDataWhileCreateUpdate(data, req, res, false);
+            data.is_active = true
+            data.created_by = 1 
+            data.created_at = currentTime()
             data.status_id = STATUS_MASTER.NGO_REGISTRATION_REVIEW
             // Create the registration record
             const createData = await NgoRegistrationService.createService(data);
@@ -117,7 +119,8 @@ const NgoRegistrationController = {
             const data = req.body;
 
             // Add metadata for modification (modified_by, modified_at)
-            await addMetaDataWhileCreateUpdate(data, req, res, true);
+            data.modified_by = 1 
+            data.modified_at = currentTime()
 
             // Object to hold updated file paths/names
             const updateData = { ...data }; // start with the fields to update
@@ -413,7 +416,7 @@ const NgoRegistrationController = {
                     remarks: registration.remarks || null,
 
                     is_active: 1,
-                    created_by: req.user_id,
+                    created_by: 1,
                     created_at: new Date()
                 };
 
@@ -452,7 +455,7 @@ const NgoRegistrationController = {
                     is_authenticated: 1,
 
                     is_active: 1,
-                    created_by: req.user_id,
+                    created_by: 1,
                     created_at: new Date()
                 };
 

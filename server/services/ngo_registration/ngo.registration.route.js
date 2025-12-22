@@ -9,7 +9,6 @@ const router = express.Router()
 
 router.post(
     `${basePath}/create`,
-    verifyToken,
     NgoRegistrationController.create
 )
 // Route to update an existing record by ID
@@ -45,19 +44,16 @@ router.put(
 // Router 
 router.post(
     `${basePath}/resend/otp`,
-    verifyToken,
     NgoRegistrationController.ValidateEmailAndSendOtp
 )
 // Router To Verify OTP
 router.post(
     `${basePath}/verify/otp`,
-    verifyToken,
     NgoRegistrationController.verifyOtpByData
 )
 
 router.get(
     `${basePath}/getByEmail`,
-    verifyToken,
     NgoRegistrationController.getDataByEmailId
 )
 
