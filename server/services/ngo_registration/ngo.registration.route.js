@@ -14,7 +14,6 @@ router.post(
 // Route to update an existing record by ID
 router.put(
     `${basePath}/update`,
-    verifyToken,
     NgoRegistrationController.update
 )
 // Route to retrieve all records
