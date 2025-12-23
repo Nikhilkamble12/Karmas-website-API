@@ -8,6 +8,9 @@ import fs from "fs";
 import dotenv from "dotenv";
 dotenv.config();
 
+
+const BUCKET_NAME = "karmas-media-live";
+
 // Initialize the S3 client
 const s3 = new S3Client({
   region: "ap-south-1", // Specify your region
@@ -30,11 +33,11 @@ const uploadFileToS3 = async (s3FolderPath, localFilePath, fileType) => {
 
     // Set up the S3 upload parameters
     const params = {
-      Bucket: "karmas-media-live", // Your S3 Bucket name
+      Bucket: BUCKET_NAME, // Your S3 Bucket name
       Key: key, // S3 object key (file path)
       Body: fileStream, // File body (streamed from local path)
       ContentType: fileType, // MIME type
-      ACL: "public-read", // Optional: Public read access
+      // ACL: "public-read", // Optional: Public read access
       CacheControl: "public, max-age=604800", // 7 days
     };
 
@@ -46,7 +49,7 @@ const uploadFileToS3 = async (s3FolderPath, localFilePath, fileType) => {
     if (data && data.ETag) {
       // Manually generate the URL based on the bucket name, region, and key
       const fileUrl = `https://${params.Bucket}.s3.ap-south-1.amazonaws.com/${params.Key}`;
-      const cdnUrl = `https://d3hj74qe63378x.cloudfront.net/${key}`;
+      const cdnUrl = `https://d2o6b6doi50fow.cloudfront.net/${key}`;
       // const fileUrl = `https://${params.Bucket}.s3.${s3.config.region}.amazonaws.com/${params.Key}`;
       return {
         success: true,
@@ -70,7 +73,7 @@ const deleteVideoByUrl = async (url) => {
   }
 
   try {
-    const bucketName = "karmasmedia";
+    const bucketName = "karmas-media-live";
 
     // Handle both virtual-hosted–style and path-style URLs
     const parsedUrl = new URL(url);
