@@ -21,7 +21,7 @@ router.put(
 // Route to retrieve all records
 router.get(
     `${basePath}`,
-    verifyToken,
+    // verifyToken,
     StateMasterController.getAllByView
 )
 // Route to retrieve a record by ID
