@@ -69,7 +69,7 @@ const NgoRegistrationDAL = {
   },getDataByEmailId:async(email_id)=>{
     try{
         const getAllData = await db.sequelize.query(
-        `${ViewFieldTableVise.NGO_REGISTRATION_FIELDS} where email = ${email_id}`,
+        `${ViewFieldTableVise.NGO_REGISTRATION_FIELDS} where email = '${email_id}'`,
         { type: db.Sequelize.QueryTypes.SELECT } 
       );
       return getAllData;
