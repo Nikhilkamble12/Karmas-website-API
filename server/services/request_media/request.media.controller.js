@@ -423,7 +423,7 @@ const RequestMediaController = {
       const fileUrl = await uploadFileToS3Folder.uploadFileToS3(s3BucketFileDynamic, filePath,fileType);
       console.log("fileUrl",fileUrl)
       if (fileUrl.success) {
-        const fileUrlData = fileUrl.url;
+      const fileUrlData = fileUrl.url;
       const dataToStore = {
         media_url:fileUrlData,
         s3_url:fileUrl.s3_url,
@@ -433,6 +433,7 @@ const RequestMediaController = {
         RequestId:data.RequestId,
       }
       await addMetaDataWhileCreateUpdate(dataToStore, req, res, false);
+      console.log("dataToStore",dataToStore)
       const createData = await RequestMediaService.createSerive(dataToStore)
       if(parseInt(RequestData.status_id) == STATUS_MASTER.REQUEST_DRAFT){
           const getUserById = await UserTokenService.GetTokensByUserIds(RequestData.request_user_id)
