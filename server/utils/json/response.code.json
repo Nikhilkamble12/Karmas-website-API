@@ -313,6 +313,9 @@
     },{
       "code":"1.0062",
       "message":"Invalid Credential."
+    },{
+      "code":"1.0062",
+      "message":"Status Not Found."
     }
   ]
 }

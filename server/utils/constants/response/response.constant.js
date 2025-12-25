@@ -128,7 +128,9 @@ const RESPONSE_CONSTANTS = {
 
 
     // Likes And Comments
-    LIKE_RECORDS_NOT_FOUND: "Like record not found."
+    LIKE_RECORDS_NOT_FOUND: "Like record not found.",
+
+    STATUS_NOT_FOUND:"Status Not Found.",
 };
 
 export default RESPONSE_CONSTANTS;

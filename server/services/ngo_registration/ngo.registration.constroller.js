@@ -468,12 +468,13 @@ const NgoRegistrationController = {
                     { status_id: data.status_id, is_admin_accepted: true, modified_at: new Date(), modified_by: req.user_id },
                 );
                 const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationApprovedSuccessfully({ email_id: registration.email, username: registration.ngo_name, password: randomPassword })
-                await sendEmail({ to: registration.email_id, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
+                console.log("registration",registration)
+                await sendEmail({ to: registration.email, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
                 return res.send(commonResponse(200, responseConst.NGO_APPROVED_SUCCESSFULLY, { ngo: createdNgo, user: createdUser }));
             }
 
             // NGO REJECTED
-            else if (data.status_id === STATUS_MASTER.NGO_REGISTRATION_REJECTED) {
+            else if (data.status_id == STATUS_MASTER.NGO_REGISTRATION_REJECTED) {
 
                 await NgoRegistrationService.updateService(ngo_registration_id,
                     {
@@ -485,14 +486,14 @@ const NgoRegistrationController = {
                     }
                 );
                 const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationRejected({ email_id: registration.email, username: registration.ngo_name, reason: registration.reason })
-                await sendEmail({ to: registration.email_id, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
+                await sendEmail({ to: registration.email, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
                 return res.send(commonResponse(200, responseConst.NGO_REGISTRATION_REJECTED));
             }
 
             // NGO REOPEN
-            else if (data.status_id === STATUS_MASTER.NGO_REGISTRATION_REOPEN) {
+            else if (data.status_id == STATUS_MASTER.NGO_REGISTRATION_REOPEN) {
 
-                await NgoRegistrationService.update(ngo_registration_id,
+                await NgoRegistrationService.updateService(ngo_registration_id,
                     {
                         is_admin_accepted: false,
                         status_id: data.status_id,
@@ -501,13 +502,14 @@ const NgoRegistrationController = {
                     }
                 );
                 const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationResubmitRequired({ email_id: registration.email, username: registration.ngo_name, reason: registration.reason })
-                await sendEmail({ to: registration.email_id, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
+                console.log("registration",registration)
+                await sendEmail({ to: registration.email, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
                 return res.send(commonResponse(200, responseConst.NGO_REGISTRATION_REOPEND));
             }
 
             // INVALID STATUS
             else {
-                return res.status(400).send(commonResponse(400, responseConst));
+                return res.status(400).send(commonResponse(400, responseConst.STATUS_NOT_FOUND));
             }
 
         } catch (error) {
