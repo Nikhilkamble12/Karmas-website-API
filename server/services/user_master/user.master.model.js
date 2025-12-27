@@ -1,4 +1,3 @@
-import { all } from "axios";
 import { DataTypes } from "sequelize";
 
 const UserMasterModel = (sequelize) => {

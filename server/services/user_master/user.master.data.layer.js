@@ -277,6 +277,18 @@ const UserMasterDAL = {
         throw error;
     }
 },
+    checkIfUserNameOrEmailIsPresent: async (identifier) => {
+        try {
+            console.log('identifier', identifier)
+            const getData = await db.sequelize.query(
+                `${ViewFieldTableVise.USER_MASTER_FIELDS} WHERE user_name = '${identifier}' OR email_id = '${identifier}'`,
+                { type: db.Sequelize.QueryTypes.SELECT }
+            )
+            return getData[0] ?? []
+        } catch (error) {
+            throw error
+        }
+    },
 
 }
 

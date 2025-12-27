@@ -25,6 +25,12 @@ const AuthService={
         }catch(error){
             throw error
         }
-    }
+    },checkWetherUserOrEmailIsPresent: async (identifier) => {
+        try {
+            return await UserMasterDAL.checkIfUserNameOrEmailIsPresent(identifier)
+        } catch (error) {
+            throw error
+        }
+    },
 }
 export default AuthService

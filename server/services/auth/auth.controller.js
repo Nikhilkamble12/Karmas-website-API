@@ -36,7 +36,7 @@ const JWT_VERIFY_OPTIONS = {
 // ============================================================================
 // OPTIMIZATION 1: User Validation Helper (DRY principle)
 // ============================================================================
-const validateUser = (userData, user_name, google_id) => {
+const validateUser = (userData, user_name, google_id, isGoogleAuth = false) => {
   if (!userData || userData.length === 0) {
     logger.error(`User ${user_name || google_id} not found`);
     return {
@@ -46,7 +46,7 @@ const validateUser = (userData, user_name, google_id) => {
     };
   }
 
-  if (!userData.is_authenticated) {
+  if (!isGoogleAuth && !userData.is_authenticated) {
     logger.error(`User ${user_name || google_id} not authenticated`);
     return {
       valid: false,
@@ -87,17 +87,17 @@ let AuthController = {
         android_token 
       } = req.body;
 
-      const cleanUsername = user_name?.trim();
+      const cleanIdentifier = user_name?.trim();
       const cleanGoogleId = google_id?.trim();
       const cleanPassword = password?.trim();
 
       // ✅ OPTIMIZATION 4: Fetch user data
       const userData = cleanGoogleId
         ? await AuthService.checkWetherUserIsPresertByGoogleId(cleanGoogleId)
-        : await AuthService.checkWetherUserIsPresent(cleanUsername);
+        : await AuthService.checkWetherUserOrEmailIsPresent(cleanIdentifier);
 
       // ✅ OPTIMIZATION 5: Validate user (single function)
-      const validation = validateUser(userData, cleanUsername, cleanGoogleId);
+      const validation = validateUser(userData, cleanIdentifier, cleanGoogleId, !!cleanGoogleId);
       if (!validation.valid) {
         return res
           .status(validation.code)
@@ -106,7 +106,7 @@ let AuthController = {
 
       // ✅ OPTIMIZATION 6: Password check (only if not Google login)
       if (!cleanGoogleId && cleanPassword !== userData.password) {
-        logger.error(`Password mismatch for ${cleanUsername}`);
+        logger.error(`Password mismatch for ${cleanIdentifier}`);
         return res
           .status(responseCode.UNAUTHORIZED)
           .send(
