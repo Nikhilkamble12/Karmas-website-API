@@ -96,6 +96,19 @@ let AuthController = {
         ? await AuthService.checkWetherUserIsPresertByGoogleId(cleanGoogleId)
         : await AuthService.checkWetherUserOrEmailIsPresent(cleanIdentifier);
 
+      if (cleanGoogleId && (!userData || userData.length === 0 || !userData.user_id)) {
+        logger.error(`Google account not registered: ${cleanGoogleId}`);
+        return res
+          .status(responseCode.NOT_FOUND)
+          .send(
+            commonResponse(
+              responseCode.NOT_FOUND,
+              "Google account not registered. Please sign up first.",
+              null,
+              true
+            )
+          );
+      }
       // ✅ OPTIMIZATION 5: Validate user (single function)
       const validation = validateUser(userData, cleanIdentifier, cleanGoogleId, !!cleanGoogleId);
       if (!validation.valid) {

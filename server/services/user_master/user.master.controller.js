@@ -31,6 +31,20 @@ create: async (req, res) => {
             data.created_at = currentTime
         }
 
+        const existingUser = await UserMasterService.getUserByEmailIdByView(data.email_id);
+
+        if (existingUser && existingUser.length > 0) {
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.EMAIL_ALREADY_IN_USE,
+                        null,
+                        true
+                    )
+                );
+        }
         // Create the record using ORM
         data.first_time_login = true
 
