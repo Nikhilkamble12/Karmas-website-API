@@ -77,6 +77,11 @@ const UserMasterModel = (sequelize) => {
             type:DataTypes.INTEGER,
             allowNull:true
         },
+        is_authenticated:{
+            type:DataTypes.TINYINT(1),
+            allowNull:true,
+            defaultValue:false
+        },
         google_id : {
             type: DataTypes.STRING(45),
             allowNull: true,
