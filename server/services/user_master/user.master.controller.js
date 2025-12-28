@@ -48,14 +48,10 @@ create: async (req, res) => {
         // Create the record using ORM
         data.first_time_login = true
 
-        const isGoogleAuth = data.google_id && data.google_id !== "" && data.google_id !== null;
-
-        if(isGoogleAuth){
-            data.is_authenticated = true
-        }else{
-            data.is_authenticated = false
-        }
-        
+        // Check if Google Auth - user is authenticated if google_id is present and valid
+        const isGoogleAuth = data.google_id && data.google_id.trim() !== "";
+        data.is_authenticated = isGoogleAuth ? true : false;
+    
         const createData = await UserMasterService.createService(data);
 
         if (createData?.success == false) {
