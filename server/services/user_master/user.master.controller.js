@@ -50,7 +50,9 @@ create: async (req, res) => {
 
         // Check if Google Auth - user is authenticated if google_id is present and valid
         const isGoogleAuth = data.google_id && data.google_id.trim() !== "";
-        data.is_authenticated = isGoogleAuth ? true : false;
+        if(isGoogleAuth) {
+            data.is_authenticated = true;
+        }
     
         const createData = await UserMasterService.createService(data);
 
@@ -136,42 +138,42 @@ create: async (req, res) => {
         }
 
         // --- OTP AND EMAIL LOGIC START ---
-        if(!isGoogleAuth) {
-            const getDataById = await UserMasterService.getServiceById(user_id)
-            if (getDataById) {
-                // 1. Generate 6 Digit Random Number
-                const otp = Math.floor(100000 + Math.random() * 900000);
+        // if(!isGoogleAuth) {
+        //     const getDataById = await UserMasterService.getServiceById(user_id)
+        //     if (getDataById) {
+        //         // 1. Generate 6 Digit Random Number
+        //         const otp = Math.floor(100000 + Math.random() * 900000);
 
-                // 2. Generate Email Template
-                const emailContent = await CommonEmailtemplate.EmailVerificationRequestSent({
-                    email_id: getDataById.email_id,
-                    otp: otp,
-                    username: getDataById.full_name || "User", // Assuming 'full_name' exists, else default
-                    validity: "20 min"
-                });
-                // 3. Send Email (You need to implement the actual sending helper)
-                await sendEmail({to:getDataById.email_id, subject:emailContent.subject,text:null, html:emailContent.html});
-                // logger.info(`Email sent to ${getDataById.email_id}`);
+        //         // 2. Generate Email Template
+        //         const emailContent = await CommonEmailtemplate.EmailVerificationRequestSent({
+        //             email_id: getDataById.email_id,
+        //             otp: otp,
+        //             username: getDataById.full_name || "User", // Assuming 'full_name' exists, else default
+        //             validity: "20 min"
+        //         });
+        //         // 3. Send Email (You need to implement the actual sending helper)
+        //         await sendEmail({to:getDataById.email_id, subject:emailContent.subject,text:null, html:emailContent.html});
+        //         // logger.info(`Email sent to ${getDataById.email_id}`);
 
-                // 4. Calculate Expiry (Current Time + 20 Minutes)
-                const expiryTime = new Date();
-                expiryTime.setMinutes(expiryTime.getMinutes() + 20);
+        //         // 4. Calculate Expiry (Current Time + 20 Minutes)
+        //         const expiryTime = new Date();
+        //         expiryTime.setMinutes(expiryTime.getMinutes() + 20);
 
-                // 5. Save OTP Log
-                const CreateOtpData = {
-                    user_id: user_id,
-                    otp_code: otp,
-                    otp_type_id: OTP_TYPE_MASTER.EMAIL_VERIFY,
-                    expiry_at: expiryTime, // Saves as Date object
-                    is_used: 0,
-                    attempt_count: 0,
-                    max_attempt_limit: 5,
-                }
+        //         // 5. Save OTP Log
+        //         const CreateOtpData = {
+        //             user_id: user_id,
+        //             otp_code: otp,
+        //             otp_type_id: OTP_TYPE_MASTER.EMAIL_VERIFY,
+        //             expiry_at: expiryTime, // Saves as Date object
+        //             is_used: 0,
+        //             attempt_count: 0,
+        //             max_attempt_limit: 5,
+        //         }
 
-                await addMetaDataWhileCreateUpdate(CreateOtpData, req, res, false)
-                await UserOtpLogsService.createService(CreateOtpData)
-            }
-        }
+        //         await addMetaDataWhileCreateUpdate(CreateOtpData, req, res, false)
+        //         await UserOtpLogsService.createService(CreateOtpData)
+        //     }
+        // }
         // --- OTP AND EMAIL LOGIC END ---
 
         return res
