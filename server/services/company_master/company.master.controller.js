@@ -144,9 +144,10 @@ const CompanyMasterController = {
             // Fetch local data from JSON
             const localData = await LocalJsonHelper.getAll(TABLE_VIEW_FOLDER_MAP.company_master,"30d");
             if(localData!==null){
-                if(localData.length!==0){
+                const dataArray = Array.isArray(localData) ? localData : [];
+                if(dataArray.length!==0){
                     console.log("localData",localData)
-                const updatedCompanyData = await Promise.all(localData.map(async (currentData) => {
+                const updatedCompanyData = await Promise.all(dataArray.map(async (currentData) => {
                 // Normalize file path
                 if (
                     currentData.company_logo_path &&
