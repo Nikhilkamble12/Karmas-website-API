@@ -606,6 +606,13 @@ export class OptimizedLocalJsonDB {
         }
 
         const dataContent = data.data || null;
+
+
+        // 🔍 DEBUG: Check data structure
+        console.log('📊 Data type:', Array.isArray(dataContent) ? 'Array' : typeof dataContent);
+        console.log('📊 Data length:', Array.isArray(dataContent) ? dataContent.length : 'N/A');
+        console.log('📊 First item:', Array.isArray(dataContent) ? dataContent[0] : dataContent);
+
         if (!dataContent) return [];
 
         if (Array.isArray(dataContent)) {
