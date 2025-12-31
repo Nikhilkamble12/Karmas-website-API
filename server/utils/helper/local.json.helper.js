@@ -7,7 +7,7 @@ import { promises as fs } from 'fs';
 import fsSync from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import db from "../../services/index.js"; 
+import db from "../../services/index.js";
 import { QueryTypes } from 'sequelize';
 import TABLE_VIEW_FOLDER_MAP from '../constants/id_constant/local.json.constant.js';
 
@@ -20,7 +20,7 @@ const __dirname = path.dirname(__filename);
 export class TimeParser {
     static parseToMs(timeExpression) {
         if (typeof timeExpression === 'number') return timeExpression * 24 * 60 * 60 * 1000;
-        if (!timeExpression || typeof timeExpression !== 'string') return 15 * 24 * 60 * 60 * 1000; 
+        if (!timeExpression || typeof timeExpression !== 'string') return 15 * 24 * 60 * 60 * 1000;
 
         let totalMs = 0;
         const parts = timeExpression.split(',').map(p => p.trim());
@@ -181,7 +181,7 @@ const _memoryCache = new MemoryCache(50, 1800);
 // ==========================================
 export class IndexManager {
     constructor() { this._indexes = new Map(); }
-    
+
     buildIndex(tableName, keyName, data) {
         if (!Array.isArray(data)) return;
         const index = new Map();
@@ -191,17 +191,17 @@ export class IndexManager {
         if (!this._indexes.has(tableName)) this._indexes.set(tableName, new Map());
         this._indexes.get(tableName).set(keyName, index);
     }
-    
+
     lookup(tableName, keyName, keyValue) {
         return this._indexes.get(tableName)?.get(keyName)?.get(keyValue) || null;
     }
-    
+
     batchLookup(tableName, keyName, keyValues) {
         const index = this._indexes.get(tableName)?.get(keyName);
         if (!index) return [];
         return keyValues.map(kv => index.get(kv)).filter(item => item !== undefined);
     }
-    
+
     invalidate(tableName) { this._indexes.delete(tableName); }
     clear() { this._indexes.clear(); }
 }
@@ -289,13 +289,13 @@ export class DatabaseHelper {
         for (const [key, value] of Object.entries(conditions)) {
             // Validate column name (prevent SQL injection)
             if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key)) continue;
-            
+
             if (value === null) {
                 whereClauses.push(`${key} IS NULL`);
-            } 
+            }
             // ✅ HANDLE BOOLEAN (Sequelize/DB often need 1/0 or TRUE/FALSE)
             else if (typeof value === 'boolean') {
-                whereClauses.push(`${key} = ${value ? 1 : 0}`); 
+                whereClauses.push(`${key} = ${value ? 1 : 0}`);
             }
             else if (typeof value === 'number') {
                 whereClauses.push(`${key} = ${value}`);
@@ -304,7 +304,7 @@ export class DatabaseHelper {
                 whereClauses.push(`${key} = '${escapedValue}'`);
             }
         }
-        
+
         return whereClauses.length > 0 ? ` WHERE ${whereClauses.join(' AND ')}` : '';
     }
 
@@ -313,9 +313,9 @@ export class DatabaseHelper {
         try {
             let query = `SELECT COUNT(*) as count FROM ${viewName}`;
             query += this._buildWhereClause(conditions);
-            
+
             const result = await db.sequelize.query(
-                query, 
+                query,
                 { type: QueryTypes.SELECT, timeout: CacheConfig.DB_QUERY_TIMEOUT, raw: true }
             );
             return parseInt(result[0]?.count || 0, 10);
@@ -327,9 +327,9 @@ export class DatabaseHelper {
         try {
             let query = `SELECT * FROM ${viewName}`;
             query += this._buildWhereClause(conditions);
-            
+
             return await db.sequelize.query(
-                query, 
+                query,
                 { type: QueryTypes.SELECT, timeout: CacheConfig.DB_QUERY_TIMEOUT, raw: true }
             ) || [];
         } catch (e) { return []; }
@@ -343,7 +343,7 @@ export class OptimizedLocalJsonDB {
     static _BASE_PATH = path.join(__dirname, '../../resources/json');
     static _WRITE_QUEUE = new Map();
     static _PENDING_WRITES = 0;
-    
+
     // 👇 STATIC PROPERTIES
     static _GROUP_INDEXES = new Map();
     static _REQUEST_COUNTERS = new Map();
@@ -352,23 +352,23 @@ export class OptimizedLocalJsonDB {
 
     constructor(configOrName, expiryTime = "15d") {
         let mapping;
-        
+
         // CASE 1: STRING INPUT
         if (typeof configOrName === 'string') {
             // A. Check if it's a known table from constant MAP
             if (TABLE_VIEW_FOLDER_MAP && TABLE_VIEW_FOLDER_MAP[configOrName]) {
                 mapping = TABLE_VIEW_FOLDER_MAP[configOrName];
                 this.tableName = configOrName;
-            } 
+            }
             // B. Allow Dynamic/Custom paths (e.g., "score/score_25.json")
             else {
                 // Parse dynamic path
-                const parts = configOrName.split(/[/\\]/); 
+                const parts = configOrName.split(/[/\\]/);
                 let fileName = parts.pop();
-                
+
                 if (!fileName.endsWith('.json')) fileName += '.json';
                 const folderName = parts.length > 0 ? parts.join('/') : 'custom';
-                
+
                 mapping = {
                     folder_name: folderName,
                     json_file_name: fileName,
@@ -377,26 +377,26 @@ export class OptimizedLocalJsonDB {
                 };
                 this.tableName = configOrName;
             }
-        } 
+        }
         // CASE 2: OBJECT INPUT
         else if (typeof configOrName === 'object' && configOrName !== null) {
             mapping = configOrName;
             const fileName = mapping.json_file_name || mapping.file_name || 'unknown.json';
             this.tableName = mapping.name || `${mapping.folder_name || 'root'}/${fileName}`;
-        } 
+        }
         else {
             throw new Error('❌ Invalid constructor argument');
         }
 
         this.viewName = mapping.view_name || null;
         this.folderName = mapping.folder_name || this.tableName;
-        
+
         // ✅ EXTRACT CONDITIONS
         this.conditions = mapping.conditions || null;
 
         let jsonFileName = mapping.json_file_name || mapping.file_name || `${this.tableName}.json`;
         this.jsonFileName = jsonFileName.replace('.json5', '.json');
-        
+
         this.expiryTime = expiryTime;
         this.ttlMs = TimeParser.parseToMs(expiryTime);
 
@@ -405,7 +405,7 @@ export class OptimizedLocalJsonDB {
 
         const folderPath = path.join(OptimizedLocalJsonDB._BASE_PATH, this.folderName);
         if (!fsSync.existsSync(folderPath)) {
-            try { fsSync.mkdirSync(folderPath, { recursive: true }); } catch (e) {}
+            try { fsSync.mkdirSync(folderPath, { recursive: true }); } catch (e) { }
         }
         this.filePath = path.join(folderPath, this.jsonFileName);
         this._cacheKey = `${this.tableName}:${expiryTime}`;
@@ -431,31 +431,31 @@ export class OptimizedLocalJsonDB {
 
     async _saveLazy(data, force, metadataOnly) {
         const dataValue = data.data || [];
-        const dataLength = Array.isArray(dataValue) ? dataValue.length : 
-                          (typeof dataValue === 'object' ? Object.values(dataValue).reduce((sum, v) => sum + (Array.isArray(v) ? v.length : 0), 0) : 0);
+        const dataLength = Array.isArray(dataValue) ? dataValue.length :
+            (typeof dataValue === 'object' ? Object.values(dataValue).reduce((sum, v) => sum + (Array.isArray(v) ? v.length : 0), 0) : 0);
         const isLarge = dataLength >= CacheConfig.MAX_ENTRIES_FOR_COUNTER_UPDATES;
-        
+
         if (isLarge && metadataOnly) {
             const metadata = MetadataManager.extractMetadata(data);
             await MetadataManager.saveMetadata(this.filePath, metadata);
             return;
         }
-        
+
         const { cached } = _memoryCache.set(this._cacheKey, data);
         if (!cached) {
             try {
                 await fs.writeFile(this.filePath, JSON.stringify(data, null, 2), 'utf-8');
                 await MetadataManager.saveMetadata(this.filePath, MetadataManager.extractMetadata(data));
-            } catch(e) { console.error(`Failed to save file ${this.filePath}:`, e.message); }
+            } catch (e) { console.error(`Failed to save file ${this.filePath}:`, e.message); }
             return;
         }
-        
+
         OptimizedLocalJsonDB._WRITE_QUEUE.set(this._cacheKey, { filePath: this.filePath, data: data, timestamp: Date.now() });
         OptimizedLocalJsonDB._PENDING_WRITES++;
         if (force || OptimizedLocalJsonDB._PENDING_WRITES >= 5) await OptimizedLocalJsonDB._flushWriteQueue();
         else this._scheduleFlush();
     }
-    
+
     _scheduleFlush() {
         if (OptimizedLocalJsonDB._writeTimeout) clearTimeout(OptimizedLocalJsonDB._writeTimeout);
         OptimizedLocalJsonDB._writeTimeout = setTimeout(async () => await OptimizedLocalJsonDB._flushWriteQueue(), 5000);
@@ -464,7 +464,7 @@ export class OptimizedLocalJsonDB {
     static async _flushWriteQueue() {
         if (this._WRITE_QUEUE.size === 0) return;
         for (const [key, val] of this._WRITE_QUEUE.entries()) {
-            try { 
+            try {
                 await fs.writeFile(val.filePath, JSON.stringify(val.data, null, 2), 'utf-8');
                 await MetadataManager.saveMetadata(val.filePath, MetadataManager.extractMetadata(val.data));
             } catch (e) { console.error(`Failed to flush write for ${key}:`, e.message); }
@@ -474,11 +474,11 @@ export class OptimizedLocalJsonDB {
     }
 
     _isExpired(data) {
-        try { 
+        try {
             if (!data.expires_at) return true;
             const now = Date.now();
             const expiryTime = new Date(data.expires_at).getTime();
-            return now >= expiryTime; 
+            return now >= expiryTime;
         } catch { return true; }
     }
 
@@ -497,7 +497,7 @@ export class OptimizedLocalJsonDB {
     async _needsRefresh(data) {
         if (this._isExpired(data)) return { needs: true, reason: 'expired' };
         if (!this.hasValidViewName) return { needs: false, reason: 'no_view' };
-        
+
         const counter = data.db_count_check_counter || 0;
         if (counter <= 0) {
             const dbCount = await this._getDbCount();
@@ -515,7 +515,7 @@ export class OptimizedLocalJsonDB {
     _createCacheStructure(freshData, asObject = false) {
         const now = new Date();
         const expiresAtDate = new Date(now.getTime() + this.ttlMs);
-        
+
         return {
             name: this.tableName,
             view_name: this.viewName || null,
@@ -542,14 +542,14 @@ export class OptimizedLocalJsonDB {
         // 🗑️ EXPIRY CHECK
         if (data && instance._isExpired(data)) {
             console.log(`⏳ [Expiry] Cache expired for ${instance.tableName}. Deleting record...`);
-            await this.invalidate(tableRef, expiryTime); 
+            await this.invalidate(tableRef, expiryTime);
             this._GROUP_INDEXES.forEach((val, key) => {
                 if (key.startsWith(`${instance.tableName}:`)) this._GROUP_INDEXES.delete(key);
             });
-            data = null; 
+            data = null;
         }
 
-         // 🔍 DEBUG: Check what was loaded from file
+        // 🔍 DEBUG: Check what was loaded from file
         if (data) {
             console.log('📂 Loaded from cache - Full structure check:');
             console.log('   - data.data type:', Array.isArray(data.data) ? 'Array' : typeof data.data);
@@ -571,9 +571,9 @@ export class OptimizedLocalJsonDB {
             console.log('   - Type:', Array.isArray(freshData) ? 'Array' : typeof freshData);
             console.log('   - Length:', freshData.length);
             console.log('   - First item:', freshData[0]);
-        
+
             if (freshData.length === 0) return [];
-            
+
             data = instance._createCacheStructure(freshData);
 
             // 🔍 DEBUG: Check structure after creation
@@ -583,13 +583,13 @@ export class OptimizedLocalJsonDB {
 
             await instance._saveLazy(data, true);
             _indexManager.buildIndex(instance.tableName, 'id', freshData);
-            
+
             if (filterField !== null) return this._filterList(freshData, filterField, filterValue);
             return freshData;
         }
 
         const { needs, reason } = await instance._needsRefresh(data);
-        
+
         if (needs) {
             console.log(`🔄 Refreshing cache for ${instance.tableName} (reason: ${reason})`);
             this._GROUP_INDEXES.forEach((val, key) => {
@@ -607,27 +607,27 @@ export class OptimizedLocalJsonDB {
                 console.log('   - After assignment, data.data type:', Array.isArray(data.data) ? 'Array' : typeof data.data);
                 console.log('   - After assignment, data.data length:', Array.isArray(data.data) ? data.data.length : 'N/A');
 
-                
+
                 const nowObj = new Date();
                 data.modified_at = nowObj.toISOString();
                 data.updated_at = nowObj.toISOString();
                 data.expires_at = new Date(nowObj.getTime() + instance.ttlMs).toISOString();
                 data.db_count_check_counter = CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER;
                 // ✅ UPDATE CONDITIONS ON REFRESH
-                data.conditions = instance.conditions; 
-                
+                data.conditions = instance.conditions;
+
                 await instance._saveLazy(data, true);
                 _indexManager.buildIndex(instance.tableName, 'id', freshData);
             }
         } else {
             if (instance.hasValidViewName) {
                 const dataValue = data.data || [];
-                const dataLength = Array.isArray(dataValue) ? dataValue.length : 
-                                  (typeof dataValue === 'object' ? Object.values(dataValue).reduce((sum, v) => sum + (Array.isArray(v) ? v.length : 0), 0) : 0);
-                
+                const dataLength = Array.isArray(dataValue) ? dataValue.length :
+                    (typeof dataValue === 'object' ? Object.values(dataValue).reduce((sum, v) => sum + (Array.isArray(v) ? v.length : 0), 0) : 0);
+
                 const isLarge = dataLength >= CacheConfig.MAX_ENTRIES_FOR_COUNTER_UPDATES;
                 data.db_count_check_counter = Math.max(0, (data.db_count_check_counter || CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER) - 1);
-                
+
                 if (isLarge) {
                     const key = `${instance._cacheKey}:req`;
                     let reqs = (this._REQUEST_COUNTERS.get(key) || 0) + 1;
@@ -680,141 +680,303 @@ export class OptimizedLocalJsonDB {
     /**
      * Smart Save Method
      */
-    static async save(tableRef, dataEntry = null, keyName = null, keyValue = null, newFile = null, expiryTime = "15d") {
-        const refLog = typeof tableRef === 'string' ? tableRef : JSON.stringify(tableRef);
-        console.log(`🟢 [Start] save() called for: ${refLog}`);
+    // static async save(tableRef, dataEntry = null, keyName = null, keyValue = null, newFile = null, expiryTime = "15d") {
+    //     const refLog = typeof tableRef === 'string' ? tableRef : JSON.stringify(tableRef);
+    //     console.log(`🟢 [Start] save() called for: ${refLog}`);
 
-        if (!tableRef || (typeof tableRef !== 'string' && typeof tableRef !== 'object')) {
-            throw new Error('Invalid tableRef: must be a string or object');
+    //     if (!tableRef || (typeof tableRef !== 'string' && typeof tableRef !== 'object')) {
+    //         throw new Error('Invalid tableRef: must be a string or object');
+    //     }
+
+    //     const instance = this._getInstance(tableRef, expiryTime);
+
+    //     // Manage Locks
+    //     const lockTimeout = 5000;
+    //     const lockStartTime = Date.now();
+    //     while (this._FILE_LOCKS.get(instance._cacheKey)) {
+    //         if (Date.now() - lockStartTime > lockTimeout) break;
+    //         await new Promise(r => setTimeout(r, 50));
+    //     }
+    //     this._FILE_LOCKS.set(instance._cacheKey, true);
+
+    //     try {
+    //         const nowObj = new Date();
+
+    //         if (newFile === true) {
+    //             console.log("🗑️ [Explicit New] Deleting old file/cache before processing...");
+    //             await this.invalidate(tableRef, expiryTime); 
+    //         }
+
+    //         let data = await instance._loadFromMemoryOrFile();
+
+    //         // 🚨 RECOVERY
+    //         if (!data && instance.hasValidViewName) {
+    //             console.log(`📂 [Recovery] File missing for ${instance.tableName}, fetching from DB...`);
+    //             try {
+    //                 const freshData = await instance._fetchFullFromDb();
+    //                 if (freshData.length > 0) {
+    //                     data = instance._createCacheStructure(freshData);
+    //                     console.log(`✅ [Recovery] Restored ${freshData.length} records from DB.`);
+    //                     if (newFile === null) newFile = false; 
+    //                 }
+    //             } catch (e) {
+    //                 console.warn("⚠️ [Recovery Failed] Could not fetch from DB:", e.message);
+    //             }
+    //         }
+
+    //         // Fallback: Create empty structure
+    //         if (!data) {
+    //             console.log("📝 [Init] Creating new empty data structure");
+    //             data = instance._createCacheStructure([]); 
+    //             if (newFile === null) newFile = true;
+    //         }
+
+    //         // 🔍 AUTO-DETECT MODE
+    //         if (newFile == null) {
+    //             if (instance._isExpired(data)) {
+    //                 console.log("🔄 [Auto] Data expired -> REFRESH mode");
+    //                 newFile = true; 
+    //             } 
+    //             else if (instance.hasValidViewName) {
+    //                 const dbCount = await instance._getDbCount();
+    //                 const localLength = MetadataManager._getDataLength(data.data);
+    //                 if (dbCount !== null && dbCount !== localLength) {
+    //                     console.log(`🔄 [Auto] Count mismatch -> REFRESH mode`);
+    //                     newFile = true;
+    //                 } else {
+    //                     newFile = false; 
+    //                 }
+    //             } 
+    //             else if (keyName === null && keyValue === null) {
+    //                 newFile = true;
+    //             } 
+    //             else {
+    //                 newFile = false;
+    //             }
+    //         }
+
+    //         // 💾 EXECUTE SAVE LOGIC
+    //         if (newFile === true) {
+    //             console.log("🆕 [Mode] Overwrite / Refresh");
+
+    //             if (dataEntry === null) {
+    //                 if (instance.hasValidViewName) {
+    //                     const freshData = await instance._fetchFullFromDb();
+    //                     data.data = freshData;
+    //                 } else {
+    //                     data.data = [];
+    //                 }
+    //             } else {
+    //                 data.data = dataEntry;
+    //             }
+
+    //             data.db_count_check_counter = instance.hasValidViewName ? 
+    //                 CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER : null;
+    //             // Update conditions on refresh
+    //             data.conditions = instance.conditions;
+    //         } 
+    //         else {
+    //             console.log("🔄 [Mode] Upsert (Modify specific entry)");
+    //             if (dataEntry !== null) {
+    //                 if (!Array.isArray(data.data)) data.data = [];
+    //                 if (keyName && keyValue !== null) {
+    //                     const idx = data.data.findIndex(i => i && String(i[keyName]) === String(keyValue));
+    //                     if (idx >= 0) {
+    //                         data.data[idx] = dataEntry; 
+    //                     } else {
+    //                         data.data.push(dataEntry); 
+    //                     }
+    //                 } else {
+    //                     data.data.push(dataEntry);
+    //                 }
+    //             }
+    //         }
+
+    //         // 🏁 FINALIZE
+    //         data.modified_at = nowObj.toISOString();
+    //         data.updated_at = nowObj.toISOString();
+
+    //         if (newFile === true || instance._isExpired(data)) {
+    //             data.expires_at = new Date(nowObj.getTime() + instance.ttlMs).toISOString();
+    //         }
+
+    //         await instance._saveLazy(data, true);
+    //         try { 
+    //             _indexManager.invalidate(instance.tableName);
+    //             this._GROUP_INDEXES.clear();
+    //         } catch (e) {}
+
+    //         return data;
+
+    //     } catch (error) {
+    //         console.error("❌ [Critical Failure] save()", error);
+    //         throw error;
+    //     } finally {
+    //         this._FILE_LOCKS.delete(instance._cacheKey);
+    //     }
+    // }
+
+/**
+ * Smart Save Method - Final Triple-Checked Version
+ * Integrates: Recovery, Locking, Hydration, and Safe Mode Detection
+ */
+static async save(tableRef, dataEntry = null, keyName = null, keyValue = null, newFile = null, expiryTime = "15d") {
+    // 1. INPUT VALIDATION & LOGGING (Restored from your original)
+    const refLog = typeof tableRef === 'string' ? tableRef : JSON.stringify(tableRef);
+    console.log(`🟢 [Start] save() called for: ${refLog}`);
+
+    if (!tableRef || (typeof tableRef !== 'string' && typeof tableRef !== 'object')) {
+        throw new Error('Invalid tableRef: must be a string or object');
+    }
+
+    const instance = this._getInstance(tableRef, expiryTime);
+
+    // 2. CONCURRENCY LOCKING (Restored from your original)
+    const lockTimeout = 5000;
+    const lockStartTime = Date.now();
+    while (this._FILE_LOCKS.get(instance._cacheKey)) {
+        if (Date.now() - lockStartTime > lockTimeout) break;
+        await new Promise(r => setTimeout(r, 50));
+    }
+    this._FILE_LOCKS.set(instance._cacheKey, true);
+
+    try {
+        const nowObj = new Date();
+
+        // 3. EXPLICIT INVALIDATION (Restored from your original)
+        if (newFile === true) {
+            console.log("🗑️ [Explicit New] Deleting old file/cache before processing...");
+            await this.invalidate(tableRef, expiryTime); 
         }
 
-        const instance = this._getInstance(tableRef, expiryTime);
+        let data = await instance._loadFromMemoryOrFile();
 
-        // Manage Locks
-        const lockTimeout = 5000;
-        const lockStartTime = Date.now();
-        while (this._FILE_LOCKS.get(instance._cacheKey)) {
-            if (Date.now() - lockStartTime > lockTimeout) break;
-            await new Promise(r => setTimeout(r, 50));
-        }
-        this._FILE_LOCKS.set(instance._cacheKey, true);
-
-        try {
-            const nowObj = new Date();
-
-            if (newFile === true) {
-                console.log("🗑️ [Explicit New] Deleting old file/cache before processing...");
-                await this.invalidate(tableRef, expiryTime); 
-            }
-
-            let data = await instance._loadFromMemoryOrFile();
-
-            // 🚨 RECOVERY
-            if (!data && instance.hasValidViewName) {
-                console.log(`📂 [Recovery] File missing for ${instance.tableName}, fetching from DB...`);
-                try {
-                    const freshData = await instance._fetchFullFromDb();
-                    if (freshData.length > 0) {
-                        data = instance._createCacheStructure(freshData);
-                        console.log(`✅ [Recovery] Restored ${freshData.length} records from DB.`);
-                        if (newFile === null) newFile = false; 
-                    }
-                } catch (e) {
-                    console.warn("⚠️ [Recovery Failed] Could not fetch from DB:", e.message);
+        // 4. HYDRATION / RECOVERY (Your robust original logic)
+        if (!data && instance.hasValidViewName) {
+            console.log(`📂 [Recovery] File missing for ${instance.tableName}, fetching from DB...`);
+            try {
+                const freshData = await instance._fetchFullFromDb();
+                if (freshData.length > 0) {
+                    data = instance._createCacheStructure(freshData);
+                    console.log(`✅ [Recovery] Restored ${freshData.length} records from DB.`);
+                    // After recovery, we switch to UPSERT mode unless newFile was explicitly true
+                    if (newFile === null) newFile = false; 
                 }
+            } catch (e) {
+                console.warn("⚠️ [Recovery Failed] Could not fetch from DB:", e.message);
             }
+        }
 
-            // Fallback: Create empty structure
-            if (!data) {
-                console.log("📝 [Init] Creating new empty data structure");
-                data = instance._createCacheStructure([]); 
-                if (newFile === null) newFile = true;
-            }
+        // Fallback: Create empty structure
+        if (!data) {
+            console.log("📝 [Init] Creating new empty data structure");
+            data = instance._createCacheStructure([]); 
+            if (newFile === null) newFile = true;
+        }
 
-            // 🔍 AUTO-DETECT MODE
-            if (newFile === null) {
-                if (instance._isExpired(data)) {
-                    console.log("🔄 [Auto] Data expired -> REFRESH mode");
-                    newFile = true; 
-                } 
-                else if (instance.hasValidViewName) {
-                    const dbCount = await instance._getDbCount();
-                    const localLength = MetadataManager._getDataLength(data.data);
-                    if (dbCount !== null && dbCount !== localLength) {
-                        console.log(`🔄 [Auto] Count mismatch -> REFRESH mode`);
+        // 5. SMART AUTO-DETECT MODE (The Logic Fix)
+        if (newFile === null) {
+            if (instance._isExpired(data)) {
+                console.log("🔄 [Auto] Data expired -> REFRESH mode");
+                newFile = true; 
+            } 
+            else if (instance.hasValidViewName) {
+                const dbCount = await instance._getDbCount();
+                const localLength = MetadataManager._getDataLength(data.data);
+                
+                if (dbCount !== null && dbCount !== localLength) {
+                    console.log(`🔄 [Auto] Count mismatch (DB:${dbCount} vs Local:${localLength})`);
+                    
+                    // CRITICAL FIX: Only go to Refresh mode if we aren't trying to save a single new object.
+                    // If we have a single dataEntry, we Upsert it first, then let the counter trigger 
+                    // the full refresh on the next 'getAll' to avoid overwriting everything right now.
+                    if (dataEntry === null || Array.isArray(dataEntry)) {
                         newFile = true;
                     } else {
-                        newFile = false; 
-                    }
-                } 
-                else if (keyName === null && keyValue === null) {
-                    newFile = true;
-                } 
-                else {
-                    newFile = false;
-                }
-            }
-
-            // 💾 EXECUTE SAVE LOGIC
-            if (newFile === true) {
-                console.log("🆕 [Mode] Overwrite / Refresh");
-                
-                if (dataEntry === null) {
-                    if (instance.hasValidViewName) {
-                        const freshData = await instance._fetchFullFromDb();
-                        data.data = freshData;
-                    } else {
-                        data.data = [];
+                        console.log("👉 Single entry detected. Using Upsert to prevent data loss.");
+                        newFile = false;
                     }
                 } else {
-                    data.data = dataEntry;
+                    newFile = false; 
                 }
-                
-                data.db_count_check_counter = instance.hasValidViewName ? 
-                    CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER : null;
-                // Update conditions on refresh
-                data.conditions = instance.conditions;
+            } 
+            else if (keyName === null && keyValue === null) {
+                newFile = true;
             } 
             else {
-                console.log("🔄 [Mode] Upsert (Modify specific entry)");
-                if (dataEntry !== null) {
-                    if (!Array.isArray(data.data)) data.data = [];
-                    if (keyName && keyValue !== null) {
-                        const idx = data.data.findIndex(i => i && String(i[keyName]) === String(keyValue));
-                        if (idx >= 0) {
-                            data.data[idx] = dataEntry; 
-                        } else {
-                            data.data.push(dataEntry); 
-                        }
+                newFile = false;
+            }
+        }
+
+        // 6. EXECUTION LOGIC (Restored & Safeguarded)
+        if (newFile === true) {
+            console.log("🆕 [Mode] Overwrite / Full Refresh");
+            
+            if (dataEntry === null) {
+                if (instance.hasValidViewName) {
+                    data.data = await instance._fetchFullFromDb();
+                } else {
+                    data.data = [];
+                }
+            } else {
+                // If it's a single object, wrap it in array; if array, use it directly.
+                data.data = Array.isArray(dataEntry) ? dataEntry : [dataEntry];
+            }
+            
+            // Reset metadata for fresh start
+            data.db_count_check_counter = instance.hasValidViewName ? 
+                CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER : null;
+            data.conditions = instance.conditions;
+        } 
+        else {
+            console.log("🔄 [Mode] Upsert (Modify specific entry)");
+            if (dataEntry !== null) {
+                if (!Array.isArray(data.data)) data.data = [];
+                
+                if (keyName && keyValue !== null) {
+                    const idx = data.data.findIndex(i => i && String(i[keyName]) === String(keyValue));
+                    if (idx >= 0) {
+                        data.data[idx] = dataEntry; 
+                        console.log(`✅ Updated existing entry: ${keyValue}`);
                     } else {
-                        data.data.push(dataEntry);
+                        data.data.push(dataEntry); 
+                        console.log(`✅ Added new entry: ${keyValue}`);
                     }
+                } else {
+                    data.data.push(dataEntry);
                 }
             }
-
-            // 🏁 FINALIZE
-            data.modified_at = nowObj.toISOString();
-            data.updated_at = nowObj.toISOString();
-            
-            if (newFile === true || instance._isExpired(data)) {
-                data.expires_at = new Date(nowObj.getTime() + instance.ttlMs).toISOString();
-            }
-
-            await instance._saveLazy(data, true);
-            try { 
-                _indexManager.invalidate(instance.tableName);
-                this._GROUP_INDEXES.clear();
-            } catch (e) {}
-
-            return data;
-
-        } catch (error) {
-            console.error("❌ [Critical Failure] save()", error);
-            throw error;
-        } finally {
-            this._FILE_LOCKS.delete(instance._cacheKey);
         }
+
+        // 7. FINALIZE (Restored original behavior)
+        data.modified_at = nowObj.toISOString();
+        data.updated_at = nowObj.toISOString();
+        
+        if (newFile === true || instance._isExpired(data)) {
+            data.expires_at = new Date(nowObj.getTime() + instance.ttlMs).toISOString();
+        }
+
+        // Force reset the check counter so we don't hit the DB again immediately
+        if (instance.hasValidViewName) {
+            data.db_count_check_counter = CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER;
+        }
+
+        await instance._saveLazy(data, true);
+        
+        try { 
+            _indexManager.invalidate(instance.tableName);
+            this._GROUP_INDEXES.clear();
+        } catch (e) {}
+
+        return data;
+
+    } catch (error) {
+        console.error("❌ [Critical Failure] save()", error);
+        throw error;
+    } finally {
+        this._FILE_LOCKS.delete(instance._cacheKey);
     }
+}
 
     static async deleteEntry(tableRef, keyName, keyValue, expiryTime = "15d") {
         const instance = this._getInstance(tableRef, expiryTime);
@@ -823,7 +985,7 @@ export class OptimizedLocalJsonDB {
 
         const originalLen = data.data.length;
         data.data = data.data.filter(e => e && e[keyName] !== keyValue);
-        
+
         if (data.data.length !== originalLen) {
             const nowObj = new Date();
             data.modified_at = nowObj.toISOString();
@@ -848,20 +1010,20 @@ export class OptimizedLocalJsonDB {
         if (!result) {
             const all = await this.getAll(tableRef, expiryTime);
             if (Array.isArray(all) && all.length > 0) {
-                 _indexManager.buildIndex(instance.tableName, keyName, all);
-                 result = _indexManager.lookup(instance.tableName, keyName, keyValue);
+                _indexManager.buildIndex(instance.tableName, keyName, all);
+                result = _indexManager.lookup(instance.tableName, keyName, keyValue);
             }
         }
 
         if (!result && keyValue !== null && keyValue !== undefined) {
-             const stringKey = String(keyValue);
-             const numberKey = Number(keyValue);
-             if (typeof keyValue === 'number') {
-                 result = _indexManager.lookup(instance.tableName, keyName, stringKey);
-             }
-             else if (!isNaN(numberKey)) {
-                 result = _indexManager.lookup(instance.tableName, keyName, numberKey);
-             }
+            const stringKey = String(keyValue);
+            const numberKey = Number(keyValue);
+            if (typeof keyValue === 'number') {
+                result = _indexManager.lookup(instance.tableName, keyName, stringKey);
+            }
+            else if (!isNaN(numberKey)) {
+                result = _indexManager.lookup(instance.tableName, keyName, numberKey);
+            }
         }
 
         if (result && filterField !== null) {
@@ -875,9 +1037,9 @@ export class OptimizedLocalJsonDB {
     static async getAllByKey(tableRef, keyName, keyValue, expiryTime = "15d") {
         const instance = this._getInstance(tableRef, expiryTime);
         const indexKey = `${instance.tableName}:${keyName}`;
-        
+
         let groupIndex = this._GROUP_INDEXES.get(indexKey);
-        
+
         if (!groupIndex) {
             const allData = await this.getAll(tableRef, expiryTime);
             if (!Array.isArray(allData)) return [];
@@ -885,7 +1047,7 @@ export class OptimizedLocalJsonDB {
             groupIndex = new Map();
             for (const item of allData) {
                 let val = item[keyName];
-                if (val === undefined || val === null) continue; 
+                if (val === undefined || val === null) continue;
                 const stringKey = String(val);
                 if (!groupIndex.has(stringKey)) groupIndex.set(stringKey, []);
                 groupIndex.get(stringKey).push(item);
@@ -935,7 +1097,7 @@ export class OptimizedLocalJsonDB {
                 in_memory: inMemory,
                 has_view: instance.hasValidViewName,
                 db_count_check_counter: cacheData?.db_count_check_counter || null,
-                expires_at: cacheData?.expires_at || null, 
+                expires_at: cacheData?.expires_at || null,
                 ttl_readable: cacheData?.ttl_ms ? TimeParser.msToReadable(cacheData.ttl_ms) : null,
                 stats: stats
             };
@@ -961,7 +1123,7 @@ export class OptimizedLocalJsonDB {
             }
             console.log('🧹 CLEARED ALL CACHE AND FILES');
             return true;
-        } catch(error) {
+        } catch (error) {
             console.error('❌ Failed to clear all cache:', error.message);
             return false;
         }
@@ -971,14 +1133,14 @@ export class OptimizedLocalJsonDB {
         const instance = this._getInstance(tableRef, expiryTime);
         _memoryCache.invalidate(instance._cacheKey);
         _indexManager.invalidate(instance.tableName);
-        this._GROUP_INDEXES.clear(); 
+        this._GROUP_INDEXES.clear();
         try {
             if (fsSync.existsSync(instance.filePath)) await fs.unlink(instance.filePath);
             const meta = MetadataManager._getMetadataPath(instance.filePath);
             if (fsSync.existsSync(meta)) await fs.unlink(meta);
             console.log(`🗑️ Deleted file: ${instance.tableName}`);
             return true;
-        } catch(e) {
+        } catch (e) {
             console.error(`Failed to invalidate ${instance.tableName}:`, e.message);
             return false;
         }
@@ -1013,7 +1175,7 @@ export class OptimizedLocalJsonDB {
                                     ttl_readable: data.ttl_ms ? TimeParser.msToReadable(data.ttl_ms) : null,
                                     record_count: MetadataManager._getDataLength(data.data)
                                 });
-                            } catch (e) {}
+                            } catch (e) { }
                         }
                     }
                 }
