@@ -111,6 +111,7 @@ const ngoTypeController = {
             const localData = await LocalJsonHelper.getAll(TABLE_VIEW_FOLDER_MAP.ngo_type,"30d");
             if(localData!==null){
                 if(localData.length!==0){
+                console.log("localData",localData)
                   return res
                   .status(responseCode.OK)
                   .send(
