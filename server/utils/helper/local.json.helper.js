@@ -551,10 +551,10 @@ export class OptimizedLocalJsonDB {
 
         // 🔍 DEBUG: Check what was loaded from file
         if (data) {
-            console.log('📂 Loaded from cache - Full structure check:');
-            console.log('   - data.data type:', Array.isArray(data.data) ? 'Array' : typeof data.data);
-            console.log('   - data.data length:', Array.isArray(data.data) ? data.data.length : 'N/A');
-            console.log('   - data keys:', Object.keys(data));
+            // console.log('📂 Loaded from cache - Full structure check:');
+            // console.log('   - data.data type:', Array.isArray(data.data) ? 'Array' : typeof data.data);
+            // console.log('   - data.data length:', Array.isArray(data.data) ? data.data.length : 'N/A');
+            // console.log('   - data keys:', Object.keys(data));
             if (Array.isArray(data.data)) {
                 console.log('   - First 3 items:', data.data.slice(0, 3));
             } else {
@@ -566,20 +566,20 @@ export class OptimizedLocalJsonDB {
             if (!instance.hasValidViewName) return [];
             const freshData = await instance._fetchFullFromDb();
 
-            // 🔍 DEBUG: Check DB fetch result
-            console.log('🗄️ Fresh DB fetch:');
-            console.log('   - Type:', Array.isArray(freshData) ? 'Array' : typeof freshData);
-            console.log('   - Length:', freshData.length);
-            console.log('   - First item:', freshData[0]);
+            // // 🔍 DEBUG: Check DB fetch result
+            // console.log('🗄️ Fresh DB fetch:');
+            // console.log('   - Type:', Array.isArray(freshData) ? 'Array' : typeof freshData);
+            // console.log('   - Length:', freshData.length);
+            // console.log('   - First item:', freshData[0]);
 
             if (freshData.length === 0) return [];
 
             data = instance._createCacheStructure(freshData);
 
-            // 🔍 DEBUG: Check structure after creation
-            console.log('📦 After _createCacheStructure:');
-            console.log('   - data.data type:', Array.isArray(data.data) ? 'Array' : typeof data.data);
-            console.log('   - data.data length:', Array.isArray(data.data) ? data.data.length : 'N/A');
+            // // 🔍 DEBUG: Check structure after creation
+            // console.log('📦 After _createCacheStructure:');
+            // console.log('   - data.data type:', Array.isArray(data.data) ? 'Array' : typeof data.data);
+            // console.log('   - data.data length:', Array.isArray(data.data) ? data.data.length : 'N/A');
 
             await instance._saveLazy(data, true);
             _indexManager.buildIndex(instance.tableName, 'id', freshData);
@@ -597,15 +597,15 @@ export class OptimizedLocalJsonDB {
             });
 
             const freshData = await instance._fetchFullFromDb();
-            // 🔍 DEBUG: Check refresh data
-            console.log('🔄 Refresh DB fetch:');
-            console.log('   - Length:', freshData.length);
+            // // 🔍 DEBUG: Check refresh data
+            // console.log('🔄 Refresh DB fetch:');
+            // console.log('   - Length:', freshData.length);
             if (freshData.length > 0) {
                 data.data = freshData;
 
-                // 🔍 DEBUG: Verify assignment
-                console.log('   - After assignment, data.data type:', Array.isArray(data.data) ? 'Array' : typeof data.data);
-                console.log('   - After assignment, data.data length:', Array.isArray(data.data) ? data.data.length : 'N/A');
+                // // 🔍 DEBUG: Verify assignment
+                // console.log('   - After assignment, data.data type:', Array.isArray(data.data) ? 'Array' : typeof data.data);
+                // console.log('   - After assignment, data.data length:', Array.isArray(data.data) ? data.data.length : 'N/A');
 
 
                 const nowObj = new Date();
@@ -642,26 +642,26 @@ export class OptimizedLocalJsonDB {
         const dataContent = data.data || null;
 
 
-        // 🔍 DEBUG: Check data structure
-        console.log('📊 Data type:', Array.isArray(dataContent) ? 'Array' : typeof dataContent);
-        console.log('📊 Data length:', Array.isArray(dataContent) ? dataContent.length : 'N/A');
-        console.log('📊 First item:', Array.isArray(dataContent) ? dataContent[0] : dataContent);
+        // // 🔍 DEBUG: Check data structure
+        // console.log('📊 Data type:', Array.isArray(dataContent) ? 'Array' : typeof dataContent);
+        // console.log('📊 Data length:', Array.isArray(dataContent) ? dataContent.length : 'N/A');
+        // console.log('📊 First item:', Array.isArray(dataContent) ? dataContent[0] : dataContent);
 
 
         // 🔍 CHECK ACTUAL FILE CONTENT
-        try {
-            const fileContent = await fs.readFile(instance.filePath, 'utf-8');
-            const parsedFile = JSON.parse(fileContent);
-            console.log('📄 Raw File Check:');
-            console.log('   - File data type:', Array.isArray(parsedFile.data) ? 'Array' : typeof parsedFile.data);
-            console.log('   - File data length:', Array.isArray(parsedFile.data) ? parsedFile.data.length : 'N/A');
-            if (Array.isArray(parsedFile.data)) {
-                console.log('   - Total items in file:', parsedFile.data.length);
-                console.log('   - First 2 items:', parsedFile.data.slice(0, 2));
-            }
-        } catch (e) {
-            console.log('   - Could not read file:', e.message);
-        }
+        // try {
+        //     const fileContent = await fs.readFile(instance.filePath, 'utf-8');
+        //     const parsedFile = JSON.parse(fileContent);
+        //     console.log('📄 Raw File Check:');
+        //     console.log('   - File data type:', Array.isArray(parsedFile.data) ? 'Array' : typeof parsedFile.data);
+        //     console.log('   - File data length:', Array.isArray(parsedFile.data) ? parsedFile.data.length : 'N/A');
+        //     if (Array.isArray(parsedFile.data)) {
+        //         console.log('   - Total items in file:', parsedFile.data.length);
+        //         console.log('   - First 2 items:', parsedFile.data.slice(0, 2));
+        //     }
+        // } catch (e) {
+        //     console.log('   - Could not read file:', e.message);
+        // }
 
         if (!dataContent) return [];
 
