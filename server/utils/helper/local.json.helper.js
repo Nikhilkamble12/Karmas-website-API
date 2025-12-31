@@ -816,167 +816,167 @@ export class OptimizedLocalJsonDB {
     //     }
     // }
 
-/**
- * Smart Save Method - Final Triple-Checked Version
- * Integrates: Recovery, Locking, Hydration, and Safe Mode Detection
- */
-static async save(tableRef, dataEntry = null, keyName = null, keyValue = null, newFile = null, expiryTime = "15d") {
-    // 1. INPUT VALIDATION & LOGGING (Restored from your original)
-    const refLog = typeof tableRef === 'string' ? tableRef : JSON.stringify(tableRef);
-    console.log(`🟢 [Start] save() called for: ${refLog}`);
+    /**
+     * Smart Save Method - Final Triple-Checked Version
+     * Integrates: Recovery, Locking, Hydration, and Safe Mode Detection
+     */
+    static async save(tableRef, dataEntry = null, keyName = null, keyValue = null, newFile = null, expiryTime = "15d") {
+        // 1. INPUT VALIDATION & LOGGING (Restored from your original)
+        const refLog = typeof tableRef === 'string' ? tableRef : JSON.stringify(tableRef);
+        console.log(`🟢 [Start] save() called for: ${refLog}`);
 
-    if (!tableRef || (typeof tableRef !== 'string' && typeof tableRef !== 'object')) {
-        throw new Error('Invalid tableRef: must be a string or object');
-    }
-
-    const instance = this._getInstance(tableRef, expiryTime);
-
-    // 2. CONCURRENCY LOCKING (Restored from your original)
-    const lockTimeout = 5000;
-    const lockStartTime = Date.now();
-    while (this._FILE_LOCKS.get(instance._cacheKey)) {
-        if (Date.now() - lockStartTime > lockTimeout) break;
-        await new Promise(r => setTimeout(r, 50));
-    }
-    this._FILE_LOCKS.set(instance._cacheKey, true);
-
-    try {
-        const nowObj = new Date();
-
-        // 3. EXPLICIT INVALIDATION (Restored from your original)
-        if (newFile === true) {
-            console.log("🗑️ [Explicit New] Deleting old file/cache before processing...");
-            await this.invalidate(tableRef, expiryTime); 
+        if (!tableRef || (typeof tableRef !== 'string' && typeof tableRef !== 'object')) {
+            throw new Error('Invalid tableRef: must be a string or object');
         }
 
-        let data = await instance._loadFromMemoryOrFile();
+        const instance = this._getInstance(tableRef, expiryTime);
 
-        // 4. HYDRATION / RECOVERY (Your robust original logic)
-        if (!data && instance.hasValidViewName) {
-            console.log(`📂 [Recovery] File missing for ${instance.tableName}, fetching from DB...`);
-            try {
-                const freshData = await instance._fetchFullFromDb();
-                if (freshData.length > 0) {
-                    data = instance._createCacheStructure(freshData);
-                    console.log(`✅ [Recovery] Restored ${freshData.length} records from DB.`);
-                    // After recovery, we switch to UPSERT mode unless newFile was explicitly true
-                    if (newFile === null) newFile = false; 
-                }
-            } catch (e) {
-                console.warn("⚠️ [Recovery Failed] Could not fetch from DB:", e.message);
+        // 2. CONCURRENCY LOCKING (Restored from your original)
+        const lockTimeout = 5000;
+        const lockStartTime = Date.now();
+        while (this._FILE_LOCKS.get(instance._cacheKey)) {
+            if (Date.now() - lockStartTime > lockTimeout) break;
+            await new Promise(r => setTimeout(r, 50));
+        }
+        this._FILE_LOCKS.set(instance._cacheKey, true);
+
+        try {
+            const nowObj = new Date();
+
+            // 3. EXPLICIT INVALIDATION (Restored from your original)
+            if (newFile === true) {
+                console.log("🗑️ [Explicit New] Deleting old file/cache before processing...");
+                await this.invalidate(tableRef, expiryTime); 
             }
-        }
 
-        // Fallback: Create empty structure
-        if (!data) {
-            console.log("📝 [Init] Creating new empty data structure");
-            data = instance._createCacheStructure([]); 
-            if (newFile === null) newFile = true;
-        }
+            let data = await instance._loadFromMemoryOrFile();
 
-        // 5. SMART AUTO-DETECT MODE (The Logic Fix)
-        if (newFile === null) {
-            if (instance._isExpired(data)) {
-                console.log("🔄 [Auto] Data expired -> REFRESH mode");
-                newFile = true; 
-            } 
-            else if (instance.hasValidViewName) {
-                const dbCount = await instance._getDbCount();
-                const localLength = MetadataManager._getDataLength(data.data);
-                
-                if (dbCount !== null && dbCount !== localLength) {
-                    console.log(`🔄 [Auto] Count mismatch (DB:${dbCount} vs Local:${localLength})`);
+            // 4. HYDRATION / RECOVERY (Your robust original logic)
+            if (!data && instance.hasValidViewName) {
+                console.log(`📂 [Recovery] File missing for ${instance.tableName}, fetching from DB...`);
+                try {
+                    const freshData = await instance._fetchFullFromDb();
+                    if (freshData.length > 0) {
+                        data = instance._createCacheStructure(freshData);
+                        console.log(`✅ [Recovery] Restored ${freshData.length} records from DB.`);
+                        // After recovery, we switch to UPSERT mode unless newFile was explicitly true
+                        if (newFile === null) newFile = false; 
+                    }
+                } catch (e) {
+                    console.warn("⚠️ [Recovery Failed] Could not fetch from DB:", e.message);
+                }
+            }
+
+            // Fallback: Create empty structure
+            if (!data) {
+                console.log("📝 [Init] Creating new empty data structure");
+                data = instance._createCacheStructure([]); 
+                if (newFile === null) newFile = true;
+            }
+
+            // 5. SMART AUTO-DETECT MODE (The Logic Fix)
+            if (newFile === null) {
+                if (instance._isExpired(data)) {
+                    console.log("🔄 [Auto] Data expired -> REFRESH mode");
+                    newFile = true; 
+                } 
+                else if (instance.hasValidViewName) {
+                    const dbCount = await instance._getDbCount();
+                    const localLength = MetadataManager._getDataLength(data.data);
                     
-                    // CRITICAL FIX: Only go to Refresh mode if we aren't trying to save a single new object.
-                    // If we have a single dataEntry, we Upsert it first, then let the counter trigger 
-                    // the full refresh on the next 'getAll' to avoid overwriting everything right now.
-                    if (dataEntry === null || Array.isArray(dataEntry)) {
-                        newFile = true;
+                    if (dbCount !== null && dbCount !== localLength) {
+                        console.log(`🔄 [Auto] Count mismatch (DB:${dbCount} vs Local:${localLength})`);
+                        
+                        // CRITICAL FIX: Only go to Refresh mode if we aren't trying to save a single new object.
+                        // If we have a single dataEntry, we Upsert it first, then let the counter trigger 
+                        // the full refresh on the next 'getAll' to avoid overwriting everything right now.
+                        if (dataEntry === null || Array.isArray(dataEntry)) {
+                            newFile = true;
+                        } else {
+                            console.log("👉 Single entry detected. Using Upsert to prevent data loss.");
+                            newFile = false;
+                        }
                     } else {
-                        console.log("👉 Single entry detected. Using Upsert to prevent data loss.");
-                        newFile = false;
+                        newFile = false; 
+                    }
+                } 
+                else if (keyName === null && keyValue === null) {
+                    newFile = true;
+                } 
+                else {
+                    newFile = false;
+                }
+            }
+
+            // 6. EXECUTION LOGIC (Restored & Safeguarded)
+            if (newFile === true) {
+                console.log("🆕 [Mode] Overwrite / Full Refresh");
+                
+                if (dataEntry === null) {
+                    if (instance.hasValidViewName) {
+                        data.data = await instance._fetchFullFromDb();
+                    } else {
+                        data.data = [];
                     }
                 } else {
-                    newFile = false; 
+                    // If it's a single object, wrap it in array; if array, use it directly.
+                    data.data = Array.isArray(dataEntry) ? dataEntry : [dataEntry];
                 }
-            } 
-            else if (keyName === null && keyValue === null) {
-                newFile = true;
+                
+                // Reset metadata for fresh start
+                data.db_count_check_counter = instance.hasValidViewName ? 
+                    CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER : null;
+                data.conditions = instance.conditions;
             } 
             else {
-                newFile = false;
-            }
-        }
-
-        // 6. EXECUTION LOGIC (Restored & Safeguarded)
-        if (newFile === true) {
-            console.log("🆕 [Mode] Overwrite / Full Refresh");
-            
-            if (dataEntry === null) {
-                if (instance.hasValidViewName) {
-                    data.data = await instance._fetchFullFromDb();
-                } else {
-                    data.data = [];
-                }
-            } else {
-                // If it's a single object, wrap it in array; if array, use it directly.
-                data.data = Array.isArray(dataEntry) ? dataEntry : [dataEntry];
-            }
-            
-            // Reset metadata for fresh start
-            data.db_count_check_counter = instance.hasValidViewName ? 
-                CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER : null;
-            data.conditions = instance.conditions;
-        } 
-        else {
-            console.log("🔄 [Mode] Upsert (Modify specific entry)");
-            if (dataEntry !== null) {
-                if (!Array.isArray(data.data)) data.data = [];
-                
-                if (keyName && keyValue !== null) {
-                    const idx = data.data.findIndex(i => i && String(i[keyName]) === String(keyValue));
-                    if (idx >= 0) {
-                        data.data[idx] = dataEntry; 
-                        console.log(`✅ Updated existing entry: ${keyValue}`);
+                console.log("🔄 [Mode] Upsert (Modify specific entry)");
+                if (dataEntry !== null) {
+                    if (!Array.isArray(data.data)) data.data = [];
+                    
+                    if (keyName && keyValue !== null) {
+                        const idx = data.data.findIndex(i => i && String(i[keyName]) === String(keyValue));
+                        if (idx >= 0) {
+                            data.data[idx] = dataEntry; 
+                            console.log(`✅ Updated existing entry: ${keyValue}`);
+                        } else {
+                            data.data.push(dataEntry); 
+                            console.log(`✅ Added new entry: ${keyValue}`);
+                        }
                     } else {
-                        data.data.push(dataEntry); 
-                        console.log(`✅ Added new entry: ${keyValue}`);
+                        data.data.push(dataEntry);
                     }
-                } else {
-                    data.data.push(dataEntry);
                 }
             }
+
+            // 7. FINALIZE (Restored original behavior)
+            data.modified_at = nowObj.toISOString();
+            data.updated_at = nowObj.toISOString();
+            
+            if (newFile === true || instance._isExpired(data)) {
+                data.expires_at = new Date(nowObj.getTime() + instance.ttlMs).toISOString();
+            }
+
+            // Force reset the check counter so we don't hit the DB again immediately
+            if (instance.hasValidViewName) {
+                data.db_count_check_counter = CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER;
+            }
+
+            await instance._saveLazy(data, true);
+            
+            try { 
+                _indexManager.invalidate(instance.tableName);
+                this._GROUP_INDEXES.clear();
+            } catch (e) {}
+
+            return data;
+
+        } catch (error) {
+            console.error("❌ [Critical Failure] save()", error);
+            throw error;
+        } finally {
+            this._FILE_LOCKS.delete(instance._cacheKey);
         }
-
-        // 7. FINALIZE (Restored original behavior)
-        data.modified_at = nowObj.toISOString();
-        data.updated_at = nowObj.toISOString();
-        
-        if (newFile === true || instance._isExpired(data)) {
-            data.expires_at = new Date(nowObj.getTime() + instance.ttlMs).toISOString();
-        }
-
-        // Force reset the check counter so we don't hit the DB again immediately
-        if (instance.hasValidViewName) {
-            data.db_count_check_counter = CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER;
-        }
-
-        await instance._saveLazy(data, true);
-        
-        try { 
-            _indexManager.invalidate(instance.tableName);
-            this._GROUP_INDEXES.clear();
-        } catch (e) {}
-
-        return data;
-
-    } catch (error) {
-        console.error("❌ [Critical Failure] save()", error);
-        throw error;
-    } finally {
-        this._FILE_LOCKS.delete(instance._cacheKey);
     }
-}
 
     static async deleteEntry(tableRef, keyName, keyValue, expiryTime = "15d") {
         const instance = this._getInstance(tableRef, expiryTime);
