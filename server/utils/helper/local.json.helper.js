@@ -978,24 +978,58 @@ export class OptimizedLocalJsonDB {
         }
     }
 
-    static async deleteEntry(tableRef, keyName, keyValue, expiryTime = "15d") {
-        const instance = this._getInstance(tableRef, expiryTime);
-        const data = await instance._loadFromMemoryOrFile();
-        if (!data || !Array.isArray(data.data)) return false;
+static async deleteEntry(tableRef, keyName, keyValue, expiryTime = "15d") {
+    const instance = this._getInstance(tableRef, expiryTime);
+    
+    // 1. Load Data (Hydrate from DB if missing so we can delete from a full set)
+    let data = await instance._loadFromMemoryOrFile();
+    
+    if (!data && instance.hasValidViewName) {
+        console.log(`📂 [Delete Recovery] File missing for ${instance.tableName}, hydrating before delete...`);
+        const freshData = await instance._fetchFullFromDb();
+        data = instance._createCacheStructure(freshData);
+    }
 
-        const originalLen = data.data.length;
-        data.data = data.data.filter(e => e && e[keyName] !== keyValue);
-
-        if (data.data.length !== originalLen) {
-            const nowObj = new Date();
-            data.modified_at = nowObj.toISOString();
-            data.updated_at = nowObj.toISOString();
-            await instance._saveLazy(data, true);
-            _indexManager.invalidate(instance.tableName);
-            return true;
-        }
+    if (!data || !Array.isArray(data.data)) {
+        console.warn(`⚠️ [Delete] No data found to delete from for ${instance.tableName}`);
         return false;
     }
+
+    const originalLen = data.data.length;
+    
+    // 2. Normalize Comparison (Fixes the String vs Number issue)
+    const targetValue = String(keyValue);
+    data.data = data.data.filter(e => {
+        if (!e || e[keyName] === undefined) return true;
+        return String(e[keyName]) !== targetValue;
+    });
+
+    // 3. Save if changed
+    if (data.data.length !== originalLen) {
+        console.log(`✅ [Delete] Removed key ${keyValue} from ${instance.tableName}. New count: ${data.data.length}`);
+        
+        const nowObj = new Date();
+        data.modified_at = nowObj.toISOString();
+        data.updated_at = nowObj.toISOString();
+        data.data_length = data.data.length; // Update metadata length
+
+        // Reset check counter so we don't immediately trigger a re-fetch
+        if (instance.hasValidViewName) {
+            data.db_count_check_counter = CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER;
+        }
+
+        await instance._saveLazy(data, true);
+        
+        // Clear indexes
+        _indexManager.invalidate(instance.tableName);
+        this._GROUP_INDEXES.clear();
+        
+        return true;
+    }
+
+    console.log(`ℹ️ [Delete] Key ${keyValue} not found in ${instance.tableName}`);
+    return false;
+}
 
     static _filterList(data, field, value) {
         if (!Array.isArray(data)) return [];
