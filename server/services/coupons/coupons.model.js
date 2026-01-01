@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize";
-import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants";
+import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 
 const CouponsModel = (sequelize) => {
   return sequelize.define(
