@@ -25,7 +25,7 @@ const GiftMasterDAL = {
     // Method to retrieve all records by view
     getAllDataByView: async () => {
         try {
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.GIFT_MASTER_FIELDS} where is_active = 1`, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.GIFT_MASTER_FIELDS} where is_active = 1 order by gift_score_required ASC`, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
