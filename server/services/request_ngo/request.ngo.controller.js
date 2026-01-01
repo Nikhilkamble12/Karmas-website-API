@@ -327,7 +327,7 @@ const RequestNgoController = {
                         }
                         
                         const getTokenByRole = await UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN)
-                        const allToken =[...getAllUserToken,...getTokenByRole]
+                        const allToken = [...getAllUserToken,...getTokenByRole]
                         const getRequestMedia = await RequestMediaService.getDataByRequestAndSequence(getOlderData.RequestId,1)
                         const notification_template = {created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId}
                         await sendTemplateNotification({templateKey:"Request-Ngo", templateData:template, userIds:allToken, metaData:{...notification_template,request_media:getRequestMedia[0].media_url ?? null}})
