@@ -996,9 +996,9 @@ deleteData: async (req, res) => {
             }
 
             // 7️⃣ Handle business logic based on acceptance/rejection
-            if (is_accepted === true) {
+            if (is_accepted == true) {
                 // Only increment counts if the follow wasn't already accepted
-                if (getData.is_following === false) {
+                if (getData.is_following == false) {
                     total_following_count += 1;
                     total_follower_count += 1;
 
