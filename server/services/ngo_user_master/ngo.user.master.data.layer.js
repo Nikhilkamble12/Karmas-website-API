@@ -73,7 +73,7 @@ const NgoUserMasterDAL = {
         ` ${ViewFieldTableVise.NGO_USER_MASTER_FIELDS} where user_id  = ${user_id} `,
         { type: db.Sequelize.QueryTypes.SELECT }
       );
-      return getDataById ?? [];  // Return the retrieved data
+      return getDataById[0] ?? [];  // Return the retrieved data
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
