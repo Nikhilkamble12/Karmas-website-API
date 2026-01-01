@@ -101,7 +101,7 @@ const CouponsController = {
       }
       const getDataById = await CouponsService.getServiceById(id)
       //console.log("getDataById", getDataById)
-        if(getDataById.status_id === 18){
+        if(getDataById.status_id === STATUS_MASTER.COUPON_REDEEMED){
           const fetchUser = await UserActivtyService.getDataByUserId(getDataById.user_id)
           const getCountOfTotalCupon = await CouponsService.getCouponsByUserId(getDataById.user_id)
           if(getCountOfTotalCupon>=fetchUser){
@@ -327,7 +327,6 @@ const CouponsController = {
       for (let i = 0; i < data.length; i++) {
         const isUpdate = !!data[i].coupon_id;
         await addMetaDataWhileCreateUpdate(data[i], req, res, isUpdate);
-    
       }
       // Call service to bulk create or update
       const bulkCreateOrUpdate = await CouponsService.bulkCreateOrUpdateService(data);
