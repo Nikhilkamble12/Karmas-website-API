@@ -556,9 +556,9 @@ export class OptimizedLocalJsonDB {
             // console.log('   - data.data length:', Array.isArray(data.data) ? data.data.length : 'N/A');
             // console.log('   - data keys:', Object.keys(data));
             if (Array.isArray(data.data)) {
-                console.log('   - First 3 items:', data.data.slice(0, 3));
+                // console.log('   - First 3 items:', data.data.slice(0, 3));
             } else {
-                console.log('   - data.data value:', data.data);
+                // console.log('   - data.data value:', data.data);
             }
         }
 
