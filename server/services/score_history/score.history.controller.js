@@ -329,11 +329,11 @@ const ScoreHistoryController = {
             const localData = await LocalJsonHelper.getAll(jsonFileDetails,"60m");
             console.log("localData.length",localData.length)
             console.log("localData",localData)
-            const cachedData = localData
+            const cachedData = localData[0] ?? []
             const getUserrank = await ScoreHistoryService.getUserRankByUserId(user_id)
             if (cachedData && cachedData.length!==0) {
-                cachedData[0].topScorers.sort((a, b) => a.rank - b.rank);
-                cachedData[0].user_rank = getUserrank
+                cachedData.topScorers.sort((a, b) => a.rank - b.rank);
+                cachedData.user_rank = getUserrank
                 return res
                     .status(responseCode.OK)
                     .send(
