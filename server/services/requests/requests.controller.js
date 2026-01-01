@@ -306,6 +306,12 @@ deleteData: async (req, res) => {
                 commonResponse(responseCode.BAD_REQUEST, responseConst.CANNOT_DELETE_REQUEST_AT_THIS_STAGE, null, true)
             );
         }
+        // 3. Cannot Deleted After Assigning To Ngo
+        if (requestData.AssignedNGO !== null) {
+            return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(responseCode.BAD_REQUEST, responseConst.CANNOT_DELETE_REQUEST_AT_THIS_STAGE, null, true)
+            );
+        }
 
         // 3. Stage Validation (Cannot delete if Active/Approved/Rejected)
         // Assuming DRAFT is the only deletable stage
