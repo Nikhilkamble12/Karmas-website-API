@@ -2,6 +2,7 @@ import CouponsService from "./coupons.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import GiftMasterService from "../gift_master/gift.master.service.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
+import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 const {
   commonResponse,
   responseCode,
@@ -22,6 +23,8 @@ const CouponsController = {
       // data.created_by=1,
       // data.created_at = new Date()
       // Create the record using ORM
+      data.status_id = STATUS_MASTER.COUPON_UNUSED;
+
       const createData = await CouponsService.createService(data);
       if (createData) {
         // const getDataById = await CouponsService.getServiceById(createData.dataValues.coupon_id)
@@ -324,6 +327,7 @@ const CouponsController = {
       for (let i = 0; i < data.length; i++) {
         const isUpdate = !!data[i].coupon_id;
         await addMetaDataWhileCreateUpdate(data[i], req, res, isUpdate);
+    
       }
       // Call service to bulk create or update
       const bulkCreateOrUpdate = await CouponsService.bulkCreateOrUpdateService(data);
@@ -413,7 +417,7 @@ const CouponsController = {
       const assignCoupon = await CouponsService.assignCouponToUser(getNewCoupon.coupon_id,
           { 
             user_id: user_id, 
-            status_id: 17, 
+            status_id: STATUS_MASTER.COUPON_REDEEMED, 
             redeem_date: currentTime().date, 
             redeem_time: currentTime().time 
           }

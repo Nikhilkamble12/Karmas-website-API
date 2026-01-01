@@ -1,4 +1,5 @@
 import { DataTypes } from "sequelize";
+import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants";
 
 const CouponsModel = (sequelize) => {
   return sequelize.define(
@@ -24,6 +25,7 @@ const CouponsModel = (sequelize) => {
       status_id: {
         type: DataTypes.INTEGER,
         allowNull: true,
+        defaultValue: STATUS_MASTER.COUPON_UNUSED, 
       },
       user_id: {
         type: DataTypes.INTEGER,
