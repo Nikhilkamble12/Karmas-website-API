@@ -16,6 +16,7 @@ import responseCode from "./server/utils/constants/code/http.status.code.js";
 import encrypt from "./server/utils/security/encryption.js";
 import decrypt from "./server/utils/security/decryption.js";
 import startCluster from "./server/utils/helper/cluster.js";
+import initScheduler from "./server/utils/helper/request.schedular.email.js"
 import https from "https";
 import fs from "fs";
 import setupWebSocket from "./websocket.config.js";
@@ -509,6 +510,8 @@ async function startServer(app, port) {
     // ✅ 4. Setup WebSocket
     timer.start("websocket-init");
     const wsManager = await setupWebSocket(server);
+
+    initScheduler()
 
     if (wsManager) {
       timer.log("websocket-init", "🔌");
