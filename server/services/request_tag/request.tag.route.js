@@ -43,5 +43,11 @@ router.get(
     ReqestTagController.getDataByRequestId
 )
 
+router.get(
+    `${basePath}/get/byUserId`,
+    verifyToken,
+    ReqestTagController.getTagByUserIdByView
+)
+
 // Export the router for use in other parts of the application
 export default router

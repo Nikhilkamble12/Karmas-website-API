@@ -1127,6 +1127,34 @@ getAllDataByViewWithPagination: async (limit, offset) => {
     } catch (error) {
         throw error;
     }
-},
+},getDataByRequestIds: async (request_ids) => {
+  try {
+    const result = await db.sequelize.query(
+      `
+      ${ViewFieldTableVise.REQUEST_FIELDS}
+      WHERE RequestId IN (:request_ids)
+      `,
+      {
+        replacements: { request_ids },
+        type: db.Sequelize.QueryTypes.SELECT
+      }
+    );
+    const resourceBaseUrl = `${process.env.GET_LIVE_CURRENT_URL}/resources/`;
+
+    // 4. Enrich Data
+    // We mutate the object in place to avoid creating a new array copy (saving memory)
+    result.forEach(currentData => {
+        // Normalize path
+        if (currentData.request_user_file_path && currentData.request_user_file_path !== "null") {
+            currentData.request_user_file_path = resourceBaseUrl + currentData.request_user_file_path;
+        } else {
+            currentData.request_user_file_path = null;
+        }
+    });
+    return result;
+  } catch (error) {
+    throw error;
+  }
+}
 };
 export default RequestDAL;

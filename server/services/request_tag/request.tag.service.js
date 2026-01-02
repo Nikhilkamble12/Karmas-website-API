@@ -52,6 +52,12 @@ const RequestTagService = {
         }catch(error){
             throw error
         }
+    },getDataByUserId:async(user_id)=>{
+        try{
+            return await RequestTagDAL.getAllByUserIdByView(user_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 

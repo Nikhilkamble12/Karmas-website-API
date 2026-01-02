@@ -100,6 +100,28 @@ const RequestTagDAL = {
         }catch(error){
             throw error
         }
+    },getAllByUserIdByView:async(user_id)=>{
+        try{
+            const getData = await db.sequelize.query(` ${ViewFieldTableVise.REQUEST_TAG_FIELDS} where tagged_user_id = ${user_id} `,{type:db.Sequelize.QueryTypes.SELECT})
+            const resultWithImages = getData.map(row => ({
+            ...row, // keep all existing columns
+             tagged_user_image_path:
+                row.tagged_user_image_path &&
+                row.tagged_user_image_path !== 'null' &&
+                row.tagged_user_image_path.trim() !== ''
+                ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.tagged_user_image_path}`
+                : null,
+            user_image_path:
+                row.user_image_path &&
+                row.user_image_path !== 'null' &&
+                row.user_image_path.trim() !== ''
+                ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.user_image_path}`
+                : null
+            }));
+            return resultWithImages
+        }catch(error){
+            throw error
+        }
     }
 }
 

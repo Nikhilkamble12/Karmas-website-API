@@ -4,6 +4,7 @@ import RequestService from "../requests/requests.service.js";
 import notificationTemplates from "../../utils/helper/notification.templates.js";
 import UserTokenService from "../user_tokens/user.tokens.service.js";
 import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
+import RequestMediaService from "../request_media/request.media.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const ReqestTagController = {
@@ -346,7 +347,98 @@ const ReqestTagController = {
                     )
                 ); 
         }
+    },getTagByUserIdByView: async (req, res) => {
+    try {
+        const { user_id } = req.query;
+
+        if (!user_id) {
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.USER_ID_IS_REQUIRED,
+                        null,
+                        true
+                    )
+                );
+        }
+
+        const tagData = await RequestTagService.getDataByUserId(user_id);
+
+        if (!tagData || tagData.length === 0) {
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
+        }
+
+        const requestIds = [
+            ...new Set(tagData.map(item => item.request_id).filter(Boolean))
+        ];
+
+        const requestData = await RequestService.getDataByRequestIdsIn(requestIds);
+
+        const requestMediaData =
+            await RequestMediaService.getDataByMultipleRequestIdsByInForHomeScreen(requestIds);
+
+        const requestMap = {};
+        requestData.forEach(item => {
+            requestMap[item.RequestId] = item;
+        });
+
+        const mediaMap = {};
+        requestMediaData.forEach(item => {
+            if (!mediaMap[item.RequestId]) {
+                mediaMap[item.RequestId] = [];
+            }
+            mediaMap[item.RequestId].push(item);
+        });
+
+        const finalResponse = tagData.map(tag => {
+            const requestDetails = { ...(requestMap[tag.request_id] || {}) };
+            delete requestDetails.RequestId;
+
+            return {
+                ...tag,
+                ...requestDetails,
+                request_media: mediaMap[tag.request_id] || []
+            };
+        });
+
+        return res
+            .status(responseCode.OK)
+            .send(
+                commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    finalResponse
+                )
+            );
+
+    } catch (error) {
+        console.log("error",error)
+        logger.error(`Error in getTagByUserIdByView ---> ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
     }
+}
+
+
 }
 
 export default ReqestTagController

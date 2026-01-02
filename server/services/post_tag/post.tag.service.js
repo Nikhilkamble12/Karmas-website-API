@@ -53,6 +53,12 @@ const PostTagService = {
         }catch(error){
             throw error
         }
+    },getPostTagByUserId:async(user_id)=>{
+        try{
+            return await PostTagDAL.getPostTagByUserId(user_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 

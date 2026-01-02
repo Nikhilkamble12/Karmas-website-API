@@ -64,6 +64,12 @@ const PostService = {
     }catch(error){
       throw error
     }
+  },getPostByPostIdIn:async(post_ids)=>{
+    try{
+      return await PostDAL.getDataByPostIdsByViewIn(post_ids)
+    }catch(error){
+      throw error
+    }
   }
 };
 

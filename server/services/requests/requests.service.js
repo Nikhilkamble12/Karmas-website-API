@@ -101,7 +101,13 @@ const RequestService = {
     } catch (error) {
         throw error
     }
-},
+},getDataByRequestIdsIn:async(request_ids)=>{
+    try{
+        return await RequestDAL.getDataByRequestIds(request_ids)
+    }catch(error){
+        throw error
+    }
+}
 }
 
 export default RequestService

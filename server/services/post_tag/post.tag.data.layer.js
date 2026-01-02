@@ -118,6 +118,31 @@ const PostTagDAL = {
         }catch(error){
             throw error
         }
+    },getPostTagByUserId:async(user_id)=>{
+        try{
+            let getAllData = await db.sequelize.query(`${ViewFieldTableVise.POST_TAG_FIELDS} where tagged_user_id = ${user_id}`, { type: db.Sequelize.QueryTypes.SELECT })
+            let fulldata = []
+            if(getAllData && getAllData.length>0){
+            fulldata = getAllData.map(row => ({
+            ...row, // keep all existing columns
+            tagged_user_file_path:
+                row.tagged_user_file_path &&
+                row.tagged_user_file_path !== 'null' &&
+                row.tagged_user_file_path.trim() !== ''
+                ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.tagged_user_file_path}`
+                : null,
+                user_file_path:
+                row.user_file_path &&
+                row.user_file_path !== 'null' &&
+                row.user_file_path.trim() !== ''
+                ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.user_file_path}`
+                : null
+            }));
+            }
+            return fulldata
+        }catch(error){
+            throw error
+        }
     }
 }
 export default PostTagDAL

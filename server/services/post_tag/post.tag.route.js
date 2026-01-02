@@ -43,5 +43,11 @@ router.get(
     verifyToken,
     PostTagController.getPostTabByPostId
 )
+router.get(
+    `${basePath}/get/byUserId`,
+    verifyToken,
+    PostTagController.getPostTagByUserId
+)
+
 // Export the router for use in other parts of the application
 export default router

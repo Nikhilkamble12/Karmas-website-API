@@ -507,7 +507,28 @@ CountUpdatePost: async (post_id, fieldName, amount) => {
     } catch (error) {
         throw error;
     }
-},
+},  // Method to retrieve a specific record by its ID
+  getDataByPostIdsByViewIn: async (post_ids) => {
+    try {
+      const RESOURCE_URL = `${process.env.GET_LIVE_CURRENT_URL}/resources/`;
+      const getDataById = await db.sequelize.query(
+        ` ${ViewFieldTableVise.POSTS_FIELDS} where post_id  IN (${post_ids}) `,
+        { type: db.Sequelize.QueryTypes.SELECT }
+      );
+      const updatedPostData = getDataById.map(post => {
+      // Fast string concatenation using the pre-calculated const
+      post.file_path =
+        post.file_path && post.file_path !== "null" && post.file_path !== ""
+          ? `${RESOURCE_URL}${post.file_path}` // <--- FIXED HERE (Uses local const)
+          : null;
+
+      return post;
+    });
+      return updatedPostData ?? [];  // Return the retrieved data
+    } catch (error) {
+      throw error; // Throw error for handling in the controller
+    }
+  },
 
 };
 

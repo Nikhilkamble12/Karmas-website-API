@@ -1,10 +1,11 @@
 import PostTagService from "./post.tag.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
 import notificationTemplates from "../../utils/helper/notification.templates.js";
 import UserTokenService from "../user_tokens/user.tokens.service.js";
 import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
 import PostService from "../Posts/posts.service.js";
+import PostMediaService from "../PostMedia/postmedia.service.js";
 
 const PostTagController = {
     // Create A new Record 
@@ -20,17 +21,19 @@ const PostTagController = {
             if (createData) {
                 const getDataById = await PostTagService.getServiceById(createData.dataValues.post_tag_id)
                 const getPostData = await PostService.getServiceById(getDataById.post_id)
-                if(getPostData.is_user_tagged == false){
-                    const updatePost = await PostService.updateService(getDataById.post_id,{is_user_tagged:true})
+                if (getPostData.is_user_tagged == false) {
+                    const updatePost = await PostService.updateService(getDataById.post_id, { is_user_tagged: true })
                 }
-                const NotificationDetails = await notificationTemplates.UserHasTaggedYouPost({Post:getPostData.description})
+                const NotificationDetails = await notificationTemplates.UserHasTaggedYouPost({ Post: getPostData.description })
                 const getUserToken = await UserTokenService.GetTokensByUserIds([getDataById.tagged_user_id])
-                sendTemplateNotification({ templateKey:NotificationDetails.title,
-                templateData:NotificationDetails.description,
-                getUserToken, // This should be an array of objects like { token: 'fcm_token', user_id: 'user_id' }
-                metaData : {
-                    post_id:getDataById.post_id,tagged_user_image_path:getDataById.tagged_user_image_path,user_image_path:getDataById.user_image_path
-                }})
+                sendTemplateNotification({
+                    templateKey: NotificationDetails.title,
+                    templateData: NotificationDetails.description,
+                    getUserToken, // This should be an array of objects like { token: 'fcm_token', user_id: 'user_id' }
+                    metaData: {
+                        post_id: getDataById.post_id, tagged_user_image_path: getDataById.tagged_user_image_path, user_image_path: getDataById.user_image_path
+                    }
+                })
                 return res
                     .status(responseCode.CREATED)
                     .send(
@@ -52,7 +55,7 @@ const PostTagController = {
                     );
             }
         } catch (error) {
-            console.log("error",error)
+            console.log("error", error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -65,7 +68,7 @@ const PostTagController = {
                     )
                 );
         }
-    }, 
+    },
     // update Record Into Db
     update: async (req, res) => {
         try {
@@ -270,10 +273,10 @@ const PostTagController = {
                     );
             }
             const getAllByPostId = await PostTagService.getDataByPostId(getDataById.post_id)
-            if(getAllByPostId && getAllByPostId.length==0){
+            if (getAllByPostId && getAllByPostId.length == 0) {
                 const getPostDetails = await PostService.getServiceById(getDataById.post_id)
-                if(getPostDetails && getPostDetails.length>0 && getPostDetails.is_user_tagged){
-                    await PostService.updateService(getDataById.post_id,{is_user_tagged:false})
+                if (getPostDetails && getPostDetails.length > 0 && getPostDetails.is_user_tagged) {
+                    await PostService.updateService(getDataById.post_id, { is_user_tagged: false })
                 }
             }
             return res
@@ -297,8 +300,8 @@ const PostTagController = {
                     )
                 );
         }
-    },getPostTabByPostId:async(req,res)=>{
-        try{
+    }, getPostTabByPostId: async (req, res) => {
+        try {
             const post_id = req.query.post_id
             const getData = await PostTagService.getDataByPostId(post_id)
             if (getData.length !== 0) {
@@ -323,7 +326,7 @@ const PostTagController = {
                         )
                     );
             }
-        }catch(error){
+        } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -336,7 +339,102 @@ const PostTagController = {
                     )
                 );
         }
+    }, getPostTagByUserId: async (req, res) => {
+        try {
+            const { user_id } = req.query;
+
+            if (!user_id) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            "user_id is required",
+                            null,
+                            true
+                        )
+                    );
+            }
+
+            const tagData = await PostTagService.getPostTagByUserId(user_id);
+
+            if (!tagData || tagData.length === 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+
+            const postIds = [
+                ...new Set(tagData.map(item => item.post_id).filter(Boolean))
+            ];
+
+            let postData = await PostService.getPostByPostIdIn(postIds);
+            if (!Array.isArray(postData)) {
+                postData = postData ? [postData] : [];
+            }
+
+            let postMediaData = await PostMediaService.getPostMediaByPostIdsByIn(postIds);
+            if (!Array.isArray(postMediaData)) {
+                postMediaData = postMediaData ? [postMediaData] : [];
+            }
+
+            const postMap = {};
+            postData.forEach(post => {
+                postMap[post.post_id] = post;
+            });
+
+            const mediaMap = {};
+            postMediaData.forEach(media => {
+                if (!mediaMap[media.post_id]) {
+                    mediaMap[media.post_id] = [];
+                }
+                mediaMap[media.post_id].push(media);
+            });
+
+            const finalResponse = tagData.map(tag => {
+                const postDetails = { ...(postMap[tag.post_id] || {}) };
+                delete postDetails.post_id;
+
+                return {
+                    ...tag,
+                    ...postDetails,
+                    post_media: mediaMap[tag.post_id] || []
+                };
+            });
+
+            return res
+                .status(responseCode.OK)
+                .send(
+                    commonResponse(
+                        responseCode.OK,
+                        responseConst.DATA_RETRIEVE_SUCCESS,
+                        finalResponse
+                    )
+                );
+
+        } catch (error) {
+            logger.error(`Error in getPostTagByUserId ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
     }
+
+
 }
 
 export default PostTagController
