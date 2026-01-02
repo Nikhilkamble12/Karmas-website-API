@@ -421,7 +421,9 @@ const CouponsController = {
             redeem_time: currentTime().time 
           }
         );
-      
+        
+      await UserActivtyService.UpdateUserDataCount(user_id, 'total_reward_redeem', 1);
+
       return res
         .status(responseCode.OK)
         .send(
