@@ -78,6 +78,13 @@ const CouponsService = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
+    },
+    getCouponStatsByGiftId: async (gift_master_id) => {
+        try {
+            return await CouponsDAL.getCouponStatsByGiftId(gift_master_id);
+        } catch (error) {
+            throw error;
+        }
     }
 }
 export default CouponsService

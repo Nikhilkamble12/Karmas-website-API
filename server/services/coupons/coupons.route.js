@@ -54,6 +54,12 @@ router.get(
     verifyToken,
     CouponsController.getCouponByUserId
 )
+// Router to get Coupon Data For Admin
+router.get(
+    `${basePath}/getCouponStats/byGiftId`,
+    verifyToken,
+    CouponsController.getCouponStatsByGiftId
+)
 
 // Export the router for use in other parts of the application
 export default router

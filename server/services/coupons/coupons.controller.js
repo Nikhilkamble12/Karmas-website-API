@@ -483,6 +483,48 @@ const CouponsController = {
           )
         );
     }
+  },
+  getCouponStatsByGiftId: async (req, res) => {
+    try {
+        const gift_master_id = req.query.gift_master_id;
+        
+        if (!gift_master_id) {
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        "Gift Master ID is required",
+                        null,
+                        true
+                    )
+                );
+        }
+
+        const stats = await CouponsService.getCouponStatsByGiftId(gift_master_id);
+        
+        return res
+            .status(responseCode.OK)
+            .send(
+                commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    stats
+                )
+            );
+    } catch (error) {
+        logger.error(`Error ---> ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
+    }
   }
 };
 export default CouponsController;

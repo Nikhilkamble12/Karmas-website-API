@@ -33,7 +33,13 @@ const CouponsDAL = {
     // Method to retrieve a specific record by its ID
     getDataByIdByView: async (coupon_id) => {
         try {
-            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.COUPONS_FIELDS} where coupon_id  = ${coupon_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            const getDataById = await db.sequelize.query(
+                `${ViewFieldTableVise.COUPONS_FIELDS} WHERE coupon_id = :coupon_id`,
+                {
+                    replacements: { coupon_id },
+                    type: db.Sequelize.QueryTypes.SELECT
+                }
+            )
             return getDataById[0] ?? [] // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
@@ -64,7 +70,13 @@ const CouponsDAL = {
     // Method to retrieve coupons by user ID
     getCouponsByUserId: async (user_id) => {
         try {
-            const getCouponsByUserId = await db.sequelize.query(` ${ViewFieldTableVise.COUPONS_FIELDS} where user_id  = ${user_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            const getCouponsByUserId = await db.sequelize.query(
+                `${ViewFieldTableVise.COUPONS_FIELDS} WHERE user_id = :user_id`,
+                {
+                    replacements: { user_id },
+                    type: db.Sequelize.QueryTypes.SELECT
+                }
+            )
             return getCouponsByUserId // Return the retrieved coupons
         } catch (error) {
             throw error // Throw error for handling in the controller
@@ -72,7 +84,13 @@ const CouponsDAL = {
     },
     getCouponAndRedeem : async (user_id, gift_master_id) => {
         try {
-            const getCouponAndRedeem = await db.sequelize.query(` ${ViewFieldTableVise.COUPONS_FIELDS} where user_id  = ${user_id} AND gift_master_id = ${gift_master_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            const getCouponAndRedeem = await db.sequelize.query(
+                `${ViewFieldTableVise.COUPONS_FIELDS} WHERE user_id = :user_id AND gift_master_id = :gift_master_id`,
+                {
+                    replacements: { user_id, gift_master_id },
+                    type: db.Sequelize.QueryTypes.SELECT
+                }
+            )
             return getCouponAndRedeem[0] || null // Return the retrieved coupon
         } catch (error) {
             throw error // Throw error for handling in the controller
@@ -80,7 +98,13 @@ const CouponsDAL = {
     },
     getNewCoupon : async (gift_master_id) => {
         try {
-            const newCoupon = await db.sequelize.query(` ${ViewFieldTableVise.COUPONS_FIELDS} where gift_master_id = ${gift_master_id} AND user_id IS NULL` , { type: db.Sequelize.QueryTypes.SELECT })
+            const newCoupon = await db.sequelize.query(
+                `${ViewFieldTableVise.COUPONS_FIELDS} WHERE gift_master_id = :gift_master_id AND user_id IS NULL`,
+                {
+                    replacements: { gift_master_id },
+                    type: db.Sequelize.QueryTypes.SELECT
+                }
+            )
             return newCoupon[0] ?? [] // Return the retrieved coupon
         } catch (error) {
             throw error // Throw error for handling in the controller
@@ -97,6 +121,24 @@ const CouponsDAL = {
             }
             );
             return assignCoupon || null;
+        } catch (error) {
+            throw error;
+        }
+    },
+    getCouponStatsByGiftId: async (gift_master_id) => {
+        try {
+            const stats = await db.sequelize.query(
+                `SELECT 
+                    COUNT(*) as total_coupons,
+                    COUNT(user_id) as used_coupons
+                FROM coupons 
+                WHERE gift_master_id = :gift_master_id AND is_active = 1`,
+                {
+                    replacements: { gift_master_id },
+                    type: db.Sequelize.QueryTypes.SELECT
+                }
+            );
+            return stats[0] || { total_coupons: 0, used_coupons: 0 };
         } catch (error) {
             throw error;
         }
