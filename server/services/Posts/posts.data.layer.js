@@ -529,7 +529,6 @@ CountUpdatePost: async (post_id, fieldName, amount) => {
       throw error; // Throw error for handling in the controller
     }
   },
-
 };
 
 export default PostDAL; // Export the CommentsDAL object for use in the controller
