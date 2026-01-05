@@ -119,6 +119,7 @@ const RESPONSE_CONSTANTS = {
     USER_NOT_ELIGIBLE_FOR_GIFT: "User Is Not Eligible For Gift.",   // 403: Eligibility rule
     COUPON_ALREADY_REDEEMED: "You have already have this coupon.",  // 409: Duplicate claim
     NO_COUPONS_AVAILABLE: "No coupons are currently available for this gift", // 404: Inventory empty
+    COUPON_ALREADY_ASSIGNED: "Coupon is already assigned to a user.", // 409: Duplicate assignment
 
     // ============================================================
     // SOS / EMERGENCY

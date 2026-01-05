@@ -43,11 +43,17 @@ router.post(
     CouponsController.bulkCreateOrUpdateCoupons
 )
 // Route to get coupon by user id and gift_master_id
-router.get(
-    `${basePath}/getCoupon/redeem`,
+router.post(
+    `${basePath}/getCoupon`,
     verifyToken,
-    CouponsController.getCouponAndRedeem
+    CouponsController.getCoupon
 )   
+// Route to redeem coupon
+router.put(
+    `${basePath}/redeemCoupon`,
+    verifyToken,
+    CouponsController.redeemCoupon
+)
 // Router to get Coupon By UserId
 router.get(
     `${basePath}/getData/UserId`,

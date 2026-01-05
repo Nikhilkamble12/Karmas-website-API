@@ -3,6 +3,7 @@ import commonPath from "../../middleware/comman_path/comman.path.js";
 import GiftMasterService from "../gift_master/gift.master.service.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
 import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
+import { stat } from "fs";
 const {
   commonResponse,
   responseCode,
@@ -366,10 +367,23 @@ const CouponsController = {
     }
   }, 
   // Get coupon by user id and gift_master_id
-  getCouponAndRedeem: async (req, res) => {
+  getCoupon: async (req, res) => {
     try {
-      const user_id = req.query.user_id;
-      const gift_master_id = req.query.gift_master_id;
+      const { user_id, gift_master_id } = req.body; // Changed from req.query
+    
+      // Validate required parameters
+      if (!user_id || !gift_master_id) {
+        return res
+          .status(responseCode.BAD_REQUEST)
+          .send(
+            commonResponse(
+              responseCode.BAD_REQUEST,
+              "User ID and Gift Master ID are required",
+              null,
+              true
+            )
+          );
+      }
 
       const getGiftDetails  = await GiftMasterService.getServiceById(gift_master_id)
       if(getGiftDetails &&getGiftDetails.length==0){
@@ -393,7 +407,7 @@ const CouponsController = {
           .send(
             commonResponse(
               responseCode.OK,
-              responseConst.COUPON_ALREADY_REDEEMED,
+              responseConst.COUPON_ALREADY_ASSIGNED,
               existingCoupon
             )
           );
@@ -416,13 +430,13 @@ const CouponsController = {
       const assignCoupon = await CouponsService.assignCouponToUser(getNewCoupon.coupon_id,
           { 
             user_id: user_id, 
-            status_id: STATUS_MASTER.COUPON_REDEEMED, 
+            status_id: STATUS_MASTER.COUPON_UNUSED,
             redeem_date: currentTime().date, 
             redeem_time: currentTime().time 
           }
         );
         
-      await UserActivtyService.UpdateUserDataCount(user_id, 'total_reward_redeem', 1);
+      await UserActivtyService.UpdateUserDataCount(user_id, 'total_rewards_no', 1);
 
       return res
         .status(responseCode.OK)
@@ -527,6 +541,116 @@ const CouponsController = {
                 )
             );
     }
+  },
+  redeemCoupon: async (req, res) => {
+  try {
+    const { coupon_id } = req.body; 
+    const user_id = req.body.user_id ?? tokenData(req, res);
+    
+    if (!coupon_id) {
+      return res
+        .status(responseCode.BAD_REQUEST)
+        .send(
+          commonResponse(
+            responseCode.BAD_REQUEST,
+            "Coupon ID is required",
+            null,
+            true
+          )
+        );
+    }
+
+    // Validate coupon exists and belongs to user
+    const coupon = await CouponsService.getServiceById(coupon_id);
+    
+    if (!coupon || coupon.length === 0) {
+      return res
+        .status(responseCode.BAD_REQUEST)
+        .send(
+          commonResponse(
+            responseCode.BAD_REQUEST,
+            responseConst.DATA_NOT_FOUND,
+            null,
+            true
+          )
+        );
+    }
+
+    // Check if coupon belongs to the user
+    if (coupon.user_id !== user_id) {
+      return res
+        .status(responseCode.FORBIDDEN)
+        .send(
+          commonResponse(
+            responseCode.FORBIDDEN,
+            "Coupon does not belong to this user",
+            null,
+            true
+          )
+        );
+    }
+
+    // Check if coupon is already redeemed
+    if (coupon.status_id === STATUS_MASTER.COUPON_REDEEMED) {
+      return res
+        .status(responseCode.BAD_REQUEST)
+        .send(
+          commonResponse(
+            responseCode.BAD_REQUEST,
+            responseConst.COUPON_ALREADY_REDEEMED,
+            null,
+            true
+          )
+        );
+    }
+
+    // Update coupon status to redeemed
+    const updatedRowsCount = await CouponsService.updateService(coupon_id, {
+      status_id: STATUS_MASTER.COUPON_REDEEMED,
+      redeem_date: currentTime().date,
+      redeem_time: currentTime().time
+    });
+
+    if (updatedRowsCount === 0) {
+      return res
+        .status(responseCode.BAD_REQUEST)
+        .send(
+          commonResponse(
+            responseCode.BAD_REQUEST,
+            responseConst.ERROR_UPDATING_RECORD,
+            null,
+            true
+          )
+        );
+    }
+    
+    // Update user activity counts
+    await Promise.all([
+      UserActivtyService.UpdateUserDataCount(user_id, 'total_rewards_no', -1),
+      UserActivtyService.UpdateUserDataCount(user_id, 'total_reward_redeem', 1)
+    ]);
+
+    return res
+      .status(responseCode.CREATED)
+      .send(
+        commonResponse(
+          responseCode.CREATED,
+          responseConst.SUCCESS_UPDATING_RECORD
+        )
+      );
+  } catch (error) {
+    logger.error(`Error ---> ${error}`);
+    return res
+      .status(responseCode.INTERNAL_SERVER_ERROR)
+      .send(
+        commonResponse(
+          responseCode.INTERNAL_SERVER_ERROR,
+          responseConst.INTERNAL_SERVER_ERROR,
+          null,
+          true
+        )
+      );
   }
+}
 };
 export default CouponsController;
