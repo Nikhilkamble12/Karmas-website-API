@@ -19,8 +19,13 @@ const __dirname = path.dirname(__filename);
 // ==========================================
 export class TimeParser {
     static parseToMs(timeExpression) {
-        if (typeof timeExpression === 'number') return timeExpression * 24 * 60 * 60 * 1000;
-        if (!timeExpression || typeof timeExpression !== 'string') return 15 * 24 * 60 * 60 * 1000;
+        if (typeof timeExpression === 'number') {
+            return timeExpression * 24 * 60 * 60 * 1000;
+        }
+
+        if (!timeExpression || typeof timeExpression !== 'string') {
+            return 15 * 24 * 60 * 60 * 1000;
+        }
 
         let totalMs = 0;
         const parts = timeExpression.split(',').map(p => p.trim());
@@ -31,21 +36,30 @@ export class TimeParser {
             const hourMatch = part.match(/^(\d+)\s*h$/i);
             const minuteMatch = part.match(/^(\d+)\s*m$/i);
 
-            if (monthMatch) totalMs += parseInt(monthMatch[1]) * 30 * 24 * 60 * 60 * 1000;
-            else if (dayMatch) totalMs += parseInt(dayMatch[1]) * 24 * 60 * 60 * 1000;
-            else if (hourMatch) totalMs += parseInt(hourMatch[1]) * 60 * 60 * 1000;
-            else if (minuteMatch) totalMs += parseInt(minuteMatch[1]) * 60 * 1000;
+            if (monthMatch) {
+                totalMs += parseInt(monthMatch[1]) * 30 * 24 * 60 * 60 * 1000;
+            } else if (dayMatch) {
+                totalMs += parseInt(dayMatch[1]) * 24 * 60 * 60 * 1000;
+            } else if (hourMatch) {
+                totalMs += parseInt(hourMatch[1]) * 60 * 60 * 1000;
+            } else if (minuteMatch) {
+                totalMs += parseInt(minuteMatch[1]) * 60 * 1000;
+            }
         }
+
         return totalMs > 0 ? totalMs : 15 * 24 * 60 * 60 * 1000;
     }
 
     static msToReadable(ms) {
         const months = Math.floor(ms / (30 * 24 * 60 * 60 * 1000));
         ms %= (30 * 24 * 60 * 60 * 1000);
+        
         const days = Math.floor(ms / (24 * 60 * 60 * 1000));
         ms %= (24 * 60 * 60 * 1000);
+        
         const hours = Math.floor(ms / (60 * 60 * 1000));
         ms %= (60 * 60 * 1000);
+        
         const minutes = Math.floor(ms / (60 * 1000));
 
         const parts = [];
@@ -53,6 +67,7 @@ export class TimeParser {
         if (days > 0) parts.push(`${days}d`);
         if (hours > 0) parts.push(`${hours}h`);
         if (minutes > 0) parts.push(`${minutes}m`);
+        
         return parts.length > 0 ? parts.join(',') : '0m';
     }
 }
@@ -677,150 +692,8 @@ export class OptimizedLocalJsonDB {
         return [];
     }
 
-    /**
-     * Smart Save Method
-     */
-    // static async save(tableRef, dataEntry = null, keyName = null, keyValue = null, newFile = null, expiryTime = "15d") {
-    //     const refLog = typeof tableRef === 'string' ? tableRef : JSON.stringify(tableRef);
-    //     console.log(`🟢 [Start] save() called for: ${refLog}`);
-
-    //     if (!tableRef || (typeof tableRef !== 'string' && typeof tableRef !== 'object')) {
-    //         throw new Error('Invalid tableRef: must be a string or object');
-    //     }
-
-    //     const instance = this._getInstance(tableRef, expiryTime);
-
-    //     // Manage Locks
-    //     const lockTimeout = 5000;
-    //     const lockStartTime = Date.now();
-    //     while (this._FILE_LOCKS.get(instance._cacheKey)) {
-    //         if (Date.now() - lockStartTime > lockTimeout) break;
-    //         await new Promise(r => setTimeout(r, 50));
-    //     }
-    //     this._FILE_LOCKS.set(instance._cacheKey, true);
-
-    //     try {
-    //         const nowObj = new Date();
-
-    //         if (newFile === true) {
-    //             console.log("🗑️ [Explicit New] Deleting old file/cache before processing...");
-    //             await this.invalidate(tableRef, expiryTime); 
-    //         }
-
-    //         let data = await instance._loadFromMemoryOrFile();
-
-    //         // 🚨 RECOVERY
-    //         if (!data && instance.hasValidViewName) {
-    //             console.log(`📂 [Recovery] File missing for ${instance.tableName}, fetching from DB...`);
-    //             try {
-    //                 const freshData = await instance._fetchFullFromDb();
-    //                 if (freshData.length > 0) {
-    //                     data = instance._createCacheStructure(freshData);
-    //                     console.log(`✅ [Recovery] Restored ${freshData.length} records from DB.`);
-    //                     if (newFile === null) newFile = false; 
-    //                 }
-    //             } catch (e) {
-    //                 console.warn("⚠️ [Recovery Failed] Could not fetch from DB:", e.message);
-    //             }
-    //         }
-
-    //         // Fallback: Create empty structure
-    //         if (!data) {
-    //             console.log("📝 [Init] Creating new empty data structure");
-    //             data = instance._createCacheStructure([]); 
-    //             if (newFile === null) newFile = true;
-    //         }
-
-    //         // 🔍 AUTO-DETECT MODE
-    //         if (newFile == null) {
-    //             if (instance._isExpired(data)) {
-    //                 console.log("🔄 [Auto] Data expired -> REFRESH mode");
-    //                 newFile = true; 
-    //             } 
-    //             else if (instance.hasValidViewName) {
-    //                 const dbCount = await instance._getDbCount();
-    //                 const localLength = MetadataManager._getDataLength(data.data);
-    //                 if (dbCount !== null && dbCount !== localLength) {
-    //                     console.log(`🔄 [Auto] Count mismatch -> REFRESH mode`);
-    //                     newFile = true;
-    //                 } else {
-    //                     newFile = false; 
-    //                 }
-    //             } 
-    //             else if (keyName === null && keyValue === null) {
-    //                 newFile = true;
-    //             } 
-    //             else {
-    //                 newFile = false;
-    //             }
-    //         }
-
-    //         // 💾 EXECUTE SAVE LOGIC
-    //         if (newFile === true) {
-    //             console.log("🆕 [Mode] Overwrite / Refresh");
-
-    //             if (dataEntry === null) {
-    //                 if (instance.hasValidViewName) {
-    //                     const freshData = await instance._fetchFullFromDb();
-    //                     data.data = freshData;
-    //                 } else {
-    //                     data.data = [];
-    //                 }
-    //             } else {
-    //                 data.data = dataEntry;
-    //             }
-
-    //             data.db_count_check_counter = instance.hasValidViewName ? 
-    //                 CacheConfig.INITIAL_DB_COUNT_CHECK_COUNTER : null;
-    //             // Update conditions on refresh
-    //             data.conditions = instance.conditions;
-    //         } 
-    //         else {
-    //             console.log("🔄 [Mode] Upsert (Modify specific entry)");
-    //             if (dataEntry !== null) {
-    //                 if (!Array.isArray(data.data)) data.data = [];
-    //                 if (keyName && keyValue !== null) {
-    //                     const idx = data.data.findIndex(i => i && String(i[keyName]) === String(keyValue));
-    //                     if (idx >= 0) {
-    //                         data.data[idx] = dataEntry; 
-    //                     } else {
-    //                         data.data.push(dataEntry); 
-    //                     }
-    //                 } else {
-    //                     data.data.push(dataEntry);
-    //                 }
-    //             }
-    //         }
-
-    //         // 🏁 FINALIZE
-    //         data.modified_at = nowObj.toISOString();
-    //         data.updated_at = nowObj.toISOString();
-
-    //         if (newFile === true || instance._isExpired(data)) {
-    //             data.expires_at = new Date(nowObj.getTime() + instance.ttlMs).toISOString();
-    //         }
-
-    //         await instance._saveLazy(data, true);
-    //         try { 
-    //             _indexManager.invalidate(instance.tableName);
-    //             this._GROUP_INDEXES.clear();
-    //         } catch (e) {}
-
-    //         return data;
-
-    //     } catch (error) {
-    //         console.error("❌ [Critical Failure] save()", error);
-    //         throw error;
-    //     } finally {
-    //         this._FILE_LOCKS.delete(instance._cacheKey);
-    //     }
-    // }
-
-    /**
-     * Smart Save Method - Final Triple-Checked Version
-     * Integrates: Recovery, Locking, Hydration, and Safe Mode Detection
-     */
     static async save(tableRef, dataEntry = null, keyName = null, keyValue = null, newFile = null, expiryTime = "15d") {
+        console.log("expiryTime",expiryTime)
         // 1. INPUT VALIDATION & LOGGING (Restored from your original)
         const refLog = typeof tableRef === 'string' ? tableRef : JSON.stringify(tableRef);
         console.log(`🟢 [Start] save() called for: ${refLog}`);
