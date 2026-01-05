@@ -337,6 +337,13 @@ const RequestNgoController = {
                     }
                 }
             }
+
+            if (request_saved && !request_error && data.requestNgoList.length > 0) {
+            const requestId = data.requestNgoList[0].RequestId;
+            await RequestService.updateService(requestId, {
+                status_id: STATUS_MASTER.REQUEST_APPROVAL_PENDINNG
+            });
+            }
             const getRequestData = await RequestService.getServiceById(data.requestNgoList[0].RequestId)
             if(getRequestData && getRequestData.length!==0){
                 const updateData = await UserRequestStatsService.CreateOrUpdateData(getRequestData.request_user_id)
