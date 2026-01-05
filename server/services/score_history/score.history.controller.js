@@ -348,7 +348,7 @@ const ScoreHistoryController = {
             if (getData.length !== 0) {
                  // Step 3: Save the data to local file cache
             // await LocalJsonHelper.set(fileName, null, getData, ttlMs);
-             await LocalJsonHelper.save(jsonFileDetails,getData,null,null,true,null,"15d")
+             await LocalJsonHelper.save(jsonFileDetails,getData,null,null,true,"60m")
              getData.user_rank = getUserrank
                 return res
                     .status(responseCode.OK)
@@ -592,7 +592,7 @@ const ScoreHistoryController = {
         };
 
         // Try to get data from local cache
-        const cachedData = await LocalJsonHelper.getAll(jsonFileDetails, "60m");
+        const cachedData = await LocalJsonHelper.getAll(jsonFileDetails, "1m");
 
         if (cachedData && cachedData.topScorers && cachedData.topScorers.length > 0) {
             // Sort by rank
@@ -644,13 +644,12 @@ const ScoreHistoryController = {
 
         // Save to cache for future requests
         await LocalJsonHelper.save(
-            jsonFileDetails,
-            getData,
-            null,
-            null,
-            true,
-            null,
-            "15d"
+            jsonFileDetails, // 1
+            getData,         // 2
+            null,            // 3
+            null,            // 4
+            true,            // 5
+            "1m"             // 6 (Now correctly assigned to expiryTime)
         );
 
         const response = {

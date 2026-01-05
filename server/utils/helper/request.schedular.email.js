@@ -27,19 +27,26 @@ async function sendDailyNgoReports() {
 
         for (const ngoId in ngoGroups) {
             const ngoRequests = ngoGroups[ngoId];
-            const ngoName = ngoRequests[0].ngo_name;
-            let recipientEmail = ngoRequests[0].email;
+            const ngoName = ngoRequests[0]?.ngo_name || 'Unknown NGO';
+            let recipientEmail = ngoRequests[0]?.email;
 
             // Fallback for email
             if (!recipientEmail) {
-                const [ngoData] = await db.sequelize.query(
-                    'SELECT email FROM ngo_master WHERE ngo_id = ? LIMIT 1',
-                    { replacements: [ngoId], type: QueryTypes.SELECT }
-                );
-                recipientEmail = ngoData?.email;
+                try {
+                    const [ngoData] = await db.sequelize.query(
+                        'SELECT email FROM ngo_master WHERE ngo_id = ? LIMIT 1',
+                        { replacements: [ngoId], type: QueryTypes.SELECT }
+                    );
+                    recipientEmail = ngoData?.email;
+                } catch (emailFetchError) {
+                    console.error(`Failed to fetch email for NGO ${ngoId}:`, emailFetchError);
+                }
             }
 
-            if (!recipientEmail) continue;
+            if (!recipientEmail) {
+                console.warn(`Skipping NGO ${ngoId} (${ngoName}): No email address found`);
+                continue;
+            }
 
             // --- CALCULATIONS ---
             const totalCount = ngoRequests.length;
@@ -57,17 +64,30 @@ async function sendDailyNgoReports() {
                 if (req.status_id == STATUS_MASTER.REQUEST_REJECTED) statusColor = '#e53e3e';
                 if (req.status_id == STATUS_MASTER.REQUEST_APPROVAL_PENDINNG) statusColor = '#3182ce';
 
+                // Safely format date
+                let formattedTime = 'N/A';
+                try {
+                    if (req.AssignedDate) {
+                        formattedTime = new Date(req.AssignedDate).toLocaleTimeString('en-IN', { 
+                            hour: '2-digit', 
+                            minute: '2-digit' 
+                        });
+                    }
+                } catch (dateError) {
+                    console.error(`Date parsing error for request ${req.RequestId}:`, dateError);
+                }
+
                 return `
                 <tr>
-                    <td style="padding: 12px; border-bottom: 1px solid #eeeeee;">#${req.RequestId}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eeeeee;"><strong>${req.RequestName}</strong></td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eeeeee;">#${req.RequestId || 'N/A'}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eeeeee;"><strong>${req.RequestName || 'Unnamed Request'}</strong></td>
                     <td style="padding: 12px; border-bottom: 1px solid #eeeeee;">
                         <span style="padding: 4px 10px; border-radius: 20px; background: ${statusColor}; color: #ffffff; font-size: 11px; font-weight: bold;">
-                            ${req.status_name}
+                            ${req.status_name || 'Unknown'}
                         </span>
                     </td>
                     <td style="padding: 12px; border-bottom: 1px solid #eeeeee;">${req.Reason || 'N/A'}</td>
-                    <td style="padding: 12px; border-bottom: 1px solid #eeeeee;">${new Date(req.AssignedDate).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}</td>
+                    <td style="padding: 12px; border-bottom: 1px solid #eeeeee;">${formattedTime}</td>
                 </tr>`;
             }).join('');
 
@@ -135,14 +155,26 @@ async function sendDailyNgoReports() {
                 </div>
             </div>`;
 
-            await sendEmail({
-                to: recipientEmail,
-                subject: `Daily Request Summary - ${ngoName}`,
-                html: htmlBody
-            });
+            try {
+                await sendEmail({
+                    to: recipientEmail,
+                    subject: `Daily Request Summary - ${ngoName}`,
+                    html: htmlBody
+                });
+                console.log(`✅ Email sent successfully to ${ngoName} (${recipientEmail})`);
+            } catch (emailError) {
+                console.error(`❌ Failed to send email to ${ngoName} (${recipientEmail}):`, emailError);
+                // Continue with next NGO even if this one fails
+            }
         }
+
+        console.log('📧 Daily NGO report emails completed.');
     } catch (error) {
         console.error('CRITICAL: Scheduler Failed', error);
+        // Log the full error stack for debugging
+        if (error.stack) {
+            console.error('Error stack:', error.stack);
+        }
     }
 }
 
