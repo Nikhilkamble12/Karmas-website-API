@@ -145,3 +145,17 @@ async function sendDailyNgoReports() {
         console.error('CRITICAL: Scheduler Failed', error);
     }
 }
+
+// Final Scheduler for 5:00 AM IST
+const initScheduler = () => {
+    cron.schedule('0 5 * * *', () => {
+        console.log('⏰ Running Daily NGO Report at 05:00 IST...');
+        sendDailyNgoReports();
+    }, {
+        scheduled: true,
+        timezone: "Asia/Kolkata"
+    });
+    console.log('✅ NGO Email Scheduler registered for 05:00 IST');
+};
+
+export default initScheduler;
