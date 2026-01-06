@@ -751,8 +751,8 @@ const RequestNgoController = {
                     let currentData = await RequestService.getServiceById(getDataByNogId[i].RequestId)
                     if(currentData && currentData.length!==0){
                         getDataByNogId[i] = {
-                            ...currentData, // assuming currentData is an array with one object
                             ...getDataByNogId[i],
+                            ...currentData,
                           }; 
                           getDataByNogId[i].request_media = await RequestMediaService.getDataByRequestIdByView(getDataByNogId[i].RequestId)
                     }
