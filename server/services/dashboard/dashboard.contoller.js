@@ -4,6 +4,7 @@ import NgoMasterService from "../ngo_master/ngo.master.service.js";
 import UserMasterService from "../user_master/user.master.service.js";
 import ScoreHistoryService from "../score_history/score.history.service.js";
 import RequestNgoService from "../request_ngo/request.ngo.service.js";
+import CouponsService from "../coupons/coupons.service.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
 const DashBoardController = {
@@ -240,6 +241,49 @@ getNgoCount:async(req,res)=>{
                 true
             )
         );
+    }
+},
+getRewardsCount: async (req, res) => {
+    try {
+        const company_id = req.query.company_id ?? null;
+        
+        const rewardsData = await CouponsService.getRewardsCountByCompany(company_id);
+        
+        if (rewardsData && rewardsData.length > 0) {
+            return res
+                .status(responseCode.OK)
+                .send(
+                    commonResponse(
+                        responseCode.OK,
+                        responseConst.DATA_RETRIEVE_SUCCESS,
+                        rewardsData
+                    )
+                );
+        } else {
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
+        }
+    } catch (error) {
+        console.log("error", error);
+        logger.error(`Error ---> ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
     }
 }
 } 

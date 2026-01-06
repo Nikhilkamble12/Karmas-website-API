@@ -142,6 +142,39 @@ const CouponsDAL = {
         } catch (error) {
             throw error;
         }
+    },
+    // Method to get rewards count by company for dashboard
+     getRewardsCountByCompany: async (company_id = null) => {
+        try {
+            let query = `
+                SELECT 
+                    cm.company_id,
+                    cm.company_name,
+                    COUNT(DISTINCT gm.gift_master_id) AS total_gifts,
+                    COUNT(c.coupon_id) AS total_coupons,
+                    SUM(CASE WHEN c.status_id = 13 THEN 1 ELSE 0 END) AS redeemed_coupons,
+                    COUNT(c.coupon_id) - SUM(CASE WHEN c.status_id = 13 THEN 1 ELSE 0 END) AS balance_coupons
+                FROM company_master cm
+                LEFT JOIN gift_master gm ON cm.company_id = gm.company_id AND gm.is_active = 1
+                LEFT JOIN coupons c ON gm.gift_master_id = c.gift_master_id AND c.is_active = 1
+                WHERE cm.is_active = 1
+            `;
+            
+            if (company_id) {
+                query += ` AND cm.company_id = :company_id`;
+            }
+            
+            query += ` GROUP BY cm.company_id, cm.company_name ORDER BY cm.company_id `;
+            
+            const rewardsData = await db.sequelize.query(query, {
+                replacements: company_id ? { company_id } : {},
+                type: db.Sequelize.QueryTypes.SELECT
+            });
+            
+            return rewardsData;
+        } catch (error) {
+            throw error;
+        }
     }
 }
 export default CouponsDAL

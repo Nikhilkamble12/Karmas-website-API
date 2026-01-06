@@ -28,6 +28,11 @@ router.get(`${basePath}/getWeb/DashBoard`,
         // verifyToken,
         DashBoardController.getUserCount
     )
+    router.get(
+        `${basePath}/getRewardsCount`,
+        // verifyToken,
+        DashBoardController.getRewardsCount
+    )
 
     // Export the router for use in other parts of the application
     export default router

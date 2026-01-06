@@ -85,6 +85,14 @@ const CouponsService = {
         } catch (error) {
             throw error;
         }
+    },
+    // Method to get rewards count by company for dashboard
+    getRewardsCountByCompany: async (company_id = null) => {
+        try {
+            return await CouponsDAL.getRewardsCountByCompany(company_id);
+        } catch (error) {
+            throw error;
+        }
     }
 }
 export default CouponsService
