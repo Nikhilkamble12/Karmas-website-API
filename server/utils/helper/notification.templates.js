@@ -68,6 +68,12 @@ const notificationTemplates = {
     title: "Friend Request Accepted",
     description: `${username} accepted your friend request.`
   }),
+  friendRequestNowFollowing: ({ username }) => ({
+  title: "New Follower",
+  description: `${username} is now following you.`
+}),
+
+
 
   friendRequestRejected: ({ username }) => ({
     title: "Friend Request Rejected",
