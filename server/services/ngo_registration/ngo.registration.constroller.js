@@ -8,6 +8,7 @@ import CommonEmailtemplate from "../../utils/helper/common.email.templates.js";
 const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
 import crypto from "crypto";
 import sendEmail from "../../utils/helper/comman.email.function.js";
+import UserActivtyService from "../user_activity/user.activity.service.js";
 
 
 
@@ -462,6 +463,15 @@ const NgoRegistrationController = {
 
                 // Create User entry
                 const createdUser = await UserMasterService.createService(userPayload);
+                if(createdUser){
+                    const activtyCreate = {
+                        user_id:createdUser.dataValues.user_id,
+                        is_active: 1,
+                        created_by: 1,
+                        created_at: new Date()
+                    }
+                    const createAtivity = await UserActivtyService.createService(activtyCreate)
+                }
 
                 // Finally update NGO Registration status
                 await NgoRegistrationService.updateService(ngo_registration_id,
