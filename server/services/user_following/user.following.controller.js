@@ -366,14 +366,13 @@ const UserFollowingController = {
         // NOTIFICATIONS (Async Fire-and-Forget)
         // ======================================================
         if (shouldNotify) {
-            tasks.push((async () => {
-                const targetUserTokens = await UserTokenService.GetTokensByUserIds(data.following_user_id);
-                
+            tasks.push((async () => {                
                 // Cleanup Profile Images
                 const currImg = currentUserActivity[0]?.file_path ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentUserActivity[0].file_path}` : null;
                 const targetImg = targetUserActivity[0]?.file_path ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${targetUserActivity[0].file_path}` : null;
 
                 if (notificationType === 'DIRECT_FOLLOW') {
+                    const targetUserTokens = await UserTokenService.GetTokensByUserIds(data.user_id);
                     const template = await notificationTemplates.friendRequestAccepted({ username: targetUserActivity[0].user_name });
                     await sendTemplateNotification({
                         templateKey: "Follow-Request-Accepted", // Or "User-Follow" depending on your key
@@ -381,12 +380,14 @@ const UserFollowingController = {
                         userIds: targetUserTokens,
                         metaData: {
                             created_by: currentUserId,
+                            user_id : data.user_id,
                             follow_user_id: data.following_user_id, // Who is being followed
                             current_user_image: currImg,
                             following_user_image: targetImg
                         }
                     });
                 } else if (notificationType === 'REQUEST_SENT') {
+                    const targetUserTokens = await UserTokenService.GetTokensByUserIds(data.following_user_id);
                     const privateTemplate = await notificationTemplates.followRequestReceived({ username: currentUserActivity[0].user_name });
                     await sendTemplateNotification({
                         templateKey: "Follow-Request-Received",
@@ -394,6 +395,7 @@ const UserFollowingController = {
                         userIds: targetUserTokens,
                         metaData: {
                             created_by: currentUserId,
+                            user_id : data.user_id,
                             follow_user_id: data.following_user_id,
                             current_user_image: currImg
                         }
