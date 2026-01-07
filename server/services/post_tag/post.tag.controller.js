@@ -24,7 +24,7 @@ const PostTagController = {
                 if (getPostData.is_user_tagged == false) {
                     const updatePost = await PostService.updateService(getDataById.post_id, { is_user_tagged: true })
                 }
-                const NotificationDetails = await notificationTemplates.UserHasTaggedYouPost({ Post: getPostData.description })
+                const NotificationDetails = await notificationTemplates.UserHasTaggedYouPost({ user: getPostData.user_name })
                 const getUserToken = await UserTokenService.GetTokensByUserIds([getDataById.tagged_user_id])
                 console.log("getUserToken",getUserToken)
                 const NotificationFirebase = {

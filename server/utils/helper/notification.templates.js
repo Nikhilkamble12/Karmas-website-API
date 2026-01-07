@@ -89,9 +89,9 @@ const notificationTemplates = {
   }),UserHasTaggedYou:({ request})=>({
      title: `User has Tagged You In Request`,
     description: `Someone Just Tagged You In Request ${request}`
-  }),UserHasTaggedYouPost:({Post})=>({
+  }),UserHasTaggedYouPost:({user})=>({
     title: `User has Tagged You In Post`,
-    description: `Someone Just Tagged You In Post ${Post}`
+    description: `${user} Just Tagged You In Post`
   })
 };
 
