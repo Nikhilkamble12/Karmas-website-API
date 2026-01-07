@@ -349,6 +349,19 @@ const NgoRegistrationController = {
                 return res.status(404).send(commonResponse(404, responseConst.NGO_REGISTRATION_NOT_FOUND));
             }
 
+            const userMaster = await UserMasterService.getUserByEmailIdByView(registration.email)
+            if(userMaster.length>0){
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.EMAIL_ALREADY_IN_USE,
+                            null,
+                            true
+                        )
+                    );
+            }
             if (registration.status_id == STATUS_MASTER.NGO_REGISTRATION_APPROVED) {
                 return res
                     .status(responseCode.BAD_REQUEST)
@@ -495,7 +508,7 @@ const NgoRegistrationController = {
                         modified_at: new Date()
                     }
                 );
-                const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationRejected({ email_id: registration.email, username: registration.ngo_name, reason: registration.reason })
+                const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationRejected({ email_id: registration.email, username: registration.ngo_name, reason: data.remarks })
                 await sendEmail({ to: registration.email, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
                 return res.send(commonResponse(200, responseConst.NGO_REGISTRATION_REJECTED));
             }
