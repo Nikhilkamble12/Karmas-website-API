@@ -182,7 +182,7 @@ const sendTemplateNotification = async ({
         }
 
         const { title, description } = templateData;
-
+        console.log("userIds",userIds)
         if (!userIds || userIds.length === 0) {
             console.log("No user IDs (with tokens) provided. Skipping notification send.");
             return {

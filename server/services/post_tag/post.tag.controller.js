@@ -26,14 +26,16 @@ const PostTagController = {
                 }
                 const NotificationDetails = await notificationTemplates.UserHasTaggedYouPost({ Post: getPostData.description })
                 const getUserToken = await UserTokenService.GetTokensByUserIds([getDataById.tagged_user_id])
-                sendTemplateNotification({
-                    templateKey: NotificationDetails.title,
+                console.log("getUserToken",getUserToken)
+                const NotificationFirebase = {
+                    templateKey : NotificationDetails.title,
                     templateData: NotificationDetails.description,
-                    getUserToken, // This should be an array of objects like { token: 'fcm_token', user_id: 'user_id' }
-                    metaData: {
+                    userIds : getUserToken, // This should be an array of objects like { token: 'fcm_token', user_id: 'user_id' }
+                    metaData : {
                         post_id: getDataById.post_id, tagged_user_image_path: getDataById.tagged_user_image_path, user_image_path: getDataById.user_image_path
                     }
-                })
+                }
+                await sendTemplateNotification(NotificationFirebase)
                 return res
                     .status(responseCode.CREATED)
                     .send(
