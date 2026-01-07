@@ -89,6 +89,9 @@ export class CacheConfig {
 // ==========================================
 // MEMORY CACHE
 // ==========================================
+// ==========================================
+// ENHANCED MEMORY CACHE (With Active Pruning)
+// ==========================================
 export class MemoryCache {
     constructor(maxSize = 100, ttlSeconds = 3600) {
         this._cache = new Map();
@@ -96,16 +99,41 @@ export class MemoryCache {
         this._cacheSizes = new Map();
         this.maxSize = maxSize;
         this.ttlSeconds = ttlSeconds;
+
+        // ✅ ACTIVE EXPIRY: Check for expired items every 1 minute
+        this._cleanupInterval = setInterval(() => this.prune(), 60000);
+        // Ensure the process can exit if this is the only thing running
+        if (this._cleanupInterval.unref) this._cleanupInterval.unref();
+    }
+
+    /**
+     * Removes all expired items from memory automatically
+     */
+    prune() {
+        const now = Date.now();
+        let prunedCount = 0;
+
+        for (const [key, data] of this._cache.entries()) {
+            if (data.expires_at) {
+                const expiryTime = new Date(data.expires_at).getTime();
+                if (now >= expiryTime) {
+                    this.invalidate(key);
+                    prunedCount++;
+                }
+            }
+        }
+        if (prunedCount > 0) {
+            console.log(`🧹 MemoryCache: Auto-pruned ${prunedCount} expired items.`);
+        }
     }
 
     _estimateSizeBytes(data) {
         try {
+            // Faster estimation: only stringify if it's small, otherwise estimate based on array length
             const jsonStr = JSON.stringify(data);
             return Buffer.byteLength(jsonStr, 'utf-8');
         } catch (error) {
-            const dataValue = data.data || [];
-            const dataList = Array.isArray(dataValue) ? dataValue : (typeof dataValue === 'object' ? Object.values(dataValue).flat() : []);
-            return dataList.length * 500;
+            return 1024 * 1024; // Default 1MB if estimation fails
         }
     }
 
@@ -115,13 +143,14 @@ export class MemoryCache {
         const dataLength = dataList.length;
 
         if (dataLength >= CacheConfig.MAX_ENTRIES_FOR_MEMORY) {
-            return { cacheable: false, reason: `too_many_entries(${dataLength}>=${CacheConfig.MAX_ENTRIES_FOR_MEMORY})` };
+            return { cacheable: false, reason: `too_many_entries` };
         }
+        
         const estimatedSize = this._estimateSizeBytes(data);
         const maxSizeBytes = CacheConfig.MAX_FILE_SIZE_MB * 1024 * 1024;
+        
         if (estimatedSize >= maxSizeBytes) {
-            const sizeMb = (estimatedSize / (1024 * 1024)).toFixed(2);
-            return { cacheable: false, reason: `too_large(${sizeMb}MB>=${CacheConfig.MAX_FILE_SIZE_MB}MB)` };
+            return { cacheable: false, reason: `too_large` };
         }
         return { cacheable: true, reason: 'cacheable' };
     }
@@ -132,6 +161,7 @@ export class MemoryCache {
         const now = Date.now();
         const data = this._cache.get(key);
 
+        // Passive check
         if (data.expires_at) {
             const expiryTime = new Date(data.expires_at).getTime();
             if (now >= expiryTime) {
@@ -151,26 +181,23 @@ export class MemoryCache {
             return { cached: false, reason };
         }
 
+        // LRU Ejection logic
         if (this._cache.size >= this.maxSize && !this._cache.has(key)) {
-            if (this._accessTimes.size > 0) {
-                let oldestKey = this._accessTimes.keys().next().value;
-                let oldestTime = Infinity;
-                for (const [k, time] of this._accessTimes.entries()) {
-                    if (time < oldestTime) {
-                        oldestTime = time;
-                        oldestKey = k;
-                    }
+            let oldestKey = null;
+            let oldestTime = Infinity;
+
+            for (const [k, time] of this._accessTimes.entries()) {
+                if (time < oldestTime) {
+                    oldestTime = time;
+                    oldestKey = k;
                 }
-                if (oldestKey) this.invalidate(oldestKey);
             }
+            if (oldestKey) this.invalidate(oldestKey);
         }
 
-        const estimatedSize = this._estimateSizeBytes(value);
         this._cache.set(key, value);
         this._accessTimes.set(key, Date.now() / 1000);
-        this._cacheSizes.set(key, estimatedSize);
-        const dataValue = value.data || [];
-        // console.log(`✅ Cached ${key}: ${dataLength} entries, ${sizeMb}MB`);
+        this._cacheSizes.set(key, this._estimateSizeBytes(value));
         return { cached: true, reason: `cached` };
     }
 
@@ -185,8 +212,6 @@ export class MemoryCache {
         this._accessTimes.clear();
         this._cacheSizes.clear();
     }
-
-    getStats() { return { size: this._cache.size }; }
 }
 
 const _memoryCache = new MemoryCache(50, 1800);
