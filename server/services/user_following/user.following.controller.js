@@ -373,7 +373,7 @@ const UserFollowingController = {
 
                 if (notificationType === 'DIRECT_FOLLOW') {
                     const targetUserTokens = await UserTokenService.GetTokensByUserIds(data.following_user_id);
-                    const template = await notificationTemplates.friendRequestNowFollowing({ username: targetUserActivity[0].user_user_name });
+                    const template = await notificationTemplates.friendRequestNowFollowing({ username: currentUserActivity[0].user_name });
                     await sendTemplateNotification({
                         templateKey: "Follow-Request-Accepted", // Or "User-Follow" depending on your key
                         templateData: template,
