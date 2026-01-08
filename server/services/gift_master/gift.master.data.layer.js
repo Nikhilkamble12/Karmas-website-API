@@ -52,6 +52,18 @@ const GiftMasterDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
+    },getTotalGiftCount: async () => {
+    try {
+        const result = await db.sequelize.query(
+            `SELECT COUNT(*) AS total_count FROM gift_master`,
+            { type: db.Sequelize.QueryTypes.SELECT }
+        );
+
+        return result[0]?.total_count ?? 0;
+    } catch (error) {
+        throw error;
     }
+},
+
 }
 export default GiftMasterDAL

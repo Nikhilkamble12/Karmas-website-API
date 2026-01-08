@@ -34,6 +34,7 @@ const GiftMasterController = {
                 }
             }
             if (createData) {
+                await UserActivtyService.UpdateGlobalUserDataCount("total_rewards_no",1)
                 return res
                     .status(responseCode.CREATED)
                     .send(

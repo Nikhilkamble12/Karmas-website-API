@@ -40,6 +40,12 @@ const GiftMasterService = {
         } catch (error) {
             throw error
         }
+    },getCountOfGift:async()=>{
+        try{
+            return await GiftMasterDAL.getTotalGiftCount()
+        }catch(error){
+            throw error
+        }
     }
 }
 export default GiftMasterService

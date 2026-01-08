@@ -60,6 +60,12 @@ const UserActivtyService = {
         }catch(error){
             throw error
         }
+    },UpdateGlobalUserDataCount:async(fieldName, amount)=>{
+        try{
+            return await UserActivityDAL.UpdateGlobalUserDataCount(fieldName, amount)
+        }catch(error){
+            throw error
+        }
     }
 
 }

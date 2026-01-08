@@ -121,6 +121,28 @@ const UserActivityDAL = {
     } catch (error) {
         throw error;
     }
+},UpdateGlobalUserDataCount: async (fieldName, amount) => {
+    try {
+        const valueChange = parseInt(amount);
+
+        if (!fieldName) {
+            throw new Error("Field name is required");
+        }
+
+        if (isNaN(valueChange)) {
+            throw new Error("Amount must be a valid number");
+        }
+
+        const result = await UserActivityModel(db.sequelize).increment(
+            fieldName,
+            { by: valueChange }
+        );
+
+        return result;
+    } catch (error) {
+        throw error;
+    }
 },
+
 }
 export default UserActivityDAL

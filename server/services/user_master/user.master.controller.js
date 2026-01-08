@@ -10,6 +10,7 @@ import sendEmail from "../../utils/helper/comman.email.function.js";
 import UserBlackListService from "../user_blacklist/user.blacklist.service.js";
 import UserOtpLogsService from "../user_otp_log/user.otp.log.service.js";
 import UserMasterService from "./user.master.service.js";
+import GiftMasterService from "../gift_master/gift.master.service.js";
 const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
 
 const UserMasterController = {
@@ -119,8 +120,10 @@ create: async (req, res) => {
         // --------------------------------------
 
         const user_id = createData.dataValues.user_id
+        const countoftotalgift = await GiftMasterService.getCountOfGift()
         const userActvityCreate = {
             user_id: user_id,
+            total_rewards_no : countoftotalgift ?? 0,
             created_by: user_id,
             created_at: currentTime
         }
