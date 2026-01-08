@@ -55,7 +55,7 @@ const GiftMasterDAL = {
     },getTotalGiftCount: async () => {
     try {
         const result = await db.sequelize.query(
-            `SELECT COUNT(*) AS total_count FROM gift_master`,
+            `SELECT COUNT(*) AS total_count FROM gift_master where is_active = true `,
             { type: db.Sequelize.QueryTypes.SELECT }
         );
 
