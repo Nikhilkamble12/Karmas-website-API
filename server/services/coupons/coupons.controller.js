@@ -611,7 +611,7 @@ const CouponsController = {
       redeem_time: currentTime().time
     });
 
-    if (updatedRowsCount === 0) {
+    if (updatedRowsCount == 0) {
       return res
         .status(responseCode.BAD_REQUEST)
         .send(

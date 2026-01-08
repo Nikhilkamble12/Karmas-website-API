@@ -102,7 +102,9 @@ const UserActivityDAL = {
     try {
         // Validation: Ensure amount is a number
         const valueChange = parseInt(amount);
-        
+        console.log("user_id",user_id)
+        console.log("fieldName",fieldName)
+        console.log("amount",amount)
         if (isNaN(valueChange)) {
             throw new Error("Amount must be a valid number");
         }
