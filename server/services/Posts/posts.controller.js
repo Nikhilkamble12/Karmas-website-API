@@ -365,6 +365,7 @@ deleteData: async (req, res) => {
         await addMetaDataWhileCreateUpdate(updatePostData, req, res, false);
         const createdData = await PostService.createSerive(data);
         if (createdData) {
+          await UserActivtyService.UpdateUserDataCount(tokenData(req, res), 'total_user_posts_no', 1);
           const getDataByPostIdAfter = await PostService.getServiceById(createdData.dataValues.post_id)
           const mergedData = {
             post_id: createdData.dataValues.post_id,
