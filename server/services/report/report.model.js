@@ -29,15 +29,7 @@ const ReportModel = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
-      post_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
-      ngo_id: {
-        type: DataTypes.INTEGER,
-        allowNull: true,
-      },
-      request_id: {
+      pk_id:{
         type: DataTypes.INTEGER,
         allowNull: true,
       },
