@@ -31,7 +31,7 @@ const ReportModel = (sequelize) => {
       },
       pk_id:{
         type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
       },
       is_active: {
         type: DataTypes.BOOLEAN,
