@@ -570,7 +570,8 @@ let AuthController = {
         OTP_TYPE_MASTER.RESET_PASSWORD,
         otp
       );
-      if (getUserOtpLogs == null) {
+      console.log("getResetOtp",getResetOtp)
+      if (getResetOtp == null) {
         return res
           .status(400)
           .send(
