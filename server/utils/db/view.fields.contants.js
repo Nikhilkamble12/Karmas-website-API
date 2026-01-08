@@ -82,7 +82,7 @@ const ViewFieldTableWise = {
     REQUEST_LIKES: ` SELECT like_id, user_id, RequestName, request_id, is_liked, created_at, is_active, user_name, user_profile FROM ${VIEW_NAME.GET_ALL_REQUEST_LIKE} `,
     REQUEST_COMMENT_LIKES: ` SELECT like_id, user_id, comment_text, request_cmt_id, is_liked, created_at, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_COMMENT_LIKE} `,
     REQUEST_TAG_FIELDS: ` SELECT request_tag_id, request_id, tagged_user_id, tagged_user_name, tagged_user_image_path, user_image_path, user_id, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_TAG} `,
-    REPORT_FIELDS: ` SELECT report_id, report_user_id, report_user_name, report_full_name, report_page_type_id, report_page, report_type_id, report_type, reason, user_id, user_name, full_name, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_REPORT} `,
+    REPORT_FIELDS: ` SELECT report_id, report_user_id, report_user_name, report_full_name, report_page_type_id, report_page, report_type_id, report_type, reason, user_id, user_name, full_name, is_active, pk_id, created_by, created_at FROM ${VIEW_NAME.GET_ALL_REPORT} `,
     REPORT_PAGE_TYPE_FIELDS: ` SELECT report_page_type_id, report_page, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_REPORT_PAGE_TYPE} `,
     REPORT_TYPE_FIELDS: ` SELECT report_type_id, report_type, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_REPORT_TYPE} `,
 

@@ -39,7 +39,11 @@ router.delete(
     verifyToken,
     ReportController.deleteData
 )
-
+router.get(
+    `${basePath}/getDetails/ById`,
+    verifyToken,
+    ReportController.getDetailBySpecialId
+)
 
 // Export the router for use in other parts of the application
 export default router

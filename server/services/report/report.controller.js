@@ -1,5 +1,15 @@
 import ReportService from "./report.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
+import { REPORT_PAGE_TYPE } from "../../utils/constants/id_constant/id.constants.js";
+import NgoMasterService from "../ngo_master/ngo.master.service.js";
+import UserMasterService from "../user_master/user.master.service.js";
+import UserActivtyService from "../user_activity/user.activity.service.js";
+import CommentService from "../Comments/comments.service.js";
+import RequestCommentService from "../request_comments/request.comments.service.js";
+import RequestService from "../requests/requests.service.js";
+import PostService from "../Posts/posts.service.js";
+import PostMediaService from "../PostMedia/postmedia.service.js";
+import RequestMediaService from "../request_media/request.media.service.js";
 const { commonResponse,responseCode, responseConst, logger,tokenData, currentTime,addMetaDataWhileCreateUpdate } = commonPath;
 
 
@@ -274,7 +284,115 @@ const ReportController = {
                     )
                 );
         }
+    },getDetailBySpecialId: async (req, res) => {
+    try {
+        const report_id = req.query.report_id;
+        const getData = await ReportService.getServiceById(report_id);
+
+        if (!getData || (Array.isArray(getData) && getData.length === 0)) {
+            return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true)
+            );
+        }
+
+        let information_details = {};
+        let images_details = []; // Always returns an array, empty if no images
+        const baseUrl = `${process.env.GET_LIVE_CURRENT_URL}/resources/`;
+
+        switch (Number(getData.report_page_type_id)) {
+            case REPORT_PAGE_TYPE.NGO:
+                information_details = await NgoMasterService.getServiceById(getData.pk_id);
+                const fileFields = [
+                    { key: "ngo_logo_path", label: "ngo_logo" },
+                    { key: "pan_card_file_url", label: "pan_card" },
+                    { key: "crs_regis_file_path", label: "crs_registration" },
+                    { key: "digital_signature_file_path", label: "digital_signature" },
+                    { key: "stamp_file_path", label: "stamp" }
+                ];
+
+                fileFields.forEach(field => {
+                    const value = information_details[field.key];
+                    if (value && value !== "null" && value !== "" && value !== 0) {
+                        const fullUrl = `${baseUrl}${value}`;
+                        information_details[field.key] = fullUrl; // Update object path
+                        images_details.push({ type: field.label, url: fullUrl });
+                    } else {
+                        information_details[field.key] = null;
+                    }
+                });
+                break;
+
+            case REPORT_PAGE_TYPE.USER_PAGE:
+                const user_master = await UserMasterService.getServiceById(getData.pk_id);
+                const getActivty = await UserActivtyService.getDataByUserId(getData.pk_id);
+                information_details = { ...user_master, ...getActivty[0] };
+
+                // Handle Profile Photo (Construct URL instead of Base64)
+                if (information_details.file_path && information_details.file_path !== "" && information_details.file_path !== 0) {
+                    information_details.file_path = `${baseUrl}${information_details.file_path}`;
+                    images_details.push({ type: "profile_image", url: information_details.file_path });
+                } else {
+
+                }
+
+                // Handle Background Photo
+                if (information_details.bg_image_path && information_details.bg_image_path !== "" && information_details.bg_image_path !== 0) {
+                    information_details.bg_image_path = `${baseUrl}${information_details.bg_image_path}`;
+                    images_details.push({ type: "background_image", url: information_details.bg_image_path });
+                } else {
+                    
+                }
+                break;
+
+            case REPORT_PAGE_TYPE.REQUEST:
+                information_details = await RequestService.getServiceById(getData.pk_id);
+                const requestMedia = await RequestMediaService.getDataByRequestIdByView(information_details.RequestId);
+                if (requestMedia && requestMedia.length > 0) {
+                    images_details = requestMedia.map(media => ({
+                        type: "request_media",
+                        url: `${baseUrl}${media.file_path}`
+                    }));
+                }
+                break;
+
+            case REPORT_PAGE_TYPE.POST:
+                information_details = await PostService.getServiceById(getData.pk_id);
+                const postMedia = await PostMediaService.getDatabyPostIdByView(information_details.post_id);
+                if (postMedia && postMedia.length > 0) {
+                    images_details = postMedia.map(media => ({
+                        type: "post_media",
+                        url: `${baseUrl}${media.file_path}`
+                    }));
+                }
+                break;
+
+            case REPORT_PAGE_TYPE.POST_COMMENTS:
+                information_details = await CommentService.getServiceById(getData.pk_id);
+                break;
+
+            case REPORT_PAGE_TYPE.REQUEST_COMMENTS:
+                information_details = await RequestCommentService.getServiceById(getData.pk_id);
+                break;
+        }
+
+        // Standardized Payload
+        const responseData = {
+            ...getData,
+            information_details,
+            images_details // Result: [{...}] or []
+        };
+
+        return res.status(responseCode.OK).send(
+            commonResponse(responseCode.OK, responseConst.DATA_RETRIEVE_SUCCESS, responseData)
+        );
+
+    } catch (error) {
+        logger.error(`Error in getDetailBySpecialId ---> ${error}`);
+        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+        );
     }
+}
 }
 
 export default ReportController

@@ -891,7 +891,7 @@ const NgoMasterController = {
             const getNgoMedia = await ngoMediaService.getDataByNgoId(ngo_id)
             const getUserDetails = await UserMasterService.getUserByEmailIdByView(getNgomaster.email)
 
-              // File fields to update
+            // File fields to update
             const fileFields = [
                 "ngo_logo_path",
                 "pan_card_file_url",
