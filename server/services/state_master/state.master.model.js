@@ -12,7 +12,11 @@ const StateMasterModel = (sequelize)=>{
         },country_id:{
             type:DataTypes.INTEGER,
             allowNull:true
-        }, is_active: {
+        },is_union_teritory:{
+            type: DataTypes.TINYINT(1),
+            defaultValue: false
+        },
+        is_active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
         },

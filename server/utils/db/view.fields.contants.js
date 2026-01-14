@@ -87,7 +87,7 @@ const ViewFieldTableWise = {
     REPORT_TYPE_FIELDS: ` SELECT report_type_id, report_type, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_REPORT_TYPE} `,
 
     // -------> S
-    STATE_MASTER_FIELDS: ` SELECT state_id, state_name, country_id, country_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at  FROM ${VIEW_NAME.GET_ALL_STATE_MASTER} `,
+    STATE_MASTER_FIELDS: ` SELECT state_id, state_name, country_id, country_name, is_union_teritory, is_active  FROM ${VIEW_NAME.GET_ALL_STATE_MASTER} `,
     STATUS_MASTER_FIELDS: ` SELECT * FROM ${VIEW_NAME.GET_ALL_STATUS_MASTER} `,
     SIMPLE_SCORE_HISTORY_FIELDS: ` SELECT sr_no, user_id, user_name, request_id, request_name, git_score, score_category_id, score_category_name, description, status_id, status_name, date, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at  FROM ${VIEW_NAME.GET_ALL_SIMPLE_SCORE_HISTORY} `,
     SCORE_ELIGIBILITY_MAPPING_FIELDS: ` SELECT mapping_id, company_name, score_required, eligible_amount, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_SCORE_ELIGIBILITY} `,
