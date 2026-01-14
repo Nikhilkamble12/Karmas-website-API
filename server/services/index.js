@@ -1,5 +1,9 @@
 import dbConfig from "../config/db/db.config.js";
 import { Sequelize } from "sequelize";
+import dotenv from "dotenv";
+dotenv.config();
+console.log("NODE_ENV raw:", process.env.NODE_ENV);
+
 
 // ALL IMPORTS OF MODEL START FROM HERE
 import UserMasterModel from "./user_master/user.master.model.js";
@@ -62,6 +66,7 @@ import TempEmailVerificationModel from "./temp_email_verification/temp.email.ver
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
+console.log("environment",environment)
 
 // Select the appropriate configuration based on the environment
 
@@ -104,6 +109,20 @@ const sequelize = new Sequelize(config.DB, config.USER, config.PASSWORD, {
     idle: config.pool.idle,
   }
 });
+
+
+
+try {
+  await sequelize.authenticate();
+  console.log('🚀 SUCCESS: Connection to Cloud SQL established via Sequelize.');
+} catch (err) {
+  console.error('❌ CRITICAL ERROR: Unable to connect to the database!');
+  console.error('Check if your Cloud SQL Auth Proxy is running on port 3306.');
+  console.error('Error Details:', err.message);
+  
+  // Throwing the error prevents the rest of the app from starting in a broken state
+  throw err; 
+}
 // sequelize.authenticate()
 //   .then(() => {
 //     console.log('Connection to the database has been established successfully.');
