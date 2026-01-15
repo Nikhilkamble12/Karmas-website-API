@@ -290,8 +290,7 @@ const PostMediaController = {
         );
     }
   },BulkCreateOrUpdatePostMedia:async(req,res)=>{
-    try{
-      // Ensure a file is uploaded
+    // Ensure a file is uploaded
       function deleteFile(filePath) {
         // Use fs.unlink to remove the file at the specified file path
         fs.unlink(filePath, (err) => {
@@ -305,6 +304,8 @@ const PostMediaController = {
           }
         });
       }
+    try{
+      
     const data = req.body
     const fileType = req.file.mimetype; 
     const folderType = 'post'; 
