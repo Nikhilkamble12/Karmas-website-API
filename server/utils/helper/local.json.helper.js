@@ -761,6 +761,7 @@ export class OptimizedLocalJsonDB {
                 console.log(`📂 [Recovery] File missing for ${instance.tableName}, fetching from DB...`);
                 try {
                     const freshData = await instance._fetchFullFromDb();
+                    if (freshData.length === 0) return []; // Stop here if DB is empty
                     if (freshData.length > 0) {
                         data = instance._createCacheStructure(freshData);
                         console.log(`✅ [Recovery] Restored ${freshData.length} records from DB.`);
