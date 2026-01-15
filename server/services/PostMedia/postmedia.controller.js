@@ -290,7 +290,10 @@ const PostMediaController = {
         );
     }
   },BulkCreateOrUpdatePostMedia:async(req,res)=>{
-      const data = req.body
+    if (!req.file) {
+      return res.status(400).send({ error: 'No file uploaded' });
+    }
+    const data = req.body
     const fileType = req.file.mimetype; 
     const folderType = 'post'; 
     const filePath = req.file.path;  // Multer stores the file temporarily here
@@ -310,11 +313,6 @@ const PostMediaController = {
         });
       }
     try{
-      
-
-    if (!req.file) {
-      return res.status(400).send({ error: 'No file uploaded' });
-    }
     console.log("data",data)
     console.log("data.post_id",data.post_id)
     if(data.post_id== "" || data.post_id== "undefined" || data.post_id== '0' || data.post_id==0 || data.post_id==undefined){
