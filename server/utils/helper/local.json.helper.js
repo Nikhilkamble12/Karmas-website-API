@@ -637,6 +637,14 @@ export class OptimizedLocalJsonDB {
             });
 
             const freshData = await instance._fetchFullFromDb();
+
+            // ✅ CRITICAL FIX: If DB is empty, explicitly invalidate to stop the loop
+            if (Array.isArray(freshData) && freshData.length === 0) {
+                console.log(`🧹 DB is empty for ${instance.tableName}. Deleting local cache.`);
+                await instance.deleteFile(tableRef, expiryTime);
+                await this.invalidate(tableRef, expiryTime); 
+                return []; 
+            }
             // // 🔍 DEBUG: Check refresh data
             // console.log('🔄 Refresh DB fetch:');
             // console.log('   - Length:', freshData.length);
@@ -656,12 +664,7 @@ export class OptimizedLocalJsonDB {
                 // ✅ UPDATE CONDITIONS ON REFRESH
                 data.conditions = instance.conditions;
 
-                // ✅ If the DB is empty, just delete the file to stop the loop
-                if (freshData.length === 0) {
-                    console.log(`🧹 DB is empty for ${instance.tableName}. Deleting local cache file.`);
-                    await instance.deleteFile(tableRef, expiryTime);
-                    return []; 
-                }
+             
 
                 await instance._saveLazy(data, true);
                 _indexManager.buildIndex(instance.tableName, 'id', freshData);
