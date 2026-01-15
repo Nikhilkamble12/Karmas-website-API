@@ -147,96 +147,59 @@ const RequestsController = {
         }
     },
     // Retrieve all records 
-    getAllByView: async (req, res) => {
-        try {
-            // Fetch local data from JSON
-            // const GetAllJson = await CommanJsonFunction.getAllData(CITY_FOLDER,CITY_JSON)
-            // if(GetAllJson!==null){
-            //     if(GetAllJson.length!==0){
-            //       return res
-            //       .status(responseCode.OK)
-            //       .send(
-            //         commonResponse(
-            //           responseCode.OK,
-            //           responseConst.DATA_RETRIEVE_SUCCESS,
-            //           GetAllJson
-            //         )
-            //       );
-            //     }
-            //   }
-            // Fetch data from the database if JSON is empty
-            const getAll = await RequestService.getAllService()
+getAllByView: async (req, res) => {
+    try {
+        // 1. Fetch the main requests
+        const getAll = await RequestService.getAllService();
 
-            // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
-            // // Store the data in JSON for future retrieval
-            // if(fileStatus==false){
-            //   const DataToSave=await RequestService.getAllService()
-            //   if(DataToSave.length!==0){
-            //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
-            //   }
-            // }
-            // Return fetched data or handle case where no data is found
-            // await Promise.all(getAll.map(async(currentData)=> {
-            //     const getTaggedUsers = await RequestTagService.getAllTagByRequestd(currentData.RequestId)
-            //     currentData.tagged_users = getTaggedUsers
-            // }))
+        // 2. CHECK: If no requests exist, stop early and return BAD_REQUEST/NOT_FOUND
+        // This prevents the requestIds.map from running and the SQL error
+        if (!getAll || getAll.length === 0) {
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true));
+        }
 
-            // 1️⃣ Extract all RequestIds
-            const requestIds = getAll.map(item => item.RequestId);
-
-            // 2️⃣ Fetch all tags for these RequestIds in one go
+        // 3. Extract all RequestIds
+        const requestIds = getAll.map(item => item.RequestId);
+        
+        // 4. SECOND GUARD: Even if getAll has items, ensure requestIds aren't null/empty
+        // This is the direct fix for the SQL 'IN ()' error
+        if (requestIds.length > 0) {
+            // Fetch all tags for these RequestIds in one go
             const allTags = await RequestTagService.getAllTagsByMultipleRequestIds(requestIds);
 
-            // 3️⃣ Group tags by RequestId
+            // Group tags by RequestId for O(1) lookup speed
             const tagsByRequest = allTags.reduce((acc, tag) => {
                 if (!acc[tag.request_id]) acc[tag.request_id] = [];
                 acc[tag.request_id].push(tag);
                 return acc;
             }, {});
 
-            // 4️⃣ Assign tags to each request
+            // Assign tags to each request
             for (const currentData of getAll) {
                 currentData.tagged_users = tagsByRequest[currentData.RequestId] || [];
             }
-
-
-            if (getAll.length !== 0) {
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            getAll
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
+        } else {
+            // If no IDs, ensure every item at least has an empty array for the frontend
+            for (const currentData of getAll) {
+                currentData.tagged_users = [];
             }
-        } catch (error) {
-            console.log("error", error)
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
         }
-    },
+
+        // 5. Final Success Response
+        return res
+            .status(responseCode.OK)
+            .send(commonResponse(responseCode.OK, responseConst.DATA_RETRIEVE_SUCCESS, getAll));
+
+    } catch (error) {
+        console.log("error", error);
+        logger.error(`Error ---> ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true));
+    }
+},
     // Retrieve a record by its ID
     getByIdByView: async (req, res) => {
         try {
