@@ -21,6 +21,17 @@ if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
+// Allowed file types
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/mpeg', 'video/quicktime'];
+const ALLOWED_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES];
+
+// File size limits (in bytes)
+const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+
+
 // Route to create a new record
 
 router.post(
@@ -57,28 +68,65 @@ router.delete(
     PostMediaController.deleteData
 )
 
-// Set storage engine for Multer (temporary storage in disk)
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      // Specify the folder where Multer should temporarily store the files
-      cb(null, uploadDir);  // It will store the file in the 'uploads/' folder
-    },
-    filename: (req, file, cb) => {
-      // Create a unique filename by appending timestamp to the original filename
-      cb(null, `${Date.now()}-${file.originalname}`);
-    }
-  });
-  
-  // Create the Multer instance with the storage settings
-  const upload = multer({ storage });
 
-  // Use Multer to upload the file before calling the 'create' function
+// --- The Unified Middleware ---
+const fastMediaUpload = (req, res, next) => {
+  const upload = multer({
+    storage: multer.diskStorage({
+      destination: (req, file, cb) => cb(null, uploadDir),
+      filename: (req, file, cb) => {
+        const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+        cb(null, `${Date.now()}-${safeName}`);
+      }
+    }),
+    fileFilter: (req, file, cb) => {
+      if (!ALLOWED_TYPES.includes(file.mimetype)) {
+        return cb(new Error('Unsupported file format'), false);
+      }
+      cb(null, true);
+    },
+    limits: { fileSize: MAX_VIDEO_SIZE } 
+  }).single('mediaFile'); // <-- Explicitly using your field name 'mediaFile'
+
+  // Execute the upload and validation in one go
+  upload(req, res, (err) => {
+    // 1. Handle Multer or Filter errors
+    if (err) {
+      const msg = err.code === 'LIMIT_FILE_SIZE' ? `File exceeds ${MAX_VIDEO_SIZE/1024/1024}MB` : err.message;
+      return res.status(400).json({ success: false, message: msg });
+    }
+
+    // 2. Immediate check if file was provided
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No mediaFile found in request' });
+    }
+
+    // 3. Granular Size Validation (Image vs Video)
+    const isImage = ALLOWED_IMAGE_TYPES.includes(req.file.mimetype);
+    const currentLimit = isImage ? MAX_IMAGE_SIZE : MAX_VIDEO_SIZE;
+
+    if (req.file.size > currentLimit) {
+      // Sync cleanup is faster and prevents race conditions
+      if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+      return res.status(400).json({ 
+        success: false, 
+        message: `${isImage ? 'Image' : 'Video'} exceeds limit (${currentLimit/1024/1024}MB)` 
+      });
+    }
+
+    // 4. Success - Proceed to the controller
+    next();
+  });
+};
+
+// --- Updated Route ---
 router.post(
     `${basePath}/create/media`,
-    verifyToken,            // Middleware to verify token
-    upload.single('mediaFile'),  // Multer middleware to handle single file upload (replace 'mediaFile' with the correct field name from your form)
-    PostMediaController.BulkCreateOrUpdatePostMedia // Controller function that handles the creation logic
-  );
+    verifyToken,
+    fastMediaUpload, // SINGLE middleware handling everything
+    PostMediaController.BulkCreateOrUpdatePostMedia
+);
+
 
   router.get(
     `${basePath}/getMedia/ByPostId`,
