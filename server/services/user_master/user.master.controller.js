@@ -19,10 +19,10 @@ create: async (req, res) => {
     try {
         const data = req.body;
         const currentTime = await getCurrentIndianTime()
-        // Add metadata for creation (created by, created at)
-        // await addMetaDataWhileCreateUpdate(data, req, res, false);
+        
+        // Fix: Add return statement to prevent further execution
         const accessToken = req.get("x-access-token");
-
+        
         if (accessToken && accessToken !== "null" && accessToken !== "") {
             const tokenUser = await tokenData(req, res);
             data.created_by = tokenUser;
@@ -46,7 +46,7 @@ create: async (req, res) => {
                     )
                 );
         }
-        // Create the record using ORM
+        
         data.first_time_login = true
 
         // Check if Google Auth - user is authenticated if google_id is present and valid
@@ -69,7 +69,7 @@ create: async (req, res) => {
                     )
                 );
         }
-        // If user creation failed
+        
         if (!createData) {
             return res
                 .status(responseCode.BAD_REQUEST)
@@ -83,11 +83,10 @@ create: async (req, res) => {
                 );
         }
 
-        // --- File Upload Logic (Kept as is) ---
+        // --- File Upload Logic ---
         let file_path = null, bg_image_path = null;
         if (data.Base64File !== null && data.Base64File !== "" && data.Base64File !== 0 && data.Base64File !== undefined && data.file_name && data.file_name !== "" && data.file_name !== 0) {
             const user_id = createData.dataValues.user_id
-            // Note: Ensure currentTime is a function if calling currentTime(), otherwise use the variable
             await saveBase64ToFile(
                 data.Base64File,
                 "user_master/" + user_id,
@@ -117,7 +116,6 @@ create: async (req, res) => {
         };
 
         await UserMasterService.updateService(createData.dataValues.user_id, updateData);
-        // --------------------------------------
 
         const user_id = createData.dataValues.user_id
         const countoftotalgift = await GiftMasterService.getCountOfGift()
@@ -139,45 +137,6 @@ create: async (req, res) => {
             await addMetaDataWhileCreateUpdate(createNgoUserData, req, res, false)
             await NgoUserMasterService.createService(createNgoUserData)
         }
-
-        // --- OTP AND EMAIL LOGIC START ---
-        // if(!isGoogleAuth) {
-        //     const getDataById = await UserMasterService.getServiceById(user_id)
-        //     if (getDataById) {
-        //         // 1. Generate 6 Digit Random Number
-        //         const otp = Math.floor(100000 + Math.random() * 900000);
-
-        //         // 2. Generate Email Template
-        //         const emailContent = await CommonEmailtemplate.EmailVerificationRequestSent({
-        //             email_id: getDataById.email_id,
-        //             otp: otp,
-        //             username: getDataById.full_name || "User", // Assuming 'full_name' exists, else default
-        //             validity: "20 min"
-        //         });
-        //         // 3. Send Email (You need to implement the actual sending helper)
-        //         await sendEmail({to:getDataById.email_id, subject:emailContent.subject,text:null, html:emailContent.html});
-        //         // logger.info(`Email sent to ${getDataById.email_id}`);
-
-        //         // 4. Calculate Expiry (Current Time + 20 Minutes)
-        //         const expiryTime = new Date();
-        //         expiryTime.setMinutes(expiryTime.getMinutes() + 20);
-
-        //         // 5. Save OTP Log
-        //         const CreateOtpData = {
-        //             user_id: user_id,
-        //             otp_code: otp,
-        //             otp_type_id: OTP_TYPE_MASTER.EMAIL_VERIFY,
-        //             expiry_at: expiryTime, // Saves as Date object
-        //             is_used: 0,
-        //             attempt_count: 0,
-        //             max_attempt_limit: 5,
-        //         }
-
-        //         await addMetaDataWhileCreateUpdate(CreateOtpData, req, res, false)
-        //         await UserOtpLogsService.createService(CreateOtpData)
-        //     }
-        // }
-        // --- OTP AND EMAIL LOGIC END ---
 
         return res
             .status(responseCode.CREATED)
