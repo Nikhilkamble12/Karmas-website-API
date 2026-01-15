@@ -656,6 +656,13 @@ export class OptimizedLocalJsonDB {
                 // ✅ UPDATE CONDITIONS ON REFRESH
                 data.conditions = instance.conditions;
 
+                // ✅ If the DB is empty, just delete the file to stop the loop
+                if (freshData.length === 0) {
+                    console.log(`🧹 DB is empty for ${instance.tableName}. Deleting local cache file.`);
+                    await instance.deleteFile(tableRef, expiryTime);
+                    return []; 
+                }
+
                 await instance._saveLazy(data, true);
                 _indexManager.buildIndex(instance.tableName, 'id', freshData);
             }
