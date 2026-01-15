@@ -647,7 +647,6 @@ export class OptimizedLocalJsonDB {
             }
             // // 🔍 DEBUG: Check refresh data
             // console.log('🔄 Refresh DB fetch:');
-            // console.log('   - Length:', freshData.length);
             if (freshData.length > 0) {
                 data.data = freshData;
 

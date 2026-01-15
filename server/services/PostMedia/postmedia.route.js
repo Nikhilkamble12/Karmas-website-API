@@ -68,64 +68,28 @@ router.delete(
     PostMediaController.deleteData
 )
 
-
-// --- The Unified Middleware ---
-const fastMediaUpload = (req, res, next) => {
-  const upload = multer({
-    storage: multer.diskStorage({
-      destination: (req, file, cb) => cb(null, uploadDir),
-      filename: (req, file, cb) => {
-        const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
-        cb(null, `${Date.now()}-${safeName}`);
-      }
-    }),
-    fileFilter: (req, file, cb) => {
-      if (!ALLOWED_TYPES.includes(file.mimetype)) {
-        return cb(new Error('Unsupported file format'), false);
-      }
-      cb(null, true);
+// Set storage engine for Multer (temporary storage in disk)
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      // Specify the folder where Multer should temporarily store the files
+      cb(null, uploadDir);  // It will store the file in the 'uploads/' folder
     },
-    limits: { fileSize: MAX_VIDEO_SIZE } 
-  }).single('mediaFile'); // <-- Explicitly using your field name 'mediaFile'
-
-  // Execute the upload and validation in one go
-  upload(req, res, (err) => {
-    // 1. Handle Multer or Filter errors
-    if (err) {
-      const msg = err.code === 'LIMIT_FILE_SIZE' ? `File exceeds ${MAX_VIDEO_SIZE/1024/1024}MB` : err.message;
-      return res.status(400).json({ success: false, message: msg });
+    filename: (req, file, cb) => {
+      // Create a unique filename by appending timestamp to the original filename
+      cb(null, `${Date.now()}-${file.originalname}`);
     }
-
-    // 2. Immediate check if file was provided
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: 'No mediaFile found in request' });
-    }
-
-    // 3. Granular Size Validation (Image vs Video)
-    const isImage = ALLOWED_IMAGE_TYPES.includes(req.file.mimetype);
-    const currentLimit = isImage ? MAX_IMAGE_SIZE : MAX_VIDEO_SIZE;
-
-    if (req.file.size > currentLimit) {
-      // Sync cleanup is faster and prevents race conditions
-      if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-      return res.status(400).json({ 
-        success: false, 
-        message: `${isImage ? 'Image' : 'Video'} exceeds limit (${currentLimit/1024/1024}MB)` 
-      });
-    }
-
-    // 4. Success - Proceed to the controller
-    next();
   });
-};
+  
+  // Create the Multer instance with the storage settings
+  const upload = multer({ storage });
 
-// --- Updated Route ---
+  // Use Multer to upload the file before calling the 'create' function
 router.post(
     `${basePath}/create/media`,
-    verifyToken,
-    fastMediaUpload, // SINGLE middleware handling everything
-    PostMediaController.BulkCreateOrUpdatePostMedia
-);
+    verifyToken,            // Middleware to verify token
+    upload.single('mediaFile'),  // Multer middleware to handle single file upload (replace 'mediaFile' with the correct field name from your form)
+    PostMediaController.BulkCreateOrUpdatePostMedia // Controller function that handles the creation logic
+  );
 
 
   router.get(
