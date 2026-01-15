@@ -290,6 +290,11 @@ const PostMediaController = {
         );
     }
   },BulkCreateOrUpdatePostMedia:async(req,res)=>{
+      const data = req.body
+    const fileType = req.file.mimetype; 
+    const folderType = 'post'; 
+    const filePath = req.file.path;  // Multer stores the file temporarily here
+    const fileName = req.file.filename;
     // Ensure a file is uploaded
       function deleteFile(filePath) {
         // Use fs.unlink to remove the file at the specified file path
@@ -306,11 +311,7 @@ const PostMediaController = {
       }
     try{
       
-    const data = req.body
-    const fileType = req.file.mimetype; 
-    const folderType = 'post'; 
-    const filePath = req.file.path;  // Multer stores the file temporarily here
-    const fileName = req.file.filename;
+
     if (!req.file) {
       return res.status(400).send({ error: 'No file uploaded' });
     }
