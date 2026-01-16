@@ -275,6 +275,72 @@ const BlogsController = {
                     )
                 );
         }
+    },
+    // Retrieve all records with pagination and limit
+    getAllWithlimit: async (req, res) => {
+        try {
+            // Get pagination parameters from query
+            const limit = parseInt(req.query.limit) || 10; // Default to 10 if not provided
+            const offset = parseInt(req.query.offset) || 0; // Default to 0 if not provided
+
+            // Fetch data from the database with pagination
+            const getAll = await BlogsService.getAllServiceWithPagination(limit, offset);
+
+            // Check if data exists
+            if (getAll.length !== 0) {
+                // Extract blog IDs
+                const blogIds = getAll.map((element) => element.blog_id);
+                
+                // Fetch media for all these blogs
+                const getAllBlogMediaUsingId = await BlogMediaService.getDatabyInBlogIdByView(blogIds);
+
+                // Merge the media into the blog objects (only first media per blog)
+                const finalData = getAll.map((blog) => {
+                    // Find the first media item that belongs to this specific blog
+                    const mediaForThisBlog = getAllBlogMediaUsingId.find(media => media.blog_id === blog.blog_id);
+                    
+                    // Return the blog object with media property
+                    return {
+                        ...blog, 
+                        media: mediaForThisBlog || null // Return null if no media found
+                    };
+                });
+
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            finalData
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        } catch (error) {
+            console.log("error", error);
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
     }
 }
 export default BlogsController

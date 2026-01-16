@@ -40,6 +40,14 @@ const BlogsService = {
         } catch (error) {
             throw error
         }
+    },
+    // Method to retrieve blogs with pagination
+    getAllServiceWithPagination: async (limit, offset) => {
+        try {
+            return await BlogsDAL.getAllDataWithPagination(limit, offset)
+        } catch (error) {
+            throw error
+        }
     }
 }
 export default BlogsService

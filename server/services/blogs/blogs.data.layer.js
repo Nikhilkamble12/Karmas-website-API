@@ -66,6 +66,19 @@ const BlogsDAL = {
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
+  },
+  // Method to retrieve blogs with pagination and selected fields
+  getAllDataWithPagination: async (limit, offset) => {
+    try {
+      const getAllData = await db.sequelize.query(
+        `SELECT blog_id, user_id, title FROM (${ViewFieldTableVise.BLOG_FIELDS}) as blog_view 
+         LIMIT ${limit} OFFSET ${offset}`,
+        { type: db.Sequelize.QueryTypes.SELECT }
+      );
+      return getAllData; // Return the retrieved data
+    } catch (error) {
+      throw error; // Throw error for handling in the controller
+    }
   }
 };
 

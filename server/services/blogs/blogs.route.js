@@ -36,6 +36,12 @@ router.delete(
     verifyToken,
     BlogsController.deleteData
 )
+// Route to retrieve all records with pagination
+router.get(
+    `${basePath}/getAllWithlimit`,
+    // verifyToken,
+    BlogsController.getAllWithlimit
+)
 
 // Export the router for use in other parts of the application
 export default router
