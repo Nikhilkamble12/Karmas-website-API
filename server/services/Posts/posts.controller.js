@@ -100,74 +100,62 @@ const PostController = {
     }
   },
   // Retrieve all records
-  getAllByView: async (req, res) => {
+getAllByView: async (req, res) => {
     try {
-      // Fetch local data from JSON
-      // const GetAllJson = await CommanJsonFunction.getAllData(CITY_FOLDER,CITY_JSON)
-      // if(GetAllJson!==null){
-      //     if(GetAllJson.length!==0){
-      //       return res
-      //       .status(responseCode.OK)
-      //       .send(
-      //         commonResponse(
-      //           responseCode.OK,
-      //           responseConst.DATA_RETRIEVE_SUCCESS,
-      //           GetAllJson
-      //         )
-      //       );
-      //     }
-      //   }
-      // Fetch data from the database if JSON is empty
-      const getAll = await PostService.getAllService();
-      // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
-      // // Store the data in JSON for future retrieval
-      // if(fileStatus==false){
-      //   const DataToSave=await PostService.getAllService()
-      //   if(DataToSave.length!==0){
-      //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
-      //   }
-      // }
-      // Return fetched data or handle case where no data is found
-      await Promise.all(getAll.map(async (post) => {
-        const getTaggedUsers = await PostTagService.getDataByPostId(post.post_id);
-        post.tagged_users = getTaggedUsers
-      }))
-      if (getAll.length !== 0) {
+        // 1. Fetch main posts
+        const getAll = await PostService.getAllService();
+
+        // 2. Early Exit: If no posts found, return immediately
+        if (!getAll || getAll.length === 0) {
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true));
+        }
+
+        // 3. Extract all Post IDs for a single batch query
+        const postIds = getAll.map(post => post.post_id);
+
+        // 4. Batch Fetch Tags (Prevents N+1 problem)
+        // Ensure this service method uses "WHERE post_id IN (...)"
+        const allTags = await PostTagService.getAllTagsByMultiplePostIds(postIds);
+
+        // 5. Group tags by post_id using a Map for O(1) lookup speed
+        const tagsByPost = allTags.reduce((acc, tag) => {
+            if (!acc[tag.post_id]) acc[tag.post_id] = [];
+            acc[tag.post_id].push(tag);
+            return acc;
+        }, {});
+
+        // 6. Assign tags to posts
+        for (const post of getAll) {
+            post.tagged_users = tagsByPost[post.post_id] || [];
+        }
+
+        // 7. Success Response
         return res
-          .status(responseCode.OK)
-          .send(
-            commonResponse(
-              responseCode.OK,
-              responseConst.DATA_RETRIEVE_SUCCESS,
-              getAll
-            )
-          );
-      } else {
-        return res
-          .status(responseCode.BAD_REQUEST)
-          .send(
-            commonResponse(
-              responseCode.BAD_REQUEST,
-              responseConst.DATA_NOT_FOUND,
-              null,
-              true
-            )
-          );
-      }
+            .status(responseCode.OK)
+            .send(
+                commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    getAll
+                )
+            );
+
     } catch (error) {
-      logger.error(`Error ---> ${error}`);
-      return res
-        .status(responseCode.INTERNAL_SERVER_ERROR)
-        .send(
-          commonResponse(
-            responseCode.INTERNAL_SERVER_ERROR,
-            responseConst.INTERNAL_SERVER_ERROR,
-            null,
-            true
-          )
-        );
+        logger.error(`Error ---> ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
     }
-  },
+},
   // Retrieve a record by its ID
   getByIdByView: async (req, res) => {
     try {

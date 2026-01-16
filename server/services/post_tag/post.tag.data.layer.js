@@ -143,6 +143,13 @@ const PostTagDAL = {
         }catch(error){
             throw error
         }
+    },getAllTagsByMultiplePostIds:async(post_id)=>{
+        try{
+            const getData = await db.sequelize.query(` ${ViewFieldTableVise.POST_TAG_FIELDS} where post_id IN (${post_id}) `,{type:db.Sequelize.QueryTypes.SELECT})
+            return getData
+        }catch(error){
+            throw error
+        }
     }
 }
 export default PostTagDAL

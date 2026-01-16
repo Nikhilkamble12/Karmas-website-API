@@ -59,6 +59,12 @@ const PostTagService = {
         }catch(error){
             throw error
         }
+    },getAllTagsByMultiplePostIds:async(post_ids)=>{
+        try{
+            return await PostTagDAL.getAllTagsByMultiplePostIds(post_ids)
+        }catch(error){
+            throw error
+        }
     }
 }
 
