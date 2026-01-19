@@ -660,6 +660,7 @@ updateStatusRequestNgoMaster: async (req, res) => {
                         username: freshUser[0]?.user_name || "User", 
                         total_score: freshUser[0]?.total_scores_no || 0
                     });
+                    console.log("scoreTemplate",scoreTemplate)
 
                     await Promise.all([
                         sendTemplateNotification({
