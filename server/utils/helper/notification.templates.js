@@ -92,12 +92,18 @@ const notificationTemplates = {
   sosLocationUpdateRequest:({})=>({
     title: `Send Live Location`,
     description: `Send Live Location it more than 40 secs`
-  }),UserHasTaggedYou:({ request})=>({
+  }),
+  UserHasTaggedYou:({ request})=>({
      title: `User has Tagged You In Request`,
     description: `Someone Just Tagged You In Request ${request}`
-  }),UserHasTaggedYouPost:({user})=>({
+  }),
+  UserHasTaggedYouPost:({user})=>({
     title: `User has Tagged You In Post`,
     description: `${user} Just Tagged You In Post`
+  }),
+  RequestApprovedScoreUpdate:({username,total_score})=>({
+    title:`Score Updates For ${username}`,
+    description:`Request Approved ${username} Score Just Went Up To ${total_score}. `
   })
 };
 
