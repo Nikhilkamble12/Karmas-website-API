@@ -99,7 +99,7 @@ const notificationTemplates = {
   }),
   UserHasTaggedYouPost:({user})=>({
     title: `User has Tagged You In Post`,
-    description: `${user} Just Tagged You In Post`
+    description: `${user} Just Mention You In Post`
   }),
   RequestApprovedScoreUpdate:({username,total_score})=>({
     title:`Score Updates For ${username}`,
