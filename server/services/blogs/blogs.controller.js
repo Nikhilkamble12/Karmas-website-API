@@ -20,7 +20,8 @@ const BlogsController = {
                     .send(
                         commonResponse(
                             responseCode.CREATED,
-                            responseConst.SUCCESS_ADDING_RECORD
+                            responseConst.SUCCESS_ADDING_RECORD,
+                            createData
                         )
                     );
             } else {
@@ -49,9 +50,7 @@ const BlogsController = {
                     )
                 );
         }
-    }, 
-
-    
+    },    
     // update Record Into Db
     update: async (req, res) => {
         try {

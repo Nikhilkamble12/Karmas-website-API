@@ -556,71 +556,64 @@ const RequestNgoController = {
     //     }
     // },
 
-
-    updateStatusRequestNgoMaster: async (req, res) => {
+updateStatusRequestNgoMaster: async (req, res) => {
     try {
         const { Request_Ngo_Id } = req.query;
         const { RequestId, status_id } = req.body;
         const newStatus = parseInt(status_id);
+        const currentUserId = tokenData(req, res);
+        const metaDataUpdate = { updated_by: currentUserId, updated_at: new Date() };
 
-        // 1. Initial Fetch (Parallel)
-        // Fetch Request and RequestNgo details simultaneously
+        // 1. Checkpoint: Initial Data Fetch
         const [requestDetails, requestNgoDetails] = await Promise.all([
             RequestService.getServiceById(RequestId),
             RequestNgoService.getServiceById(Request_Ngo_Id)
         ]);
 
-        // 2. Validation (Fail Fast)
-        // Check if request is already finalized
-        if (requestDetails.status_id == STATUS_MASTER.REQUEST_APPROVED || 
-            requestDetails.status_id == STATUS_MASTER.REQUEST_REJECTED) {
+        if (!requestDetails || !requestNgoDetails) {
+            return res.status(responseCode.NOT_FOUND).send(
+                commonResponse(responseCode.NOT_FOUND, responseConst.NOT_FOUND, null, true)
+            );
+        }
+
+        // Validation (Fail Fast)
+        if (requestDetails.status_id === STATUS_MASTER.REQUEST_APPROVED || 
+            requestDetails.status_id === STATUS_MASTER.REQUEST_REJECTED) {
             return res.status(responseCode.BAD_REQUEST).send(
                 commonResponse(responseCode.BAD_REQUEST, responseConst.CANNOT_UPDATE_STATUS_CHECK_REQUEST, null, true)
             );
         }
 
-        const tasks = []; // We will push all DB operations here
-        const currentUserId = tokenData(req, res); // Get ID once
-        const metaDataUpdate = { updated_by: currentUserId, updated_at: new Date() };
-
-        // ======================================================
-        // SCENARIO A: REQUEST APPROVED
-        // ======================================================
+        // 2. Checkpoint: Core Database Updates (Critical Records)
+        const coreDbTasks = [];
+        
         if (newStatus === STATUS_MASTER.REQUEST_APPROVED) {
-            
-            // 3. Fetch Data needed for Approval (Parallel)
             const [bonusRate, userActivity] = await Promise.all([
                 BonusMasterService.getBonusMasterDataByCategoryStatus(BONUS_MASTER.REQUEST_ACCEPTED_ID, STATUS_MASTER.ACTIVE),
                 UserActivtyService.getDataByUserId(requestDetails.request_user_id)
             ]);
 
-            // A. Calculate Bonus
-            let bonusAmount = 0;
-            if (bonusRate.length > 0) {
-                bonusAmount = parseFloat(bonusRate[0].create_score);
+            const bonusAmount = bonusRate.length > 0 ? parseFloat(bonusRate[0].create_score) : 0;
+            const activity = userActivity[0];
+
+            // User Score & Reward Updates
+            if (activity) {
+                coreDbTasks.push(UserActivtyService.UpdateUserDataCount(activity.user_activity_id, 'total_rewards_no', 1));
+                if (bonusAmount > 0) {
+                    coreDbTasks.push(UserActivtyService.UpdateUserDataCount(activity.user_activity_id, 'total_scores_no', bonusAmount));
+                }
             }
 
-            // B. Atomic Updates (User Activity & NGO Stats)
-            // Add Reward Count (+1) AND Add Score (+bonusAmount)
-            tasks.push(UserActivtyService.UpdateUserDataCount(userActivity[0].user_activity_id, 'total_rewards_no', 1));
-            if (bonusAmount > 0) {
-                tasks.push(UserActivtyService.UpdateUserDataCount(userActivity[0].user_activity_id, 'total_scores_no', bonusAmount));
-                // Assuming UserMaster also tracks score
-                tasks.push(UserMasterService.UpdateDataCount(requestDetails.request_user_id, 'total_score', bonusAmount));
-            }
-            // Add NGO Completed Count (+1)
-            tasks.push(NgoMasterService.UpdateDataCount(requestNgoDetails.ngo_id, 'total_request_completed', 1));
-
-            // C. Update Main Records (Request & RequestNgo)
-            tasks.push(RequestService.updateService(RequestId, { 
+            // NGO & Request Status Updates
+            coreDbTasks.push(NgoMasterService.UpdateDataCount(requestNgoDetails.ngo_id, 'total_request_completed', 1));
+            coreDbTasks.push(RequestService.updateService(RequestId, { 
                 status_id: STATUS_MASTER.REQUEST_APPROVED, 
                 AssignedNGO: requestNgoDetails.ngo_id,
                 ...metaDataUpdate 
             }));
-            tasks.push(RequestNgoService.updateService(Request_Ngo_Id, { status_id: newStatus, ...metaDataUpdate }));
 
-            // D. Create History Record
-            const gitScoreHistory = {
+            // Score History
+            coreDbTasks.push(ScoreHistoryService.createService({
                 user_id: requestDetails.request_user_id,
                 git_score: bonusAmount,
                 request_id: RequestId,
@@ -629,102 +622,89 @@ const RequestNgoController = {
                 date: currentTime(),
                 status_id: newStatus,
                 created_by: currentUserId
-            };
-            tasks.push(ScoreHistoryService.createService(gitScoreHistory));
+            }));
 
-            // E. Notifications (Async/Parallel)
-            tasks.push((async () => {
-                const [userTokens, adminTokens,NgoToken, requestMedia] = await Promise.all([
+        } else if (newStatus === STATUS_MASTER.REQUEST_REJECTED) {
+            coreDbTasks.push(NgoMasterService.UpdateDataCount(requestNgoDetails.ngo_id, 'total_request_rejected', 1));
+        }
+
+        // Always update the specific Request-NGO link
+        coreDbTasks.push(RequestNgoService.updateService(Request_Ngo_Id, { status_id: newStatus, ...metaDataUpdate }));
+
+        // Execute Phase 1: Core Database Writes
+        await Promise.all(coreDbTasks);
+
+        // 3. Checkpoint: Secondary Updates (Stats & Counters)
+        await UserRequestStatsService.CreateOrUpdateData(requestDetails.request_user_id);
+
+        // 4. Checkpoint: Non-blocking Side Effects (Notifications)
+        // We trigger this without 'await' if we want immediate response, or 'await' to be safe.
+        (async () => {
+            try {
+                const isApproved = newStatus === STATUS_MASTER.REQUEST_APPROVED;
+                
+                const [userTokens, adminTokens, ngoTokens, requestMedia, freshUser] = await Promise.all([
                     UserTokenService.GetTokensByUserIds(requestDetails.request_user_id),
                     UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN),
-                    UserTokenService.getTokenByRoleIdInList([ROLE_MASTER.NGO,ROLE_MASTER.NGO_USER]),
-                    RequestMediaService.getDataByRequestAndSequence(RequestId, 1)
+                    UserTokenService.getTokenByRoleIdInList([ROLE_MASTER.NGO, ROLE_MASTER.NGO_USER]),
+                    RequestMediaService.getDataByRequestAndSequence(RequestId, 1),
+                    UserActivtyService.getDataByUserId(requestDetails.request_user_id)
                 ]);
 
-                const template = await notificationTemplates.requestApproved({ 
-                    ngoName: requestNgoDetails.ngo_name, 
-                    requestName: requestNgoDetails.RequestName 
-                });
-                
-                const allTokens = [...userTokens, ...adminTokens,...NgoToken];
-                
-                await sendTemplateNotification({
-                    templateKey: "Request-Approved",
-                    templateData: template,
-                    userIds: allTokens,
-                    metaData: {
+                if (isApproved) {
+                    const template = await notificationTemplates.requestApproved({ 
+                        ngoName: requestNgoDetails.ngo_name, 
+                        requestName: requestNgoDetails.RequestName 
+                    });
+                    const scoreTemplate = await notificationTemplates.RequestApprovedScoreUpdate({
+                        username: freshUser[0]?.user_name || "User", 
+                        total_score: freshUser[0]?.total_scores_no || 0
+                    });
+                    console.log("scoreTemplate",scoreTemplate)
+
+                    await Promise.all([
+                        sendTemplateNotification({
+                            templateKey: "Request-Approved",
+                            templateData: template,
+                            userIds: [...userTokens, ...adminTokens, ...ngoTokens],
+                            metaData:  {
                         created_by: currentUserId,
                         ngo_id: requestNgoDetails.ngo_id,
                         request_id: RequestId,
                         ngo_logo_image: requestNgoDetails.ngo_logo_path || null,
                         request_media_url: requestMedia[0]?.media_url || null
                     }
-                });
-            })());
-        } 
-        
-        // ======================================================
-        // SCENARIO B: REQUEST REJECTED
-        // ======================================================
-        else if (newStatus === STATUS_MASTER.REQUEST_REJECTED) {
-            
-            // A. Atomic Update (NGO Stats)
-            tasks.push(NgoMasterService.UpdateDataCount(requestNgoDetails.ngo_id, 'total_request_rejected', 1));
-
-            // B. Update Records
-            tasks.push(RequestNgoService.updateService(Request_Ngo_Id, { status_id: newStatus, ...metaDataUpdate }));
-
-            // C. Notifications (Async/Parallel)
-            tasks.push((async () => {
-                const [adminTokens, requestMedia] = await Promise.all([
-                    UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN),
-                    RequestMediaService.getDataByRequestAndSequence(RequestId, 1)
-                ]);
-
-                const template = await notificationTemplates.requestRejected({ 
-                    ngoName: requestNgoDetails.ngo_name, 
-                    requestName: requestNgoDetails.RequestName 
-                });
-
-                await sendTemplateNotification({
-                    templateKey: "Request-Rejected",
-                    templateData: template,
-                    userIds: adminTokens,
-                    metaData: {
+                        }),
+                        sendTemplateNotification({
+                            templateKey: "User Score Update",
+                            templateData: scoreTemplate,
+                            userIds: userTokens,
+                            metaData: {
                         created_by: currentUserId,
                         ngo_id: requestNgoDetails.ngo_id,
                         request_id: RequestId,
-                        ngo_logo_path: requestNgoDetails.ngo_logo_path || null,
+                        ngo_logo_image: requestNgoDetails.ngo_logo_path || null,
                         request_media_url: requestMedia[0]?.media_url || null
                     }
-                });
-            })());
-        } else {
-             return res.status(responseCode.BAD_REQUEST).send(
-                commonResponse(responseCode.BAD_REQUEST, responseConst.NGO_ALREDY_ASSIGNED_TO_REQUEST, null, true)
-            );
-        }
-
-        // 4. Update Stats (Always needed)
-        tasks.push(UserRequestStatsService.CreateOrUpdateData(requestDetails.request_user_id));
-
-        // 5. EXECUTE EVERYTHING
-        
-        // This runs database updates, score creation, and notifications simultaneously
-        await Promise.allSettled(tasks);
+                        })
+                    ]);
+                } 
+            } catch (notifyErr) {
+                logger.error(`Notification Error: ${notifyErr}`);
+            }
+        })();
 
         return res.status(responseCode.CREATED).send(
             commonResponse(responseCode.CREATED, responseConst.SUCCESS_UPDATING_RECORD)
         );
 
     } catch (error) {
-        logger.error(`Error ---> ${error}`);
+        logger.error(`UpdateStatusRequestNgoMaster Error: ${error}`);
         return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
             commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
         );
     }
 },
-
 
     // Below is code to get all request for the Ngo Data
     getAllNgoRequestLiveStatusWise:async(req,res)=>{
