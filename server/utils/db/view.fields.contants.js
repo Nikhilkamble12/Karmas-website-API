@@ -104,7 +104,7 @@ const ViewFieldTableWise = {
     TEMP_EMAIL_VERIFICATION_FIELDS: ` SELECT id, email_id, otp, created_at, expires_at FROM temp_email_verification `,
 
     //  ------> U
-    USER_MASTER_FIELDS: ` SELECT  user_id, user_name, password, full_name, role_id, role, is_account_public, email_id, mobile_no, gender, bio, enrolling_date, ngo_id, ngo_name, ngo_unique_id, file_name, file_path, bg_image, bg_image_path,
+    USER_MASTER_FIELDS: ` SELECT  user_id, user_name, password, full_name, role_id, role, designation_id, designation_name, is_account_public, email_id, mobile_no, gender, bio, enrolling_date, ngo_id, ngo_name, ngo_unique_id, file_name, file_path, bg_image, bg_image_path,
      google_id, is_active, first_time_login, is_blacklisted, ngo_level_id, blacklist_reason, total_follower, total_score, blacklisted_by, total_scores_no, is_authenticated, follower_no, created_at FROM ${VIEW_NAME.GET_ALL_USER_MASTER} `,
     USER_ACTIVITY_FIELDS: ` SELECT  user_id, user_name, email_id, file_path, enrolling_date, is_account_public, user_activity_id, follower_no, following_no, total_reports_no, total_scores_no, total_requests_no, total_rewards_no, total_likes_no, total_comments_no, total_post_comment_likes_no, total_request_like_no,
      total_request_comment_no, total_request_comment_likes_no, total_shares_no, total_blacklist_user, total_refer_and_earn_no, show_user_chats_history, show_user_posts_history, screen_time, total_reward_redeem, total_user_posts_no, last_active_at FROM ${VIEW_NAME.GET_ALL_USER_ACTIVITY} `,

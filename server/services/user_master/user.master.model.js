@@ -45,7 +45,11 @@ const UserMasterModel = (sequelize) => {
             type: DataTypes.INTEGER,
             allowNull: true,
             defaultValue: null
-        },first_time_login:{
+        }, designation_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
+        first_time_login:{
             type:DataTypes.TINYINT(1),
             allowNull:true,
             defaultValue: true

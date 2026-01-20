@@ -729,15 +729,46 @@ create: async (req, res) => {
     }, UserDataByNgoId: async (req, res) => {
         try {
             const ngo_id = req.query.ngo_id
+            if (!ngo_id) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST, 
+                            "NGO ID is required", 
+                            null, 
+                            true
+                        )
+                    );
+                }
             const getDataByUser = await UserMasterService.getUserByNgoId(ngo_id)
             if (getDataByUser.length > 0) {
+                const filteredData = getDataByUser.map(user => {
+                const { 
+                    blacklist_reason,
+                    total_follower,
+                    total_score,
+                    blacklisted_by,
+                    total_scores_no,
+                    is_authenticated,
+                    follower_no,
+                    first_time_login,
+                    is_blacklisted,
+                    bg_image,
+                    bg_image_path,
+                    google_id,
+                    bio,
+                    ...filteredUser 
+                } = user;
+                return filteredUser;
+            });
                 return res
                     .status(responseCode.OK)
                     .send(
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            getDataByUser
+                            filteredData
                         )
                     );
             } else {
