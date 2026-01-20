@@ -291,8 +291,15 @@ const BlogMediaController = {
         );
     }
   },BulkCreateOrUpdateBlogMedia:async(req,res)=>{
-    try{
-      // Ensure a file is uploaded
+    if (!req.file) {
+      return res.status(400).send({ error: 'No file uploaded' });
+    }
+    const data = req.body
+    const fileType = req.file.mimetype; 
+    const folderType = 'blog_media'; 
+    const filePath = req.file.path;  // Multer stores the file temporarily here
+    const fileName = req.file.filename;
+    // Ensure a file is uploaded
       function deleteFile(filePath) {
         // Use fs.unlink to remove the file at the specified file path
         fs.unlink(filePath, (err) => {
@@ -306,14 +313,7 @@ const BlogMediaController = {
           }
         });
       }
-    const data = req.body
-    const fileType = req.file.mimetype; 
-    const folderType = 'blog_media'; 
-    const filePath = req.file.path;  // Multer stores the file temporarily here
-    const fileName = req.file.filename;
-    if (!req.file) {
-      return res.status(400).send({ error: 'No file uploaded' });
-    }
+    try{
     console.log("data",data)
     console.log("data.blog_id",data.blog_id)
     if(data.blog_id== "" || data.blog_id== "undefined" || data.blog_id== '0' || data.blog_id==0 || data.blog_id==undefined){
@@ -347,7 +347,7 @@ const BlogMediaController = {
     console.log("folderType",folderType)
     console.log("fileName",fileName)
     if(data.media_id){
-    // You can dynamically decide where to store the file, for example, 'Blog' or 'request'
+    // You can dynamically decide where to store the file, for example, 'blog_media' or 'request'
      // For example, 'Blog', 'request', etc.
     const s3BucketFileDynamic = `${folderType}/${data.blog_id}/${data.sequence}/${fileName}`
     // Upload the file to S3
@@ -358,6 +358,8 @@ const BlogMediaController = {
       const fileUrlData = fileUrl.url;
       const dataToStore = {
         media_url:fileUrlData,
+        s3_url:fileUrl.s3_url,
+        expiry_time:fileUrl.expiry_time,
         media_type:data.media_type,
         sequence:data.sequence,
         blog_id:data.blog_id,
@@ -405,6 +407,8 @@ const BlogMediaController = {
       const fileUrlData = fileUrl.url;
     const dataToStore = {
       media_url:fileUrlData,
+      s3_url:fileUrl.s3_url,
+      expiry_time:fileUrl.expiry_time,
       media_type:data.media_type,
       sequence:data.sequence,
       blog_id:data.blog_id,

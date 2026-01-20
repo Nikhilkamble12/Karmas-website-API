@@ -20,8 +20,16 @@ const BlogMediaModel = (sequelize) => {
       allowNull: false,
     },
     media_url: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.STRING(500),
       allowNull: false,
+    },
+    s3_url:{
+      type: DataTypes.STRING(500),
+      allowNull: false,
+    },
+    expiry_time:{
+      type:DataTypes.INTEGER,
+      allowNull:true
     },
     created_at: {
       type: DataTypes.DATE,

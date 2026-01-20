@@ -5,7 +5,7 @@ const ViewFieldTableWise = {
 
     // -------> B
     BLOG_FIELDS: ` SELECT blog_id, user_id, title, content, created_at, total_likes, total_comments, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_BLOGS} `,
-    Blog_MEDIA_FIELDS: ` SELECT media_id, blog_id, sequence, media_type, media_url, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_BLOG_MEDIA} `,
+    Blog_MEDIA_FIELDS: ` SELECT media_id, blog_id, sequence, media_type, media_url, s3_url, expiry_time, created_at, is_active, created_by, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_BLOG_MEDIA} `,
     BONUS_MASTER_FIELDS: ` SELECT bonus_id, create_score, start_date, end_date, score_category_id, score_category_name, status_id, status_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_BONUS_MASTER} `,
     BONUS_HISTORY_FIELDS: ` SELECT history_id, bonus_id, previous_create_score, new_create_score, change_date, score_category_id, score_category_name, changed_by, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_BONUS_HISTORY} `,
     BLACK_LISTED_NGO_FIELDS: ` SELECT ngo_id, ngo_name, unique_id, darpan_reg_date, ngo_type, registration_no, act_name, city_of_registration_id, state_of_registration_id, country_of_registration_id, date_of_registration, address, city_id, state_id, country_id, telephone, mobile_no, website_url, email, ngo_logo, ngo_logo_path, pan_cad_file_name, pan_card_file_url, crs_regis_file_name, crs_regis_file_path, is_blacklist, blacklist_reason FROM ${VIEW_NAME.GET_ALL_BLACKLIST_NGO} `,

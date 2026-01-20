@@ -30,6 +30,12 @@ router.get(
     verifyToken,
     BlogsController.getByIdByView
 )
+// Route to retrieve a blog with its media by blog_id
+router.get(
+    `${basePath}/getByBlogId`,
+    //verifyToken,
+    BlogsController.getByBlogIdWithMedia
+)
 // Route to delete a record by ID
 router.delete(
     `${basePath}/delete`,
@@ -38,7 +44,7 @@ router.delete(
 )
 // Route to retrieve all records with pagination
 router.get(
-    `${basePath}/getAllWithlimit`,
+    `${basePath}/getAll`,
     // verifyToken,
     BlogsController.getAllWithlimit
 )

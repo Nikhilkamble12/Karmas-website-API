@@ -167,6 +167,60 @@ const BlogsController = {
             );
     }
 },
+    // Retrieve a blog with its media by blog_id
+    getByBlogIdWithMedia: async (req, res) => {
+        try {
+            const blogId = req.query.blog_id;
+            
+            // Fetch blog data by ID
+            const blogData = await BlogsService.getServiceById(blogId);
+            
+            if (blogData.length === 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+            
+            // Fetch media for this blog
+            const blogMedia = await BlogMediaService.getDatabyInBlogIdByView([blogId]);
+            
+            // Combine blog data with media
+            const finalData = {
+                ...blogData[0],
+                media: blogMedia
+            };
+            
+            return res
+                .status(responseCode.OK)
+                .send(
+                    commonResponse(
+                        responseCode.OK,
+                        responseConst.DATA_RETRIEVE_SUCCESS,
+                        finalData
+                    )
+                );
+        } catch (error) {
+            console.log("error", error);
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    },
     // Retrieve a record by its ID
     getByIdByView: async (req, res) => {
         try {
