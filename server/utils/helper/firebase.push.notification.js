@@ -173,7 +173,6 @@ const sendTemplateNotification = async ({
     userIds, // This should be an array of objects like { token: 'fcm_token', user_id: 'user_id' }
     metaData = {}
 }) => {
-    console.log("userIds",userIds)
     try {
         if (admin.apps.length > 0) {
             console.log("✅ Firebase Admin SDK is initialized and ready.");
