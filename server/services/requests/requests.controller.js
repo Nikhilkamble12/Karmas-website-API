@@ -816,27 +816,27 @@ getNgoRequstDataForMapping :async (req, res) => {
                 );
         }
 
-        // // 3️⃣ Extract all RequestIds
-        // const requestIds = getAll.map(item => item.RequestId);
+        // 3️⃣ Extract all RequestIds
+        const requestIds = getAll.map(item => item.RequestId);
 
-        // // 4️⃣ Fetch all media for these RequestIds in one batch
-        // const allRequestMedia = await RequestMediaService.getDataByMultipleRequestIdsByInForHomeScreen(requestIds);
+        // 4️⃣ Fetch all media for these RequestIds in one batch
+        const allRequestMedia = await RequestMediaService.getDataByMultipleRequestIdsByInForHomeScreen(requestIds);
 
-        // // 5️⃣ Group media by RequestId using Map for O(1) lookup
-        // const mediaByRequest = new Map();
-        // allRequestMedia.forEach(media => {
-        //     if (!mediaByRequest.has(media.RequestId)) {
-        //         mediaByRequest.set(media.RequestId, []);
-        //     }
-        //     mediaByRequest.get(media.RequestId).push(media);
-        // });
+        // 5️⃣ Group media by RequestId using Map for O(1) lookup
+        const mediaByRequest = new Map();
+        allRequestMedia.forEach(media => {
+            if (!mediaByRequest.has(media.RequestId)) {
+                mediaByRequest.set(media.RequestId, []);
+            }
+            mediaByRequest.get(media.RequestId).push(media);
+        });
 
-        // // 6️⃣ Attach media to each request
-        // getAll.forEach(currentData => {
-        //     currentData.request_media = mediaByRequest.get(currentData.RequestId) || [];
-        // });
+        // 6️⃣ Attach media to each request
+        getAll.forEach(currentData => {
+            currentData.request_media = mediaByRequest.get(currentData.RequestId) || [];
+        });
 
-        // // 7️⃣ Success response
+        // 7️⃣ Success response
         return res
             .status(responseCode.OK)
             .send(

@@ -1119,7 +1119,7 @@ UpdateRequestCount: async (RequestId, fieldName, amount) => {
 
 getAllDataByViewWithPagination: async (limit, offset) => {
     try {
-        const query = `${ViewFieldTableVise.REQUEST_FIELDS} ORDER BY RequestId DESC LIMIT ${offset}, ${limit}`;
+        const query = `${ViewFieldTableVise.REQUEST_FIELDS_LIMITED} ORDER BY RequestId DESC LIMIT ${offset}, ${limit}`;
         const getAllData = await db.sequelize.query(query, {
             type: db.Sequelize.QueryTypes.SELECT
         });

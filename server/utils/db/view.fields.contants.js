@@ -74,6 +74,7 @@ const ViewFieldTableWise = {
 
     //  ------> R 
     REQUEST_FIELDS: ` SELECT RequestId, request_user_id, request_user_name, request_user_file_path, RequestName, Age, Gender, SahaykaPhoneNo, SahaykaEmailID, category_id, category_name, Address, Pincode, Remark, Story, Problem, Solution, MessageToSahayak, RejectRemark, AssignedNGO, AssignedNGOName, CityId, City, DistrictId, District, StateId, State, CountryId, Country, status_id, status_name, request_type_id, request_type_name, is_user_tagged, total_likes, total_comments, is_active, is_blacklist, created_by, created_at, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_REQUEST} `,
+    REQUEST_FIELDS_LIMITED: ` SELECT RequestId, request_user_id, request_user_name, RequestName, request_type_id, request_type_name, category_id, category_name, status_id, status_name, total_likes, total_comments, CityId, City, DistrictId, District, StateId, State FROM ${VIEW_NAME.GET_ALL_REQUEST} `,
     REQUEST_NGO_FIELDS: ` SELECT Request_Ngo_Id, RequestId, RequestName, request_user_id, user_name, ngo_id, ngo_name, ngo_logo_path, status_id, status_name, Reason, AssignedDate, ApprovalDate FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} `,
     ROLE_MASTER_FIELDS: ` SELECT role_id, role, menu_id, menu, is_active FROM ${VIEW_NAME.GET_ALL_ROLE_MASTER} `,
     REQUEST_MEDIA_FIELDS: ` SELECT request_media_id, RequestId, img_name, media_url, media_type, sequence, s3_url, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_REQUEST_MEDIA} `,
