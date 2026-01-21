@@ -192,7 +192,7 @@ const BlogsController = {
             
             // Combine blog data with media
             const finalData = {
-                ...blogData[0],
+                ...blogData,
                 media: blogMedia
             };
             
