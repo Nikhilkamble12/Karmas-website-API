@@ -825,6 +825,11 @@ getNgoRequstDataForMapping :async (req, res) => {
         // 5️⃣ Group media by RequestId using Map for O(1) lookup
         const mediaByRequest = new Map();
         allRequestMedia.forEach(media => {
+            // Exclude videos (media_type: 'video')
+            if (media.media_type && media.media_type.toLowerCase() === 'video') {
+                return; // Skip videos
+            }
+            
             if (!mediaByRequest.has(media.RequestId)) {
                 mediaByRequest.set(media.RequestId, []);
             }
