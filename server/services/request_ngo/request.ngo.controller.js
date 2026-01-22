@@ -562,7 +562,7 @@ updateStatusRequestNgoMaster: async (req, res) => {
         const { RequestId, status_id } = req.body;
         const newStatus = parseInt(status_id);
         const currentUserId = tokenData(req, res);
-        const metaDataUpdate = { updated_by: currentUserId, updated_at: new Date() };
+        const metaDataUpdate = { modified_by: currentUserId, modified_at: new Date() };
 
         // 1. Checkpoint: Initial Data Fetch
         const [requestDetails, requestNgoDetails] = await Promise.all([
@@ -729,12 +729,20 @@ updateStatusRequestNgoMaster: async (req, res) => {
             if(getDataByNogId && getDataByNogId.length>0){
                 for(let i = 0;i< getDataByNogId.length ;i++){
                     let currentData = await RequestService.getServiceById(getDataByNogId[i].RequestId)
+                    if(getDataByNogId[i].status_id==STATUS_MASTER.REQUEST_REJECTED){
+                        getDataByNogId[i] = {
+                            ...currentData,
+                            ...getDataByNogId[i],
+                          }; 
+                          getDataByNogId[i].request_media = await RequestMediaService.getDataByRequestIdByView(getDataByNogId[i].RequestId)
+                    }else{
                     if(currentData && currentData.length!==0){
                         getDataByNogId[i] = {
                             ...getDataByNogId[i],
                             ...currentData,
                           }; 
                           getDataByNogId[i].request_media = await RequestMediaService.getDataByRequestIdByView(getDataByNogId[i].RequestId)
+                    }
                     }
                 }
                 return res
@@ -759,7 +767,7 @@ updateStatusRequestNgoMaster: async (req, res) => {
                 );
             }
         }catch(error){
-            console.log("error",error)
+        console.log("error",error)
         logger.error(`Error ---> ${error}`);
         return res
             .status(responseCode.INTERNAL_SERVER_ERROR)
