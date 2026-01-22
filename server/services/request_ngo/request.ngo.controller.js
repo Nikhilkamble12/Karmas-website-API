@@ -577,8 +577,9 @@ updateStatusRequestNgoMaster: async (req, res) => {
         }
 
         // Validation (Fail Fast)
-        if (requestDetails.status_id === STATUS_MASTER.REQUEST_APPROVED || 
-            requestDetails.status_id === STATUS_MASTER.REQUEST_REJECTED) {
+        if (requestDetails.status_id == STATUS_MASTER.REQUEST_APPROVED || 
+            requestDetails.status_id == STATUS_MASTER.REQUEST_REJECTED ||
+            requestNgoDetails.status_id == STATUS_MASTER.REQUEST_REJECTED) {
             return res.status(responseCode.BAD_REQUEST).send(
                 commonResponse(responseCode.BAD_REQUEST, responseConst.CANNOT_UPDATE_STATUS_CHECK_REQUEST, null, true)
             );
