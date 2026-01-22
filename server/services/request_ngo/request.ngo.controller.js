@@ -599,9 +599,9 @@ updateStatusRequestNgoMaster: async (req, res) => {
 
             // User Score & Reward Updates
             if (activity) {
-                coreDbTasks.push(UserActivtyService.UpdateUserDataCount(activity.user_activity_id, 'total_rewards_no', 1));
+                coreDbTasks.push(UserActivtyService.UpdateUserDataCount(activity.user_id, 'total_rewards_no', 1));
                 if (bonusAmount > 0) {
-                    coreDbTasks.push(UserActivtyService.UpdateUserDataCount(activity.user_activity_id, 'total_scores_no', bonusAmount));
+                    coreDbTasks.push(UserActivtyService.UpdateUserDataCount(activity.user_id, 'total_scores_no', bonusAmount));
                 }
             }
 

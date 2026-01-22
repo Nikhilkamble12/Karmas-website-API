@@ -116,7 +116,7 @@ const UserActivityDAL = {
             by: valueChange, 
             where: { user_id: user_id } 
         });
-
+        
         return result;
     } catch (error) {
         throw error;
