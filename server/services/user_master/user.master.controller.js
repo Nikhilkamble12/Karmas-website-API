@@ -15,153 +15,153 @@ const { commonResponse, responseCode, responseConst, logger, tokenData, currentT
 
 const UserMasterController = {
     // Create A new Record 
-create: async (req, res) => {
-    try {
-        const data = req.body;
-        const currentTime = await getCurrentIndianTime()
-        
-        // Fix: Add return statement to prevent further execution
-        const accessToken = req.get("x-access-token");
-        
-        if (accessToken && accessToken !== "null" && accessToken !== "") {
-            const tokenUser = await tokenData(req, res);
-            data.created_by = tokenUser;
-            data.created_at = currentTime
-        } else {
-            data.created_by = 1;
-            data.created_at = currentTime
-        }
+    create: async (req, res) => {
+        try {
+            const data = req.body;
+            const currentTime = await getCurrentIndianTime()
 
-        const existingUser = await UserMasterService.getUserByEmailIdByView(data.email_id);
+            // Fix: Add return statement to prevent further execution
+            const accessToken = req.get("x-access-token");
 
-        if (existingUser && existingUser.length > 0) {
-            return res
-                .status(responseCode.BAD_REQUEST)
-                .send(
-                    commonResponse(
-                        responseCode.BAD_REQUEST,
-                        responseConst.EMAIL_ALREADY_IN_USE,
-                        null,
-                        true
-                    )
-                );
-        }
-        
-        data.first_time_login = true
-
-        // Check if Google Auth - user is authenticated if google_id is present and valid
-        const isGoogleAuth = data.google_id && data.google_id.trim() !== "";
-        if(isGoogleAuth) {
-            data.is_authenticated = true;
-        }
-    
-        const createData = await UserMasterService.createService(data);
-
-        if (createData?.success == false) {
-            return res
-                .status(responseCode.BAD_REQUEST)
-                .send(
-                    commonResponse(
-                        responseCode.BAD_REQUEST,
-                        responseConst.UNIQUE_CONSTRANTS_FAILED,
-                        createData.message,
-                        true
-                    )
-                );
-        }
-        
-        if (!createData) {
-            return res
-                .status(responseCode.BAD_REQUEST)
-                .send(
-                    commonResponse(
-                        responseCode.BAD_REQUEST,
-                        responseConst.ERROR_ADDING_RECORD,
-                        null,
-                        true
-                    )
-                );
-        }
-
-        // --- File Upload Logic ---
-        let file_path = null, bg_image_path = null;
-        if (data.Base64File !== null && data.Base64File !== "" && data.Base64File !== 0 && data.Base64File !== undefined && data.file_name && data.file_name !== "" && data.file_name !== 0) {
-            const user_id = createData.dataValues.user_id
-            await saveBase64ToFile(
-                data.Base64File,
-                "user_master/" + user_id,
-                currentTime.replace(/ /g, "_").replace(/:/g, "-") + "_" + data.file_name
-            );
-            file_path = data.file_name ?
-                `user_master/${user_id}/${currentTime.replace(/ /g, "_").replace(/:/g, "-")}_${data.file_name}` :
-                null;
-        } else {
-            file_path = null
-        }
-
-        if (data.bg_image_file !== null && data.bg_image_file !== "" && data.bg_image_file !== 0 && data.bg_image_file !== undefined && data.bg_image && data.bg_image !== "" && data.bg_image !== 0) {
-            await saveBase64ToFile(
-                data.bg_image_file,
-                "user_master/" + createData.dataValues.user_id + "/bg_image",
-                currentTime.replace(/ /g, "_").replace(/:/g, "-") + "_" + data.bg_image
-            );
-            bg_image_path = data.bg_image ?
-                `user_master/${createData.dataValues.user_id}/bg_image/${currentTime.replace(/ /g, "_").replace(/:/g, "-")}_${data.bg_image}` :
-                null;
-        }
-
-        const updateData = {
-            file_path: file_path ?? null,
-            bg_image_path: bg_image_path ?? null
-        };
-
-        await UserMasterService.updateService(createData.dataValues.user_id, updateData);
-
-        const user_id = createData.dataValues.user_id
-        const countoftotalgift = await GiftMasterService.getCountOfGift()
-        const userActvityCreate = {
-            user_id: user_id,
-            total_rewards_no : countoftotalgift ?? 0,
-            created_by: user_id,
-            created_at: currentTime
-        }
-
-        await UserActivtyService.createService(userActvityCreate)
-
-        if (data.role_id == ROLE_MASTER.NGO || data.role_id == ROLE_MASTER.NGO_USER) {
-            const createNgoUserData = {
-                user_id: user_id,
-                designation_id: data.designation_id ?? null,
-                user_joining_date: data.user_joining_date ?? null,
+            if (accessToken && accessToken !== "null" && accessToken !== "") {
+                const tokenUser = await tokenData(req, res);
+                data.created_by = tokenUser;
+                data.created_at = currentTime
+            } else {
+                data.created_by = 1;
+                data.created_at = currentTime
             }
-            await addMetaDataWhileCreateUpdate(createNgoUserData, req, res, false)
-            await NgoUserMasterService.createService(createNgoUserData)
+
+            const existingUser = await UserMasterService.getUserByEmailIdByView(data.email_id);
+
+            if (existingUser && existingUser.length > 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.EMAIL_ALREADY_IN_USE,
+                            null,
+                            true
+                        )
+                    );
+            }
+
+            data.first_time_login = true
+
+            // Check if Google Auth - user is authenticated if google_id is present and valid
+            const isGoogleAuth = data.google_id && data.google_id.trim() !== "";
+            if (isGoogleAuth) {
+                data.is_authenticated = true;
+            }
+
+            const createData = await UserMasterService.createService(data);
+
+            if (createData?.success == false) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.UNIQUE_CONSTRANTS_FAILED,
+                            createData.message,
+                            true
+                        )
+                    );
+            }
+
+            if (!createData) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_ADDING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+
+            // --- File Upload Logic ---
+            let file_path = null, bg_image_path = null;
+            if (data.Base64File !== null && data.Base64File !== "" && data.Base64File !== 0 && data.Base64File !== undefined && data.file_name && data.file_name !== "" && data.file_name !== 0) {
+                const user_id = createData.dataValues.user_id
+                await saveBase64ToFile(
+                    data.Base64File,
+                    "user_master/" + user_id,
+                    currentTime.replace(/ /g, "_").replace(/:/g, "-") + "_" + data.file_name
+                );
+                file_path = data.file_name ?
+                    `user_master/${user_id}/${currentTime.replace(/ /g, "_").replace(/:/g, "-")}_${data.file_name}` :
+                    null;
+            } else {
+                file_path = null
+            }
+
+            if (data.bg_image_file !== null && data.bg_image_file !== "" && data.bg_image_file !== 0 && data.bg_image_file !== undefined && data.bg_image && data.bg_image !== "" && data.bg_image !== 0) {
+                await saveBase64ToFile(
+                    data.bg_image_file,
+                    "user_master/" + createData.dataValues.user_id + "/bg_image",
+                    currentTime.replace(/ /g, "_").replace(/:/g, "-") + "_" + data.bg_image
+                );
+                bg_image_path = data.bg_image ?
+                    `user_master/${createData.dataValues.user_id}/bg_image/${currentTime.replace(/ /g, "_").replace(/:/g, "-")}_${data.bg_image}` :
+                    null;
+            }
+
+            const updateData = {
+                file_path: file_path ?? null,
+                bg_image_path: bg_image_path ?? null
+            };
+
+            await UserMasterService.updateService(createData.dataValues.user_id, updateData);
+
+            const user_id = createData.dataValues.user_id
+            const countoftotalgift = await GiftMasterService.getCountOfGift()
+            const userActvityCreate = {
+                user_id: user_id,
+                total_rewards_no: countoftotalgift ?? 0,
+                created_by: user_id,
+                created_at: currentTime
+            }
+
+            await UserActivtyService.createService(userActvityCreate)
+
+            if (data.role_id == ROLE_MASTER.NGO || data.role_id == ROLE_MASTER.NGO_USER) {
+                const createNgoUserData = {
+                    user_id: user_id,
+                    designation_id: data.designation_id ?? null,
+                    user_joining_date: data.user_joining_date ?? null,
+                }
+                await addMetaDataWhileCreateUpdate(createNgoUserData, req, res, false)
+                await NgoUserMasterService.createService(createNgoUserData)
+            }
+
+            return res
+                .status(responseCode.CREATED)
+                .send(
+                    commonResponse(
+                        responseCode.CREATED,
+                        responseConst.SUCCESS_ADDING_RECORD
+                    )
+                );
+
+        } catch (error) {
+            console.log("error", error)
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
         }
-
-        return res
-            .status(responseCode.CREATED)
-            .send(
-                commonResponse(
-                    responseCode.CREATED,
-                    responseConst.SUCCESS_ADDING_RECORD
-                )
-            );
-
-    } catch (error) {
-        console.log("error", error)
-        logger.error(`Error ---> ${error}`);
-        return res
-            .status(responseCode.INTERNAL_SERVER_ERROR)
-            .send(
-                commonResponse(
-                    responseCode.INTERNAL_SERVER_ERROR,
-                    responseConst.INTERNAL_SERVER_ERROR,
-                    null,
-                    true
-                )
-            );
-    }
-},
+    },
     // update Record Into Db
     update: async (req, res) => {
         try {
@@ -216,8 +216,8 @@ create: async (req, res) => {
                         )
                     );
             }
-
-            if (getDataById && (getDataById.role_id == ROLE_MASTER.NGO || getDataById.role_id == ROLE_MASTER.NGO_USER)) {
+            const getUpdatedDataById = await UserMasterService.getServiceById(id)
+            if (getUpdatedDataById.role_id == ROLE_MASTER.NGO || getUpdatedDataById.role_id == ROLE_MASTER.NGO_USER) {
                 const UpdateNgoUser = await NgoUserMasterService.createOrUpdateData(id, data, req, res)
             }
 
@@ -734,34 +734,34 @@ create: async (req, res) => {
                     .status(responseCode.BAD_REQUEST)
                     .send(
                         commonResponse(
-                            responseCode.BAD_REQUEST, 
-                            "NGO ID is required", 
-                            null, 
+                            responseCode.BAD_REQUEST,
+                            "NGO ID is required",
+                            null,
                             true
                         )
                     );
-                }
+            }
             const getDataByUser = await UserMasterService.getUserByNgoId(ngo_id)
             if (getDataByUser.length > 0) {
                 const filteredData = getDataByUser.map(user => {
-                const { 
-                    blacklist_reason,
-                    total_follower,
-                    total_score,
-                    blacklisted_by,
-                    total_scores_no,
-                    is_authenticated,
-                    follower_no,
-                    first_time_login,
-                    is_blacklisted,
-                    bg_image,
-                    bg_image_path,
-                    google_id,
-                    bio,
-                    ...filteredUser 
-                } = user;
-                return filteredUser;
-            });
+                    const {
+                        blacklist_reason,
+                        total_follower,
+                        total_score,
+                        blacklisted_by,
+                        total_scores_no,
+                        is_authenticated,
+                        follower_no,
+                        first_time_login,
+                        is_blacklisted,
+                        bg_image,
+                        bg_image_path,
+                        google_id,
+                        bio,
+                        ...filteredUser
+                    } = user;
+                    return filteredUser;
+                });
                 return res
                     .status(responseCode.OK)
                     .send(
@@ -838,7 +838,7 @@ create: async (req, res) => {
                 ));
             }
             const getDatabyUser = await UserMasterService.getUserByEmailIdByView(email)
-            if(getDatabyUser.length == 0){
+            if (getDatabyUser.length == 0) {
                 return res.status(404).send(commonResponse(
                     responseCode.NOT_FOUND,
                     responseConst.USER_NOT_FOUND,
@@ -846,43 +846,43 @@ create: async (req, res) => {
                     true
                 ));
             }
-            const getOtp = await UserOtpLogsService.matchOtpByUserIdTypeAndCode(getDatabyUser.user_id,OTP_TYPE_MASTER.EMAIL_VERIFY,otp)
-            if(getOtp == null){
+            const getOtp = await UserOtpLogsService.matchOtpByUserIdTypeAndCode(getDatabyUser.user_id, OTP_TYPE_MASTER.EMAIL_VERIFY, otp)
+            if (getOtp == null) {
                 return res.status(400).send(commonResponse(
-                responseCode.BAD_REQUEST,
-                responseConst.KINDLY_REGENRATE_OTP,
-                null,
-                true
+                    responseCode.BAD_REQUEST,
+                    responseConst.KINDLY_REGENRATE_OTP,
+                    null,
+                    true
                 ));
-            }else{
-                const updateSuccess = await UserMasterService.updateService(getDatabyUser.user_id,{is_authenticated : true})
+            } else {
+                const updateSuccess = await UserMasterService.updateService(getDatabyUser.user_id, { is_authenticated: true })
                 if (updateSuccess === 0) {
+                    return res
+                        .status(responseCode.BAD_REQUEST)
+                        .send(
+                            commonResponse(
+                                responseCode.BAD_REQUEST,
+                                responseConst.ERROR_UPDATING_RECORD,
+                                null,
+                                true
+                            )
+                        );
+                }
+                // 2. Generate Email Template
+                const emailContent = await CommonEmailtemplate.EmailVefiicationCompletedSuccessFully({
+                    email_id: getDatabyUser.email_id,
+                    username: getDatabyUser.full_name || "User", // Assuming 'full_name' exists, else default
+                });
+                // 3. Send Email (You need to implement the actual sending helper)
+                await sendEmail({ to: getDatabyUser.email_id, subject: emailContent.subject, text: null, html: emailContent.html });
                 return res
-                    .status(responseCode.BAD_REQUEST)
+                    .status(responseCode.CREATED)
                     .send(
                         commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_UPDATING_RECORD,
-                            null,
-                            true
+                            responseCode.CREATED,
+                            responseConst.SUCCESS_UPDATING_RECORD
                         )
                     );
-            }
-                        // 2. Generate Email Template
-            const emailContent = await CommonEmailtemplate.EmailVefiicationCompletedSuccessFully({
-                email_id: getDatabyUser.email_id,
-                username: getDatabyUser.full_name || "User", // Assuming 'full_name' exists, else default
-            });
-            // 3. Send Email (You need to implement the actual sending helper)
-            await sendEmail({to:getDatabyUser.email_id, subject:emailContent.subject,text:null, html:emailContent.html});
-            return res
-                .status(responseCode.CREATED)
-                .send(
-                    commonResponse(
-                        responseCode.CREATED,
-                        responseConst.SUCCESS_UPDATING_RECORD
-                    )
-                );
             }
 
         } catch (error) {
@@ -898,9 +898,9 @@ create: async (req, res) => {
                     )
                 );
         }
-    },resendVerificaionOtp:async(req,res)=>{
-        try{
-            const {email} = req.body
+    }, resendVerificaionOtp: async (req, res) => {
+        try {
+            const { email } = req.body
             if (!email || email == null || email == "") {
                 return res.status(404).send(commonResponse(
                     responseCode.NOT_FOUND,
@@ -910,15 +910,15 @@ create: async (req, res) => {
                 ));
             }
             const getUserByEmail = await UserMasterService.getUserByEmailIdByView(email)
-            if(!getUserByEmail || !getUserByEmail.email_id){
-               return res.status(404).send(commonResponse(
+            if (!getUserByEmail || !getUserByEmail.email_id) {
+                return res.status(404).send(commonResponse(
                     responseCode.NOT_FOUND,
                     responseConst.EMAIL_NOT_FOUND,
                     null,
                     true
-                )); 
+                ));
             }
-            const getOtp = await UserOtpLogsService.getOtpByNotUsed(getUserByEmail.user_id,OTP_TYPE_MASTER.EMAIL_VERIFY)
+            const getOtp = await UserOtpLogsService.getOtpByNotUsed(getUserByEmail.user_id, OTP_TYPE_MASTER.EMAIL_VERIFY)
             // 1. Generate 6 Digit Random Number
             const otp = Math.floor(100000 + Math.random() * 900000);
 
@@ -930,7 +930,7 @@ create: async (req, res) => {
                 validity: "20 min"
             });
             // 3. Send Email (You need to implement the actual sending helper)
-            await sendEmail({to:getUserByEmail.email_id, subject:emailContent.subject,text:null, html:emailContent.html});
+            await sendEmail({ to: getUserByEmail.email_id, subject: emailContent.subject, text: null, html: emailContent.html });
             // logger.info(`Email sent to ${getDataById.email_id}`);
 
             // 4. Calculate Expiry (Current Time + 20 Minutes)
@@ -948,55 +948,55 @@ create: async (req, res) => {
                 max_attempt_limit: 5,
             }
 
-            if(getOtp && getOtp !== null){
-            await addMetaDataWhileCreateUpdate(CreateOtpData, req, res, true)
-            const updatedRowsCount = await UserOtpLogsService.updateService(CreateOtpData.user_id,CreateOtpData)
-            if (updatedRowsCount === 0) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_UPDATING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-            return res
-                .status(responseCode.CREATED)
-                .send(
-                    commonResponse(
-                        responseCode.CREATED,
-                        responseConst.SUCCESS_UPDATING_RECORD
-                    )
-                );
-            }else{
-            await addMetaDataWhileCreateUpdate(CreateOtpData, req, res, false)
-            const createData = await UserOtpLogsService.createService(CreateOtpData)
-            if (createData) {
+            if (getOtp && getOtp !== null) {
+                await addMetaDataWhileCreateUpdate(CreateOtpData, req, res, true)
+                const updatedRowsCount = await UserOtpLogsService.updateService(CreateOtpData.user_id, CreateOtpData)
+                if (updatedRowsCount === 0) {
+                    return res
+                        .status(responseCode.BAD_REQUEST)
+                        .send(
+                            commonResponse(
+                                responseCode.BAD_REQUEST,
+                                responseConst.ERROR_UPDATING_RECORD,
+                                null,
+                                true
+                            )
+                        );
+                }
                 return res
                     .status(responseCode.CREATED)
                     .send(
                         commonResponse(
                             responseCode.CREATED,
-                            responseConst.SUCCESS_ADDING_RECORD
+                            responseConst.SUCCESS_UPDATING_RECORD
                         )
                     );
             } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_ADDING_RECORD,
-                            null,
-                            true
-                        )
-                    );
+                await addMetaDataWhileCreateUpdate(CreateOtpData, req, res, false)
+                const createData = await UserOtpLogsService.createService(CreateOtpData)
+                if (createData) {
+                    return res
+                        .status(responseCode.CREATED)
+                        .send(
+                            commonResponse(
+                                responseCode.CREATED,
+                                responseConst.SUCCESS_ADDING_RECORD
+                            )
+                        );
+                } else {
+                    return res
+                        .status(responseCode.BAD_REQUEST)
+                        .send(
+                            commonResponse(
+                                responseCode.BAD_REQUEST,
+                                responseConst.ERROR_ADDING_RECORD,
+                                null,
+                                true
+                            )
+                        );
+                }
             }
-            }
-        }catch(error){
+        } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -1009,6 +1009,6 @@ create: async (req, res) => {
                     )
                 );
         }
-    }
+    },
 }
 export default UserMasterController
