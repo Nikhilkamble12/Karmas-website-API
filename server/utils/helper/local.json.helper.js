@@ -390,9 +390,9 @@ export class OptimizedLocalJsonDB {
     static _FILE_LOCKS = new Map();
     static _writeTimeout = null;
 
-    constructor(configOrName, expiryTime = "15d") {
+    constructor(configOrName, expiryTime = "15d",skipMemoryCache = false) {
         let mapping;
-
+        this.skipMemoryCache = skipMemoryCache; // New flag
         // CASE 1: STRING INPUT
         if (typeof configOrName === 'string') {
             // A. Check if it's a known table from constant MAP
@@ -451,8 +451,8 @@ export class OptimizedLocalJsonDB {
         this._cacheKey = `${this.tableName}:${expiryTime}`;
     }
 
-    static _getInstance(tableRef, expiryTime) {
-        return new OptimizedLocalJsonDB(tableRef, expiryTime);
+    static _getInstance(tableRef, expiryTime,skipMemoryCache = false) {
+        return new OptimizedLocalJsonDB(tableRef, expiryTime,skipMemoryCache = false);
     }
 
     async _loadFromMemoryOrFile() {

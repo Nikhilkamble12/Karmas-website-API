@@ -50,7 +50,7 @@ const UserMasterDAL = {
     // Method to retrieve all records by view
     getAllDataByView: async () => {
         try {
-            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.USER_MASTER_FIELDS} order by user_id desc`, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.USER_MASTER_WITHOUT_PASSWORD} order by user_id desc`, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
@@ -59,7 +59,7 @@ const UserMasterDAL = {
     // Method to retrieve a specific record by its ID
     getDataByIdByView: async (user_id) => {
         try {
-            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.USER_MASTER_FIELDS} where user_id  = ${user_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.USER_MASTER_WITHOUT_PASSWORD} where user_id  = ${user_id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getDataById[0] ?? [] // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
@@ -101,7 +101,7 @@ const UserMasterDAL = {
     },checkWhetherUserIsPresent: async (user_name, limit, offset, user_id) => {
         try {
             let query = `
-            SELECT u.*
+            SELECT u.user_id,u.user_name,u.full_name,u.role_id,u.role,u.is_account_public,u.email_id,u.ngo_id,u.ngo_name,u.file_name,u.file_path,u.bg_image,u.bg_image_path
             FROM v_user_master AS u
             LEFT JOIN v_user_blacklist AS vb1 
                 ON vb1.blacklisted_user_id = u.user_id 
@@ -143,7 +143,6 @@ const UserMasterDAL = {
     },
  checkIfUserNameIsPresentByGoogleId: async (google_id) => {
         try {
-            console.log('google_id', google_id)
             const getData = await db.sequelize.query(`${ViewFieldTableVise.USER_MASTER_FIELDS} where google_id = '${google_id}'`, { type: db.Sequelize.QueryTypes.SELECT })
             return getData[0] ?? []
         } catch (error) {
@@ -151,7 +150,7 @@ const UserMasterDAL = {
         }
     },getUserByNgoIdByView:async(ngo_id)=>{
         try{
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.USER_MASTER_FIELDS} where ngo_id = ${ngo_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.USER_MASTER_WITHOUT_PASSWORD} where ngo_id = ${ngo_id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData
         }catch(error){
             throw error
@@ -173,7 +172,7 @@ const UserMasterDAL = {
     },checkIfEmailIsPresent:async(email_id)=>{
         try{
             console.log('email_id',email_id)
-            const getData =await db.sequelize.query(`${ViewFieldTableVise.USER_MASTER_FIELDS} where email_id = '${email_id}'`,{type:db.Sequelize.QueryTypes.SELECT})
+            const getData =await db.sequelize.query(` SELECT  user_id,user_name,full_name,email_id  FROM ${VIEW_NAME.GET_ALL_USER_MASTER} where email_id = '${email_id}'`,{type:db.Sequelize.QueryTypes.SELECT})
             return getData[0] ?? []
         }catch(error){
             throw error
