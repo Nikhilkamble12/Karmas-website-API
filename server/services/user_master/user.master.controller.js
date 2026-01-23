@@ -167,7 +167,6 @@ const UserMasterController = {
         try {
             const id = req.query.id
             const data = req.body
-            const getDataById = await UserMasterService.getServiceById(id)
             // Add metadata for modification (modified by, modified at)
             await addMetaDataWhileCreateUpdate(data, req, res, true);
             if (data.Base64File !== null && data.Base64File !== "" && data.Base64File !== 0 && data.Base64File !== undefined && data.file_name && data.file_name !== "" && data.file_name !== 0) {
