@@ -1084,7 +1084,7 @@ const NgoMasterController = {
                 currentData.ngo_logo_path &&
                 currentData.ngo_logo_path !== 'null' &&
                 currentData.ngo_logo_path.trim() !== ''
-                ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.ngo_logo_path}`
+                ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentData.ngo_logo_path}`
                 : null
                 }
                 return res
@@ -1109,6 +1109,7 @@ const NgoMasterController = {
                     );
             }
         }catch(error){
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)

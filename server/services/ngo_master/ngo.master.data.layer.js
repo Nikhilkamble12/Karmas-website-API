@@ -1,5 +1,6 @@
 import NgoMasterModel from "./ngo.master.model.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
+import VIEW_NAME from "../../utils/db/view.constants.js";
 const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessary components from commonPath
 
 const NgoMasterDAL = {
@@ -133,31 +134,51 @@ const NgoMasterDAL = {
         throw error;
     }
 },searchNgoByFilter: async (search_query) => {
-    try {
-        // Define the query with a parameter placeholder :search_query
-        const getData = await db.sequelize.query(`
-            ${ViewFieldTableVise.NGO_MASTER_FIELDS}
-            WHERE
-                (ngo_name LIKE CONCAT('%', :search_query, '%') OR
-                 registration_no LIKE CONCAT('%', :search_query, '%') OR
-                 unique_id LIKE CONCAT('%', :search_query, '%') OR
-                 address LIKE CONCAT('%', :search_query, '%') OR
-                 city_name LIKE CONCAT('%', :search_query, '%') OR
-                 state_name LIKE CONCAT('%', :search_query, '%') OR
-                 country_name LIKE CONCAT('%', :search_query, '%') OR
-                 email LIKE CONCAT('%', :search_query, '%'))`,
-            {
-                replacements: { search_query }, // Bind the search_query value here
-                type: db.Sequelize.QueryTypes.SELECT
-            }
-        );
-        
-        // Return the fetched data
-        return getData;
-    } catch (error) {
-        console.error("Error while searching NGOs: ", error);
-        throw error;
-    }
+  try {
+    // Trim and validate input
+    const trimmedQuery = search_query?.trim();
+    if (!trimmedQuery) return [];
+
+    const getData = await db.sequelize.query(`
+      SELECT 
+        *,
+        CASE
+          WHEN ngo_name LIKE :exactMatch THEN 'ngo_name'
+          WHEN registration_no LIKE :exactMatch THEN 'registration_no'
+          WHEN unique_id LIKE :exactMatch THEN 'unique_id'
+          WHEN ngo_name LIKE :search THEN 'ngo_name'
+          WHEN registration_no LIKE :search THEN 'registration_no'
+          WHEN unique_id LIKE :search THEN 'unique_id'
+          WHEN email LIKE :search THEN 'email'
+          WHEN city_name LIKE :search THEN 'city_name'
+          WHEN state_name LIKE :search THEN 'state_name'
+          WHEN country_name LIKE :search THEN 'country_name'
+          WHEN address LIKE :search THEN 'address'
+        END AS matched_fields
+      FROM ${VIEW_NAME.GET_ALL_NGO_MASTER}
+      WHERE 
+        ngo_name LIKE :search
+        OR registration_no LIKE :search
+        OR unique_id LIKE :search
+        OR email LIKE :search
+        OR city_name LIKE :search
+        OR state_name LIKE :search
+        OR country_name LIKE :search
+        OR address LIKE :search
+      LIMIT 100
+    `, {
+      replacements: { 
+        search: `%${trimmedQuery}%`,
+        exactMatch: trimmedQuery
+      },
+      type: db.Sequelize.QueryTypes.SELECT
+    });
+
+    return getData;
+  } catch (error) {
+    console.error("Error while searching NGOs: ", error);
+    throw error;
+  }
 },UpdateDataCount: async (ngo_id, fieldName, amount) => {
     try {
         const result = await NgoMasterModel(db.sequelize).increment(fieldName, { 
