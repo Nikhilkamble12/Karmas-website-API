@@ -563,7 +563,7 @@ updateStatusRequestNgoMaster: async (req, res) => {
         const newStatus = parseInt(status_id);
         const currentUserId = tokenData(req, res);
         const metaDataUpdate = { modified_by: currentUserId, modified_at: new Date() };
-
+        
         // 1. Checkpoint: Initial Data Fetch
         const [requestDetails, requestNgoDetails] = await Promise.all([
             RequestService.getServiceById(RequestId),
@@ -589,9 +589,10 @@ updateStatusRequestNgoMaster: async (req, res) => {
         const coreDbTasks = [];
         
         if (newStatus === STATUS_MASTER.REQUEST_APPROVED) {
-            const [bonusRate, userActivity] = await Promise.all([
+            const [bonusRate, userActivity,ApprovedByUserDetails] = await Promise.all([
                 BonusMasterService.getBonusMasterDataByCategoryStatus(BONUS_MASTER.REQUEST_ACCEPTED_ID, STATUS_MASTER.ACTIVE),
-                UserActivtyService.getDataByUserId(requestDetails.request_user_id)
+                UserActivtyService.getDataByUserId(requestDetails.request_user_id),
+                UserMasterService.getServiceById(currentUserId)
             ]);
 
             const bonusAmount = bonusRate.length > 0 ? parseFloat(bonusRate[0].create_score) : 0;
@@ -604,11 +605,13 @@ updateStatusRequestNgoMaster: async (req, res) => {
                     coreDbTasks.push(UserActivtyService.UpdateUserDataCount(activity.user_id, 'total_scores_no', bonusAmount));
                 }
             }
-
+            
             // NGO & Request Status Updates
             coreDbTasks.push(NgoMasterService.UpdateDataCount(requestNgoDetails.ngo_id, 'total_request_completed', 1));
             coreDbTasks.push(RequestService.updateService(RequestId, { 
                 status_id: STATUS_MASTER.REQUEST_APPROVED, 
+                ngo_user_approved_id:tokenData(req,res),
+                ngo_user_approved_name:ApprovedByUserDetails.full_name,
                 AssignedNGO: requestNgoDetails.ngo_id,
                 ...metaDataUpdate 
             }));

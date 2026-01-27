@@ -87,6 +87,14 @@ const RequestModel = (sequelize) => {
             allowNull: false,
             defaultValue : 0
         },
+        ngo_user_approved_id:{
+            type:DataTypes.INTEGER,
+            allowNull:true
+        },
+        ngo_user_approved_name:{
+            type:DataTypes.STRING(550),
+            allowNull:true
+        },
         is_active: {
             type: DataTypes.BOOLEAN,
             defaultValue: true
