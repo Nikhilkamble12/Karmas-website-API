@@ -515,6 +515,12 @@ const CommonEmailtemplate = {
     reason = "Your submission did not meet the required criteria.",
   }) => {
     try {
+
+
+      // Inside NgoRegistrationRejected function...
+      const finalReason = (reason === null || reason === "" || reason === "null") 
+        ? "Your submission did not meet the required criteria. Please review our registration guidelines or contact our admin or support team for more specific details." 
+        : reason;
       const subject = `NGO Registration Review Result – Action Needed ❗`;
 
       const html = `
@@ -547,7 +553,7 @@ const CommonEmailtemplate = {
 
                 <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:12px;padding:20px;margin-bottom:30px;">
                   <strong style="color:#b91c1c;font-size:16px;">Reason:</strong>
-                  <p style="color:#7f1d1d;font-size:15px;margin:10px 0 0;">${reason}</p>
+                  <p style="color:#7f1d1d;font-size:15px;margin:10px 0 0;">${finalReason}</p>
                 </div>
               </div>
 
@@ -587,6 +593,11 @@ const CommonEmailtemplate = {
     try {
       const subject = `NGO Registration Requires Re-Submission 🔄`;
 
+      // Inside NgoRegistrationResubmitRequired function...
+    const finalReason = (reason === null || reason === "" || reason === "null") 
+      ? "Some documents were missing or unclear. Please check your submission dashboard to ensure all required paperwork is uploaded, or contact our admin or support team for assistance." 
+      : reason;
+
       const html = `
     <!DOCTYPE html>
     <html lang="en">
@@ -617,7 +628,7 @@ const CommonEmailtemplate = {
 
                 <div style="background:#eff6ff;border:1px solid #bae6fd;border-radius:12px;padding:20px;margin-bottom:30px;">
                   <strong style="color:#0369a1;font-size:16px;">Required Fixes:</strong>
-                  <p style="color:#075985;font-size:15px;margin-top:10px;">${reason}</p>
+                  <p style="color:#075985;font-size:15px;margin-top:10px;">${finalReason}</p>
                 </div>
               </div>
 

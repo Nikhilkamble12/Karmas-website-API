@@ -520,11 +520,12 @@ const NgoRegistrationController = {
                     {
                         is_admin_accepted: false,
                         status_id: data.status_id,
+                        remarks: data.remarks || null,
                         modified_by: req.user_id,
                         modified_at: new Date()
                     }
                 );
-                const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationResubmitRequired({ email_id: registration.email, username: registration.ngo_name, reason: registration.reason })
+                const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationResubmitRequired({ email_id: registration.email, username: registration.ngo_name, reason: data.remarks })
                 console.log("registration",registration)
                 await sendEmail({ to: registration.email, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
                 return res.send(commonResponse(200, responseConst.NGO_REGISTRATION_REOPEND));
