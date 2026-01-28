@@ -5,59 +5,251 @@ const emailFooter = `
   </div>
 `;
 
-
-
 const CommonEmailtemplate = {
-    PasswordResetMail: async ({ username, otp, validity = "20 minutes" }) => {
-      try {
-        const subject = `Reset Your Password - OTP Inside`;
-        const html = `
-          <div style="max-width:600px;margin:30px auto;background:#fff;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,0.05);font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-            <div style="background-color:#1d4ed8;color:#fff;padding:20px;text-align:center;">
-              <h2>Password Reset Code</h2>
-            </div>
-            <div style="padding:30px;">
-              <p>Hi <strong>${username}</strong>,</p>
-              <p>You requested to reset your password. Use the code below to proceed:</p>
-              <div style="background:#f0f6ff;border-left:6px solid #1d4ed8;padding:15px;font-size:22px;font-weight:bold;text-align:center;color:#1d4ed8;margin:25px 0;">${otp}</div>
-              <p>This code will expire in <strong>${validity}</strong>.</p>
-              <p>If you didn’t request this, you can safely ignore this email.</p>
-              <p>Best regards,<br><strong>Karmas Team</strong></p>
-            </div>
-            ${emailFooter}
-          </div>
+  PasswordResetMail: async ({ username, otp, validity = "20 minutes" }) => {
+    try {
+      const subject = `Reset Your Password - OTP Inside`;
+      const html = `
+          <!DOCTYPE html>
+          <html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Password Reset Code | Karmas</title>
+            <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Plus+Jakarta+Sans:wght@700&display=swap" rel="stylesheet">
+            <style>
+              body { margin: 0; padding: 0; width: 100%; background-color: #f0f7f8; }
+              .main-bg { background: linear-gradient(145deg, #e6f2f3 0%, #f0f7f8 100%); }
+              .glass-card { background-color: #ffffff; border-radius: 48px; box-shadow: 0 30px 60px -12px rgba(0, 71, 97, 0.12); }
+              .accent-bar { background: linear-gradient(90deg, #004761 0%, #35C2C1 100%); height: 8px; border-radius: 48px 48px 0 0; }
+              @media screen and (max-width: 600px) { .sm-w-full { width: 100% !important; } .sm-p { padding: 30px !important; } .sm-text-4xl { font-size: 32px !important; } }
+            </style>
+          </head>
+          <body class="main-bg">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="padding: 50px 10px;">
+              <tr>
+                <td align="center">
+                  <table width="600" border="0" cellspacing="0" cellpadding="0" class="sm-w-full">
+                    
+                    <tr>
+                      <td align="center" style="padding-bottom: 40px;">
+                        <img src="https://ac02fb06-1050-422f-92bd-86fef3f2ec41.b-cdn.net/e/2a23e72c-ee16-47f5-b7b2-eb97439d995f/26f66e0d-5d40-4720-8d1b-ac9b1e3d7f32.png" width="130" alt="Karmas" style="display: block; border: 0;">
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td class="glass-card sm-p" style="padding: 60px; position: relative;">
+                        <div class="accent-bar"></div>
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top: 20px;">
+                          <tr>
+                            <td>
+                              <h1 class="sm-text-4xl" style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 38px; font-weight: 800; color: #004761; line-height: 1.1; letter-spacing: -1px;">
+                                Password Reset <span style="color: #35C2C1;">Code.</span>
+                              </h1>
+                              <p style="margin: 25px 0 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; line-height: 28px; color: #506a73;">
+                                Hi <strong>${username}</strong>, <br>
+                                You requested to reset your password. Use the verification code below to proceed with the update:
+                              </p>
+                            </td>
+                          </tr>
+
+                          <tr>
+                            <td align="center" style="padding: 45px 0;">
+                              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #f8fcfc; border-radius: 30px; border-left: 8px solid #35C2C1; border-right: 1px solid #d1eaea; border-top: 1px solid #d1eaea; border-bottom: 1px solid #d1eaea;">
+                                <tr>
+                                  <td align="center" style="padding: 50px 20px;">
+                                    <div style="font-family: 'Courier New', Courier, monospace; font-size: 64px; font-weight: 800; color: #004761; letter-spacing: 15px; margin-left: 15px;">
+                                      ${otp}
+                                    </div>
+                                    <div style="margin-top: 15px; font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 700; color: #35C2C1; text-transform: uppercase; letter-spacing: 3px;">
+                                      Valid for ${validity}
+                                    </div>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+
+                          <tr>
+                            <td style="padding: 25px; background-color: #f0f4f5; border-radius: 20px;">
+                              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                  <td style="font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; color: #6e8891; line-height: 20px;">
+                                    🛡️ <strong>Security Notice:</strong> If you did not request this, you can safely ignore this email. No changes will be made to your account.
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+
+                          <tr>
+                            <td style="padding-top: 40px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; color: #506a73;">
+                              Best regards,<br>
+                              <strong style="color: #004761;">Karmas Team</strong>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td align="center" style="padding-top: 50px;">
+                        <table border="0" cellspacing="0" cellpadding="0">
+                          <tr>
+                            <td align="center" style="padding-bottom: 25px;">
+                              <a href="#" style="color: #35C2C1; text-decoration: none; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; margin: 0 15px;">Instagram</a>
+                              <a href="#" style="color: #35C2C1; text-decoration: none; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; margin: 0 15px;">LinkedIn</a>
+                              <a href="#" style="color: #35C2C1; text-decoration: none; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; margin: 0 15px;">Support Center</a>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td align="center">
+                              <p style="margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; color: #94b1b8; line-height: 22px;">
+                                &copy; 2026 KARMAS. All Rights Reserved.<br>
+                                Sent securely from Mumbai, India to ${userEmail}.
+                              </p>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+          </html>
         `;
-        return { subject, html };
-      } catch (error) {
-        throw error;
-      }
-    },
-  
-    PasswordHasBeenUpdatedSuccessfully: async ({ username }) => {
-      try {
-        const subject = `Your Password Was Successfully Reset`;
-        const html = `
-          <div style="max-width:600px;margin:30px auto;background:#fff;border-radius:8px;box-shadow:0 4px 10px rgba(0,0,0,0.05);font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
-            <div style="background-color:#10b981;color:#fff;padding:20px;text-align:center;">
-              <h2>Password Reset Successful</h2>
-            </div>
-            <div style="padding:30px;">
-              <p>Hello <strong>${username}</strong>,</p>
-              <p>Your password has been successfully updated. If this wasn’t you, please contact our support team immediately.</p>
-              <p>Best regards,<br><strong>Karmas Team</strong></p>
-            </div>
-            ${emailFooter}
-          </div>
+      return { subject, html };
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  PasswordHasBeenUpdatedSuccessfully: async ({ username }) => {
+    try {
+      const subject = `Your Password Was Successfully Reset`;
+      const html = `
+          <!DOCTYPE html>
+          <html lang="en" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <meta http-equiv="X-UA-Compatible" content="IE=edge">
+            <title>Password Reset Successful | Karmas</title>
+            
+            <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Plus+Jakarta+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+            <style>
+              /* Base Reset Styles */
+              body { margin: 0; padding: 0; width: 100%; background-color: #f0f7f8; -webkit-font-smoothing: antialiased; }
+              table { border-collapse: collapse; border-spacing: 0; mso-table-lspace: 0pt; mso-table-rspace: 0pt; }
+              img { border: 0; line-height: 100%; outline: none; text-decoration: none; display: block; }
+              
+              /* Layout Design Styles */
+              .main-bg { background: linear-gradient(145deg, #e6f2f3 0%, #f0f7f8 100%); }
+              .glass-card { background-color: #ffffff; border-radius: 48px; box-shadow: 0 30px 60px -12px rgba(0, 71, 97, 0.12); overflow: hidden; }
+              .accent-bar { background: linear-gradient(90deg, #004761 0%, #35C2C1 100%); height: 8px; border-radius: 48px 48px 0 0; }
+              
+              /* Responsive Adjustments */
+              @media screen and (max-width: 600px) {
+                .sm-w-full { width: 100% !important; }
+                .sm-p { padding: 40px 30px !important; }
+                .sm-text-4xl { font-size: 32px !important; }
+              }
+            </style>
+          </head>
+          <body class="main-bg">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0" style="padding: 50px 10px;">
+              <tr>
+                <td align="center">
+                  <table width="600" border="0" cellspacing="0" cellpadding="0" class="sm-w-full">
+                    
+                    <tr>
+                      <td align="center" style="padding-bottom: 40px;">
+                        <img src="https://ac02fb06-1050-422f-92bd-86fef3f2ec41.b-cdn.net/e/2a23e72c-ee16-47f5-b7b2-eb97439d995f/26f66e0d-5d40-4720-8d1b-ac9b1e3d7f32.png" width="130" alt="Karmas Logo" style="display: block;">
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td class="glass-card">
+                        <div class="accent-bar"></div>
+                        
+                        <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                          <tr>
+                            <td class="sm-p" style="padding: 60px;">
+                              
+                              <h1 class="sm-text-4xl" style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 38px; font-weight: 800; color: #004761; line-height: 1.1; letter-spacing: -1px;">
+                                Password Reset <span style="color: #35C2C1;">Successful.</span>
+                              </h1>
+                              
+                              <div style="margin: 25px 0 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 16px; line-height: 28px; color: #506a73;">
+                                <p style="margin: 0 0 15px;">Hi <strong>${username}</strong>,</p>
+                                <p style="margin: 0;">Your password has been successfully updated. You can now use your new credentials to access your account securely.</p>
+                              </div>
+
+                              <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top: 35px; background-color: #f0f4f5; border-radius: 20px;">
+                                <tr>
+                                  <td style="padding: 25px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; color: #6e8891; line-height: 20px;">
+                                    🛡️ <strong>Security Check:</strong> If you did not make this change, please contact our support team immediately to protect your account. No further action is required if this was you.
+                                  </td>
+                                </tr>
+                              </table>
+
+                              <div style="padding-top: 40px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 15px; color: #506a73;">
+                                Best regards,<br>
+                                <strong style="color: #004761;">Karmas Team</strong>
+                              </div>
+
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <td align="center" style="padding-top: 50px;">
+                        <table border="0" cellspacing="0" cellpadding="0">
+                          <tr>
+                            <td align="center" style="padding-bottom: 25px;">
+                              <a href="#" style="color: #35C2C1; text-decoration: none; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; margin: 0 15px;">Instagram</a>
+                              <a href="#" style="color: #35C2C1; text-decoration: none; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; margin: 0 15px;">LinkedIn</a>
+                              <a href="#" style="color: #35C2C1; text-decoration: none; font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; margin: 0 15px;">Support Center</a>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td align="center">
+                              <p style="margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; color: #94b1b8; line-height: 22px;">
+                                &copy; 2026 KARMAS. All Rights Reserved.<br>
+                                Sent securely from Mumbai, India.
+                              </p>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </body>
+          </html>
         `;
-        return { subject, html };
-      } catch (error) {
-        throw error;
-      }
-    },
-  EmailVerificationRequestSent: async ({ email_id, otp, username = "User", validity = "20 min" }) => {
+      return { subject, html };
+    } catch (error) {
+      throw error;
+    }
+  },
+  EmailVerificationRequestSent: async ({
+    email_id,
+    otp,
+    username = "User",
+    validity = "20 min",
+  }) => {
     try {
       const subject = `Action Required: Verify your email`;
-      
+
       const html = `
         <!DOCTYPE html>
         <html lang="en">
@@ -120,15 +312,19 @@ const CommonEmailtemplate = {
         </body>
         </html>
       `;
-      
+
       return { subject, html };
     } catch (error) {
       throw error;
     }
-},EmailVefiicationCompletedSuccessFully: async ({ email_id, username = "Friend" }) => {
+  },
+  EmailVefiicationCompletedSuccessFully: async ({
+    email_id,
+    username = "Friend",
+  }) => {
     try {
       const subject = `Welcome home, ${username}! 🌱`;
-      
+
       const html = `
         <!DOCTYPE html>
         <html lang="en">
@@ -234,11 +430,16 @@ const CommonEmailtemplate = {
     } catch (error) {
       throw error;
     }
-},NgoRegistrationApprovedSuccessfully: async ({ email_id, username = "Friend",password }) => {
-  try {
-    const subject = `Your NGO Registration is Approved! 🌟`;
+  },
+  NgoRegistrationApprovedSuccessfully: async ({
+    email_id,
+    username = "Friend",
+    password,
+  }) => {
+    try {
+      const subject = `Your NGO Registration is Approved! 🌟`;
 
-    const html = `
+      const html = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -303,16 +504,20 @@ const CommonEmailtemplate = {
     </html>
     `;
 
-    return { subject, html };
+      return { subject, html };
+    } catch (error) {
+      throw error;
+    }
+  },
+  NgoRegistrationRejected: async ({
+    email_id,
+    username = "Friend",
+    reason = "Your submission did not meet the required criteria.",
+  }) => {
+    try {
+      const subject = `NGO Registration Review Result – Action Needed ❗`;
 
-  } catch (error) {
-    throw error;
-  }
-},NgoRegistrationRejected: async ({ email_id, username = "Friend", reason = "Your submission did not meet the required criteria." }) => {
-  try {
-    const subject = `NGO Registration Review Result – Action Needed ❗`;
-
-    const html = `
+      const html = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -369,16 +574,20 @@ const CommonEmailtemplate = {
     </html>
     `;
 
-    return { subject, html };
+      return { subject, html };
+    } catch (error) {
+      throw error;
+    }
+  },
+  NgoRegistrationResubmitRequired: async ({
+    email_id,
+    username = "Friend",
+    reason = "Some documents were missing or unclear.",
+  }) => {
+    try {
+      const subject = `NGO Registration Requires Re-Submission 🔄`;
 
-  } catch (error) {
-    throw error;
-  }
-},NgoRegistrationResubmitRequired: async ({ email_id, username = "Friend", reason = "Some documents were missing or unclear." }) => {
-  try {
-    const subject = `NGO Registration Requires Re-Submission 🔄`;
-
-    const html = `
+      const html = `
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -433,15 +642,11 @@ const CommonEmailtemplate = {
     </html>
     `;
 
-    return { subject, html };
+      return { subject, html };
+    } catch (error) {
+      throw error;
+    }
+  },
+};
 
-  } catch (error) {
-    throw error;
-  }
-}
-
-
-  };
-  
 export default CommonEmailtemplate;
-  
