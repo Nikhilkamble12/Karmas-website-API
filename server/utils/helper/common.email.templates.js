@@ -595,7 +595,7 @@ const CommonEmailtemplate = {
 
       // Inside NgoRegistrationResubmitRequired function...
     const finalReason = (reason === null || reason === "" || reason === "null") 
-      ? "Some documents were missing or unclear. Please check your submission dashboard to ensure all required paperwork is uploaded, or contact our admin or support team for assistance." 
+      ? "Some documents were missing or unclear. Please check your registration to ensure all required paperwork is uploaded, or contact our admin or support team for assistance." 
       : reason;
 
       const html = `
