@@ -307,6 +307,13 @@ const TABLE_VIEW_FOLDER_MAP = {
         skipMemoryCache:true,
         conditions: {}
     },
+    "request_document_types":{
+        view_name: "v_request_document_types",
+        folder_name: "request_document_types",
+        json_file_name: "request_document_types.json5",
+        skipMemoryCache:true,
+        conditions: {}
+    },
     "request_likes": {
         view_name: "v_request_likes",
         folder_name: "request_likes",
