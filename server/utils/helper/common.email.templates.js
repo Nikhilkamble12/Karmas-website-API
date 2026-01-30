@@ -6,7 +6,7 @@ const emailFooter = `
 `;
 
 const CommonEmailtemplate = {
-  PasswordResetMail: async ({ username, otp, validity = "20 minutes" }) => {
+  PasswordResetMail: async ({ username, otp,email = "", validity = "20 minutes" }) => {
     try {
       const subject = `Reset Your Password - OTP Inside`;
       const html = `
@@ -106,7 +106,7 @@ const CommonEmailtemplate = {
                             <td align="center">
                               <p style="margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; color: #94b1b8; line-height: 22px;">
                                 &copy; 2026 KARMAS. All Rights Reserved.<br>
-                                Sent securely from Mumbai, India to ${userEmail}.
+                                Sent securely from Mumbai, India to ${email}.
                               </p>
                             </td>
                           </tr>

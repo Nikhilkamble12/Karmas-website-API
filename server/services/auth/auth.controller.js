@@ -443,6 +443,7 @@ let AuthController = {
       const { subject, html } = await CommonEmailtemplate.PasswordResetMail({
         username: user.username || user.fullname || email,
         otp,
+        email:email,
         validity: "20 minutes",
       });
 
