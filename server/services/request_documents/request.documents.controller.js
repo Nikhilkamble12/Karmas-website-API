@@ -346,6 +346,7 @@ const RequestDocumentsController = {
                     const dataToStore = {
                         media_url: fileUrlData,
                         s3_url: fileUrl.s3_url,
+                        file_name:fileName,
                         document_type_id: data.document_type_id,
                         document_type_name: data.document_type_name,
                         RequestId: data.RequestId,
@@ -400,6 +401,7 @@ const RequestDocumentsController = {
                     const dataToStore = {
                         media_url: fileUrlData,
                         s3_url: fileUrl.s3_url,
+                        file_name:fileName,
                         document_type_id: data.document_type_id,
                         document_type_name: data.document_type_name,
                         RequestId: data.RequestId,

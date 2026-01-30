@@ -3,17 +3,6 @@ import commonPath from "../../middleware/comman_path/comman.path.js"; // Import 
 const {express,verifyToken,basePathRoute,multer,path,fs,fileURLToPath} = commonPath
 
 
-async function deleteFile(filePath) {
-      console.log("Inside delete function:", filePath);
-      try {
-        await fs.access(filePath); // Check if file exists
-        await fs.unlink(filePath); // Delete it
-        console.log(`✅ File deleted: ${filePath}`);
-      } catch (err) {
-        console.error(`❌ Failed to delete file: ${filePath}`, err.message);
-      }
-    }
-
 // Define the base path for routes
 const basePath=`${basePathRoute}/request_documents`
 const router = express.Router()
