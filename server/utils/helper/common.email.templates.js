@@ -476,7 +476,7 @@ const CommonEmailtemplate = {
 
               <div style="background:#f1f5f9;padding:15px;border-radius:10px;margin-bottom:25px;text-align:center;">
                 <p style="margin:0;color:#1e293b;font-size:15px;font-weight:600;">
-                  <strong>Email:</strong> ${email_id}<br>
+                  <strong>User Name:</strong> ${email_id}<br>
                   <strong>Password:</strong> ${password}
                 </p>
               </div>

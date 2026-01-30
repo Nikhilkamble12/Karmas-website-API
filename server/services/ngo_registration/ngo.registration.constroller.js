@@ -23,6 +23,56 @@ function generateRandomPassword(length = 10) {
     return result;
 }
 
+const generateUniqueUsername = async (fullName, email) => {
+    let isUnique = false;
+    let username = "";
+    let attempt = 0;
+
+    // 1. Clean the inputs
+    const cleanName = fullName.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+    const emailPrefix = email.split('@')[0].toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+
+    while (!isUnique) {
+        // 2. Decide pattern based on attempt count
+        if (attempt === 0) {
+            username = cleanName;
+        } else if (attempt === 1) {
+            username = emailPrefix;
+        } else if (attempt === 2) {
+            username = `${cleanName}_${Math.floor(10 + Math.random() * 90)}`;
+        } else if (attempt === 3) {
+            username = `${emailPrefix}${Math.floor(10 + Math.random() * 90)}`;
+        } else {
+            // Fallback for high-collision names
+            username = `${cleanName}${Math.floor(1000 + Math.random() * 9000)}`;
+        }
+
+        // 3. Database Check (Using your View)
+        const checkResult = await db.sequelize.query(
+            `SELECT COUNT(*) as count FROM ${VIEW_NAME.GET_ALL_USER_MASTER} WHERE user_name = :username`,
+            {
+                replacements: { username: username },
+                type: db.Sequelize.QueryTypes.SELECT
+            }
+        );
+
+        // checkResult[0].count works for MySQL/Sequelize RAW queries
+        if (parseInt(checkResult[0].count) === 0) {
+            isUnique = true;
+        } else {
+            attempt++;
+        }
+
+        // Safety break to prevent infinite loops (should never happen)
+        if (attempt > 15) {
+            username = `${cleanName}${Date.now().toString().slice(-4)}`;
+            break;
+        }
+    }
+
+    return username;
+};
+
 
 
 const NgoRegistrationController = {
@@ -440,9 +490,10 @@ const NgoRegistrationController = {
 
                 // Build User Master Payload
                 const randomPassword = generateRandomPassword(10);
+                const generate_user_name = await generateUniqueUsername(registration.ngo_name,registration.email)
 
                 const userPayload = {
-                    user_name: registration.email,
+                    user_name: generate_user_name,
                     password: randomPassword,
                     full_name: registration.ngo_name,
                     role_id: ROLE_MASTER.NGO,
@@ -490,7 +541,7 @@ const NgoRegistrationController = {
                 await NgoRegistrationService.updateService(ngo_registration_id,
                     { status_id: data.status_id, is_admin_accepted: true, modified_at: new Date(), modified_by: req.user_id },
                 );
-                const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationApprovedSuccessfully({ email_id: registration.email, username: registration.ngo_name, password: randomPassword })
+                const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationApprovedSuccessfully({ email_id: generate_user_name, username: registration.ngo_name, password: randomPassword })
                 console.log("registration",registration)
                 await sendEmail({ to: registration.email, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
                 return res.send(commonResponse(200, responseConst.NGO_APPROVED_SUCCESSFULLY, { ngo: createdNgo, user: createdUser }));
