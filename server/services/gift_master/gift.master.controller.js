@@ -343,17 +343,25 @@ const GiftMasterController = {
                 userCoupons.map(coupon => [coupon.gift_master_id, coupon])
             );
 
+            const userScore = userScores[0].total_scores_no ?? 0;
+            let newRewardsUnlocked = 0;
+
             const giftResponse = allGifts.map((gift) => {
-                const userScore = userScores[0].total_scores_no ?? 0;
                 const progressValue = Math.min(
                     (userScore / gift.gift_score_required) * 100,
                     100
                 );
                 const userCoupon = couponMap.get(gift.gift_master_id);
+                const hasCoupon = !!userCoupon;
+                
+                // Track if this gift just reached 100% but doesn't have a coupon yet
+                if (progressValue >= 100 && !hasCoupon) {
+                    newRewardsUnlocked++;
+                }
                 return {
                         ...gift,
                         progress: parseFloat(progressValue.toFixed(2)), // number e.g. 85.32
-                        hasCoupon: !!userCoupon,
+                        hasCoupon,
                         coupon_id : userCoupon?.coupon_id ?? null,
                         couponCode: userCoupon?.coupon_code ?? null,
                         expiry_date : userCoupon?.expiry_date ?? null,
@@ -362,6 +370,10 @@ const GiftMasterController = {
                     };
                 }
             );
+
+            if (newRewardsUnlocked > 0) {
+                await UserActivtyService.UpdateUserDataCount(user_id, "total_rewards_no", newRewardsUnlocked);
+            }
 
             const updatedResponse = await Promise.all(giftResponse.map(async (currentData) => {
                 // Normalize file path
