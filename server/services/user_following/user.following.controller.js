@@ -5,7 +5,7 @@ import UserTokenService from "../user_tokens/user.tokens.service.js";
 import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
 import { ROLE_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 import UserMasterService from "../user_master/user.master.service.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate,notificationTemplates} = commonPath
+const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate, notificationTemplates } = commonPath
 
 const UserFollowingController = {
     // Create A new Record 
@@ -62,7 +62,7 @@ const UserFollowingController = {
 
     //                 templateData = await notificationTemplates.friendRequestSent({username:getUserActivityByFollowingId[0].user_name});
     //                 private_templateData = await notificationTemplates.followRequestReceived({username:getUserActivityByFollowingId[0].user_name});
-                    
+
     //             }else if(checkWetherItIsPresent[0].is_following==true){
     //                 if(parseInt(data.is_following) == false){
     //                     total_following_count = Math.max(0,total_following_count - 1)
@@ -105,7 +105,7 @@ const UserFollowingController = {
     //                     )
     //                 );
     //         }
-                
+
     //         }
     //         // Add metadata for creation (created by, created at)
     //         await addMetaDataWhileCreateUpdate(data, req, res, false);
@@ -255,251 +255,254 @@ const UserFollowingController = {
     // },
 
     create: async (req, res) => {
-    try {
-        const data = req.body;
-        const currentUserId = await tokenData(req, res);
-        data.user_id = currentUserId;
+        try {
+            const data = req.body;
+            const currentUserId = await tokenData(req, res);
+            data.user_id = currentUserId;
 
-        // 1. Validation & Metadata
-        if (!data.following_user_id || currentUserId == data.following_user_id) {
-             return res.status(responseCode.BAD_REQUEST).send(
-                commonResponse(responseCode.BAD_REQUEST, responseConst.INVALID_DATA, null, true)
-            );
-        }
+            // 1. Validation & Metadata
+            if (!data.following_user_id || currentUserId == data.following_user_id) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.INVALID_DATA, null, true)
+                );
+            }
 
-        await addMetaDataWhileCreateUpdate(data, req, res, false);
+            await addMetaDataWhileCreateUpdate(data, req, res, false);
 
-        // 2. Parallel Fetch (Fetch everything needed in 1 go)
-        const [targetUserActivity, currentUserActivity, existingRelation] = await Promise.all([
-            UserActivtyService.getDataByUserId(data.following_user_id),
-            UserActivtyService.getDataByUserId(currentUserId),
-            UserFollowingService.getDataByUserIdAndFollowId(currentUserId, data.following_user_id)
-        ]);
+            // 2. Parallel Fetch (Fetch everything needed in 1 go)
+            const [targetUserActivity, currentUserActivity, existingRelation] = await Promise.all([
+                UserActivtyService.getDataByUserId(data.following_user_id),
+                UserActivtyService.getDataByUserId(currentUserId),
+                UserFollowingService.getDataByUserIdAndFollowId(currentUserId, data.following_user_id)
+            ]);
 
-        // Fail Fast if target user doesn't exist
-        if (!targetUserActivity || targetUserActivity.length === 0) {
-            return res.status(responseCode.BAD_REQUEST).send(
-                commonResponse(responseCode.BAD_REQUEST, responseConst.THE_SPECIFIC_USER_ID_DOES_EXIST, null, true)
-            );
-        }
+            // Fail Fast if target user doesn't exist
+            if (!targetUserActivity || targetUserActivity.length === 0) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.THE_SPECIFIC_USER_ID_DOES_EXIST, null, true)
+                );
+            }
+            console.log("targetUserActivity", targetUserActivity)
+            console.log("currentUserActivity", currentUserActivity)
+            console.log("existingRelation", existingRelation)
+            const targetIsPublic = targetUserActivity[0].is_account_public;
+            const tasks = []; // Queue for DB updates
+            let responseMessage = responseConst.SUCCESS_ADDING_RECORD;
+            let shouldNotify = false;
+            let notificationType = null; // 'DIRECT_FOLLOW' or 'REQUEST_SENT'
 
-        const targetIsPublic = targetUserActivity[0].is_account_public;
-        const tasks = []; // Queue for DB updates
-        let responseMessage = responseConst.SUCCESS_ADDING_RECORD;
-        let shouldNotify = false;
-        let notificationType = null; // 'DIRECT_FOLLOW' or 'REQUEST_SENT'
+            // ======================================================
+            // SCENARIO A: EXISTING RELATIONSHIP FOUND (Update/Toggle)
+            // ======================================================
+            if (existingRelation && existingRelation.length > 0) {
+                const rel = existingRelation[0];
+                const relationId = rel.follow_id;
 
-        // ======================================================
-        // SCENARIO A: EXISTING RELATIONSHIP FOUND (Update/Toggle)
-        // ======================================================
-        if (existingRelation && existingRelation.length > 0) {
-            const rel = existingRelation[0];
-            const relationId = rel.follow_id;
+                // Case 1: Re-following (Was Unfollowed or Rejected) -> Turning ON
+                if ((!rel.is_following || rel.is_rejected) && data.is_following) {
+                    console.log("inside if")
+                    if (targetIsPublic) {
+                        // Direct Follow
+                        data.is_following = true;
+                        data.is_rejected = false;
+                        data.is_private = false;
 
-            // Case 1: Re-following (Was Unfollowed or Rejected) -> Turning ON
-            if ((!rel.is_following || rel.is_rejected) && data.is_following) {
-                
+                        // Increment Counts (Atomic & Parallel)
+                        tasks.push(UserActivtyService.UpdateUserDataCount(currentUserId, 'following_no', 1));
+                        tasks.push(UserActivtyService.UpdateUserDataCount(data.following_user_id, 'follower_no', 1));
+                        tasks.push(UserMasterService.UpdateDataCount(data.following_user_id, 'total_follower', 1));
+
+                        shouldNotify = true;
+                        notificationType = 'DIRECT_FOLLOW';
+                    } else {
+                        // Private Account -> Send Request
+                        data.is_following = false; // Not following yet
+                        data.is_private = true;
+                        data.is_rejected = false;
+
+                        shouldNotify = true;
+                        notificationType = 'REQUEST_SENT';
+                    }
+                }
+                // Case 2: Unfollowing -> Turning OFF
+                else if (rel.is_following && !data.is_following) {
+                    console.log("inside else")
+                    // Decrement Counts (Atomic & Parallel)
+                    tasks.push(UserActivtyService.UpdateUserDataCount(currentUserId, 'following_no', -1));
+                    tasks.push(UserActivtyService.UpdateUserDataCount(data.following_user_id, 'follower_no', -1));
+                    tasks.push(UserMasterService.UpdateDataCount(data.following_user_id, 'total_follower', -1));
+                }
+                console.log("data",data)
+                // Update the relationship record
+                tasks.push(UserFollowingService.updateService(relationId, data));
+            }
+
+            // ======================================================
+            // SCENARIO B: NEW RECORD (First time follow)
+            // ======================================================
+            else {
                 if (targetIsPublic) {
                     // Direct Follow
                     data.is_following = true;
-                    data.is_rejected = false;
                     data.is_private = false;
-                    
-                    // Increment Counts (Atomic & Parallel)
+
                     tasks.push(UserActivtyService.UpdateUserDataCount(currentUserId, 'following_no', 1));
                     tasks.push(UserActivtyService.UpdateUserDataCount(data.following_user_id, 'follower_no', 1));
                     tasks.push(UserMasterService.UpdateDataCount(data.following_user_id, 'total_follower', 1));
-                    
+
                     shouldNotify = true;
                     notificationType = 'DIRECT_FOLLOW';
                 } else {
-                    // Private Account -> Send Request
-                    data.is_following = false; // Not following yet
-                    data.is_private = true;
-                    data.is_rejected = false;
-                    
+                    // Private Request
+                    data.is_following = false;
+                    data.is_private = true; // Pending approval
+
                     shouldNotify = true;
                     notificationType = 'REQUEST_SENT';
                 }
-            } 
-            // Case 2: Unfollowing -> Turning OFF
-            else if (rel.is_following && !data.is_following) {
-                // Decrement Counts (Atomic & Parallel)
-                tasks.push(UserActivtyService.UpdateUserDataCount(currentUserId, 'following_no', -1));
-                tasks.push(UserActivtyService.UpdateUserDataCount(data.following_user_id, 'follower_no', -1));
-                tasks.push(UserMasterService.UpdateDataCount(data.following_user_id, 'total_follower', -1));
+
+                // Create record
+                tasks.push(UserFollowingService.createService(data));
             }
 
-            // Update the relationship record
-            tasks.push(UserFollowingService.updateService(relationId, data));
-        }
+            // ======================================================
+            // NOTIFICATIONS (Async Fire-and-Forget)
+            // ======================================================
+            if (shouldNotify) {
+                tasks.push((async () => {
+                    // Cleanup Profile Images
+                    const currImg = currentUserActivity[0]?.file_path ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentUserActivity[0].file_path}` : null;
+                    const targetImg = targetUserActivity[0]?.file_path ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${targetUserActivity[0].file_path}` : null;
 
-        // ======================================================
-        // SCENARIO B: NEW RECORD (First time follow)
-        // ======================================================
-        else {
-            if (targetIsPublic) {
-                // Direct Follow
-                data.is_following = true;
-                data.is_private = false;
-                
-                tasks.push(UserActivtyService.UpdateUserDataCount(currentUserId, 'following_no', 1));
-                tasks.push(UserActivtyService.UpdateUserDataCount(data.following_user_id, 'follower_no', 1));
-                tasks.push(UserMasterService.UpdateDataCount(data.following_user_id, 'total_follower', 1));
-
-                shouldNotify = true;
-                notificationType = 'DIRECT_FOLLOW';
-            } else {
-                // Private Request
-                data.is_following = false;
-                data.is_private = true; // Pending approval
-
-                shouldNotify = true;
-                notificationType = 'REQUEST_SENT';
+                    if (notificationType === 'DIRECT_FOLLOW') {
+                        const targetUserTokens = await UserTokenService.GetTokensByUserIds(data.following_user_id);
+                        const template = await notificationTemplates.friendRequestNowFollowing({ username: currentUserActivity[0].user_name });
+                        await sendTemplateNotification({
+                            templateKey: "Follow-Request-Accepted", // Or "User-Follow" depending on your key
+                            templateData: template,
+                            userIds: targetUserTokens,
+                            metaData: {
+                                created_by: currentUserId,
+                                user_id: data.user_id,
+                                follow_user_id: data.following_user_id, // Who is being followed
+                                current_user_image: currImg,
+                                following_user_image: targetImg
+                            }
+                        });
+                    } else if (notificationType === 'REQUEST_SENT') {
+                        const targetUserTokens = await UserTokenService.GetTokensByUserIds(data.following_user_id);
+                        const privateTemplate = await notificationTemplates.followRequestReceived({ username: currentUserActivity[0].user_name });
+                        await sendTemplateNotification({
+                            templateKey: "Follow-Request-Received",
+                            templateData: privateTemplate,
+                            userIds: targetUserTokens,
+                            metaData: {
+                                created_by: currentUserId,
+                                user_id: data.user_id,
+                                follow_user_id: data.following_user_id,
+                                current_user_image: currImg
+                            }
+                        });
+                    }
+                })());
             }
 
-            // Create record
-            tasks.push(UserFollowingService.createService(data));
-        }
+            // EXECUTE EVERYTHING (DB Updates + Notifications)
 
-        // ======================================================
-        // NOTIFICATIONS (Async Fire-and-Forget)
-        // ======================================================
-        if (shouldNotify) {
-            tasks.push((async () => {                
-                // Cleanup Profile Images
-                const currImg = currentUserActivity[0]?.file_path ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentUserActivity[0].file_path}` : null;
-                const targetImg = targetUserActivity[0]?.file_path ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${targetUserActivity[0].file_path}` : null;
+            await Promise.allSettled(tasks);
 
-                if (notificationType === 'DIRECT_FOLLOW') {
-                    const targetUserTokens = await UserTokenService.GetTokensByUserIds(data.following_user_id);
-                    const template = await notificationTemplates.friendRequestNowFollowing({ username: currentUserActivity[0].user_name });
-                    await sendTemplateNotification({
-                        templateKey: "Follow-Request-Accepted", // Or "User-Follow" depending on your key
-                        templateData: template,
-                        userIds: targetUserTokens,
-                        metaData: {
-                            created_by: currentUserId,
-                            user_id : data.user_id,
-                            follow_user_id: data.following_user_id, // Who is being followed
-                            current_user_image: currImg,
-                            following_user_image: targetImg
-                        }
-                    });
-                } else if (notificationType === 'REQUEST_SENT') {
-                    const targetUserTokens = await UserTokenService.GetTokensByUserIds(data.following_user_id);
-                    const privateTemplate = await notificationTemplates.followRequestReceived({ username: currentUserActivity[0].user_name });
-                    await sendTemplateNotification({
-                        templateKey: "Follow-Request-Received",
-                        templateData: privateTemplate,
-                        userIds: targetUserTokens,
-                        metaData: {
-                            created_by: currentUserId,
-                            user_id : data.user_id,
-                            follow_user_id: data.following_user_id,
-                            current_user_image: currImg
-                        }
-                    });
-                }
-            })());
-        }
+            return res.status(responseCode.CREATED).send(
+                commonResponse(responseCode.CREATED, responseMessage)
+            );
 
-        // EXECUTE EVERYTHING (DB Updates + Notifications)
-        
-        await Promise.allSettled(tasks);
-
-        return res.status(responseCode.CREATED).send(
-            commonResponse(responseCode.CREATED, responseMessage)
-        );
-
-    } catch (error) {
-        logger.error(`Error ---> ${error}`);
-        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
-            commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
-        );
-    }
-},
-
-// Usually called when a Private User ACCEPTS a follow request
-update: async (req, res) => {
-    try {
-        const id = req.query.id; // Relation ID (UserFollowing Table ID)
-        const data = req.body;   // { is_following: true }
-        
-        await addMetaDataWhileCreateUpdate(data, req, res, true);
-
-        // 1. Fetch Current State
-        const currentRelation = await UserFollowingService.getServiceById(id);
-        
-        if (!currentRelation) {
-             return res.status(responseCode.BAD_REQUEST).send(
-                commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true)
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
             );
         }
+    },
 
-        const tasks = [];
-        
-        // 2. Logic: Pending (False) -> Accepted (True)
-        if (!currentRelation.is_following && data.is_following) {
-            const followerId = currentRelation.user_id; // The person who requested
-            const followedId = currentRelation.following_user_id; // The person accepting (Current User)
+    // Usually called when a Private User ACCEPTS a follow request
+    update: async (req, res) => {
+        try {
+            const id = req.query.id; // Relation ID (UserFollowing Table ID)
+            const data = req.body;   // { is_following: true }
 
-            // Atomic Increments
-            tasks.push(UserActivtyService.UpdateUserDataCount(followerId, 'following_no', 1));
-            tasks.push(UserActivtyService.UpdateUserDataCount(followedId, 'follower_no', 1));
-            tasks.push(UserMasterService.UpdateDataCount(followedId, 'total_follower', 1));
+            await addMetaDataWhileCreateUpdate(data, req, res, true);
 
-            // Set flags for acceptance
-            data.is_private = false;
-            data.is_rejected = false;
+            // 1. Fetch Current State
+            const currentRelation = await UserFollowingService.getServiceById(id);
 
-            // Notification: Tell the follower they were accepted
-            tasks.push((async () => {
-                const [followerTokens, followedUser] = await Promise.all([
-                    UserTokenService.GetTokensByUserIds(followerId),
-                    UserActivtyService.getDataByUserId(followedId)
-                ]);
-                
-                // Construct images/template...
-                const template = await notificationTemplates.friendRequestAccepted({ username: followedUser[0].user_name });
-                
-                await sendTemplateNotification({
-                    templateKey: "Follow-Request-Accepted",
-                    templateData: template,
-                    userIds: followerTokens,
-                    metaData: {
-                        created_by: tokenData(req, res),
-                        follow_user_id: followedId
-                    }
-                });
-            })());
+            if (!currentRelation) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true)
+                );
+            }
+
+            const tasks = [];
+
+            // 2. Logic: Pending (False) -> Accepted (True)
+            if (!currentRelation.is_following && data.is_following) {
+                const followerId = currentRelation.user_id; // The person who requested
+                const followedId = currentRelation.following_user_id; // The person accepting (Current User)
+
+                // Atomic Increments
+                tasks.push(UserActivtyService.UpdateUserDataCount(followerId, 'following_no', 1));
+                tasks.push(UserActivtyService.UpdateUserDataCount(followedId, 'follower_no', 1));
+                tasks.push(UserMasterService.UpdateDataCount(followedId, 'total_follower', 1));
+
+                // Set flags for acceptance
+                data.is_private = false;
+                data.is_rejected = false;
+
+                // Notification: Tell the follower they were accepted
+                tasks.push((async () => {
+                    const [followerTokens, followedUser] = await Promise.all([
+                        UserTokenService.GetTokensByUserIds(followerId),
+                        UserActivtyService.getDataByUserId(followedId)
+                    ]);
+
+                    // Construct images/template...
+                    const template = await notificationTemplates.friendRequestAccepted({ username: followedUser[0].user_name });
+
+                    await sendTemplateNotification({
+                        templateKey: "Follow-Request-Accepted",
+                        templateData: template,
+                        userIds: followerTokens,
+                        metaData: {
+                            created_by: tokenData(req, res),
+                            follow_user_id: followedId
+                        }
+                    });
+                })());
+            }
+            // Logic: Unfollow via Update (True -> False)
+            else if (currentRelation.is_following && data.is_following === false) {
+                const followerId = currentRelation.user_id;
+                const followedId = currentRelation.following_user_id;
+
+                tasks.push(UserActivtyService.UpdateUserDataCount(followerId, 'following_no', -1));
+                tasks.push(UserActivtyService.UpdateUserDataCount(followedId, 'follower_no', -1));
+                tasks.push(UserMasterService.UpdateDataCount(followedId, 'total_follower', -1));
+            }
+
+            // 3. Update the Record
+            tasks.push(UserFollowingService.updateService(id, data));
+
+            await Promise.allSettled(tasks);
+
+            return res.status(responseCode.CREATED).send(
+                commonResponse(responseCode.CREATED, responseConst.SUCCESS_UPDATING_RECORD)
+            );
+
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+            );
         }
-        // Logic: Unfollow via Update (True -> False)
-        else if (currentRelation.is_following && data.is_following === false) {
-             const followerId = currentRelation.user_id;
-             const followedId = currentRelation.following_user_id;
-
-             tasks.push(UserActivtyService.UpdateUserDataCount(followerId, 'following_no', -1));
-             tasks.push(UserActivtyService.UpdateUserDataCount(followedId, 'follower_no', -1));
-             tasks.push(UserMasterService.UpdateDataCount(followedId, 'total_follower', -1));
-        }
-
-        // 3. Update the Record
-        tasks.push(UserFollowingService.updateService(id, data));
-
-        await Promise.allSettled(tasks);
-
-        return res.status(responseCode.CREATED).send(
-            commonResponse(responseCode.CREATED, responseConst.SUCCESS_UPDATING_RECORD)
-        );
-
-    } catch (error) {
-        logger.error(`Error ---> ${error}`);
-        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
-            commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
-        );
-    }
-},
+    },
 
 
     // Retrieve all records 
@@ -635,96 +638,96 @@ update: async (req, res) => {
         }
     },
     // Delete A Record 
-deleteData: async (req, res) => {
-    try {
-        const id = req.query.id;
+    deleteData: async (req, res) => {
+        try {
+            const id = req.query.id;
 
-        // 1. Fetch Relation Data (Fail Fast)
-        // We need to know who is following whom before we delete the record
-        const relationData = await UserFollowingService.getServiceById(id);
+            // 1. Fetch Relation Data (Fail Fast)
+            // We need to know who is following whom before we delete the record
+            const relationData = await UserFollowingService.getServiceById(id);
 
-        // Handle array or object return type just in case
-        const relation = Array.isArray(relationData) ? relationData[0] : relationData;
+            // Handle array or object return type just in case
+            const relation = Array.isArray(relationData) ? relationData[0] : relationData;
 
-        if (!relation) {
-            return res.status(responseCode.BAD_REQUEST).send(
+            if (!relation) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
+            }
+
+            const tasks = [];
+
+            // 2. Decrement Counters (Atomic & Parallel)
+            // Only decrement if they were actually following (is_following == true)
+            if (relation.is_following) {
+
+                const followerId = relation.user_id;           // The person who followed
+                const followedId = relation.following_user_id; // The person being followed
+
+                // A. Decrement Follower's "Following" count
+                tasks.push(
+                    UserActivtyService.UpdateUserDataCount(followerId, 'following_no', -1)
+                );
+
+                // B. Decrement Followed User's "Follower" count
+                tasks.push(
+                    UserActivtyService.UpdateUserDataCount(followedId, 'follower_no', -1)
+                );
+
+                // C. Decrement Followed User's Master "Total Follower" count
+                tasks.push(
+                    UserMasterService.UpdateDataCount(followedId, 'total_follower', -1)
+                );
+            }
+
+            // 3. Delete the Record
+            // Push the delete operation into the same parallel queue
+            tasks.push(UserFollowingService.deleteByid(id, req, res));
+
+            // 4. Execute All Simultaneously
+
+            const results = await Promise.allSettled(tasks);
+
+            // Check the result of the Delete operation (it was the last task added)
+            const deleteResult = results[results.length - 1];
+
+            if (deleteResult.status === 'fulfilled' && deleteResult.value !== 0) {
+                return res.status(responseCode.CREATED).send(
+                    commonResponse(
+                        responseCode.CREATED,
+                        responseConst.SUCCESS_DELETING_RECORD
+                    )
+                );
+            } else {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.ERROR_DELETING_RECORD,
+                        null,
+                        true
+                    )
+                );
+            }
+
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
                 commonResponse(
-                    responseCode.BAD_REQUEST,
-                    responseConst.DATA_NOT_FOUND,
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
                     null,
                     true
                 )
             );
         }
-
-        const tasks = [];
-
-        // 2. Decrement Counters (Atomic & Parallel)
-        // Only decrement if they were actually following (is_following == true)
-        if (relation.is_following) {
-            
-            const followerId = relation.user_id;           // The person who followed
-            const followedId = relation.following_user_id; // The person being followed
-
-            // A. Decrement Follower's "Following" count
-            tasks.push(
-                UserActivtyService.UpdateUserDataCount(followerId, 'following_no', -1)
-            );
-
-            // B. Decrement Followed User's "Follower" count
-            tasks.push(
-                UserActivtyService.UpdateUserDataCount(followedId, 'follower_no', -1)
-            );
-
-            // C. Decrement Followed User's Master "Total Follower" count
-            tasks.push(
-                UserMasterService.UpdateDataCount(followedId, 'total_follower', -1)
-            );
-        }
-
-        // 3. Delete the Record
-        // Push the delete operation into the same parallel queue
-        tasks.push(UserFollowingService.deleteByid(id, req, res));
-
-        // 4. Execute All Simultaneously
-        
-        const results = await Promise.allSettled(tasks);
-
-        // Check the result of the Delete operation (it was the last task added)
-        const deleteResult = results[results.length - 1];
-
-        if (deleteResult.status === 'fulfilled' && deleteResult.value !== 0) {
-            return res.status(responseCode.CREATED).send(
-                commonResponse(
-                    responseCode.CREATED,
-                    responseConst.SUCCESS_DELETING_RECORD
-                )
-            );
-        } else {
-             return res.status(responseCode.BAD_REQUEST).send(
-                commonResponse(
-                    responseCode.BAD_REQUEST,
-                    responseConst.ERROR_DELETING_RECORD,
-                    null,
-                    true
-                )
-            );
-        }
-
-    } catch (error) {
-        logger.error(`Error ---> ${error}`);
-        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
-            commonResponse(
-                responseCode.INTERNAL_SERVER_ERROR,
-                responseConst.INTERNAL_SERVER_ERROR,
-                null,
-                true
-            )
-        );
-    }
-},
-    getDataByUserIdByview:async(req,res)=>{
-        try{
+    },
+    getDataByUserIdByview: async (req, res) => {
+        try {
             const user_id = req.query.user_id
             const getDatabyuserId = await UserFollowingService.getByUserId(user_id)
             const updatedResponse = await Promise.all(getDatabyuserId.map(async (currentData) => {
@@ -741,7 +744,7 @@ deleteData: async (req, res) => {
 
                 return currentData;
 
-                }));
+            }));
             if (getDatabyuserId.length !== 0) {
                 return res
                     .status(responseCode.OK)
@@ -764,7 +767,7 @@ deleteData: async (req, res) => {
                         )
                     );
             }
-        }catch(error){
+        } catch (error) {
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -777,8 +780,8 @@ deleteData: async (req, res) => {
                     )
                 );
         }
-    },getDatabyFollowingUserId:async(req,res)=>{
-        try{
+    }, getDatabyFollowingUserId: async (req, res) => {
+        try {
             const following_user_id = req.query.following_user_id
             const getDataByFollowingUserId = await UserFollowingService.getDataByFollowingUserId(following_user_id)
             const updatedResponse = await Promise.all(getDataByFollowingUserId.map(async (currentData) => {
@@ -795,7 +798,7 @@ deleteData: async (req, res) => {
 
                 return currentData;
 
-                }));
+            }));
             if (getDataByFollowingUserId.length !== 0) {
                 return res
                     .status(responseCode.OK)
@@ -818,8 +821,8 @@ deleteData: async (req, res) => {
                         )
                     );
             }
-        }catch(error){
-            console.log("error",error)
+        } catch (error) {
+            console.log("error", error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -953,8 +956,9 @@ deleteData: async (req, res) => {
             // 4️⃣ Fetch activity data for both users
             const getFollowerActivity = await UserActivtyService.getDataByUserId(getData.user_id);
             const getFollowingActivity = await UserActivtyService.getDataByUserId(getData.following_user_id);
-
-            if (!getFollowerActivity || !getFollowingActivity || 
+            console.log("getFollowerActivity", getFollowerActivity)
+            console.log("getFollowingActivity", getFollowingActivity)
+            if (!getFollowerActivity || !getFollowingActivity ||
                 getFollowerActivity.length === 0 || getFollowingActivity.length === 0) {
                 return res.status(responseCode.BAD_REQUEST).send(
                     commonResponse(
@@ -980,7 +984,7 @@ deleteData: async (req, res) => {
 
             // 6️⃣ Perform database update
             const updateResult = await UserFollowingService.updateService(getData.follow_id, updateData);
-            
+
             // Fix: Check the first element of the Sequelize result array
             const [affectedRows] = updateResult;
             logger.info(`Follow update result: ${affectedRows} rows affected for follow_id: ${follow_id}`);
@@ -1006,21 +1010,21 @@ deleteData: async (req, res) => {
 
                     // Update user activity counts
                     await UserActivtyService.updateService(
-                        getFollowerActivity[0].user_activity_id, 
+                        getFollowerActivity[0].user_activity_id,
                         { following_no: total_following_count }
                     );
                     await UserActivtyService.updateService(
-                        getFollowingActivity[0].user_activity_id, 
+                        getFollowingActivity[0].user_activity_id,
                         { follower_no: total_follower_count }
                     );
 
                     // Update private user's total follower count
                     await UserMasterService.updateService(
-                        getData.following_user_id, 
+                        getData.following_user_id,
                         { total_follower: total_follower_count }
                     );
                 }
-                
+
                 // Send acceptance notification to the follower
                 try {
                     const templateData = await notificationTemplates.friendRequestAccepted({
@@ -1100,9 +1104,9 @@ deleteData: async (req, res) => {
         }
     },
 
-    getListByFollowingUserToAccepted:async(req,res)=>{
-        try{
-            const user_id = req.query.following_user_id ?? tokenData(req,res)
+    getListByFollowingUserToAccepted: async (req, res) => {
+        try {
+            const user_id = req.query.following_user_id ?? tokenData(req, res)
             const getData = await UserFollowingService.getListByFollowingUserToAccepted(user_id)
             if (getData.length !== 0) {
                 return res
@@ -1126,18 +1130,18 @@ deleteData: async (req, res) => {
                         )
                     );
             }
-        }catch(error){
-        logger.error(`Error ---> ${error}`);
-        return res
-            .status(responseCode.INTERNAL_SERVER_ERROR)
-            .send(
-                commonResponse(
-                    responseCode.INTERNAL_SERVER_ERROR,
-                    responseConst.INTERNAL_SERVER_ERROR,
-                    null,
-                    true
-                )
-            );
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
         }
     }
 }

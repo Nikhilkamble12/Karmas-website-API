@@ -4,14 +4,14 @@ const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessar
 
 const UserFollowingDAL = {
     // Method to create a new record in the database
-     CreateData: async (data) => {
+    CreateData: async (data) => {
         try {
             const createdData = await UserFollowingModel(db.sequelize).create(data)
             return createdData // Return the created data
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    }, 
+    },
     // Method to update an existing record by its ID
     UpdateData: async (follow_id, data) => {
         try {
@@ -20,7 +20,7 @@ const UserFollowingDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    }, 
+    },
     // Method to retrieve all records by view
     getAllDataByView: async () => {
         try {
@@ -58,58 +58,58 @@ const UserFollowingDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    },getByUserId:async(user_id)=>{
-        try{
-            const getDatabyView = await db.sequelize.query( ` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where user_id = ${user_id} and is_following = true and is_rejected = 0`,{type:db.Sequelize.QueryTypes.SELECT})
+    }, getByUserId: async (user_id) => {
+        try {
+            const getDatabyView = await db.sequelize.query(` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where user_id = ${user_id} and is_following = true and is_rejected = 0`, { type: db.Sequelize.QueryTypes.SELECT })
             return getDatabyView
-        }catch(error){
+        } catch (error) {
             throw error
         }
-    },getDataByFollowed:async(following_user_id)=>{
-        try{
-            const getDataById = await db.sequelize.query( ` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where following_user_id = ${following_user_id} and is_following = true and is_rejected = 0 `,{type:db.Sequelize.QueryTypes.SELECT})
+    }, getDataByFollowed: async (following_user_id) => {
+        try {
+            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where following_user_id = ${following_user_id} and is_following = true and is_rejected = 0 `, { type: db.Sequelize.QueryTypes.SELECT })
             return getDataById
-        }catch(error){
+        } catch (error) {
             throw error
         }
-    },getDataByUserIdAndFollowId:async(user_id,following_user_id)=>{
-        try{
-            const getDataByUseridAndFollowId = await db.sequelize.query(` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where user_id = ${user_id} and following_user_id = ${following_user_id} `,{type:db.Sequelize.QueryTypes.SELECT})
+    }, getDataByUserIdAndFollowId: async (user_id, following_user_id) => {
+        try {
+            const getDataByUseridAndFollowId = await db.sequelize.query(` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where user_id = ${user_id} and following_user_id = ${following_user_id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getDataByUseridAndFollowId
-        }catch(error){
+        } catch (error) {
             throw error
         }
-    },getListByFollowingUserToAccepted:async(following_user_id)=>{
-        try{
-            const getDataByFollowerUserId = await db.sequelize.query(` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where following_user_id = ${following_user_id} and is_private = true and is_rejected = 0 and is_following = false `,{type:db.Sequelize.QueryTypes.SELECT})
+    }, getListByFollowingUserToAccepted: async (following_user_id) => {
+        try {
+            const getDataByFollowerUserId = await db.sequelize.query(` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where following_user_id = ${following_user_id} and is_private = true and is_rejected = 0 and is_following = false `, { type: db.Sequelize.QueryTypes.SELECT })
             return getDataByFollowerUserId
-        }catch(error){
+        } catch (error) {
             throw error
         }
-    },getOnlyFollowAndBlockedUserByUserId: async (user_id) => {
-  try {
-    // 1. Get all users the user is following
-    const getDatabyView = await db.sequelize.query( ` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where user_id = ${user_id} and is_following = true`,{type:db.Sequelize.QueryTypes.SELECT})
-    const followingUserIds = getDatabyView.map(item => item.following_user_id);
+    }, getOnlyFollowAndBlockedUserByUserId: async (user_id) => {
+        try {
+            // 1. Get all users the user is following
+            const getDatabyView = await db.sequelize.query(` ${ViewFieldTableVise.USER_FOLLOWING_FIELDS} where user_id = ${user_id} and is_following = true`, { type: db.Sequelize.QueryTypes.SELECT })
+            const followingUserIds = getDatabyView.map(item => item.following_user_id);
 
-    if (!followingUserIds.length) return [];
+            if (!followingUserIds.length) return [];
 
-    // 2. Get all blacklisted users by this user
-    const blacklistedData = await db.sequelize.query(`
+            // 2. Get all blacklisted users by this user
+            const blacklistedData = await db.sequelize.query(`
       ${ViewFieldTableVise.USER_BLACKLIST_FIELDS} 
       WHERE user_id = ${user_id}
     `, { type: db.Sequelize.QueryTypes.SELECT });
 
-    const blacklistedUserIds = new Set(blacklistedData.map(item => item.blacklisted_user_id));
+            const blacklistedUserIds = new Set(blacklistedData.map(item => item.blacklisted_user_id));
 
-    // 3. Filter out blacklisted users from following list
-    const validFollowingUserIds = followingUserIds.filter(id => !blacklistedUserIds.has(id));
+            // 3. Filter out blacklisted users from following list
+            const validFollowingUserIds = followingUserIds.filter(id => !blacklistedUserIds.has(id));
 
-    return validFollowingUserIds;
-  } catch (error) {
-    throw error;
-  }
-}
+            return validFollowingUserIds;
+        } catch (error) {
+            throw error;
+        }
+    }
 
 }
 
