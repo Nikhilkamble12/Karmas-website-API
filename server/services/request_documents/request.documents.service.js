@@ -40,6 +40,12 @@ const RequestDocumentService = {
         } catch (error) {
             throw error
         }
+    },getDataByRequestIdByView:async(RequestId)=>{
+        try{
+            return await RequestDocumentsDAL.getDataByRequestIdByView(RequestId)
+        }catch(error){
+            throw error
+        }
     }
 }
 

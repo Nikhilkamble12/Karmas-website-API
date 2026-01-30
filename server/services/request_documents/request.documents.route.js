@@ -111,12 +111,19 @@ const upload = multer({
 
 
 // // Route To Create A Record For Request POST
-// router.post(
-//     `${basePath}/RequestPost/Media`,
-//     verifyToken,
-//     upload.single('mediaFile'), 
-//     RequestDocumentsController.createOrUpdateMulitileRequestMedia
-// )
+router.post(
+    `${basePath}/RequestDocument/Media`,
+    verifyToken,
+    upload.single('mediaFile'), 
+    RequestDocumentsController.createOrUpdateMulitileRequestDocuments
+)
+
+// Get Request Document By Request Id
+router.get(
+    `${basePath}/getDocument/ByRequestId`,
+    verifyToken,
+    RequestDocumentsController.getDataByRequestId
+)
 
 // Export the router for use in other parts of the application
 export default router

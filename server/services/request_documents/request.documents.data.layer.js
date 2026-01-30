@@ -53,6 +53,14 @@ const RequestDocumentsDAL = {
             throw error // Throw error for handling in the controller
         }
     }, 
+    getDataByRequestIdByView: async (RequestId) => {
+        try {
+            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.REQUEST_DOCUMENTS_FIELDS} where RequestId  = ${RequestId} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getDataById[0] ?? [] // Return the retrieved data
+        } catch (error) {
+            throw error // Throw error for handling in the controller
+        }
+    },
 }
 
 export default RequestDocumentsDAL
