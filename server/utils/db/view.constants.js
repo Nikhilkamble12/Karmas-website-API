@@ -80,6 +80,7 @@ GET_ALL_USER_OTP_LOGS : "v_user_otp_log",
 GET_ALL_TEMP_USER_MASTER:"v_temp_user_master",
 GET_ALL_REQUEST_DOCUMENT_TYPE:"v_request_document_types",
 GET_ALL_REQUEST_DOCUMENTS:"v_request_documents",
+GET_ALL_REQUEST_DOCUMENT_CATEGORY:"v_request_document_category",
 
 }
 export default VIEW_NAME
