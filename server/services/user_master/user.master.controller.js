@@ -201,6 +201,20 @@ const UserMasterController = {
                 data.bg_image_path = upload_page_2
                 delete data.bg_image_file
             }
+            if (data.role_id == ROLE_MASTER.NGO || data.role_id == ROLE_MASTER.NGO_USER) {
+                if (!data.ngo_id || data.ngo_id == "" || data.ngo_id == 0) {
+                    return res
+                        .status(responseCode.BAD_REQUEST)
+                        .send(
+                            commonResponse(
+                                responseCode.BAD_REQUEST,
+                                responseConst.NGO_ID_REQUIRED,
+                                { "Message": "If Role Is Ngo Admin Or User Ngo Id is Required" },
+                                true
+                            )
+                        );
+                }
+            }
             // Update the record using ORM
             const updatedRowsCount = await UserMasterService.updateService(id, data);
             if (updatedRowsCount?.success == false) {
@@ -347,6 +361,15 @@ const UserMasterController = {
 
             // If not found in JSON, fetch data from the database
             const getDataByid = await UserMasterService.getServiceById(Id)
+            // 5. Merge NGO Data if applicable
+            const ngoRoles = [ROLE_MASTER.NGO, ROLE_MASTER.NGO_USER];
+            if (ngoRoles.includes(getDataByid.role_id)) {
+                const ngoRows = await NgoUserMasterService.getDataByUserIdByView(Id);
+                if (ngoRows && ngoRows.length > 0) {
+                    // Merge NGO fields into the main user object
+                    getDataByid = { ...getDataByid, ...ngoRows[0] };
+                }
+            }
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
@@ -459,7 +482,17 @@ const UserMasterController = {
             const getDataByid = await UserMasterService.getServiceById(Id)
             const getActivity = await UserActivtyService.getDataByUserId(Id)
             if (getDataByid.length !== 0) {
+
                 getDataByid.getActivity = getActivity[0]
+                // 5. Merge NGO Data if applicable
+                const ngoRoles = [ROLE_MASTER.NGO, ROLE_MASTER.NGO_USER];
+                if (ngoRoles.includes(getDataByid.role_id)) {
+                    const ngoRows = await NgoUserMasterService.getDataByUserIdByView(Id);
+                    if (ngoRows && ngoRows.length > 0) {
+                        // Merge NGO fields into the main user object
+                        userData = { ...userData, ...ngoRows[0] };
+                    }
+                }
                 if (getDataByid.file_path && getDataByid.file_path !== "" && getDataByid.file_path !== 0) {
                     getDataByid.Base64File = await getBase64FromFile(getDataByid.file_path)
                 } else {
