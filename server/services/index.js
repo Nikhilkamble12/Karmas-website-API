@@ -64,6 +64,7 @@ import OtpTypeMasterModel from "./otp_type_master/otp.type.master.model.js";
 import UserOtpLogModel from "./user_otp_log/user.otp.log.model.js";
 import TempEmailVerificationModel from "./temp_email_verification/temp.email.verification.model.js";
 import RequestDocumentsTypesModel from "./request_document_types/request.document.types.model.js";
+import RequestDocumentCategoryModel from "./request_document_category/request.document.category.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -91,24 +92,45 @@ const sequelize = new Sequelize(config.DB, config.USER, config.PASSWORD, {
   host: config.HOST,
   dialect: config.DIALECT,
   port: config.PORT ?? 3306,
-  operatorsAliases: 0,
   
-  // ✅ 1. Enable benchmarking to measure time
-  benchmark: true, 
-
-  // ✅ 2. Custom Logger to show SQL + Time
-  logging: (sql, timing) => {
-    // You can use console.log, or your custom 'logger' from the previous step
-    // Example output: "⏱️ [15ms] Executing (default): SELECT * FROM Users..."
-    console.log(`⏱️  [${timing}ms] ${sql}`); 
+  // ✅ CRITICAL FIX 1: Connection & Socket Timeouts
+  // These settings tell the database driver to fail fast if a connection is stuck,
+  // preventing the app from hanging indefinitely.
+  dialectOptions: {
+    connectTimeout: 60000, // 60s (Give Cloud SQL Proxy time to establish initial handshake)
+    // For MySQL/MariaDB:
   },
 
+  // ✅ CRITICAL FIX 2: Optimized Pool for Cloud SQL
   pool: {
-    max: config.pool.max,
-    min: config.pool.min,
-    acquire: config.pool.acquire,
-    idle: config.pool.idle,
-  }
+    // Maximum number of connections in pool. 
+    // Rule of thumb: Max = (Core_Count * 2) + effective_spindle_count
+    // For Cloud SQL, 5-10 is usually sufficient for a single instance app.
+    max: config.pool.max || 10, 
+
+    // Minimum number of connections to keep open.
+    // 0 is safer for "intermittent" traffic to avoid holding stale connections.
+    min: config.pool.min || 0, 
+
+    // Maximum time (ms) to wait for a connection before throwing error.
+    // Increased to 30s to handle "cold starts" or network blips.
+    acquire: 30000, 
+
+    // Maximum time (ms) that a connection can be idle before being released.
+    // MUST be less than Cloud SQL's wait_timeout (usually 10-15 mins).
+    // Setting this low (e.g., 10s) forces frequent refresh, preventing "closed by server" errors.
+    idle: 10000, 
+  },
+
+  // ✅ 3. KeepAlive (Crucial for Cloud Environments)
+  // This prevents Google's Load Balancers/routers from silently dropping 
+  // connections that look idle but are actually valid.
+  keepDefaultTimezone: true, // (Optional: prevents timezone mismatch bugs)
+  
+  benchmark: true,
+  logging: (sql, timing) => {
+    console.log(`⏱️  [${timing}ms] ${sql}`);
+  },
 });
 
 
@@ -193,6 +215,7 @@ db.OtpTypeMasterModel = OtpTypeMasterModel(sequelize,Sequelize);
 db.UserOtpLogModel = UserOtpLogModel(sequelize,Sequelize);
 db.TempEmailVerificationModel = TempEmailVerificationModel(sequelize,Sequelize);
 db.RequestDocumentsTypesModel = RequestDocumentsTypesModel(sequelize,Sequelize);
+db.RequestDocumentCategoryModel = RequestDocumentCategoryModel(sequelize,Sequelize);
 
 
 export default db
