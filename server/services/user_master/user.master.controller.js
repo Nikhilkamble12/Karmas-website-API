@@ -360,14 +360,16 @@ const UserMasterController = {
             // }
 
             // If not found in JSON, fetch data from the database
-            const getDataByid = await UserMasterService.getServiceById(Id)
+            let getDataByid = await UserMasterService.getServiceById(Id)
             // 5. Merge NGO Data if applicable
+            console.log("getDataByid",getDataByid)
             const ngoRoles = [ROLE_MASTER.NGO, ROLE_MASTER.NGO_USER];
             if (ngoRoles.includes(getDataByid.role_id)) {
                 const ngoRows = await NgoUserMasterService.getDataByUserIdByView(Id);
-                if (ngoRows && ngoRows.length > 0) {
+                console.log("ngoRows",ngoRows)
+                if (ngoRows && ngoRows.length !== 0) {
                     // Merge NGO fields into the main user object
-                    getDataByid = { ...getDataByid, ...ngoRows[0] };
+                    getDataByid = {...ngoRows , ...getDataByid };
                 }
             }
 
@@ -488,9 +490,9 @@ const UserMasterController = {
                 const ngoRoles = [ROLE_MASTER.NGO, ROLE_MASTER.NGO_USER];
                 if (ngoRoles.includes(getDataByid.role_id)) {
                     const ngoRows = await NgoUserMasterService.getDataByUserIdByView(Id);
-                    if (ngoRows && ngoRows.length > 0) {
+                    if (ngoRows && ngoRows.length !== 0) {
                         // Merge NGO fields into the main user object
-                        userData = { ...userData, ...ngoRows[0] };
+                        userData = {...ngoRows,...userData };
                     }
                 }
                 if (getDataByid.file_path && getDataByid.file_path !== "" && getDataByid.file_path !== 0) {
