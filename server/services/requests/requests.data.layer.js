@@ -700,137 +700,7 @@ getRequestsForUserFeed: async (user_id, limit = 20, batchIndex = 0) => {
     } catch (error) {
       throw error;
     }
-  }, 
-//   getRequestVideosForUserFeed: async (user_id, limit = 20, already_viewed = []) => {
-//   try {
-//     const replacements = { user_id, limit: Number(limit) };
-
-//     // 1️⃣ Get already viewed request video IDs from DB
-//     const viewedQuery = `
-//       SELECT request_id
-//       FROM user_viewed_request_videos
-//       WHERE user_id = :user_id
-//         AND is_active = 1
-//     `;
-
-//     const viewedResults = await db.sequelize.query(viewedQuery, {
-//       replacements: { user_id },
-//       type: db.Sequelize.QueryTypes.SELECT,
-//     });
-
-//     const already_viewed = viewedResults.map(r => r.request_id);
-//     let exclusionClause = "";
-//     let results = [];
-
-//     if (already_viewed.length > 0) {
-//       exclusionClause = `AND r.RequestId NOT IN (:already_viewed)`;
-//       replacements.already_viewed = already_viewed;
-//     }
-
-//     // 2️⃣ Main Feed Query (only video media)
-//     const query = `
-//       SELECT r.*
-//       FROM v_Requests r
-//       JOIN v_Request_Media rm ON r.RequestId = rm.RequestId
-//       WHERE r.is_active = 1
-//         AND r.is_blacklist = 0
-//         AND rm.media_type = 'video'
-//         -- Exclude blacklisted users
-//         AND NOT EXISTS (
-//           SELECT 1
-//           FROM user_blacklist ub
-//           WHERE ub.is_active = 1
-//             AND (
-//               (ub.user_id = r.request_user_id AND ub.blacklisted_user_id = :user_id)
-//               OR
-//               (ub.user_id = :user_id AND ub.blacklisted_user_id = r.request_user_id)
-//             )
-//         )
-//         ${exclusionClause}
-//         AND (
-//           -- Include followed users’ requests
-//           r.request_user_id IN (
-//             SELECT following_user_id
-//             FROM user_following
-//             WHERE user_id = :user_id
-//               AND is_following = 1
-//               AND is_active = 1
-//           )
-//           OR
-//           -- Random discovery requests (non-followed)
-//           (
-//             r.request_user_id NOT IN (
-//               SELECT following_user_id
-//               FROM user_following
-//               WHERE user_id = :user_id
-//                 AND is_following = 1
-//                 AND is_active = 1
-//             )
-//             AND RAND() < 0.1
-//           )
-//         )
-//       ORDER BY r.created_at DESC
-//       LIMIT :limit;
-//     `;
-
-//     results = await db.sequelize.query(query, {
-//       replacements,
-//       type: db.Sequelize.QueryTypes.SELECT,
-//     });
-
-//     // 3️⃣ Mark fetched request videos as viewed
-//     if (results.length > 0) {
-//       const insertValues = results
-//         .map(
-//           r => `(${db.sequelize.escape(user_id)}, ${db.sequelize.escape(r.RequestId)}, 1, NOW(), NOW())`
-//         )
-//         .join(",");
-
-//       const insertQuery = `
-//         INSERT INTO user_viewed_request_videos (user_id, request_id, is_active, created_at, modified_at)
-//         VALUES ${insertValues}
-//         ON DUPLICATE KEY UPDATE modified_at = NOW(), is_active = 1;
-//       `;
-
-//       await db.sequelize.query(insertQuery);
-//     } else if (results.length === 0) {
-//       // Fallback query if no results
-//       const query222 = `
-//         SELECT r.*
-//         FROM v_Requests r
-//         JOIN v_Request_Media rm ON r.RequestId = rm.RequestId
-//         WHERE r.is_active = 1
-//           AND r.is_blacklist = 0
-//           AND rm.media_type = 'video'
-//           -- Exclude blacklisted users
-//           AND NOT EXISTS (
-//             SELECT 1
-//             FROM user_blacklist ub
-//             WHERE ub.is_active = 1
-//               AND (
-//                 (ub.user_id = r.request_user_id AND ub.blacklisted_user_id = :user_id)
-//                 OR
-//                 (ub.user_id = :user_id AND ub.blacklisted_user_id = r.request_user_id)
-//               )
-//           )
-//         ORDER BY RAND()
-//         LIMIT :limit;
-//       `;
-
-//       results = await db.sequelize.query(query222, {
-//         replacements,
-//         type: db.Sequelize.QueryTypes.SELECT,
-//       });
-//     }
-
-//     // 4️⃣ Return results
-//     return results ?? [];
-
-//   } catch (error) {
-//     console.error("❌ Error in getRequestVideosForUserFeed:", error);
-//     throw error;
-//   }
-// },
+  },
 
 getRequestVideosForUserFeed: async (user_id, limit = 20, batchIndex = 0) => {
     try {
@@ -1023,48 +893,6 @@ getRequestVideosForUserFeed: async (user_id, limit = 20, batchIndex = 0) => {
       throw error;
     }
   },
-
-
-
-// getSumOfTotalRequestByNgoId: async (ngo_id) => {
-//     try {
-//         const getData = await db.sequelize.query(
-//             `SELECT 
-//             -- 🔹 Global Aggregated Counts (Runs Only Once)
-//             g.total_request_global,
-//             g.total_request_draft,
-//             g.total_admin_approved,
-
-//             -- 🔹 NGO-Specific Counts
-//             COUNT(*) AS total_request_assigned_to_ngo,
-//             SUM(CASE WHEN n.status_id = ${STATUS_MASTER.REQUEST_PENDING} THEN 1 ELSE 0 END) AS total_request_pending_status,
-//             SUM(CASE WHEN n.status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
-//             SUM(CASE WHEN n.status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected
-
-//             FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} n
-
-//             -- 🔥 One-Time Global Summary
-//             CROSS JOIN (
-//                 SELECT 
-//                     COUNT(RequestId) AS total_request_global,
-//                     SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_DRAFT} THEN 1 ELSE 0 END) AS total_request_draft,
-//                     SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_ADMIN_APPROVED} THEN 1 ELSE 0 END) AS total_admin_approved
-//                 FROM ${VIEW_NAME.GET_ALL_REQUEST}
-//             ) g
-
-//             WHERE n.ngo_id = :ngo_id;
-//             `,
-//             { 
-//                 type: db.Sequelize.QueryTypes.SELECT,
-//                 replacements: { ngo_id }
-//             }
-//         );
-//         return getData[0];
-//     } catch (error) {
-//         throw error;
-//     }
-// },
-
 getSumOfTotalRequestByNgoId: async (ngo_id) => {
     try {
         const getData = await db.sequelize.query(
@@ -1155,6 +983,23 @@ getAllDataByViewWithPagination: async (limit, offset) => {
   } catch (error) {
     throw error;
   }
-}
+},getUserByNgoCreatedId: async (ngo_id_created, limit, offset) => {
+    try {
+      // Start with the base query
+      let query = `${ViewFieldTableVise.REQUEST_FIELDS} WHERE ngo_id_created = ${ngo_id_created} order by RequestId desc`;
+
+      // Add LIMIT and OFFSET if they’re provided
+      if (limit && offset >= 0) {
+        query += ` LIMIT ${offset}, ${limit}`;
+      }
+
+      const getAllData = await db.sequelize.query(query, {
+        type: db.Sequelize.QueryTypes.SELECT,
+      });
+      return getAllData;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 export default RequestDAL;

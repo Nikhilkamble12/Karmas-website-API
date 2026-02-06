@@ -866,6 +866,59 @@ getNgoRequstDataForMapping :async (req, res) => {
                 )
             );
     }
+},GetAllRequestNgoCreatedId: async (req, res) => {
+    try {
+        const ngo_id_created = req.query.id;
+        // Ensure limit/offset are numbers to prevent SQL injection or logic errors
+        const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+        const offset = req.query.offset ? parseInt(req.query.offset) : 0;
+
+        // 1. Fetch the main list
+        const requestList = await RequestService.getAllRequestByNgoCreatedId(ngo_id_created, limit, offset);
+
+        if (requestList && requestList.length > 0) {
+            
+            // ✅ FAST FIX: Use Promise.all()
+            // This fires all media queries simultaneously instead of one by one.
+            await Promise.all(requestList.map(async (item) => {
+                // We modify the item directly (pass by reference)
+                item.request_media = await RequestMediaService.getDataByRequestIdByView(item.RequestId);
+            }));
+
+            return res
+                .status(responseCode.OK)
+                .send(
+                    commonResponse(
+                        responseCode.OK,
+                        responseConst.DATA_RETRIEVE_SUCCESS,
+                        requestList
+                    )
+                );
+        } else {
+            return res
+                .status(responseCode.BAD_REQUEST)
+                .send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
+        }
+    } catch (error) {
+        logger.error(`Error ---> ${error}`);
+        return res
+            .status(responseCode.INTERNAL_SERVER_ERROR)
+            .send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
+    }
 }
 }
 

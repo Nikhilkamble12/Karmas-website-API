@@ -107,6 +107,12 @@ const RequestService = {
     }catch(error){
         throw error
     }
+},getAllRequestByNgoCreatedId:async(ngo_id_created)=>{
+    try{
+        return await RequestDAL.getUserByNgoCreatedId(ngo_id_created)
+    }catch(error){
+        throw error
+    }
 }
 }
 

@@ -10,6 +10,9 @@ const RequestModel = (sequelize) => {
         }, request_user_id: {
             type: DataTypes.INTEGER,
             allowNull: false
+        }, ngo_id_created: {
+            type: DataTypes.INTEGER,
+            allowNull: true
         },
         RequestName: {
             type: DataTypes.STRING(255),
@@ -68,14 +71,14 @@ const RequestModel = (sequelize) => {
         }, CountryId: {
             type: DataTypes.INTEGER,
             allowNull: true
-        },request_type_id:{
-            type:DataTypes.INTEGER,
-            allowNull:true
-        },is_user_tagged:{
-            type:DataTypes.TINYINT(1),
-            allowNull:true
+        }, request_type_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }, is_user_tagged: {
+            type: DataTypes.TINYINT(1),
+            allowNull: true
         },
-         status_id: {
+        status_id: {
             type: DataTypes.INTEGER,
             allowNull: true
         }, total_likes: {
@@ -85,15 +88,15 @@ const RequestModel = (sequelize) => {
         }, total_comments: {
             type: DataTypes.INTEGER,
             allowNull: false,
-            defaultValue : 0
+            defaultValue: 0
         },
-        ngo_user_approved_id:{
-            type:DataTypes.INTEGER,
-            allowNull:true
+        ngo_user_approved_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true
         },
-        ngo_user_approved_name:{
-            type:DataTypes.STRING(550),
-            allowNull:true
+        ngo_user_approved_name: {
+            type: DataTypes.STRING(550),
+            allowNull: true
         },
         is_active: {
             type: DataTypes.BOOLEAN,
@@ -103,9 +106,9 @@ const RequestModel = (sequelize) => {
             type: DataTypes.INTEGER,
             allowNull: true
         },
-        is_blacklist:{
-            type:DataTypes.TINYINT(1),
-            allowNull:true
+        is_blacklist: {
+            type: DataTypes.TINYINT(1),
+            allowNull: true
         },
         created_at: {
             type: DataTypes.DATE,
