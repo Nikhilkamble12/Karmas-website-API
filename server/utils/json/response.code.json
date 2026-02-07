@@ -316,6 +316,12 @@
     },{
       "code":"1.0062",
       "message":"Status Not Found."
+    },{
+      "code":"1.0063",
+      "message":"Data Already Present."
+    },{
+      "code":"1.0064",
+      "message":"Category Id Is Required In Request."
     }
   ]
 }

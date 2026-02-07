@@ -64,7 +64,8 @@ import OtpTypeMasterModel from "./otp_type_master/otp.type.master.model.js";
 import UserOtpLogModel from "./user_otp_log/user.otp.log.model.js";
 import TempEmailVerificationModel from "./temp_email_verification/temp.email.verification.model.js";
 import RequestDocumentsTypesModel from "./request_document_types/request.document.types.model.js";
-import RequestDocumentCategoryModel from "./request_document_category/request.document.category.model.js";
+import NgoRequestDocumentCategoryModel from "./ngo_request_document_category/ngo.request.document.category.model.js";
+import RequestDocumentModel from "./request_documents/request.documents.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -215,7 +216,8 @@ db.OtpTypeMasterModel = OtpTypeMasterModel(sequelize,Sequelize);
 db.UserOtpLogModel = UserOtpLogModel(sequelize,Sequelize);
 db.TempEmailVerificationModel = TempEmailVerificationModel(sequelize,Sequelize);
 db.RequestDocumentsTypesModel = RequestDocumentsTypesModel(sequelize,Sequelize);
-db.RequestDocumentCategoryModel = RequestDocumentCategoryModel(sequelize,Sequelize);
+db.NgoRequestDocumentCategoryModel = NgoRequestDocumentCategoryModel(sequelize,Sequelize);
+db.RequestDocumentModel = RequestDocumentModel(sequelize,Sequelize);
 
 
 export default db

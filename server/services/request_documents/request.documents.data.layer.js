@@ -1,5 +1,6 @@
 import RequestDocumentModel from "./request.documents.model.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
+import VIEW_NAME from "../../utils/db/view.constants.js";
 const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessary components from commonPath
 
 
@@ -52,7 +53,7 @@ const RequestDocumentsDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    }, 
+    },
     getDataByRequestIdByView: async (RequestId) => {
         try {
             const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.REQUEST_DOCUMENTS_FIELDS} where RequestId  = ${RequestId} `, { type: db.Sequelize.QueryTypes.SELECT })
@@ -60,7 +61,55 @@ const RequestDocumentsDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    },
+    }, getDataByRequestIdAndDocumentTypeIdListCount: async (RequestId, document_type_id) => {
+        try {
+            const result = await db.sequelize.query(
+                `
+                SELECT COUNT(*) AS count
+                FROM ${VIEW_NAME.GET_ALL_REQUEST_DOCUMENTS}
+                WHERE RequestId = :RequestId
+                AND document_type_id IN (:document_type_ids)
+                `,
+                {
+                    replacements: {
+                        RequestId,
+                        document_type_ids: document_type_id // array
+                    },
+                    type: db.Sequelize.QueryTypes.SELECT
+                }
+            )
+
+            // Sequelize returns count as string → convert to number
+            return Number(result[0]?.count || 0)
+
+        } catch (error) {
+            throw error
+        }
+    },getDataByRequestIdListAndDocumentTypeId: async (RequestId, document_type_id) => {
+        try {
+            const result = await db.sequelize.query(
+                `
+                SELECT RequestId
+                FROM ${VIEW_NAME.GET_ALL_REQUEST_DOCUMENTS}
+                WHERE RequestId IN (:RequestId)
+                AND document_type_id = :document_type_id
+                `,
+                {
+                    replacements: {
+                        RequestId,
+                        document_type_id: document_type_id // array
+                    },
+                    type: db.Sequelize.QueryTypes.SELECT
+                }
+            )
+
+            // Sequelize returns count as string → convert to number
+            return result
+
+        } catch (error) {
+            throw error
+        }
+    }
 }
 
 export default RequestDocumentsDAL

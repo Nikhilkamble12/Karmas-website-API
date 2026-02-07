@@ -46,6 +46,18 @@ const RequestDocumentService = {
         }catch(error){
             throw error
         }
+    },getDataByRequestIdAndDocumentTypeListCount:async(RequestId,document_type_id)=>{
+        try{
+            return await RequestDocumentsDAL.getDataByRequestIdAndDocumentTypeIdListCount(RequestId,document_type_id)
+        }catch(error){
+            throw error
+        }
+    },getDataByRequestIdListAndDocumentType:async(RequestId,document_type_id)=>{
+        try{
+            return await RequestDocumentsDAL.getDataByRequestIdListAndDocumentTypeId(RequestId,document_type_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 

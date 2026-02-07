@@ -12,7 +12,9 @@ import UserTokenService from "../user_tokens/user.tokens.service.js";
 import sendTemplateNotification from "../../utils/helper/firebase.push.notification.js";
 import NgoMasterService from "../ngo_master/ngo.master.service.js";
 import UserRequestStatsService from "../user_request_stats/user.request.stats.service.js";
-const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
+import NgoRequestDocumentCategoryService from "../ngo_request_document_category/ngo.request.document.category.service.js";
+import RequestDocumentService from "../request_documents/request.documents.service.js";
+const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
 
 const RequestNgoController = {
     // Create A new Record 
@@ -47,7 +49,7 @@ const RequestNgoController = {
                     );
             }
         } catch (error) {
-            console.log("error",error)
+            console.log("error", error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -60,7 +62,7 @@ const RequestNgoController = {
                     )
                 );
         }
-    }, 
+    },
     // update Record Into Db
     update: async (req, res) => {
         try {
@@ -285,67 +287,97 @@ const RequestNgoController = {
                     )
                 );
         }
-    },createUpdateRequestNgo :async(req,res)=>{
-        try{
+    }, createUpdateRequestNgo: async (req, res) => {
+        try {
             const data = req.body
             let request_saved = false
             let request_error = false
 
-            for(let i = 0 ;i<data.requestNgoList.length;i++){
+            for (let i = 0; i < data.requestNgoList.length; i++) {
                 const currentData = data.requestNgoList[i]
-                const requestNgoMapping = await RequestNgoService.getRequestAndNGoData(currentData.ngo_id,currentData.RequestId)
+                const requestNgoMapping = await RequestNgoService.getRequestAndNGoData(currentData.ngo_id, currentData.RequestId)
+
                 const GetNgoDetails = await NgoMasterService.getServiceById(currentData.ngo_id)
                 let Total_request_Assigned = parseInt(GetNgoDetails.total_request_assigned) ?? 0
-                if(requestNgoMapping && requestNgoMapping.length>0){
+                if (requestNgoMapping && requestNgoMapping.length > 0) {
                     await addMetaDataWhileCreateUpdate(currentData, req, res, true);
                     currentData.Request_Ngo_Id = requestNgoMapping[0].Request_Ngo_Id
-                    const updateRequestNgo = await RequestNgoService.updateService(requestNgoMapping[0].Request_Ngo_Id,currentData)
-                    if(updateRequestNgo>0){
+                    const updateRequestNgo = await RequestNgoService.updateService(requestNgoMapping[0].Request_Ngo_Id, currentData)
+                    if (updateRequestNgo > 0) {
                         request_saved = true
-                    }else{
+                    } else {
                         request_error = true
                     }
-                }else{
+                } else {
                     await addMetaDataWhileCreateUpdate(currentData, req, res, false);
                     currentData.status_id = STATUS_MASTER.REQUEST_APPROVAL_PENDINNG
-                    
+                    if (!currentData.category_id || currentData.category_id == "" || currentData.category_id == 0) {
+                        return res
+                            .status(responseCode.BAD_REQUEST)
+                            .send(
+                                commonResponse(
+                                    responseCode.BAD_REQUEST,
+                                    responseConst.CATERGORY_ID_IS_REQUIRED_IN_REQUEST,
+                                    null,
+                                    true
+                                )
+                            );
+                    }
+                    const documentRequired = await NgoRequestDocumentCategoryService.getDataByNgoIdAndCategory(currentData.ngo_id, currentData.category_id)
+                    currentData.ngo_document_required = documentRequired?.length ?? 0
+                    if (documentRequired && documentRequired?.length > 0) {
+                        const documentIdList = documentRequired.map(
+                            doc => doc.document_type_id
+                        )
+
+                        const uploadedCount =
+                            await RequestDocumentService.getDataByRequestIdAndDocumentTypeListCount(
+                                currentData.RequestId,
+                                documentIdList
+                            )
+
+                        currentData.ngo_document_uploaded = Number(uploadedCount) || 0
+
+                    } else {
+                        currentData.ngo_document_uploaded = 0
+                    }
                     const createRequestNgo = await RequestNgoService.createService(currentData)
-                    if(createRequestNgo){
+                    if (createRequestNgo) {
                         Total_request_Assigned += 1
                         const NgoMasterData = {
-                            total_request_assigned:Total_request_Assigned
+                            total_request_assigned: Total_request_Assigned
                         }
-                        const updateNgo = await NgoMasterService.updateService(currentData.ngo_id,NgoMasterData)
-                        const getOlderData = await RequestNgoService.getServiceById(createRequestNgo.dataValues.Request_Ngo_Id) 
-                        const template = await notificationTemplates.newRequestForNgo({requestName :getOlderData.RequestName,requesterName:getOlderData.user_name})
+                        const updateNgo = await NgoMasterService.updateService(currentData.ngo_id, NgoMasterData)
+                        const getOlderData = await RequestNgoService.getServiceById(createRequestNgo.dataValues.Request_Ngo_Id)
+                        const template = await notificationTemplates.newRequestForNgo({ requestName: getOlderData.RequestName, requesterName: getOlderData.user_name })
                         const getUserByNgoId = await UserMasterService.getUserByNgoId(getOlderData.ngo_id)
                         const userIds = getUserByNgoId.map(user => user.user_id);
-                        console.log("userIds",userIds)
+                        console.log("userIds", userIds)
                         let getAllUserToken = []
-                        if(userIds.length>0){
-                          getAllUserToken = await UserTokenService.GetTokensByUserIds(userIds)
+                        if (userIds.length > 0) {
+                            getAllUserToken = await UserTokenService.GetTokensByUserIds(userIds)
                         }
-                        
+
                         const getTokenByRole = await UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN)
-                        const allToken = [...getAllUserToken,...getTokenByRole]
-                        const getRequestMedia = await RequestMediaService.getDataByRequestAndSequence(getOlderData.RequestId,1)
-                        const notification_template = {created_by:tokenData(req,res),ngo_id:getOlderData.ngo_id,request_id:getOlderData.RequestId}
-                        await sendTemplateNotification({templateKey:"Request-Ngo", templateData:template, userIds:allToken, metaData:{...notification_template,request_media:getRequestMedia[0].media_url ?? null}})
+                        const allToken = [...getAllUserToken, ...getTokenByRole]
+                        const getRequestMedia = await RequestMediaService.getDataByRequestAndSequence(getOlderData.RequestId, 1)
+                        const notification_template = { created_by: tokenData(req, res), ngo_id: getOlderData.ngo_id, request_id: getOlderData.RequestId }
+                        await sendTemplateNotification({ templateKey: "Request-Ngo", templateData: template, userIds: allToken, metaData: { ...notification_template, request_media: getRequestMedia[0].media_url ?? null } })
                         request_saved = true
-                    }else{
+                    } else {
                         request_error = true
                     }
                 }
             }
 
             if (request_saved && !request_error && data.requestNgoList.length > 0) {
-            const requestId = data.requestNgoList[0].RequestId;
-            await RequestService.updateService(requestId, {
-                status_id: STATUS_MASTER.REQUEST_APPROVAL_PENDINNG
-            });
+                const requestId = data.requestNgoList[0].RequestId;
+                await RequestService.updateService(requestId, {
+                    status_id: STATUS_MASTER.REQUEST_APPROVAL_PENDINNG
+                });
             }
             const getRequestData = await RequestService.getServiceById(data.requestNgoList[0].RequestId)
-            if(getRequestData && getRequestData.length!==0){
+            if (getRequestData && getRequestData.length !== 0) {
                 const updateData = await UserRequestStatsService.CreateOrUpdateData(getRequestData.request_user_id)
             }
             if (request_saved && !request_error) {
@@ -369,8 +401,8 @@ const RequestNgoController = {
                         )
                     );
             }
-        }catch(error){
-            console.log("error",error)
+        } catch (error) {
+            console.log("error", error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -556,168 +588,168 @@ const RequestNgoController = {
     //     }
     // },
 
-updateStatusRequestNgoMaster: async (req, res) => {
-    try {
-        const { Request_Ngo_Id } = req.query;
-        const { RequestId, status_id } = req.body;
-        const newStatus = parseInt(status_id);
-        const currentUserId = tokenData(req, res);
-        const metaDataUpdate = { modified_by: currentUserId, modified_at: new Date() };
-        
-        // 1. Checkpoint: Initial Data Fetch
-        const [requestDetails, requestNgoDetails] = await Promise.all([
-            RequestService.getServiceById(RequestId),
-            RequestNgoService.getServiceById(Request_Ngo_Id)
-        ]);
+    updateStatusRequestNgoMaster: async (req, res) => {
+        try {
+            const { Request_Ngo_Id } = req.query;
+            const { RequestId, status_id } = req.body;
+            const newStatus = parseInt(status_id);
+            const currentUserId = tokenData(req, res);
+            const metaDataUpdate = { modified_by: currentUserId, modified_at: new Date() };
 
-        if (!requestDetails || !requestNgoDetails) {
-            return res.status(responseCode.NOT_FOUND).send(
-                commonResponse(responseCode.NOT_FOUND, responseConst.NOT_FOUND, null, true)
-            );
-        }
-
-        // Validation (Fail Fast)
-        if (requestDetails.status_id == STATUS_MASTER.REQUEST_APPROVED || 
-            requestDetails.status_id == STATUS_MASTER.REQUEST_REJECTED ||
-            requestNgoDetails.status_id == STATUS_MASTER.REQUEST_REJECTED) {
-            return res.status(responseCode.BAD_REQUEST).send(
-                commonResponse(responseCode.BAD_REQUEST, responseConst.CANNOT_UPDATE_STATUS_CHECK_REQUEST, null, true)
-            );
-        }
-
-        // 2. Checkpoint: Core Database Updates (Critical Records)
-        const coreDbTasks = [];
-        
-        if (newStatus === STATUS_MASTER.REQUEST_APPROVED) {
-            const [bonusRate, userActivity,ApprovedByUserDetails] = await Promise.all([
-                BonusMasterService.getBonusMasterDataByCategoryStatus(BONUS_MASTER.REQUEST_ACCEPTED_ID, STATUS_MASTER.ACTIVE),
-                UserActivtyService.getDataByUserId(requestDetails.request_user_id),
-                UserMasterService.getServiceById(currentUserId)
+            // 1. Checkpoint: Initial Data Fetch
+            const [requestDetails, requestNgoDetails] = await Promise.all([
+                RequestService.getServiceById(RequestId),
+                RequestNgoService.getServiceById(Request_Ngo_Id)
             ]);
 
-            const bonusAmount = bonusRate.length > 0 ? parseFloat(bonusRate[0].create_score) : 0;
-            const activity = userActivity[0];
-
-            // User Score & Reward Updates
-            if (activity) {
-                coreDbTasks.push(UserActivtyService.UpdateUserDataCount(activity.user_id, 'total_rewards_no', 1));
-                if (bonusAmount > 0) {
-                    coreDbTasks.push(UserActivtyService.UpdateUserDataCount(activity.user_id, 'total_scores_no', bonusAmount));
-                }
+            if (!requestDetails || !requestNgoDetails) {
+                return res.status(responseCode.NOT_FOUND).send(
+                    commonResponse(responseCode.NOT_FOUND, responseConst.NOT_FOUND, null, true)
+                );
             }
-            
-            // NGO & Request Status Updates
-            coreDbTasks.push(NgoMasterService.UpdateDataCount(requestNgoDetails.ngo_id, 'total_request_completed', 1));
-            coreDbTasks.push(RequestService.updateService(RequestId, { 
-                status_id: STATUS_MASTER.REQUEST_APPROVED, 
-                ngo_user_approved_id:tokenData(req,res),
-                ngo_user_approved_name:ApprovedByUserDetails.full_name,
-                AssignedNGO: requestNgoDetails.ngo_id,
-                ...metaDataUpdate 
-            }));
 
-            // Score History
-            coreDbTasks.push(ScoreHistoryService.createService({
-                user_id: requestDetails.request_user_id,
-                git_score: bonusAmount,
-                request_id: RequestId,
-                score_category_id: bonusRate[0]?.score_category_id || 0,
-                description: `${requestNgoDetails.ngo_name} Accepted Your Request`,
-                date: currentTime(),
-                status_id: newStatus,
-                created_by: currentUserId
-            }));
+            // Validation (Fail Fast)
+            if (requestDetails.status_id == STATUS_MASTER.REQUEST_APPROVED ||
+                requestDetails.status_id == STATUS_MASTER.REQUEST_REJECTED ||
+                requestNgoDetails.status_id == STATUS_MASTER.REQUEST_REJECTED) {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.CANNOT_UPDATE_STATUS_CHECK_REQUEST, null, true)
+                );
+            }
 
-        } else if (newStatus === STATUS_MASTER.REQUEST_REJECTED) {
-            coreDbTasks.push(NgoMasterService.UpdateDataCount(requestNgoDetails.ngo_id, 'total_request_rejected', 1));
-        }
+            // 2. Checkpoint: Core Database Updates (Critical Records)
+            const coreDbTasks = [];
 
-        // Always update the specific Request-NGO link
-        coreDbTasks.push(RequestNgoService.updateService(Request_Ngo_Id, { status_id: newStatus, ...metaDataUpdate }));
-
-        // Execute Phase 1: Core Database Writes
-        await Promise.all(coreDbTasks);
-
-        // 3. Checkpoint: Secondary Updates (Stats & Counters)
-        await UserRequestStatsService.CreateOrUpdateData(requestDetails.request_user_id);
-
-        // 4. Checkpoint: Non-blocking Side Effects (Notifications)
-        // We trigger this without 'await' if we want immediate response, or 'await' to be safe.
-        (async () => {
-            try {
-                const isApproved = newStatus === STATUS_MASTER.REQUEST_APPROVED;
-                
-                const [userTokens, adminTokens, ngoTokens, requestMedia, freshUser] = await Promise.all([
-                    UserTokenService.GetTokensByUserIds(requestDetails.request_user_id),
-                    UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN),
-                    UserTokenService.getTokenByRoleIdInList([ROLE_MASTER.NGO, ROLE_MASTER.NGO_USER]),
-                    RequestMediaService.getDataByRequestAndSequence(RequestId, 1),
-                    UserActivtyService.getDataByUserId(requestDetails.request_user_id)
+            if (newStatus === STATUS_MASTER.REQUEST_APPROVED) {
+                const [bonusRate, userActivity, ApprovedByUserDetails] = await Promise.all([
+                    BonusMasterService.getBonusMasterDataByCategoryStatus(BONUS_MASTER.REQUEST_ACCEPTED_ID, STATUS_MASTER.ACTIVE),
+                    UserActivtyService.getDataByUserId(requestDetails.request_user_id),
+                    UserMasterService.getServiceById(currentUserId)
                 ]);
 
-                if (isApproved) {
-                    const template = await notificationTemplates.requestApproved({ 
-                        ngoName: requestNgoDetails.ngo_name, 
-                        requestName: requestNgoDetails.RequestName 
-                    });
-                    const scoreTemplate = await notificationTemplates.RequestApprovedScoreUpdate({
-                        username: freshUser[0]?.user_name || "User", 
-                        total_score: freshUser[0]?.total_scores_no || 0
-                    });
-                    console.log("scoreTemplate",scoreTemplate)
+                const bonusAmount = bonusRate.length > 0 ? parseFloat(bonusRate[0].create_score) : 0;
+                const activity = userActivity[0];
 
-                    await Promise.all([
-                        sendTemplateNotification({
-                            templateKey: "Request-Approved",
-                            templateData: template,
-                            userIds: [...userTokens, ...adminTokens, ...ngoTokens],
-                            metaData:  {
-                        created_by: currentUserId,
-                        ngo_id: requestNgoDetails.ngo_id,
-                        request_id: RequestId,
-                        ngo_logo_image: requestNgoDetails.ngo_logo_path || null,
-                        request_media_url: requestMedia[0]?.media_url || null
+                // User Score & Reward Updates
+                if (activity) {
+                    coreDbTasks.push(UserActivtyService.UpdateUserDataCount(activity.user_id, 'total_rewards_no', 1));
+                    if (bonusAmount > 0) {
+                        coreDbTasks.push(UserActivtyService.UpdateUserDataCount(activity.user_id, 'total_scores_no', bonusAmount));
                     }
-                        }),
-                        sendTemplateNotification({
-                            templateKey: "User Score Update",
-                            templateData: scoreTemplate,
-                            userIds: userTokens,
-                            metaData: {
-                        created_by: currentUserId,
-                        ngo_id: requestNgoDetails.ngo_id,
-                        request_id: RequestId,
-                        ngo_logo_image: requestNgoDetails.ngo_logo_path || null,
-                        request_media_url: requestMedia[0]?.media_url || null
-                    }
-                        })
-                    ]);
-                } 
-            } catch (notifyErr) {
-                logger.error(`Notification Error: ${notifyErr}`);
+                }
+
+                // NGO & Request Status Updates
+                coreDbTasks.push(NgoMasterService.UpdateDataCount(requestNgoDetails.ngo_id, 'total_request_completed', 1));
+                coreDbTasks.push(RequestService.updateService(RequestId, {
+                    status_id: STATUS_MASTER.REQUEST_APPROVED,
+                    ngo_user_approved_id: tokenData(req, res),
+                    ngo_user_approved_name: ApprovedByUserDetails.full_name,
+                    AssignedNGO: requestNgoDetails.ngo_id,
+                    ...metaDataUpdate
+                }));
+
+                // Score History
+                coreDbTasks.push(ScoreHistoryService.createService({
+                    user_id: requestDetails.request_user_id,
+                    git_score: bonusAmount,
+                    request_id: RequestId,
+                    score_category_id: bonusRate[0]?.score_category_id || 0,
+                    description: `${requestNgoDetails.ngo_name} Accepted Your Request`,
+                    date: currentTime(),
+                    status_id: newStatus,
+                    created_by: currentUserId
+                }));
+
+            } else if (newStatus === STATUS_MASTER.REQUEST_REJECTED) {
+                coreDbTasks.push(NgoMasterService.UpdateDataCount(requestNgoDetails.ngo_id, 'total_request_rejected', 1));
             }
-        })();
 
-        return res.status(responseCode.CREATED).send(
-            commonResponse(responseCode.CREATED, responseConst.SUCCESS_UPDATING_RECORD)
-        );
+            // Always update the specific Request-NGO link
+            coreDbTasks.push(RequestNgoService.updateService(Request_Ngo_Id, { status_id: newStatus, ...metaDataUpdate }));
 
-    } catch (error) {
-        logger.error(`UpdateStatusRequestNgoMaster Error: ${error}`);
-        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
-            commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
-        );
-    }
-},
+            // Execute Phase 1: Core Database Writes
+            await Promise.all(coreDbTasks);
+
+            // 3. Checkpoint: Secondary Updates (Stats & Counters)
+            await UserRequestStatsService.CreateOrUpdateData(requestDetails.request_user_id);
+
+            // 4. Checkpoint: Non-blocking Side Effects (Notifications)
+            // We trigger this without 'await' if we want immediate response, or 'await' to be safe.
+            (async () => {
+                try {
+                    const isApproved = newStatus === STATUS_MASTER.REQUEST_APPROVED;
+
+                    const [userTokens, adminTokens, ngoTokens, requestMedia, freshUser] = await Promise.all([
+                        UserTokenService.GetTokensByUserIds(requestDetails.request_user_id),
+                        UserTokenService.getTokenByRoleId(ROLE_MASTER.ADMIN),
+                        UserTokenService.getTokenByRoleIdInList([ROLE_MASTER.NGO, ROLE_MASTER.NGO_USER]),
+                        RequestMediaService.getDataByRequestAndSequence(RequestId, 1),
+                        UserActivtyService.getDataByUserId(requestDetails.request_user_id)
+                    ]);
+
+                    if (isApproved) {
+                        const template = await notificationTemplates.requestApproved({
+                            ngoName: requestNgoDetails.ngo_name,
+                            requestName: requestNgoDetails.RequestName
+                        });
+                        const scoreTemplate = await notificationTemplates.RequestApprovedScoreUpdate({
+                            username: freshUser[0]?.user_name || "User",
+                            total_score: freshUser[0]?.total_scores_no || 0
+                        });
+                        console.log("scoreTemplate", scoreTemplate)
+
+                        await Promise.all([
+                            sendTemplateNotification({
+                                templateKey: "Request-Approved",
+                                templateData: template,
+                                userIds: [...userTokens, ...adminTokens, ...ngoTokens],
+                                metaData: {
+                                    created_by: currentUserId,
+                                    ngo_id: requestNgoDetails.ngo_id,
+                                    request_id: RequestId,
+                                    ngo_logo_image: requestNgoDetails.ngo_logo_path || null,
+                                    request_media_url: requestMedia[0]?.media_url || null
+                                }
+                            }),
+                            sendTemplateNotification({
+                                templateKey: "User Score Update",
+                                templateData: scoreTemplate,
+                                userIds: userTokens,
+                                metaData: {
+                                    created_by: currentUserId,
+                                    ngo_id: requestNgoDetails.ngo_id,
+                                    request_id: RequestId,
+                                    ngo_logo_image: requestNgoDetails.ngo_logo_path || null,
+                                    request_media_url: requestMedia[0]?.media_url || null
+                                }
+                            })
+                        ]);
+                    }
+                } catch (notifyErr) {
+                    logger.error(`Notification Error: ${notifyErr}`);
+                }
+            })();
+
+            return res.status(responseCode.CREATED).send(
+                commonResponse(responseCode.CREATED, responseConst.SUCCESS_UPDATING_RECORD)
+            );
+
+        } catch (error) {
+            logger.error(`UpdateStatusRequestNgoMaster Error: ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+            );
+        }
+    },
 
     // Below is code to get all request for the Ngo Data
-    getAllNgoRequestLiveStatusWise:async(req,res)=>{
-        try{
+    getAllNgoRequestLiveStatusWise: async (req, res) => {
+        try {
             const ngo_id = req.query.ngo_id
             const offset = req.query.offset
             const limit = req.query.limit
             const status_id = req.query.status_id
-            if(!ngo_id || ngo_id=="" || ngo_id=="null" || ngo_id=="undefined"){
+            if (!ngo_id || ngo_id == "" || ngo_id == "null" || ngo_id == "undefined") {
                 return res
                     .status(responseCode.BAD_REQUEST)
                     .send(
@@ -729,24 +761,24 @@ updateStatusRequestNgoMaster: async (req, res) => {
                         )
                     );
             }
-            const getDataByNogId = await RequestNgoService.getAllByFilterByNgoId(ngo_id, offset, limit , status_id)
-            if(getDataByNogId && getDataByNogId.length>0){
-                for(let i = 0;i< getDataByNogId.length ;i++){
+            const getDataByNogId = await RequestNgoService.getAllByFilterByNgoId(ngo_id, offset, limit, status_id)
+            if (getDataByNogId && getDataByNogId.length > 0) {
+                for (let i = 0; i < getDataByNogId.length; i++) {
                     let currentData = await RequestService.getServiceById(getDataByNogId[i].RequestId)
-                    if(getDataByNogId[i].status_id==STATUS_MASTER.REQUEST_REJECTED){
+                    if (getDataByNogId[i].status_id == STATUS_MASTER.REQUEST_REJECTED) {
                         getDataByNogId[i] = {
                             ...currentData,
                             ...getDataByNogId[i],
-                          }; 
-                          getDataByNogId[i].request_media = await RequestMediaService.getDataByRequestIdByView(getDataByNogId[i].RequestId)
-                    }else{
-                    if(currentData && currentData.length!==0){
-                        getDataByNogId[i] = {
-                            ...getDataByNogId[i],
-                            ...currentData,
-                          }; 
-                          getDataByNogId[i].request_media = await RequestMediaService.getDataByRequestIdByView(getDataByNogId[i].RequestId)
-                    }
+                        };
+                        getDataByNogId[i].request_media = await RequestMediaService.getDataByRequestIdByView(getDataByNogId[i].RequestId)
+                    } else {
+                        if (currentData && currentData.length !== 0) {
+                            getDataByNogId[i] = {
+                                ...getDataByNogId[i],
+                                ...currentData,
+                            };
+                            getDataByNogId[i].request_media = await RequestMediaService.getDataByRequestIdByView(getDataByNogId[i].RequestId)
+                        }
                     }
                 }
                 return res
@@ -758,32 +790,32 @@ updateStatusRequestNgoMaster: async (req, res) => {
                             getDataByNogId
                         )
                     );
-            }else{
+            } else {
                 return res
-                .status(responseCode.BAD_REQUEST)
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        } catch (error) {
+            console.log("error", error)
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
                 .send(
                     commonResponse(
-                        responseCode.BAD_REQUEST,
-                        responseConst.DATA_NOT_FOUND,
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
                         null,
                         true
                     )
                 );
-            }
-        }catch(error){
-        console.log("error",error)
-        logger.error(`Error ---> ${error}`);
-        return res
-            .status(responseCode.INTERNAL_SERVER_ERROR)
-            .send(
-                commonResponse(
-                    responseCode.INTERNAL_SERVER_ERROR,
-                    responseConst.INTERNAL_SERVER_ERROR,
-                    null,
-                    true
-                )
-            );
         }
-    } 
+    }
 }
 export default RequestNgoController

@@ -5,15 +5,15 @@ const { db, ViewFieldTableVise, tokenData } = commonPath // Destructure necessar
 import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
 
 const RequestNgoDAL = {
-      // Method to create a new record in the database
-      CreateData: async (data) => {
+    // Method to create a new record in the database
+    CreateData: async (data) => {
         try {
             const createdData = await RequestNgoModel(db.sequelize).create(data)
             return createdData // Return the created data
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    }, 
+    },
     // Method to update an existing record by its ID
     UpdateData: async (Request_Ngo_Id, data) => {
         try {
@@ -24,22 +24,22 @@ const RequestNgoDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    }, 
+    },
     // Method to retrieve all records by view
     getAllDataByView: async () => {
         try {
             let getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS}`, { type: db.Sequelize.QueryTypes.SELECT })
             let fulldata = []
-            if(getAllData && getAllData.length>0){
-            fulldata = getAllData.map(row => ({
-            ...row, // keep all existing columns
-            ngo_logo_path:
-                row.ngo_logo_path &&
-                row.ngo_logo_path !== 'null' &&
-                row.ngo_logo_path.trim() !== ''
-                ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.ngo_logo_path}`
-                : null
-            }));
+            if (getAllData && getAllData.length > 0) {
+                fulldata = getAllData.map(row => ({
+                    ...row, // keep all existing columns
+                    ngo_logo_path:
+                        row.ngo_logo_path &&
+                            row.ngo_logo_path !== 'null' &&
+                            row.ngo_logo_path.trim() !== ''
+                            ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.ngo_logo_path}`
+                            : null
+                }));
             }
             return fulldata // Return the retrieved data
         } catch (error) {
@@ -51,19 +51,19 @@ const RequestNgoDAL = {
         try {
             const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS} where Request_Ngo_Id  = ${Request_Ngo_Id} `, { type: db.Sequelize.QueryTypes.SELECT })
             const resultWithImages = getDataById.map(row => ({
-            ...row, // keep all existing columns
-            ngo_logo_path:
-                row.ngo_logo_path &&
-                row.ngo_logo_path !== 'null' &&
-                row.ngo_logo_path.trim() !== ''
-                ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.ngo_logo_path}`
-                : null
+                ...row, // keep all existing columns
+                ngo_logo_path:
+                    row.ngo_logo_path &&
+                        row.ngo_logo_path !== 'null' &&
+                        row.ngo_logo_path.trim() !== ''
+                        ? `${process.env.GET_LIVE_CURRENT_URL}/resources/${row.ngo_logo_path}`
+                        : null
             }));
             return resultWithImages[0] ?? [] // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    }, 
+    },
     // Method to mark a record as deleted (soft delete)
     deleteDataById: async (Request_Ngo_Id, req, res) => {
         try {
@@ -76,68 +76,112 @@ const RequestNgoDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    },getDataByRequestIdAndNgoId:async(RequestId,NgoId)=>{
-        try{
-            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS}  where RequestId = ${RequestId} and ngo_id = ${NgoId} `,{ type: db.Sequelize.QueryTypes.SELECT })
-            return getAllData ?? [] // Return the retrieved data
-        }catch(error){
-            throw error
-        }
-    },getDataByNgoId:async(ngo_id)=>{
-        try{
-            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS} where ngo_id = ${ngo_id} `,{ type: db.Sequelize.QueryTypes.SELECT })
-            return getAllData ?? [] // Return the retrieved data
-        }catch(error){
-            throw error
-        }
-    },getAllNgoByRequestIdOnly:async(RequestId)=>{
-        try{
-            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS}  where RequestId = ${RequestId} `,{ type: db.Sequelize.QueryTypes.SELECT })
-            return getAllData ?? []
-        }catch(error){
-            throw error
-        }
-    },getNgoDataByFilterAndNgoId: async (ngo_id, offset = null, limit = null, status_id = null) => {
+    }, getDataByRequestIdAndNgoId: async (RequestId, NgoId) => {
         try {
-          let baseQuery = `${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS} WHERE ngo_id = :ngo_id`;
-          const replacements = { ngo_id };
-      
-          if (status_id !== null && status_id !== undefined && status_id!=="null" && status_id !=="undefined" && status_id!==""){
-            baseQuery += ` AND status_id = :status_id`;
-            replacements.status_id = status_id;
-          }
-      
-          baseQuery += ` ORDER BY Request_Ngo_Id DESC`;
-      
-          if (limit !== null && offset !== null && limit!=="null" && limit!=="undefined" && offset!=="null" && offset!=="undefined" && offset!=="" && limit!=="") {
-            baseQuery += ` LIMIT :limit OFFSET :offset`;
-            replacements.limit = Number(limit);   // ✅ Ensure numeric type
-            replacements.offset = Number(offset); // ✅ Ensure numeric type
-          }
-          
-      
-          const results = await db.sequelize.query(baseQuery, {
-            replacements,
-            type: db.Sequelize.QueryTypes.SELECT,
-          });
-      
-          return results ?? [];
+            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS}  where RequestId = ${RequestId} and ngo_id = ${NgoId} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getAllData ?? [] // Return the retrieved data
         } catch (error) {
-          throw error;
+            throw error
         }
-      },getRequestNgoCountById:async(ngo_id)=>{
-        try{
+    }, getDataByNgoId: async (ngo_id) => {
+        try {
+            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS} where ngo_id = ${ngo_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getAllData ?? [] // Return the retrieved data
+        } catch (error) {
+            throw error
+        }
+    }, getAllNgoByRequestIdOnly: async (RequestId) => {
+        try {
+            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS}  where RequestId = ${RequestId} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getAllData ?? []
+        } catch (error) {
+            throw error
+        }
+    }, getNgoDataByFilterAndNgoId: async (ngo_id, offset = null, limit = null, status_id = null) => {
+        try {
+            let baseQuery = `${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS} WHERE ngo_id = :ngo_id`;
+            const replacements = { ngo_id };
+
+            if (status_id !== null && status_id !== undefined && status_id !== "null" && status_id !== "undefined" && status_id !== "") {
+                baseQuery += ` AND status_id = :status_id`;
+                replacements.status_id = status_id;
+            }
+
+            baseQuery += ` ORDER BY Request_Ngo_Id DESC`;
+
+            if (limit !== null && offset !== null && limit !== "null" && limit !== "undefined" && offset !== "null" && offset !== "undefined" && offset !== "" && limit !== "") {
+                baseQuery += ` LIMIT :limit OFFSET :offset`;
+                replacements.limit = Number(limit);   // ✅ Ensure numeric type
+                replacements.offset = Number(offset); // ✅ Ensure numeric type
+            }
+
+
+            const results = await db.sequelize.query(baseQuery, {
+                replacements,
+                type: db.Sequelize.QueryTypes.SELECT,
+            });
+
+            return results ?? [];
+        } catch (error) {
+            throw error;
+        }
+    }, getRequestNgoCountById: async (ngo_id) => {
+        try {
             const getData = await db.sequelize.query(` SELECT 
             COUNT(RequestId) AS total_ngo_request,
             SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVAL_PENDINNG} THEN 1 ELSE 0 END) AS total_request_ngo_approval_pending,
             SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_APPROVED} THEN 1 ELSE 0 END) AS total_request_approved_status,
             SUM(CASE WHEN status_id = ${STATUS_MASTER.REQUEST_REJECTED} THEN 1 ELSE 0 END) AS total_request_rejected
-            FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} where ngo_id = ${ngo_id}`,{type:db.Sequelize.QueryTypes.SELECT})
+            FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} where ngo_id = ${ngo_id}`, { type: db.Sequelize.QueryTypes.SELECT })
             return getData[0] ?? []
-        }catch(error){
+        } catch (error) {
             throw error
         }
-      }
+    }, UpdateRequestCountByNgoDataCount: async (ngo_id, fieldName, amount) => {
+        try {
+            // Validation: Ensure amount is a number
+            const valueChange = parseInt(amount);
+            if (isNaN(valueChange)) {
+                throw new Error("Amount must be a valid number");
+            }
+
+            // Sequelize .increment() handles negative numbers automatically!
+            // If amount is 1, it adds 1.
+            // If amount is -1, it subtracts 1.
+            const result = await RequestNgoModel(db.sequelize).increment(fieldName, {
+                by: valueChange,
+                where: { ngo_id: ngo_id }
+            });
+
+            return result;
+        } catch (error) {
+            throw error;
+        }
+    },UpdateRequestCountByRequestListDataCount: async (RequestId, fieldName, amount) => {
+    try {
+        const valueChange = Number(amount)
+        if (Number.isNaN(valueChange) || valueChange === 0) {
+            return 0 // nothing to update
+        }
+
+        const whereCondition = Array.isArray(RequestId)
+            ? { RequestId: RequestId }        // IN (...)
+            : { RequestId: RequestId }        // =
+
+        const result = await RequestNgoModel(db.sequelize).increment(
+            fieldName,
+            {
+                by: valueChange,
+                where: whereCondition
+            }
+        )
+
+        return result
+    } catch (error) {
+        throw error
+    }
+}
+
 }
 
 export default RequestNgoDAL

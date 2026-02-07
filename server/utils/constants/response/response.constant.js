@@ -66,6 +66,7 @@ const RESPONSE_CONSTANTS = {
     DATA_IS_AMBIGIOUS: "More Than One Record Found.",               // 409: Expected single result, got many
     INVALID_DATA: "INVALID DATA FOUND, RECHECK THE DATA.",          // 400: Corrupt data format
     CANNOT_UPDATE_DATA_AT_THIS_STEP: "Cannot Update Data After Approval. You Can Login And Modify.",
+    DATA_ALREADY_PRESENT:"Data Already Present.",
 
     // ============================================================
     // USER MODULE & PROFILE
@@ -111,6 +112,7 @@ const RESPONSE_CONSTANTS = {
     NGO_REGISTRATION_REJECTED: "NGO registration rejected.",
     NGO_REGISTRATION_REOPEND: "NGO registration reopened.",
     NGO_REGISTRATION_ALREADY_COMPLETED: "NGO Registration Already Completed.",
+    CATERGORY_ID_IS_REQUIRED_IN_REQUEST:"Category Id Is Required In Request.",
 
     // ============================================================
     // GIFTS & COUPONS

@@ -70,6 +70,18 @@ const RequestNgoService = {
         }catch(error){
             throw error
         }
-    },
+    },UpdateRequestCountByNgoDataCount:async(ngo_id,fieldName, amount)=>{
+        try{
+            return await RequestNgoDAL.UpdateRequestCountByNgoDataCount(ngo_id,fieldName, amount)
+        }catch(error){
+            throw error
+        }
+    },UpdateRequestCountByRequestListDataCount:async(RequestId,fieldName, amount)=>{
+        try{
+            return await RequestNgoDAL.UpdateRequestCountByRequestListDataCount(RequestId,fieldName, amount)
+        }catch(error){
+            throw error
+        }
+    }
 }
 export default RequestNgoService

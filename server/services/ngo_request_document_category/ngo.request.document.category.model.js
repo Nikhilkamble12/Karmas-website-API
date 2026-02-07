@@ -1,56 +1,55 @@
 import { DataTypes } from "sequelize";
 
-const RequestDocumentCategoryModel = (sequelize) => {
-    return sequelize.define("request_document_category", {
+const NgoRequestDocumentCategoryModel = (sequelize) => {
+    return sequelize.define(
+        "ngo_request_document_category", {
         categrory_document_id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
-            autoIncrement: true
+            autoIncrement: true,
         }, ngo_id: {
             type: DataTypes.INTEGER,
-            allowNull: false
-        },
-        category_id: {
+            allowNull: true,
+        }, category_id: {
             type: DataTypes.INTEGER,
-            allowNull: false
+            allowNull: true,
         }, document_type_id: {
             type: DataTypes.INTEGER,
-            allowNull: false
+            allowNull: true,
         }, is_mandatory: {
+            type: DataTypes.TINYINT(1),
+            allowNull: true,
+        }, is_active: {
             type: DataTypes.BOOLEAN,
-            defaultValue: true
-        },
-        is_active: {
-            type: DataTypes.BOOLEAN,
-            defaultValue: true
+            defaultValue: true,
         },
         created_by: {
             type: DataTypes.INTEGER,
-            allowNull: true
+            allowNull: true,
         },
         created_at: {
             type: DataTypes.DATE,
             allowNull: true,
-            defaultValue: DataTypes.NOW
+            defaultValue: DataTypes.NOW,
         },
         modified_by: {
             type: DataTypes.INTEGER,
-            allowNull: true
+            allowNull: true,
         },
         modified_at: {
             type: DataTypes.DATE,
-            allowNull: true
+            allowNull: true,
         },
         deleted_by: {
             type: DataTypes.INTEGER,
-            allowNull: true
+            allowNull: true,
         },
         deleted_at: {
             type: DataTypes.DATE,
-            allowNull: true
-        }
+            allowNull: true,
+        },
     }, {
-        tableName: "request_document_category",
+        tableName: "ngo_request_document_category",
         paranoid: true,
         timestamps: false,
         defaultScope: {
@@ -66,7 +65,8 @@ const RequestDocumentCategoryModel = (sequelize) => {
                 ],
             },
         },
-    })
+    }
+    )
 }
 
-export default RequestDocumentCategoryModel
+export default NgoRequestDocumentCategoryModel
