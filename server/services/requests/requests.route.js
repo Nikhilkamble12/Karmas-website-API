@@ -69,7 +69,7 @@ router.get(
 router.get(
     `${basePath}/getBy/NgoCreatedId`,
     verifyToken,
-    RequestsController.GetAllRequestNgoId
+    RequestsController.GetAllRequestNgoCreatedId
 )
 // Export the router for use in other parts of the application
 export default router
