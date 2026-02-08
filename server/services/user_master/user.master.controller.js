@@ -361,6 +361,9 @@ const UserMasterController = {
 
             // If not found in JSON, fetch data from the database
             let getDataByid = await UserMasterService.getServiceById(Id)
+
+           
+
             // 5. Merge NGO Data if applicable
             const ngoRoles = [ROLE_MASTER.NGO, ROLE_MASTER.NGO_USER];
             if (ngoRoles.includes(getDataByid.role_id)) {
@@ -381,6 +384,11 @@ const UserMasterController = {
             // }
             // Return the fetched data or handle case where no data is found
             if (getDataByid.length !== 0) {
+                if (getDataByid.file_path && currentuserData.file_path !== "" && currentuserData.file_path !== 0) {
+                getDataByid.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentuserData.file_path}`
+                } else {
+                    getDataByid.file_path = null
+                }
                 return res
                     .status(responseCode.OK)
                     .send(
