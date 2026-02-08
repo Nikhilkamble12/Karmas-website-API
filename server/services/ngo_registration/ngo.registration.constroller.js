@@ -489,7 +489,18 @@ const NgoRegistrationController = {
 
                 // Create NGO entry
                 const createdNgo = await NgoMasterService.createService(ngoPayload);
-
+                if (createdNgo?.success == false) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.UNIQUE_CONSTRANTS_FAILED,
+                            createdNgo.message,
+                            true
+                        )
+                    );
+                }
                 // Build User Master Payload
                 const randomPassword = generateRandomPassword(10);
                 const generate_user_name = await generateUniqueUsername(registration.ngo_name,registration.email)
@@ -545,6 +556,7 @@ const NgoRegistrationController = {
                 );
                 const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationApprovedSuccessfully({ email_id: generate_user_name, username: registration.ngo_name, password: randomPassword })
                 console.log("registration",registration)
+                createdNgo.status_id = data.status_id
                 await sendEmail({ to: registration.email, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
                 return res.send(commonResponse(200, responseConst.NGO_APPROVED_SUCCESSFULLY, { ngo: createdNgo, user: createdUser }));
             }

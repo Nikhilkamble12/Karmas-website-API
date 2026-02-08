@@ -10,6 +10,18 @@ const NgoMasterDAL = {
             const createdData = await NgoMasterModel(db.sequelize).create(data)
             return createdData // Return the created data
         } catch (error) {
+            if (error.name === "SequelizeUniqueConstraintError") {
+                const cleanedErrors = error.errors.map(({ instance, ...rest }) => rest);
+
+                // Collect duplicate field info
+                const duplicates = cleanedErrors.map(e => `${e.path} = "${e.value}"`);
+
+                return {
+                    success: false,
+                    message: `Duplicate entry. ${duplicates.join(" and ")} already exists.`,
+                    error: cleanedErrors, // detailed info if you need it
+                };
+            }
             throw error // Throw error for handling in the controller
         }
     }, 

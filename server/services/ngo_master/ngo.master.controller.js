@@ -21,6 +21,18 @@ const NgoMasterController = {
             // data.created_at = new Date()
             // Create the record using ORM
             const createData = await NgoMasterService.createService(data);
+            if (createData?.success == false) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.UNIQUE_CONSTRANTS_FAILED,
+                            createdNgo.message,
+                            true
+                        )
+                    );
+                }
             if(createData){
                 const ngo_id = createData.dataValues.ngo_id
                 let pan_file_path_name = null , ngo_logo_path_name = null , crs_regis_path_name = null , digital_signature_file_path_name = null , stamp_file_path_name = null ;
