@@ -384,8 +384,8 @@ const UserMasterController = {
             // }
             // Return the fetched data or handle case where no data is found
             if (getDataByid.length !== 0) {
-                if (getDataByid.file_path && currentuserData.file_path !== "" && currentuserData.file_path !== 0) {
-                getDataByid.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${currentuserData.file_path}`
+                if (getDataByid.file_path && getDataByid.file_path !== "" && getDataByid.file_path !== 0) {
+                    getDataByid.file_path = `${process.env.GET_LIVE_CURRENT_URL}/resources/${getDataByid.file_path}`
                 } else {
                     getDataByid.file_path = null
                 }
