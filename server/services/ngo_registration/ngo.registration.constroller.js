@@ -9,6 +9,8 @@ const { commonResponse, responseCode, responseConst, logger, tokenData, currentT
 import crypto from "crypto";
 import sendEmail from "../../utils/helper/comman.email.function.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
+import db from "../index.js";
+import VIEW_NAME from "../../utils/db/view.constants.js";
 
 
 
@@ -588,6 +590,7 @@ const NgoRegistrationController = {
             }
 
         } catch (error) {
+            console.log("error",error)
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
