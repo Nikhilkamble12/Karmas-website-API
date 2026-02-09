@@ -360,7 +360,7 @@ const BlogMediaController = {
         media_url:fileUrlData,
         s3_url:fileUrl.s3_url,
         expiry_time:fileUrl.expiry_time,
-        media_type:data.media_type,
+        media_type:data.media_type ?? fileType,
         sequence:data.sequence,
         blog_id:data.blog_id,
       }
@@ -409,7 +409,7 @@ const BlogMediaController = {
       media_url:fileUrlData,
       s3_url:fileUrl.s3_url,
       expiry_time:fileUrl.expiry_time,
-      media_type:data.media_type,
+      media_type:data.media_type ?? fileType,
       sequence:data.sequence,
       blog_id:data.blog_id,
     }
