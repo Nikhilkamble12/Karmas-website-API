@@ -25,7 +25,7 @@ const NgoRequestDocumentCategoryDAL  = {
     // Method to retrieve all records by view
     getAllDataByView: async () => {
         try {
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_TYPE_FIELDS}`, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_REQUEST_DOCUMENT_CATEGORY}`, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
@@ -34,7 +34,7 @@ const NgoRequestDocumentCategoryDAL  = {
     // Method to retrieve a specific record by its ID
     getDataByIdByView: async (categrory_document_id) => {
         try {
-            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.NGO_TYPE_FIELDS} where categrory_document_id  = ${categrory_document_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.NGO_REQUEST_DOCUMENT_CATEGORY} where categrory_document_id  = ${categrory_document_id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getDataById[0] ?? [] // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
@@ -54,21 +54,21 @@ const NgoRequestDocumentCategoryDAL  = {
         }
     },checkWetherAlreadyCreatedByDocument:async(ngo_id,category_id,document_type_id)=>{
          try {
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_TYPE_FIELDS} where ngo_id = ${ngo_id} and category_id = ${category_id} and document_type_id = ${document_type_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_REQUEST_DOCUMENT_CATEGORY} where ngo_id = ${ngo_id} and category_id = ${category_id} and document_type_id = ${document_type_id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
     },getDataByNgoId:async(ngo_id)=>{
         try {
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_TYPE_FIELDS} where ngo_id = ${ngo_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_REQUEST_DOCUMENT_CATEGORY} where ngo_id = ${ngo_id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData // Return the retrieved data
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
     },getByNgoIdAndCategoryId:async(ngo_id,category_id)=>{
         try{
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_TYPE_FIELDS} where ngo_id = ${ngo_id} and category_id = ${category_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.NGO_REQUEST_DOCUMENT_CATEGORY} where ngo_id = ${ngo_id} and category_id = ${category_id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData // Return the retrieved data
         }catch(error){
             throw error
