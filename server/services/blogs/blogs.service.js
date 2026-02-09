@@ -48,6 +48,12 @@ const BlogsService = {
         } catch (error) {
             throw error
         }
+    },getAllDataByViewByLimit:async(limit, offset)=>{
+        try{
+            return await BlogsDAL.getAllDataByViewByLimit(limit, offset)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default BlogsService

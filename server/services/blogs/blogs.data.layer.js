@@ -83,7 +83,25 @@ const BlogsDAL = {
     } catch (error) {
       throw error; // Throw error for handling in the controller
     }
-  }
+  },getAllDataByViewByLimit: async (limit, offset) => {
+    try {
+        const getAllData = await db.sequelize.query(
+            // Append LIMIT and OFFSET to your existing query string
+            `${ViewFieldTableVise.BLOG_FIELDS} LIMIT :limit OFFSET :offset`,
+            { 
+                // Securely pass the values
+                replacements: { 
+                    limit: limit, 
+                    offset: offset 
+                },
+                type: db.Sequelize.QueryTypes.SELECT 
+            }
+        );
+        return getAllData; 
+    } catch (error) {
+        throw error; 
+    }
+},
 };
 
 export default BlogsDAL; // Export the CommentsDAL object for use in the controller

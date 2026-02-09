@@ -102,28 +102,33 @@ const BlogsController = {
         }
     },
     // Retrieve all records 
-    getAllByView: async (req, res) => {
+getAllByView: async (req, res) => {
     try {
-        // Fetch data from the database
-        const getAll = await BlogsService.getAllService();
+        // --- PAGINATION LOGIC START ---
+        // Default to Page 1 and Limit 10 if not provided
+        const page = req.query.page ? parseInt(req.query.page) : 1;
+        const limit = req.query.limit ? parseInt(req.query.limit) : 10;
+        const offset = (page - 1) * limit;
+        // --- PAGINATION LOGIC END ---
+
+        // Pass limit and offset to the service
+        const getAll = await BlogsService.getAllDataByViewByLimit(limit, offset);
 
         // Check if data exists
         if (getAll.length !== 0) {
             
-            // FIX 1: Correctly extract IDs (remove curly braces for implicit return)
             const blogIds = getAll.map((element) => element.blog_id);
             
-            // Fetch media for all these blogs
+            // Fetch media for only these specific (paginated) blogs
             const getAllBlogMediaUsingId = await BlogMediaService.getDatabyInBlogIdByView(blogIds);
 
-            // FIX 2: Merge the media into the blog objects
-            // We map over the blogs and find the matching media for each one
             const finalData = getAll.map((blog) => {
-                // Find all media items that belong to this specific blog
-                const mediaForThisBlog = getAllBlogMediaUsingId.filter(media => media.blog_id === blog.blog_id);
+                // Determine if 'blog' is a plain object or Sequelize instance
+                // (Raw queries usually return plain objects, but this is a safety check)
+                const blogId = blog.blog_id; 
+
+                const mediaForThisBlog = getAllBlogMediaUsingId.filter(media => media.blog_id === blogId);
                 
-                // Return the blog object with a new 'media' property attached
-                // Note: If 'blog' is a Sequelize instance, use blog.toJSON() or blog.dataValues
                 return {
                     ...blog, 
                     media: mediaForThisBlog
@@ -136,7 +141,10 @@ const BlogsController = {
                     commonResponse(
                         responseCode.OK,
                         responseConst.DATA_RETRIEVE_SUCCESS,
-                        finalData // Return the combined data, not just 'getAll'
+                        finalData,
+                        false,
+                        // Optional: You can return pagination metadata here if your commonResponse supports it
+                        { page, limit, count: finalData.length } 
                     )
                 );
         } else {
@@ -146,13 +154,13 @@ const BlogsController = {
                     commonResponse(
                         responseCode.BAD_REQUEST,
                         responseConst.DATA_NOT_FOUND,
-                        null,
+                        [], // Return empty array instead of null for consistency
                         true
                     )
                 );
         }
     } catch (error) {
-        console.log("error",error)
+        console.log("error", error);
         logger.error(`Error ---> ${error}`);
         return res
             .status(responseCode.INTERNAL_SERVER_ERROR)
