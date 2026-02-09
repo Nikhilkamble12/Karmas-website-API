@@ -372,7 +372,7 @@ const GiftMasterController = {
             );
 
             if (newRewardsUnlocked > 0) {
-                await UserActivtyService.UpdateUserDataCount(user_id, "total_rewards_no", newRewardsUnlocked);
+                await UserActivtyService.UpdateUserDataCount(user_id, "total_reward_redeem", newRewardsUnlocked);
             }
 
             const updatedResponse = await Promise.all(giftResponse.map(async (currentData) => {
