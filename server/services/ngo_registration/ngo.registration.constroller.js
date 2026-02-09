@@ -773,6 +773,18 @@ const NgoRegistrationController = {
             const { email_id } = req.query
             const getData = await NgoRegistrationService.getDataByEmailId(email_id)
             if (getData.length !== 0) {
+                const fileFields = [
+                "ngo_logo_path",
+                "pan_card_file_url",
+                "crs_regis_file_path",
+                "digital_signature_file_path",
+                "stamp_file_path"
+            ];
+            const baseUrl = process.env.GET_LIVE_CURRENT_URL + "/resources";
+            fileFields.forEach(field => {
+                const value = getData[0][field];
+                getData[0][field] = (value && value !== "null" && value !== "") ? `${baseUrl}${value}` : null;
+            });
                 return res
                     .status(responseCode.OK)
                     .send(
