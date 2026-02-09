@@ -782,8 +782,8 @@ const NgoRegistrationController = {
             ];
             const baseUrl = process.env.GET_LIVE_CURRENT_URL + "/resources";
             fileFields.forEach(field => {
-                const value = getData[0][field];
-                getData[0][field] = (value && value !== "null" && value !== "") ? `${baseUrl}${value}` : null;
+                const value = getData[field];
+                getData[field] = (value && value !== "null" && value !== "") ? `${baseUrl}${value}` : null;
             });
                 return res
                     .status(responseCode.OK)

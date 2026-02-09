@@ -72,7 +72,7 @@ const NgoRegistrationDAL = {
         `${ViewFieldTableVise.NGO_REGISTRATION_FIELDS} where email = '${email_id}'`,
         { type: db.Sequelize.QueryTypes.SELECT } 
       );
-      return getAllData;
+      return getAllData[0] ?? [];
     }catch(error){
         throw error
     }
