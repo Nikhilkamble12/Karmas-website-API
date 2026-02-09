@@ -39,12 +39,16 @@ const BlogsDAL = {
   getDataByIdByView: async (blog_id) => {
     try {
       const getDataById = await db.sequelize.query(
-        ` ${ViewFieldTableVise.BLOG_FIELDS} where blog_id  = ${blog_id} `,
-        { type: db.Sequelize.QueryTypes.SELECT }
+        // Use a placeholder (?) or named replacement (:id)
+        `${ViewFieldTableVise.BLOG_FIELDS} WHERE blog_id = :id`, 
+        { 
+          replacements: { id: blog_id }, // Securely pass the value here
+          type: db.Sequelize.QueryTypes.SELECT 
+        }
       );
-      return getDataById[0] ?? [];  // Return the retrieved data
+      return getDataById[0] ?? null; // Return null if not found, rather than empty array if expecting single object
     } catch (error) {
-      throw error; // Throw error for handling in the controller
+      throw error; 
     }
   },
   // Method to mark a record as deleted (soft delete)
