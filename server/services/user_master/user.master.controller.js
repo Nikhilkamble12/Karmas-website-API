@@ -362,7 +362,7 @@ const UserMasterController = {
             // If not found in JSON, fetch data from the database
             let getDataByid = await UserMasterService.getServiceById(Id)
 
-           
+
 
             // 5. Merge NGO Data if applicable
             const ngoRoles = [ROLE_MASTER.NGO, ROLE_MASTER.NGO_USER];
@@ -370,7 +370,7 @@ const UserMasterController = {
                 const ngoRows = await NgoUserMasterService.getDataByUserIdByView(Id);
                 if (ngoRows && ngoRows.length !== 0) {
                     // Merge NGO fields into the main user object
-                    getDataByid = {...ngoRows , ...getDataByid };
+                    getDataByid = { ...ngoRows, ...getDataByid };
                 }
             }
 
@@ -498,7 +498,7 @@ const UserMasterController = {
                     const ngoRows = await NgoUserMasterService.getDataByUserIdByView(Id);
                     if (ngoRows && ngoRows.length !== 0) {
                         // Merge NGO fields into the main user object
-                        userData = {...ngoRows,...userData };
+                        userData = { ...ngoRows, ...userData };
                     }
                 }
                 if (getDataByid.file_path && getDataByid.file_path !== "" && getDataByid.file_path !== 0) {
@@ -768,22 +768,38 @@ const UserMasterController = {
 
     }, UserDataByNgoId: async (req, res) => {
         try {
-            const ngo_id = req.query.ngo_id
+            const { ngo_id } = req.query;
+
             if (!ngo_id) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            "NGO ID is required",
-                            null,
-                            true
-                        )
-                    );
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(
+                        responseCode.BAD_REQUEST,
+                        responseConst.NGO_ID_REQUIRED,
+                        null,
+                        true
+                    )
+                );
             }
-            const getDataByUser = await UserMasterService.getUserByNgoId(ngo_id)
-            if (getDataByUser.length > 0) {
-                const filteredData = getDataByUser.map(user => {
+
+            const users = await UserMasterService.getUserByNgoId(ngo_id);
+
+            if (!users || users.length === 0) {
+                return res.status(responseCode.NOT_FOUND).send(
+                    commonResponse(
+                        responseCode.NOT_FOUND,
+                        responseConst.DATA_NOT_FOUND,
+                        null,
+                        true
+                    )
+                );
+            }
+
+            // 🔥 Parallel processing (VERY IMPORTANT)
+            const filteredData = await Promise.all(
+                users.map(async (user) => {
+                    const ngoUserDetail =
+                        await NgoUserMasterService.getDataByUserIdByView(user.user_id);
+
                     const {
                         blacklist_reason,
                         total_follower,
@@ -800,41 +816,33 @@ const UserMasterController = {
                         bio,
                         ...filteredUser
                     } = user;
-                    return filteredUser;
-                });
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            filteredData
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
-            }
+
+                    return {
+                        ...filteredUser,
+                        ...ngoUserDetail
+                    };
+                })
+            );
+
+            return res.status(responseCode.OK).send(
+                commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    filteredData
+                )
+            );
+
         } catch (error) {
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
+            logger.error(`UserDataByNgoId Error ---> ${error}`);
+
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                commonResponse(
+                    responseCode.INTERNAL_SERVER_ERROR,
+                    responseConst.INTERNAL_SERVER_ERROR,
+                    null,
+                    true
+                )
+            );
         }
     },
     getAllByViewWithPagination: async (req, res) => {

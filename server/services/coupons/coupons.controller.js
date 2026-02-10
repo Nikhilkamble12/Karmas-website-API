@@ -77,6 +77,7 @@ const CouponsController = {
     try {
       const id = req.query.id;
       const data = req.body;
+      const OldergetDataById = await CouponsService.getServiceById(id)
       // Add metadata for modification (modified by, modified at)
       await addMetaDataWhileCreateUpdate(data, req, res, true);
 
@@ -102,11 +103,11 @@ const CouponsController = {
       }
       const getDataById = await CouponsService.getServiceById(id)
       //console.log("getDataById", getDataById)
-        if(getDataById.status_id === STATUS_MASTER.COUPON_REDEEMED){
+        if(OldergetDataById.status_id !== STATUS_MASTER.COUPON_REDEEMED &&  getDataById.status_id == STATUS_MASTER.COUPON_REDEEMED){
           const fetchUser = await UserActivtyService.getDataByUserId(getDataById.user_id)
           const getCountOfTotalCupon = await CouponsService.getCouponsByUserId(getDataById.user_id)
           if(getCountOfTotalCupon>=fetchUser){
-            const updateUserActivity = await UserActivtyService.updateByuserId(getDataById.user_id,{total_reward_redeem:getCountOfTotalCupon.length})
+            const updateUserActivity = await UserActivtyService.updateByuserId(getDataById.user_id,{total_reward_redeem:1})
           }
         }
       return res
