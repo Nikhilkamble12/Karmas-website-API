@@ -81,6 +81,7 @@ GET_ALL_TEMP_USER_MASTER:"v_temp_user_master",
 GET_ALL_REQUEST_DOCUMENT_TYPE:"v_request_document_types",
 GET_ALL_REQUEST_DOCUMENTS:"v_request_documents",
 GET_ALL_NGO_REQUEST_DOCUMENT_CATEGORY:"v_ngo_request_document_category",
+GET_ALL_DESIGNATION_GROUP_PAGE_PERMISSION:"v_designation_group_page_permission",
 
 }
 export default VIEW_NAME

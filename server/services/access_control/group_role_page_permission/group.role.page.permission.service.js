@@ -1,7 +1,7 @@
 import GroupRolePagePermissionDAL from "./group.role.page.permission.data.layer.js";
 
 const GroupRolePagePermissionService = {
-     // Method to create a new record
+    // Method to create a new record
     createService: async (data) => {
         try {
             return await GroupRolePagePermissionDAL.CreateData(data)

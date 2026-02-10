@@ -66,6 +66,7 @@ import TempEmailVerificationModel from "./temp_email_verification/temp.email.ver
 import RequestDocumentsTypesModel from "./request_document_types/request.document.types.model.js";
 import NgoRequestDocumentCategoryModel from "./ngo_request_document_category/ngo.request.document.category.model.js";
 import RequestDocumentModel from "./request_documents/request.documents.model.js";
+import DesignationGroupPagePermissionModel from "./access_control/designation_group_page_permission/designation.group.page.permission.model.js";
 
 // Determine the environment (development or production)
 const environment = process.env.NODE_ENV || "development";
@@ -218,6 +219,7 @@ db.TempEmailVerificationModel = TempEmailVerificationModel(sequelize,Sequelize);
 db.RequestDocumentsTypesModel = RequestDocumentsTypesModel(sequelize,Sequelize);
 db.NgoRequestDocumentCategoryModel = NgoRequestDocumentCategoryModel(sequelize,Sequelize);
 db.RequestDocumentModel = RequestDocumentModel(sequelize,Sequelize);
+db.DesignationGroupPagePermissionModel = DesignationGroupPagePermissionModel(sequelize,Sequelize);
 
 
 export default db

@@ -24,6 +24,7 @@ const ViewFieldTableWise = {
     // -------> D
     DESIGNATION_MASTER_FIELDS: ` SELECT designation_id, table_id, table_name, designation_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_DESIGNATION_MASTER} `,
     DISTRICT_MASTER_FIELDS: ` SELECT district_id, district_name, state_id, state_name, country_id, country_name, district_is_active, district_created_by, district_created_at, district_modified_by, district_modified_at, district_deleted_by, district_deleted_at, state_is_active, country_is_active FROM ${VIEW_NAME.GET_ALL_DISTRICT} `,
+    DESIGNATION_GROUP_PAGE_PERMSIION_FIELDS:` SELECT designation_page_permission_id, designation_id, designation_name, page_id, page_name, permission, description, is_active, created_by FROM ${VIEW_NAME.GET_ALL_DESIGNATION_GROUP_PAGE_PERMISSION} `,
 
     //-------> G
     GIFT_MASTER_FIELDS: ` SELECT gift_master_id, company_id, gift_name, company_logo, company_logo_path, gift_score_required, gift_amount, gift_t_c, how_to_redeem, is_active FROM ${VIEW_NAME.GET_ALL_GIFT_MASTER} `,

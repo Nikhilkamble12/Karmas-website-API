@@ -1,9 +1,9 @@
-import GroupRolePagePermissionService from "./group.role.page.permission.service.js";
+import DesignationGroupPagePermissionService from "./designation.group.page.permission.service.js";
 import commonPath from "../../../middleware/comman_path/comman.path.js";
 const {commonResponse,responseCode,responseConst,logger,tokenData,currentTime,addMetaDataWhileCreateUpdate} = commonPath
 
-const GroupRolePagePermissionController = {
-    // Create A new Record 
+const DesignationGroupPagePermissionController = {
+     // Create A new Record 
     create: async (req, res) => {
         try {
             const data = req.body;
@@ -12,7 +12,7 @@ const GroupRolePagePermissionController = {
             // data.created_by=1,
             // data.created_at = new Date()
             // Create the record using ORM
-            const createData = await GroupRolePagePermissionService.createService(data);
+            const createData = await DesignationGroupPagePermissionService.createService(data);
             if (createData) {
                 return res
                     .status(responseCode.CREATED)
@@ -58,9 +58,9 @@ const GroupRolePagePermissionController = {
             await addMetaDataWhileCreateUpdate(data, req, res, true);
 
             // Update the record using ORM
-            const updatedRowsCount = await GroupRolePagePermissionService.updateService(id, data);
+            const updatedRowsCount = await DesignationGroupPagePermissionService.updateService(id, data);
             // if (updatedRowsCount > 0) {
-            //     const newData = await GroupRolePagePermissionService.getServiceById(id);
+            //     const newData = await DesignationGroupPagePermissionService.getServiceById(id);
             //     // Update the JSON data in the file
             //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "city_id", id, newData, CITY_VIEW_NAME);
             // }
@@ -118,12 +118,12 @@ const GroupRolePagePermissionController = {
             //     }
             //   }
             // Fetch data from the database if JSON is empty
-            const getAll = await GroupRolePagePermissionService.getAllService()
+            const getAll = await DesignationGroupPagePermissionService.getAllService()
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await GroupRolePagePermissionService.getAllService()
+            //   const DataToSave=await DesignationGroupPagePermissionService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -184,12 +184,12 @@ const GroupRolePagePermissionController = {
             // }
 
             // If not found in JSON, fetch data from the database
-            const getDataByid = await GroupRolePagePermissionService.getServiceById(Id)
+            const getDataByid = await DesignationGroupPagePermissionService.getServiceById(Id)
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
-            //   const DataToSave=await GroupRolePagePermissionService.getAllService()
+            //   const DataToSave=await DesignationGroupPagePermissionService.getAllService()
             //   if(DataToSave.length!==0){
             //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
             //   }
@@ -236,7 +236,7 @@ const GroupRolePagePermissionController = {
         try {
             const id = req.query.id
             // Delete data from the database
-            const deleteData = await GroupRolePagePermissionService.deleteByid(id, req, res)
+            const deleteData = await DesignationGroupPagePermissionService.deleteByid(id, req, res)
             // Also delete data from the JSON file
             // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
             if (deleteData === 0) {
@@ -273,10 +273,10 @@ const GroupRolePagePermissionController = {
                     )
                 );
         }
-    },getDataByRoleId:async(req,res)=>{
+    },getDataByDesignationId:async(req,res)=>{
         try{
-            const role_id = req.query.role_id
-            const getData = await GroupRolePagePermissionService.getDataByRoleId(role_id)
+            const designation_id = req.query.designation_id
+            const getData = await DesignationGroupPagePermissionService.getDataByDesignationId(designation_id)
             if (getData.length !== 0) {
                 return res
                     .status(responseCode.OK)
@@ -300,6 +300,7 @@ const GroupRolePagePermissionController = {
                     );
             }
         }catch(error){
+            console.log("error",error)
            logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -312,65 +313,13 @@ const GroupRolePagePermissionController = {
                     )
                 ); 
         }
-    },createOrUpdateGroupRolePagePermission:async(req,res)=>{
+    },createOrUpdateGroupDesignationPagePermission:async(req,res)=>{
         try{
            const data = req.body
-           if(data.ngo_level_id && data.ngo_level_id!=="" && data.ngo_level_id!==0){
-            const getDataByRolePageAndNgoLevelId = await GroupRolePagePermissionService.getDataByRoleIdAndPageIdAndNgoLevelId(data.role_id,data.page_id,data.ngo_level_id)
-            if(getDataByRolePageAndNgoLevelId && getDataByRolePageAndNgoLevelId.length>0){
-               await addMetaDataWhileCreateUpdate(data, req, res, true);
-               const updateData = await GroupRolePagePermissionService.updateService(getDataByRolePageAndNgoLevelId[0].role_page_permission_id)
-               if (updateData === 0) {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_UPDATING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-            return res
-                .status(responseCode.CREATED)
-                .send(
-                    commonResponse(
-                        responseCode.CREATED,
-                        responseConst.SUCCESS_UPDATING_RECORD
-                    )
-                );
-
-            }else{
-               await addMetaDataWhileCreateUpdate(data, req, res, false);
-               const createData = await GroupRolePagePermissionService.createService(data)
-               if (createData) {
-                return res
-                    .status(responseCode.CREATED)
-                    .send(
-                        commonResponse(
-                            responseCode.CREATED,
-                            responseConst.SUCCESS_ADDING_RECORD
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.ERROR_ADDING_RECORD,
-                            null,
-                            true
-                        )
-                    );
-            }
-            }
-           }else{
-            const GetDataByRoleAndPage = await GroupRolePagePermissionService.getDataByRoleIdAndPageId(data.role_id,data.page_id)
+            const GetDataByRoleAndPage = await DesignationGroupPagePermissionService.getDataByDesignationIdAndPageId(data.designation_id,data.page_id)
             if(GetDataByRoleAndPage && GetDataByRoleAndPage.length>0){
                await addMetaDataWhileCreateUpdate(data, req, res, true);
-               const updateData = await GroupRolePagePermissionService.updateService(GetDataByRoleAndPage[0].role_page_permission_id,data)
+               const updateData = await DesignationGroupPagePermissionService.updateService(GetDataByRoleAndPage[0].designation_page_permission_id,data)
                if (updateData === 0) {
                 return res
                     .status(responseCode.BAD_REQUEST)
@@ -393,7 +342,7 @@ const GroupRolePagePermissionController = {
                 );
             }else{
                await addMetaDataWhileCreateUpdate(data, req, res, false);
-               const createData = await GroupRolePagePermissionService.createService(data)
+               const createData = await DesignationGroupPagePermissionService.createService(data)
                if (createData) {
                 return res
                     .status(responseCode.CREATED)
@@ -416,8 +365,9 @@ const GroupRolePagePermissionController = {
                     );
             }
             }
-           }
+           
         }catch(error){
+            console.log("error",error)
            logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)
@@ -433,4 +383,4 @@ const GroupRolePagePermissionController = {
     }
 }
 
-export default GroupRolePagePermissionController
+export default DesignationGroupPagePermissionController
