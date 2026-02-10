@@ -342,6 +342,12 @@ const BlogMediaController = {
         )
       )
     }
+
+    const getMediaType = (mimetype) => {
+  if (mimetype.startsWith("image/")) return "image";
+  if (mimetype.startsWith("video/")) return "video";
+  return null;
+};
      // File name on the server
     console.log("fileType",fileType)
     console.log("folderType",folderType)
@@ -360,7 +366,7 @@ const BlogMediaController = {
         media_url:fileUrlData,
         s3_url:fileUrl.s3_url,
         expiry_time:fileUrl.expiry_time,
-        media_type:data.media_type ?? fileType,
+        media_type:data.media_type ?? getMediaType(fileType),
         sequence:data.sequence,
         blog_id:data.blog_id,
       }
@@ -409,7 +415,7 @@ const BlogMediaController = {
       media_url:fileUrlData,
       s3_url:fileUrl.s3_url,
       expiry_time:fileUrl.expiry_time,
-      media_type:data.media_type ?? fileType,
+      media_type:data.media_type ?? getMediaType(fileType),
       sequence:data.sequence,
       blog_id:data.blog_id,
     }
