@@ -79,8 +79,8 @@ const timer = new PerformanceTimer();
 timer.start("env-config");
 dotenv.config();
 
-const DEBUG_MODE = process.env.DEBUG_MODE === "true";
-const ENABLE_ENCRYPTION = process.env.ENABLE_ENCRYPTION === "true";
+const DEBUG_MODE = process.env.DEBUG_MODE == "true";
+const ENABLE_ENCRYPTION = process.env.ENABLE_ENCRYPTION == "true";
 const ENABLE_REQUEST_LOGGING = process.env.ENABLE_REQUEST_LOGGING !== "false";
 const PORT = parseInt(process.env.PORT) || 3000;
 
