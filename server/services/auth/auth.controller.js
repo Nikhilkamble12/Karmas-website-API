@@ -109,6 +109,7 @@ let AuthController = {
             )
           );
       }
+      console.log("userData",userData)
       // ✅ OPTIMIZATION 5: Validate user (single function)
       const validation = validateUser(userData, cleanIdentifier, cleanGoogleId, !!cleanGoogleId);
       if (!validation.valid) {

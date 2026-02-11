@@ -64,6 +64,12 @@ const NgoRequestDocumentCategoryService = {
         }catch(error){
             throw error
         }
+    },getByNgoIdUsingInAndCategoryId:async(ngo_id, category_id)=>{
+        try{
+            return await NgoRequestDocumentCategoryDAL.getByNgoIdUsingInAndCategoryId(ngo_id, category_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default NgoRequestDocumentCategoryService

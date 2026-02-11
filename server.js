@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 import express from "express";
 import morgan from "morgan";
 import cluster from "cluster";
-import helmet from "helmet";
+// import helmet from "helmet";
+import compression from "compression";
 import cors from "cors";
 import logger from "./server/config/winston_logs/winston.js";
 import consoleLogger from "./server/utils/helper/logger.js";
@@ -365,6 +366,20 @@ app.use(
     lastModified: true,
   })
 );
+
+// ✅ Response Compression (MUST be before encryption)
+app.use(
+  compression({
+    level: 6,
+    threshold: 1024,
+    filter: (req, res) => {
+      if (req.headers["x-no-compression"]) return false;
+      if (req.path.includes("/health")) return false;
+      return compression.filter(req, res);
+    },
+  })
+);
+
 
 // ✅ Encryption/Decryption middleware
 if (ENABLE_ENCRYPTION) {

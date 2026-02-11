@@ -4,6 +4,8 @@ import fs from 'fs/promises'; // ✅ Correct for async/await usage
 import uploadFileToS3Folder from "../../utils/helper/s3.common.code.js";
 import RequestService from "../requests/requests.service.js";
 import { STATUS_MASTER } from "../../utils/constants/id_constant/id.constants.js";
+import RequestNgoService from "../request_ngo/request.ngo.service.js";
+import NgoRequestDocumentCategoryService from "../ngo_request_document_category/ngo.request.document.category.service.js";
 const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
 
 
@@ -460,48 +462,81 @@ const RequestDocumentsController = {
                     )
                 );
         }
-    },getDataByRequestId:async(req,res)=>{
-        try{
-            const requestIds = req.query.RequestId 
-            const getData = await RequestDocumentService.getDataByRequestIdByView(requestIds)
-            if (getData.length !== 0) {
-                return res
-                    .status(responseCode.OK)
-                    .send(
-                        commonResponse(
-                            responseCode.OK,
-                            responseConst.DATA_RETRIEVE_SUCCESS,
-                            getData
-                        )
-                    );
-            } else {
-                return res
-                    .status(responseCode.BAD_REQUEST)
-                    .send(
-                        commonResponse(
-                            responseCode.BAD_REQUEST,
-                            responseConst.DATA_NOT_FOUND,
-                            null,
-                            true
-                        )
-                    );
-            }
-        }catch(error){
-            console.log("error", error)
-            deleteFile(filePath)
-            logger.error(`Error ---> ${error}`);
-            return res
-                .status(responseCode.INTERNAL_SERVER_ERROR)
-                .send(
-                    commonResponse(
-                        responseCode.INTERNAL_SERVER_ERROR,
-                        responseConst.INTERNAL_SERVER_ERROR,
-                        null,
-                        true
-                    )
-                );
+    },getDataByRequestId: async (req, res) => {
+    try {
+        const requestId = req.query.RequestId;
+
+        // 1. Get Request Data to find the Category and NGO IDs
+        const getRequestData = await RequestNgoService.getAllNgoByRequestIdOnly(requestId);
+
+        if (!getRequestData || getRequestData.length === 0) {
+            return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true)
+            );
         }
+
+        const category_id = getRequestData[0]?.category_id;
+        const AllNgoIds = getRequestData.map((data) => data.ngo_id);
+
+        // 2. Get the REQUIRED documents for this Category
+        const getRequiredDocuments = await NgoRequestDocumentCategoryService.getByNgoIdUsingInAndCategoryId(AllNgoIds, category_id);
+
+        if (getRequiredDocuments.length !== 0) {
+            
+            // 3. Get the ACTUAL submitted documents
+            const getSubmittedDocuments = await RequestDocumentService.getDataByRequestIdByView(requestId);
+
+            // 4. Map and Merge
+            const finalDocumentStatus = getRequiredDocuments.map((requiredDoc) => {
+                
+                // Find matching submitted doc
+                const submittedDoc = getSubmittedDocuments.find(
+                    (sub) => sub.document_type_id === requiredDoc.document_type_id
+                );
+
+                const isUploaded = !!submittedDoc; 
+                let documentName = requiredDoc.document_type; 
+
+                // If "Others" (ID 50) is uploaded, use the custom user-provided name if available
+                if (requiredDoc.document_type_id === 50 && submittedDoc) {
+                    documentName = submittedDoc.document_type_name || "Others";
+                }
+
+                return {
+                    RequestId:requiredDoc.RequestId,
+                    document_type_id: requiredDoc.document_type_id,
+                    document_type_name: documentName,
+                    is_mandatory: requiredDoc.is_mandatory, 
+                    is_uploaded: isUploaded,
+                    media_url: submittedDoc ? submittedDoc.media_url : null,
+                    s3_url: submittedDoc ? submittedDoc.s3_url : null,
+                    file_name: submittedDoc ? submittedDoc.file_name : null,
+                    request_document_id: submittedDoc ? submittedDoc.request_document_id : null
+                };
+            });
+
+            return res.status(responseCode.OK).send(
+                commonResponse(
+                    responseCode.OK,
+                    responseConst.DATA_RETRIEVE_SUCCESS,
+                    finalDocumentStatus 
+                )
+            );
+
+        } else {
+            return res.status(responseCode.BAD_REQUEST).send(
+                commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true)
+            );
+        }
+
+    } catch (error) {
+        console.log("error", error);
+        logger.error(`Error ---> ${error}`);
+        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+        );
     }
+}
 
 }
 export default RequestDocumentsController

@@ -113,9 +113,6 @@ const NgoRequestDocumentCategoryController = {
         )
     }
 },
-
-
-    
     // update Record Into Db
     update: async (req, res) => {
         try {

@@ -93,7 +93,37 @@ const NgoRequestDocumentCategoryDAL  = {
     } catch (error) {
         throw error
     }
+},getByNgoIdUsingInAndCategoryId: async (ngo_id, category_id) => {
+  try {
+    if (!ngo_id || !category_id) {
+      throw new Error("ngo_id and category_id are required");
+    }
+
+    // Ensure ngo_id is always an array
+    const ngoIds = Array.isArray(ngo_id) ? ngo_id : [ngo_id];
+
+    const query = `
+      SELECT *
+      FROM ${ViewFieldTableVise.NGO_REQUEST_DOCUMENT_CATEGORY}
+      WHERE ngo_id IN (:ngoIds)
+      AND category_id = :categoryId
+    `;
+
+    const getAllData = await db.sequelize.query(query, {
+      replacements: {
+        ngoIds,
+        categoryId: category_id
+      },
+      type: db.Sequelize.QueryTypes.SELECT
+    });
+
+    return getAllData;
+
+  } catch (error) {
+    throw error;
+  }
 }
+
 
 }
 
