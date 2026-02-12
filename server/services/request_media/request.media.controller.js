@@ -253,6 +253,7 @@ const RequestMediaController = {
     try {
       const id = req.query.id;
       // Delete data from the database
+      const getData = await RequestMediaService.getServiceById(id)
       const deleteData = await RequestMediaService.deleteById(id, req, res);
       // Also delete data from the JSON file
       // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
@@ -268,7 +269,6 @@ const RequestMediaController = {
             )
           );
       }
-      const getData = await RequestMediaService.getServiceById(id)
       await uploadFileToS3Folder.deleteVideoByUrl(getData.s3_url)
 
       return res
@@ -280,6 +280,7 @@ const RequestMediaController = {
           )
         );
     } catch (error) {
+      console.log("error",error)
       logger.error(`Error ---> ${error}`);
       return res
         .status(responseCode.INTERNAL_SERVER_ERROR)

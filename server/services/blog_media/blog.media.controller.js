@@ -250,6 +250,7 @@ const BlogMediaController = {
     try {
       const id = req.query.id;
       // Delete data from the database
+      const getData = await BlogMediaService.getServiceById(id)
       const deleteData = await BlogMediaService.deleteServiceById(id, req, res);
       // Also delete data from the JSON file
       // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"city_id",id)
@@ -266,7 +267,6 @@ const BlogMediaController = {
             )
           );
       }
-      const getData = await BlogMediaService.getServiceById(id)
       await uploadFileToS3Folder.deleteVideoByUrl(getData.media_url)
       return res
         .status(responseCode.CREATED)

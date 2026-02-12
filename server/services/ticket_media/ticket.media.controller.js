@@ -188,6 +188,7 @@ const TicketMediaController = {
         try {
             const id = req.query.id
             // Delete data from the database
+            const getData = await TicketMediaService.getServiceById(id)
             const deleteData = await TicketMediaService.deleteByid(id, req, res)
 
             if (deleteData === 0) {
@@ -202,7 +203,6 @@ const TicketMediaController = {
                         )
                     );
             }
-            const getData = await TicketMediaService.getServiceById(id)
             await uploadFileToS3Folder.deleteVideoByUrl(getData.s3_url)
             return res
                 .status(responseCode.CREATED)
