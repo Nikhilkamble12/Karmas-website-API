@@ -347,7 +347,6 @@ getAllByView: async (req, res) => {
 
             // Fetch data from the database with pagination
             const getAll = await BlogsService.getAllServiceWithPagination(limit, offset,order);
-            console.log("getAll",getAll)
             // Check if data exists
             if (getAll?.data?.length !== 0) {
                 // Extract blog IDs
