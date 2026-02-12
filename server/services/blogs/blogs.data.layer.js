@@ -1,5 +1,6 @@
 import BlogsModel from "./blogs.model.js";
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
+import VIEW_NAME from "../../utils/db/view.constants.js";
 const { db, ViewFieldTableVise, tokenData } = commonPath; // Destructure necessary components from commonPath
 
 const BlogsDAL = {
@@ -72,18 +73,49 @@ const BlogsDAL = {
     }
   },
   // Method to retrieve blogs with pagination and selected fields
-  getAllDataWithPagination: async (limit, offset) => {
-    try {
-      const getAllData = await db.sequelize.query(
-        `SELECT blog_id, user_id, title FROM (${ViewFieldTableVise.BLOG_FIELDS}) as blog_view 
-         LIMIT ${limit} OFFSET ${offset}`,
-        { type: db.Sequelize.QueryTypes.SELECT }
-      );
-      return getAllData; // Return the retrieved data
-    } catch (error) {
-      throw error; // Throw error for handling in the controller
+  getAllDataWithPagination: async (limit, offset, order) => {
+  try {
+    let query = `
+      ${ViewFieldTableVise.BLOG_FIELDS} 
+    `;
+
+    // Validate order (only allow ASC or DESC)
+    const validOrder =
+      order && ["ASC", "DESC"].includes(order.toUpperCase())
+        ? order.toUpperCase()
+        : null;
+
+    if (validOrder) {
+      query += ` ORDER BY blog_id ${validOrder}`;
     }
-  },getAllDataByViewByLimit: async (limit, offset) => {
+
+    // Add LIMIT and OFFSET only if provided and valid numbers
+    if (limit && !isNaN(limit)) {
+      query += ` LIMIT :limit`;
+    }
+
+    if (offset && !isNaN(offset)) {
+      query += ` OFFSET :offset`;
+    }
+    const countQuery = ` SELECT count(*) as total FROM ${VIEW_NAME.GET_ALL_BLOGS} `
+    const [data, countResult] = await Promise.all([
+      db.sequelize.query(query, {
+        replacements: { limit: Number(limit), offset: Number(offset) },
+        type: db.Sequelize.QueryTypes.SELECT,
+      }),
+      db.sequelize.query(countQuery, {
+        type: db.Sequelize.QueryTypes.SELECT,
+      }),
+    ]);
+    return {
+      total: countResult[0].total,
+      data: data,
+    };
+  } catch (error) {
+    throw error;
+  }
+}
+,getAllDataByViewByLimit: async (limit, offset) => {
     try {
         const getAllData = await db.sequelize.query(
             // Append LIMIT and OFFSET to your existing query string

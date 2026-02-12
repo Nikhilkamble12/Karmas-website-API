@@ -343,22 +343,26 @@ getAllByView: async (req, res) => {
             // Get pagination parameters from query
             const limit = parseInt(req.query.limit) || 10; // Default to 10 if not provided
             const offset = parseInt(req.query.offset) || 0; // Default to 0 if not provided
+            const order = req.query.order
 
             // Fetch data from the database with pagination
-            const getAll = await BlogsService.getAllServiceWithPagination(limit, offset);
-
+            const getAll = await BlogsService.getAllServiceWithPagination(limit, offset,order);
+            console.log("getAll",getAll)
             // Check if data exists
-            if (getAll.length !== 0) {
+            if (getAll?.data?.length !== 0) {
                 // Extract blog IDs
-                const blogIds = getAll.map((element) => element.blog_id);
+                const blogIds = getAll.data.map((element) => element.blog_id);
                 
                 // Fetch media for all these blogs
                 const getAllBlogMediaUsingId = await BlogMediaService.getDatabyInBlogIdByView(blogIds);
 
                 // Merge the media into the blog objects (only first media per blog)
-                const finalData = getAll.map((blog) => {
+                const finalData = getAll.data.map((blog) => {
                     // Find the first media item that belongs to this specific blog
-                    const mediaForThisBlog = getAllBlogMediaUsingId.find(media => media.blog_id === blog.blog_id);
+                    // const mediaForThisBlog = getAllBlogMediaUsingId.find(media => media.blog_id === blog.blog_id);
+                    const mediaForThisBlog = getAllBlogMediaUsingId.filter(
+                            media => media.blog_id === blog.blog_id
+                        );
                     
                     // Return the blog object with media property
                     return {
@@ -373,7 +377,7 @@ getAllByView: async (req, res) => {
                         commonResponse(
                             responseCode.OK,
                             responseConst.DATA_RETRIEVE_SUCCESS,
-                            finalData
+                            {total_count:getAll.total,limit:limit,next_offset:parseInt(offset)+parseInt(limit),blog_data:finalData}
                         )
                     );
             } else {
