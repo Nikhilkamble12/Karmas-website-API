@@ -344,7 +344,7 @@ const GiftMasterController = {
             );
 
             const userScore = userScores[0].total_scores_no ?? 0;
-            let newRewardsUnlocked = 0;
+            //let newRewardsUnlocked = 0;
 
             const giftResponse = allGifts.map((gift) => {
                 const progressValue = Math.min(
@@ -354,10 +354,10 @@ const GiftMasterController = {
                 const userCoupon = couponMap.get(gift.gift_master_id);
                 const hasCoupon = !!userCoupon;
                 
-                // Track if this gift just reached 100% but doesn't have a coupon yet
-                if (progressValue >= 100 && !hasCoupon) {
-                    newRewardsUnlocked++;
-                }
+                // // Track if this gift just reached 100% but doesn't have a coupon yet
+                // if (progressValue >= 100 && !hasCoupon) {
+                //     newRewardsUnlocked++;
+                // }
                 return {
                         ...gift,
                         progress: parseFloat(progressValue.toFixed(2)), // number e.g. 85.32
@@ -371,9 +371,9 @@ const GiftMasterController = {
                 }
             );
 
-            if (newRewardsUnlocked > 0) {
-                await UserActivtyService.UpdateUserDataCount(user_id, "total_reward_redeem", newRewardsUnlocked);
-            }
+            // if (newRewardsUnlocked > 0) {
+            //     await UserActivtyService.UpdateUserDataCount(user_id, "total_rewards_no", newRewardsUnlocked);
+            // }
 
             const updatedResponse = await Promise.all(giftResponse.map(async (currentData) => {
                 // Normalize file path
@@ -412,6 +412,145 @@ const GiftMasterController = {
             );
         }
     },
+    // get all gifts till score
+    getAllGiftsTillScore : async (req, res) => {
+        try {
+            const user_id = tokenData(req, res);
+
+            const userScore = await UserActivtyService.getDataByUserId(user_id, ['total_scores_no']);
+
+            if (!userScore || userScore.length === 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+
+            const giftsTillScore = await GiftMasterService.getGiftsTillScore(userScore[0].total_scores_no);
+            if (giftsTillScore.length === 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+
+            return res
+                .status(responseCode.OK)
+                .send(
+                    commonResponse(
+                        responseCode.OK,
+                        responseConst.DATA_RETRIEVE_SUCCESS,
+                        giftsTillScore
+                    )
+                );
+
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(
+                responseCode.INTERNAL_SERVER_ERROR,
+                responseConst.INTERNAL_SERVER_ERROR,
+                null,
+                true
+            )
+            );        
+        }
+    },
+    getNext20GiftsAfterScore : async (req, res) => {
+        try {
+            const user_id = tokenData(req, res);
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 20;
+            
+            if (page < 1 || limit < 1) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            "Invalid page or limit parameters",
+                            null,
+                            true
+                        )
+                    );
+            }
+
+            const userScore = await UserActivtyService.getDataByUserId(user_id, ['total_scores_no']);
+
+            if (!userScore || userScore.length === 0) { 
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+            
+            const result = await GiftMasterService.getNext20GiftsAfterScore(userScore[0].total_scores_no, page, limit);
+            
+            if (!result || result.gifts.length === 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+            
+            const response = {
+                gifts: result.gifts,
+                pagination: {
+                    currentPage: page,
+                    itemsPerPage: limit,
+                    totalItems: result.totalCount,
+                    totalPages: Math.ceil(result.totalCount / limit),
+                    hasNextPage: page < Math.ceil(result.totalCount / limit),
+                    hasPreviousPage: page > 1
+                }
+            };
+            
+            return res
+                .status(responseCode.OK)
+                .send(
+                    commonResponse(
+                        responseCode.OK,
+                        responseConst.DATA_RETRIEVE_SUCCESS,
+                        response
+                    )
+                );
+
+        } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(
+                responseCode.INTERNAL_SERVER_ERROR,
+                responseConst.INTERNAL_SERVER_ERROR,
+                null,
+                true
+            )
+            );        
+        }
+    }
 
 }
 

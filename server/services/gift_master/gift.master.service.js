@@ -46,6 +46,19 @@ const GiftMasterService = {
         }catch(error){
             throw error
         }
+    },getGiftsTillScore:async(score) => {
+        try {
+            return await GiftMasterDAL.getGiftsTillScore(score)
+        } catch (error) {
+            throw error
+        }
+    },
+    getNext20GiftsAfterScore:async(score, page, limit) => {
+        try {
+            return await GiftMasterDAL.getNext20GiftsAfterScore(score, page, limit)
+        } catch (error) {
+            throw error
+        }
     }
 }
 export default GiftMasterService

@@ -36,6 +36,18 @@ router.delete(
     verifyToken,
     GiftMasterController.deleteData
 )
+// Route to get next 20 gifts after score (more specific, should come first)
+router.get(
+    `${basePath}/rewards/gifts/next`,
+    verifyToken,
+    GiftMasterController.getNext20GiftsAfterScore
+)
+// Route to get all gifts till score
+router.get(
+    `${basePath}/rewards/gifts/score`,
+    verifyToken,
+    GiftMasterController.getAllGiftsTillScore
+)
 // Route to get all gifts by user id
 router.get(
     `${basePath}/rewards/gifts`,
