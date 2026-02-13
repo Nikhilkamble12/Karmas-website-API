@@ -16,8 +16,6 @@ const RequestDocumentsController = {
             const data = req.body;
             // Add metadata for creation (created by, created at)
             await addMetaDataWhileCreateUpdate(data, req, res, false);
-            // data.created_by=1,
-            // data.created_at = new Date()
             // Create the record using ORM
             const createData = await RequestDocumentService.createService(data);
             if (createData) {
@@ -66,11 +64,6 @@ const RequestDocumentsController = {
 
             // Update the record using ORM
             const updatedRowsCount = await RequestDocumentService.updateService(id, data);
-            // if (updatedRowsCount > 0) {
-            //     const newData = await RequestDocumentService.getServiceById(id);
-            //     // Update the JSON data in the file
-            //     await CommanJsonFunction.updateDataByField(CITY_FOLDER, CITY_JSON, "table_id", id, newData, CITY_VIEW_NAME);
-            // }
             // Handle case where no records were updated
             if (updatedRowsCount === 0) {
                 return res
@@ -109,32 +102,8 @@ const RequestDocumentsController = {
     // Retrieve all records 
     getAllByView: async (req, res) => {
         try {
-            // Fetch local data from JSON
-            // const GetAllJson = await CommanJsonFunction.getAllData(CITY_FOLDER,CITY_JSON)
-            // if(GetAllJson!==null){
-            //     if(GetAllJson.length!==0){
-            //       return res
-            //       .status(responseCode.OK)
-            //       .send(
-            //         commonResponse(
-            //           responseCode.OK,
-            //           responseConst.DATA_RETRIEVE_SUCCESS,
-            //           GetAllJson
-            //         )
-            //       );
-            //     }
-            //   }
             // Fetch data from the database if JSON is empty
             const getAll = await RequestDocumentService.getAllService()
-
-            // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
-            // // Store the data in JSON for future retrieval
-            // if(fileStatus==false){
-            //   const DataToSave=await RequestDocumentService.getAllService()
-            //   if(DataToSave.length!==0){
-            //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
-            //   }
-            // }
             // Return fetched data or handle case where no data is found
             if (getAll.length !== 0) {
                 return res
@@ -176,31 +145,9 @@ const RequestDocumentsController = {
     getByIdByView: async (req, res) => {
         try {
             const Id = req.query.id
-            // Fetch data by ID from JSON
-            // const getJsonDatabyId=await CommanJsonFunction.getFirstDataByField(CITY_FOLDER,CITY_JSON,"table_id",Id)
-            // if(getJsonDatabyId!==null){
-            //   return res
-            //     .status(responseCode.OK)
-            //     .send(
-            //       commonResponse(
-            //         responseCode.OK,
-            //         responseConst.DATA_RETRIEVE_SUCCESS,
-            //         getJsonDatabyId
-            //       )
-            //     );
-            // }
 
             // If not found in JSON, fetch data from the database
             const getDataByid = await RequestDocumentService.getServiceById(Id)
-
-            // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
-            // // Store the data in JSON for future retrieval
-            // if(fileStatus==false){
-            //   const DataToSave=await RequestDocumentService.getAllService()
-            //   if(DataToSave.length!==0){
-            //     await CommanJsonFunction.storeData( CITY_FOLDER, CITY_JSON, DataToSave, null, CITY_VIEW_NAME)
-            //   }
-            // }
             // Return the fetched data or handle case where no data is found
             if (getDataByid.length !== 0) {
                 return res
@@ -243,9 +190,8 @@ const RequestDocumentsController = {
         try {
             const id = req.query.id
             // Delete data from the database
-            const deleteData = await RequestDocumentService.deleteById(id, req, res)
+            const deleteData = await RequestDocumentService.deleteByid(id, req, res)
             // Also delete data from the JSON file
-            // const deleteSatus=await CommanJsonFunction.deleteDataByField(CITY_FOLDER,CITY_JSON,"table_id",id)
             if (deleteData === 0) {
                 return res
                     .status(responseCode.BAD_REQUEST)
