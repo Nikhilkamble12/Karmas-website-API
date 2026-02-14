@@ -46,9 +46,10 @@ const GiftMasterService = {
         }catch(error){
             throw error
         }
-    },getGiftsTillScore:async(score) => {
+    },
+    getGiftsTillScore:async(score, page, limit) => {
         try {
-            return await GiftMasterDAL.getGiftsTillScore(score)
+            return await GiftMasterDAL.getGiftsTillScore(score, page, limit)
         } catch (error) {
             throw error
         }

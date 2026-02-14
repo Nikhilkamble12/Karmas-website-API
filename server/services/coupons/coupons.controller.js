@@ -437,7 +437,8 @@ const CouponsController = {
           }
         );
         
-      await UserActivtyService.UpdateUserDataCount(user_id, 'total_rewards_no', 1);
+      await UserActivtyService.UpdateUserDataCount(user_id, 'total_rewards_no', -1);
+      await UserActivtyService.UpdateUserDataCount(user_id, 'total_reward_redeem', 1);
 
       return res
         .status(responseCode.OK)

@@ -416,6 +416,22 @@ const GiftMasterController = {
     getAllGiftsTillScore : async (req, res) => {
         try {
             const user_id = tokenData(req, res);
+            const page = parseInt(req.query.page) || 1;
+            const limit = parseInt(req.query.limit) || 30;
+            
+            // Validate page and limit parameters
+            if (page < 1 || limit < 1) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            "Invalid page or limit parameters",
+                            null,
+                            true
+                        )
+                    );
+            }
 
             const userScore = await UserActivtyService.getDataByUserId(user_id, ['total_scores_no']);
 
@@ -432,8 +448,9 @@ const GiftMasterController = {
                     );
             }
 
-            const giftsTillScore = await GiftMasterService.getGiftsTillScore(userScore[0].total_scores_no);
-            if (giftsTillScore.length === 0) {
+            const result = await GiftMasterService.getGiftsTillScore(userScore[0].total_scores_no, page, limit);
+            
+            if (!result || result.gifts.length === 0) {
                 return res
                     .status(responseCode.BAD_REQUEST)
                     .send(
@@ -445,6 +462,18 @@ const GiftMasterController = {
                         )
                     );
             }
+            
+            const response = {
+                gifts: result.gifts,
+                pagination: {
+                    currentPage: page,
+                    itemsPerPage: limit,
+                    totalItems: result.totalCount,
+                    totalPages: Math.ceil(result.totalCount / limit),
+                    hasNextPage: page < Math.ceil(result.totalCount / limit),
+                    hasPreviousPage: page > 1
+                }
+            };
 
             return res
                 .status(responseCode.OK)
@@ -452,7 +481,7 @@ const GiftMasterController = {
                     commonResponse(
                         responseCode.OK,
                         responseConst.DATA_RETRIEVE_SUCCESS,
-                        giftsTillScore
+                        response
                     )
                 );
 

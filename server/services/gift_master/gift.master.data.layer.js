@@ -63,17 +63,35 @@ const GiftMasterDAL = {
         } catch (error) {
             throw error;
         }
-    }, getGiftsTillScore: async (score) => {
+    }, getGiftsTillScore: async (score, page = 1, limit = 30) => {
     try {
-        const result = await db.sequelize.query(
-            ` ${ViewFieldTableVise.GIFT_MASTER_FIELDS} where gift_score_required <= :score
-             and is_active = 1 order by gift_score_required ASC `,
+        const offset = (page - 1) * limit;
+        
+        // Get total count of gifts up to the user's score
+        const countResult = await db.sequelize.query(
+            `SELECT COUNT(*) as total FROM gift_master WHERE gift_score_required <= :score AND is_active = 1`,
             { 
                 type: db.Sequelize.QueryTypes.SELECT,
                 replacements: { score }
+            }
+        );
+        
+        const totalCount = countResult[0]?.total || 0;
+        
+        // Get paginated gifts
+        const gifts = await db.sequelize.query(
+            ` ${ViewFieldTableVise.GIFT_MASTER_FIELDS} where gift_score_required <= :score
+             and is_active = 1 order by gift_score_required ASC limit :limit offset :offset`,
+            { 
+                type: db.Sequelize.QueryTypes.SELECT,
+                replacements: { score, limit, offset }
             }        
-        )
-        return result
+        );
+        
+        return {
+            gifts,
+            totalCount
+        };
     } catch (error) {
         throw error;
     }
