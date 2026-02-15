@@ -82,6 +82,12 @@ const RequestNgoService = {
         }catch(error){
             throw error
         }
+    },UpdateRequestCountByRequestNgoId:async(Request_Ngo_Id, fieldName, amount)=>{
+        try{
+            return await RequestNgoDAL.UpdateRequestCountByRequestNgoId(Request_Ngo_Id, fieldName, amount)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default RequestNgoService

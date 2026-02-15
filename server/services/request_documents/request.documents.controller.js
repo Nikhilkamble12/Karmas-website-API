@@ -228,6 +228,10 @@ const RequestDocumentsController = {
         }
     }, createOrUpdateMulitileRequestDocuments: async (req, res) => {
         const data = req.body
+        if (!req.file) {
+                deleteFile(filePath)
+                return res.status(400).send({ error: 'No file uploaded' });
+        }
         const fileType = req.file.mimetype;
         const folderType = 'request_documents';
         const filePath = req.file.path;  // Multer stores the file temporarily here
@@ -244,15 +248,8 @@ const RequestDocumentsController = {
             }
         }
         try {
-
-            if (!req.file) {
-                deleteFile(filePath)
-                return res.status(400).send({ error: 'No file uploaded' });
-            }
-
             if (data.RequestId == "" || data.RequestId == "undefined" || data.RequestId == '0' || data.RequestId == 0 || data.RequestId == undefined) {
                 deleteFile(filePath)
-
                 return res
                     .status(responseCode.BAD_REQUEST)
                     .send(
@@ -340,10 +337,10 @@ const RequestDocumentsController = {
                     });
                 }
             } else {
+                
                 const s3BucketFileDynamic = `${folderType}/${data.RequestId}/${data.document_type_id}/${fileName}`
                 // Upload the file to S3
                 const fileUrl = await uploadFileToS3Folder.uploadFileToS3(s3BucketFileDynamic, filePath, fileType);
-                console.log("fileUrl", fileUrl)
                 if (fileUrl.success) {
                     const fileUrlData = fileUrl.url;
                     const dataToStore = {
@@ -355,14 +352,41 @@ const RequestDocumentsController = {
                         RequestId: data.RequestId,
                     }
                     await addMetaDataWhileCreateUpdate(dataToStore, req, res, false);
-                    console.log("dataToStore", dataToStore)
                     const createData = await RequestDocumentService.createService(dataToStore)
-                    //   if(parseInt(RequestData.status_id) == STATUS_MASTER.REQUEST_DRAFT){
-                    //       const getUserById = await UserTokenService.GetTokensByUserIds(RequestData.request_user_id)
-                    //       const template = notificationTemplates.requestReceivedForEvaluation({requestName:RequestData.RequestName})
-                    //       const sendNotifiction = await sendTemplateNotification({templateKey:"Request-Notification",templateData:template,userIds:getUserById,metaData:{request_id:data.RequestId,created_by:tokenData(req,res),request_media_url:fileUrlData}})
-                    //       const updateRequestStatus = await RequestService.updateService(data.RequestId,{status_id:STATUS_MASTER.REQUEST_PENDING})
-                    //     }
+                    // 1. Get all NGOs associated with this Request ID
+                        const getAllNgo = await RequestNgoService.getAllNgoByRequestIdOnly(data.RequestId);
+
+                        // Check if we found any NGOs
+                        if (getAllNgo && getAllNgo.length > 0) {
+                            
+                            // Extract just the 'ngo_id' values into an array (e.g., [1, 5, 12])
+                            const ngoIdList = getAllNgo.map(ngo => ngo.ngo_id);
+
+                            // 2. Get Document Categories using the list of NGO IDs
+                            // This likely returns records linking the NGO to the specific category
+                            const getDocumentById = await NgoRequestDocumentCategoryService.getByNgoIdUsingInAndCategoryId(
+                                ngoIdList, 
+                                RequestData.category_id
+                            );
+
+                            // Check if we found matching document categories
+                            if (getDocumentById && getDocumentById.length > 0) {
+                                
+                                // Ensure you use the correct primary key column name from your model
+                                // 3. FILTER the original list to get the Request_Ngo_Ids for only the valid NGOs
+                                const requestNgoIdList = getAllNgo
+                                    .filter(ngoItem => validNgoIds.includes(ngoItem.ngo_id)) // Keep only NGOs that have the document
+                                    .map(ngoItem => ngoItem.Request_Ngo_Id); // Extract their specific Request_Ngo_Id
+                                if (requestNgoIdList.length > 0) {
+                                // 3. Update the count for all those Request_Ngo_Ids at once
+                                const updateCount = await RequestNgoService.UpdateRequestCountByRequestNgoId(
+                                    requestNgoIdList, 
+                                    "ngo_document_uploaded", 
+                                    1 // Increment by 1
+                                );
+                                 }
+                            }
+                        }
                     deleteFile(filePath)
                     if (createData) {
                         return res

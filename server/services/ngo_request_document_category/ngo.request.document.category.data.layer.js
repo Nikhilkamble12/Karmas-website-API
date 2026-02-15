@@ -122,7 +122,7 @@ const NgoRequestDocumentCategoryDAL  = {
   } catch (error) {
     throw error;
   }
-}
+},
 
 
 }

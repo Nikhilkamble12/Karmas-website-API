@@ -180,6 +180,61 @@ const RequestNgoDAL = {
     } catch (error) {
         throw error
     }
+},UpdateRequestCountByNgoIdListDataCount: async (ngo_id, fieldName, amount) => {
+    try {
+        // 1. Validation: Ensure amount is a number
+        const valueChange = parseInt(amount);
+        if (isNaN(valueChange)) {
+            throw new Error("Amount must be a valid number");
+        }
+
+        // 2. Validation: Ensure ngo_id is present and valid
+        if (!ngo_id || (Array.isArray(ngo_id) && ngo_id.length === 0)) {
+            throw new Error("No Valid NGO ID(s) provided");
+        }
+
+        // 3. Execution
+        // Sequelize automatically detects if 'ngo_id' is an array or a single value.
+        // - Single value (e.g., 5) -> WHERE `ngo_id` = 5
+        // - Array (e.g., [1, 2, 3]) -> WHERE `ngo_id` IN (1, 2, 3)
+        const result = await RequestNgoModel(db.sequelize).increment(fieldName, {
+            by: valueChange,
+            where: { 
+                ngo_id: ngo_id 
+            }
+        });
+
+        return result;
+    } catch (error) {
+        throw error;
+    }
+},UpdateRequestCountByRequestNgoId: async (Request_Ngo_Id, fieldName, amount) => {
+    try {
+        // 1. Validation: Ensure amount is a number
+        const valueChange = parseInt(amount);
+        if (isNaN(valueChange)) {
+            throw new Error("Amount must be a valid number");
+        }
+
+        // 2. Validation: Ensure Request_Ngo_Id is present
+        // This handles both single ID (e.g., 5) and Array of IDs (e.g., [1, 5, 10])
+        if (!Request_Ngo_Id || (Array.isArray(Request_Ngo_Id) && Request_Ngo_Id.length === 0)) {
+            throw new Error("No Valid Request_Ngo_Id(s) provided");
+        }
+
+        // 3. Execution
+        // If Request_Ngo_Id is [1, 2, 3], SQL becomes: WHERE Request_Ngo_Id IN (1, 2, 3)
+        const result = await RequestNgoModel(db.sequelize).increment(fieldName, {
+            by: valueChange,
+            where: { 
+                Request_Ngo_Id: Request_Ngo_Id 
+            }
+        });
+
+        return result;
+    } catch (error) {
+        throw error;
+    }
 }
 
 }
