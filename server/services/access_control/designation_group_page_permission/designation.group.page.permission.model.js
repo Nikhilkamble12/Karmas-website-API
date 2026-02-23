@@ -1,18 +1,26 @@
 import { DataTypes } from "sequelize";
 
-const DesignationGroupPagePermissionModel = (sequelize)=>{
-    return sequelize.define("designation_group_page_permission",{
-        designation_page_permission_id:{
+const DesignationGroupPagePermissionModel = (sequelize) => {
+    return sequelize.define("designation_group_page_permission", {
+        designation_page_permission_id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true
-        }, designation_id:{
+        }, designation_id: {
             type: DataTypes.INTEGER,
             allowNull: true
-        },page_id: {
+        }, ngo_designation_id: {
             type: DataTypes.INTEGER,
             allowNull: true
-        }, permission: {
+        },
+        page_id: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        }, page_url: {
+            type: DataTypes.STRING(500),
+            allowNull: true
+        },
+        permission: {
             type: DataTypes.INTEGER,
             allowNull: true
         }, description: {
@@ -47,7 +55,7 @@ const DesignationGroupPagePermissionModel = (sequelize)=>{
             type: DataTypes.DATE,
             allowNull: true
         }
-    },{
+    }, {
         tableName: "designation_group_page_permission",
         paranoid: true,
         timestamps: false,
