@@ -493,6 +493,20 @@ const NgoMasterController = {
             // If not found in JSON, fetch data from the database
             const getDataByid = await NgoMasterService.getServiceById(Id)
 
+            // File fields to update
+            const fileFields = [
+                "ngo_logo_path",
+                "pan_card_file_url",
+                "crs_regis_file_path",
+                "digital_signature_file_path",
+                "stamp_file_path"
+            ];
+            const baseUrl = process.env.GET_LIVE_CURRENT_URL + "/resources/";
+            fileFields.forEach(field => {
+                const value = getDataByid[field];
+                getDataByid[field] = (value && value !== "null" && value !== "") ? `${baseUrl}${value}` : null;
+            });
+
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
             // if(fileStatus==false){
