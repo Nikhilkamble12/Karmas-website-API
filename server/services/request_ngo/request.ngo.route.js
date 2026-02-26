@@ -52,5 +52,10 @@ router.get(
     verifyToken,
     RequestNgoController.getAllNgoRequestLiveStatusWise
 )
+router.get(
+    `${basePath}/getNgo/RequestedDocument`,
+    verifyToken,
+    RequestNgoController.getAllNgoRequestDocument
+)
 // Export the router for use in other parts of the application
 export default router

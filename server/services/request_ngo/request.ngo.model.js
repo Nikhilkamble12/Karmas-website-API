@@ -31,6 +31,9 @@ const RequestNgoModel = (sequelize) => {
         },ngo_document_uploaded:{
             type: DataTypes.INTEGER,
             allowNull: true
+        },is_document_required:{
+            type: DataTypes.TINYINT(1),
+            allowNull: true
         },
         is_active: {
             type: DataTypes.BOOLEAN,
