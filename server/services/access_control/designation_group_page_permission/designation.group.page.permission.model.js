@@ -6,18 +6,12 @@ const DesignationGroupPagePermissionModel = (sequelize) => {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true
-        }, designation_id: {
-            type: DataTypes.INTEGER,
-            allowNull: true
         }, ngo_designation_id: {
             type: DataTypes.INTEGER,
             allowNull: true
         },
         page_id: {
             type: DataTypes.INTEGER,
-            allowNull: true
-        }, page_url: {
-            type: DataTypes.STRING(500),
             allowNull: true
         },
         permission: {
