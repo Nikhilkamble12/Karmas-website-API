@@ -591,7 +591,7 @@ const RequestNgoController = {
     updateStatusRequestNgoMaster: async (req, res) => {
         try {
             const { Request_Ngo_Id } = req.query;
-            const { RequestId, status_id } = req.body;
+            const { RequestId, status_id,Reason } = req.body;
             const newStatus = parseInt(status_id);
             const currentUserId = tokenData(req, res);
             const metaDataUpdate = { modified_by: currentUserId, modified_at: new Date() };
@@ -665,7 +665,7 @@ const RequestNgoController = {
             }
 
             // Always update the specific Request-NGO link
-            coreDbTasks.push(RequestNgoService.updateService(Request_Ngo_Id, { status_id: newStatus, ...metaDataUpdate }));
+            coreDbTasks.push(RequestNgoService.updateService(Request_Ngo_Id, { status_id: newStatus,Reason:Reason, ...metaDataUpdate }));
 
             // Execute Phase 1: Core Database Writes
             await Promise.all(coreDbTasks);
