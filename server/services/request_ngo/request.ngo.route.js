@@ -62,5 +62,10 @@ router.put(
     verifyToken,
     RequestNgoController.updateDocumentNotification
 )
+router.get(
+    `${basePath}/getRequest/DocumentList`,
+    verifyToken,
+    RequestNgoController.getRequestDocumentByNgoidAnd
+)
 // Export the router for use in other parts of the application
 export default router

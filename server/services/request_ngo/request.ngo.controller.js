@@ -968,6 +968,79 @@ const RequestNgoController = {
                     )
                 );
         }
+    },getRequestDocumentByNgoidAnd:async(req,res)=>{
+        try {
+                const Request_Ngo_Id = req.query.Request_Ngo_Id;
+        
+                // 1. Get Request Data to find the Category and NGO IDs
+                const getRequestData = await RequestNgoService.getServiceById(Request_Ngo_Id);
+        
+                if (!getRequestData || getRequestData.length === 0) {
+                    return res.status(responseCode.BAD_REQUEST).send(
+                        commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true)
+                    );
+                }
+        
+                const category_id = getRequestData?.category_id;
+        
+                // 2. Get the REQUIRED documents for this Category
+                const getRequiredDocuments = await NgoRequestDocumentCategoryService.getByNgoIdUsingInAndCategoryId(getRequestData.ngo_id, category_id);
+        
+                if (getRequiredDocuments.length !== 0) {
+                    
+                    // 3. Get the ACTUAL submitted documents
+                    const getSubmittedDocuments = await RequestDocumentService.getDataByRequestIdByView(getRequestData.RequestId);
+        
+                    // 4. Map and Merge
+                    const finalDocumentStatus = getRequiredDocuments.map((requiredDoc) => {
+                        
+                        // Find matching submitted doc
+                        const submittedDoc = getSubmittedDocuments.find(
+                            (sub) => sub.document_type_id === requiredDoc.document_type_id
+                        );
+        
+                        const isUploaded = !!submittedDoc; 
+                        let documentName = requiredDoc.document_type; 
+        
+                        // If "Others" (ID 50) is uploaded, use the custom user-provided name if available
+                        if (requiredDoc.document_type_id === 50 && submittedDoc) {
+                            documentName = submittedDoc.document_type_name || "Others";
+                        }
+        
+                        return {
+                            RequestId:requiredDoc.RequestId,
+                            document_type_id: requiredDoc.document_type_id,
+                            document_type_name: documentName,
+                            is_mandatory: requiredDoc.is_mandatory, 
+                            is_uploaded: isUploaded,
+                            media_url: submittedDoc ? submittedDoc.media_url : null,
+                            s3_url: submittedDoc ? submittedDoc.s3_url : null,
+                            file_name: submittedDoc ? submittedDoc.file_name : null,
+                            request_document_id: submittedDoc ? submittedDoc.request_document_id : null
+                        };
+                    });
+        
+                    return res.status(responseCode.OK).send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            finalDocumentStatus 
+                        )
+                    );
+        
+                } else {
+                    return res.status(responseCode.BAD_REQUEST).send(
+                        commonResponse(responseCode.BAD_REQUEST, responseConst.DATA_NOT_FOUND, null, true)
+                    );
+                }
+        
+            } catch (error) {
+                console.log("error", error);
+                logger.error(`Error ---> ${error}`);
+                return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+                    commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+                );
+            }
     }
 }
 export default RequestNgoController
