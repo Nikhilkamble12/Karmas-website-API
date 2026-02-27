@@ -104,7 +104,10 @@ const notificationTemplates = {
   RequestApprovedScoreUpdate: ({ username, total_score }) => ({
     title: `Score Updates For ${username}`,
     description: `Request Approved ${username} Score Just Went Up To ${total_score}. `,
-  }),
+  }),NGORequestedDocuments: ({ ngoName }) => ({
+  title: `Document Request`,
+  description: `${ngoName} has requested you to upload all required documents`,
+}),
 };
 
 export default notificationTemplates;

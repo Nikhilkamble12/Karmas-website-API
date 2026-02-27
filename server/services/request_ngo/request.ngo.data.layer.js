@@ -235,9 +235,9 @@ const RequestNgoDAL = {
     } catch (error) {
         throw error;
     }
-},getAllNgoByRequestIdDodumentRequiredOnly: async (RequestId) => {
+},getAllNgoByRequestIdDodumentRequiredOnly: async (request_user_id) => {
         try {
-            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS}  where RequestId = ${RequestId} and is_document_required = true`, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(` ${ViewFieldTableVise.NGO_REQUEST_MAPPING_FIELDS}  where request_user_id = ${request_user_id} and is_document_required = true`, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData ?? []
         } catch (error) {
             throw error

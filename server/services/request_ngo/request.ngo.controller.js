@@ -818,7 +818,7 @@ const RequestNgoController = {
         }
     },getAllNgoRequestDocument:async(req,res)=>{
             try {
-            const request_id = req.query.RequestId
+            const request_user_id = req.query.request_user_id
             // Fetch local data from JSON
             // const GetAllJson = await CommanJsonFunction.getAllData(CITY_FOLDER,CITY_JSON)
             // if(GetAllJson!==null){
@@ -835,7 +835,7 @@ const RequestNgoController = {
             //     }
             //   }
             // Fetch data from the database if JSON is empty
-            const getAll = await RequestNgoService.getAllNgoByRequestIdAndDocumentOnly(request_id)
+            const getAll = await RequestNgoService.getAllNgoByRequestIdAndDocumentOnly(request_user_id)
 
             // const fileStatus=await CommanJsonFunction.checkFileExistence(CITY_FOLDER,CITY_JSON)
             // // Store the data in JSON for future retrieval
@@ -869,6 +869,93 @@ const RequestNgoController = {
                     );
             }
         } catch (error) {
+            logger.error(`Error ---> ${error}`);
+            return res
+                .status(responseCode.INTERNAL_SERVER_ERROR)
+                .send(
+                    commonResponse(
+                        responseCode.INTERNAL_SERVER_ERROR,
+                        responseConst.INTERNAL_SERVER_ERROR,
+                        null,
+                        true
+                    )
+                );
+        }
+    },updateDocumentNotification:async(req,res)=>{
+        try{
+            const Request_Ngo_Id = req.query.Request_Ngo_Id
+            const data = req.body 
+            const getOlderData = await RequestNgoService.getServiceById(Request_Ngo_Id)
+            if(getOlderData && getOlderData.length!==0 && getOlderData.is_document_required==true){
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.CANNOT_UPDATE_DATA_AT_THIS_STEP,
+                            null,
+                            true
+                        )
+                    );
+            }
+            if(Request_Ngo_Id && Request_Ngo_Id!=="null" && Request_Ngo_Id!=="undefined" && Request_Ngo_Id!=="" && Request_Ngo_Id!==0){
+                let dataToUpdate = {
+                    is_document_required:data.is_document_required
+                }
+            await addMetaDataWhileCreateUpdate(dataToUpdate, req, res, true);// Update the record using ORM
+            const updatedRowsCount = await RequestNgoService.updateService(Request_Ngo_Id, dataToUpdate);
+            
+            if(data.is_document_required == true){
+                const [userTokens] = await Promise.all([
+                  UserTokenService.GetTokensByUserIds(getOlderData.request_user_id),
+                    ]);
+                const template = await notificationTemplates.NGORequestedDocuments({
+                            ngoName: getOlderData.ngo_name,
+                        });
+                sendTemplateNotification({
+                                templateKey: "Document Request",
+                                templateData: template,
+                                userIds: [...userTokens],
+                                metaData: {
+                                    ngo_id: getOlderData.ngo_id,
+                                    request_id: getOlderData.RequestId,
+                                    ngo_logo_image: getOlderData.ngo_logo_path || null,
+                                }
+                            })
+            }
+            if (updatedRowsCount === 0) {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.ERROR_UPDATING_RECORD,
+                            null,
+                            true
+                        )
+                    );
+            }
+            return res
+                .status(responseCode.CREATED)
+                .send(
+                    commonResponse(
+                        responseCode.CREATED,
+                        responseConst.SUCCESS_UPDATING_RECORD
+                    )
+                );
+            }else{
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+        }catch(error){
             logger.error(`Error ---> ${error}`);
             return res
                 .status(responseCode.INTERNAL_SERVER_ERROR)

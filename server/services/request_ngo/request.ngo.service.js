@@ -88,9 +88,9 @@ const RequestNgoService = {
         }catch(error){
             throw error
         }
-    },getAllNgoByRequestIdAndDocumentOnly:async(RequestId)=>{
+    },getAllNgoByRequestIdAndDocumentOnly:async(request_user_id)=>{
         try{
-            return await RequestNgoDAL.getAllNgoByRequestIdDodumentRequiredOnly(RequestId)
+            return await RequestNgoDAL.getAllNgoByRequestIdDodumentRequiredOnly(request_user_id)
         }catch(error){
             throw error
         }
