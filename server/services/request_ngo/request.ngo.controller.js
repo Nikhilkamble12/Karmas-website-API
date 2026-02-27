@@ -982,7 +982,7 @@ const RequestNgoController = {
                 }
         
                 const category_id = getRequestData?.category_id;
-        
+                console.log("getRequestData",getRequestData)
                 // 2. Get the REQUIRED documents for this Category
                 const getRequiredDocuments = await NgoRequestDocumentCategoryService.getByNgoIdUsingInAndCategoryId(getRequestData.ngo_id, category_id);
         

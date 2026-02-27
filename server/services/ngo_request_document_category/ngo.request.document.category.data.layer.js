@@ -103,8 +103,7 @@ const NgoRequestDocumentCategoryDAL  = {
     const ngoIds = Array.isArray(ngo_id) ? ngo_id : [ngo_id];
 
     const query = `
-      SELECT *
-      FROM ${ViewFieldTableVise.NGO_REQUEST_DOCUMENT_CATEGORY}
+      ${ViewFieldTableVise.NGO_REQUEST_DOCUMENT_CATEGORY}
       WHERE ngo_id IN (:ngoIds)
       AND category_id = :categoryId
     `;
