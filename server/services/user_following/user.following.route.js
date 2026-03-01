@@ -56,5 +56,10 @@ router.get(
     verifyToken,
     UserFollowingController.getListByFollowingUserToAccepted
 )
+router.get(
+    `${basePath}/getBy/name`,
+    verifyToken,
+    UserFollowingController.getDataByName
+)
 // Export the router for use in other parts of the application
 export default router

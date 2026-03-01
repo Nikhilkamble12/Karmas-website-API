@@ -109,6 +109,65 @@ const UserFollowingDAL = {
         } catch (error) {
             throw error;
         }
+    }, getDataByUserNameByLIke: async (user_id, full_name) => {
+        try {
+
+            // 1️⃣ Fetch matching relations
+            const relations = await db.sequelize.query(
+                `
+            ${ViewFieldTableVise.USER_FOLLOWING_FIELDS}
+            WHERE
+                (
+                    (user_id = :user_id AND following_full_name LIKE :full_name)
+                    OR
+                    (following_user_id = :user_id AND user_full_name LIKE :full_name)
+                )
+                AND is_following = 1
+            `,
+                {
+                    replacements: {
+                        user_id,
+                        full_name: `%${full_name}%`
+                    },
+                    type: db.Sequelize.QueryTypes.SELECT
+                }
+            );
+
+            if (!relations.length) {
+                return [];
+            }
+
+            // 2️⃣ Extract unique user IDs (excluding self)
+            const uniqueUserIds = [
+                ...new Set(
+                    relations.flatMap(row => [
+                        row.user_id,
+                        row.following_user_id
+                    ])
+                )
+            ].filter(id => id !== user_id);   // 🚀 remove own id
+
+            if (!uniqueUserIds.length) {
+                return [];
+            }
+
+            // 3️⃣ Fetch user master details
+            const users = await db.sequelize.query(
+                `
+            ${ViewFieldTableVise.USER_MASTER_WITHOUT_PASSWORD}
+            WHERE user_id IN (:userIds)
+            `,
+                {
+                    replacements: { userIds: uniqueUserIds },
+                    type: db.Sequelize.QueryTypes.SELECT
+                }
+            );
+
+            return users;
+
+        } catch (error) {
+            throw error;
+        }
     }
 
 }

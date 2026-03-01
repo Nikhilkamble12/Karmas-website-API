@@ -70,6 +70,12 @@ const UserFollowingService = {
         }catch(error){
             throw error
         }
+    },getDataByUserNameByLIke:async(user_id,full_name)=>{
+        try{
+            return await UserFollowingDAL.getDataByUserNameByLIke(user_id,full_name)
+        }catch(error){
+            throw error
+        }
     }
 }
 
