@@ -29,6 +29,7 @@ const ViewFieldTableWise = {
     //-------> G
     GIFT_MASTER_FIELDS: ` SELECT gift_master_id, company_id, gift_name, company_logo, company_logo_path, gift_score_required, gift_amount, gift_t_c, how_to_redeem, is_active FROM ${VIEW_NAME.GET_ALL_GIFT_MASTER} `,
     GROUP_ROLE_PAGE_PERMISSION_FIELDS: ` SELECT role_page_permission_id, role_id, role_name, page_id, page_name, page_url, mobile_url, interface, module_name, permission, ngo_level_id, level_name, description FROM ${VIEW_NAME.GET_ALL_GROUP_ROLE_PAGE_PERMISSION} `,
+    GROUP_MASTER_FIELDS:` SELECT  group_id, group_code, group_name, file_path, s3_url, file_name, is_public, is_announcement, admins, is_active, created_by FROM ${VIEW_NAME.GET_ALL_GROUP_MASTER} `,
 
     // -------> L
     LIKES_FIELDS: ` SELECT like_id, user_id, post_id, is_liked, created_at, is_active, user_name, user_profile FROM ${VIEW_NAME.GET_ALL_LIKES} `,

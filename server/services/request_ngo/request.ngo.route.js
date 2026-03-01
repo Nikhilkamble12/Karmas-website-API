@@ -67,5 +67,10 @@ router.get(
     verifyToken,
     RequestNgoController.getRequestDocumentByNgoidAnd
 )
+router.get(
+    `${basePath}/getBy/UserId`,
+    verifyToken,
+    RequestNgoController.getRequestNgoByUserId
+)
 // Export the router for use in other parts of the application
 export default router

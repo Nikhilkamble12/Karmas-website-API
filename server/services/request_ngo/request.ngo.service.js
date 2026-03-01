@@ -94,6 +94,12 @@ const RequestNgoService = {
         }catch(error){
             throw error
         }
+    },getRequestNgoByUserId:async(request_user_id)=>{
+        try{
+            return await RequestNgoDAL.getRequestNgoByUserId(request_user_id)
+        }catch(error){
+            throw error
+        }
     }
 }
 export default RequestNgoService
