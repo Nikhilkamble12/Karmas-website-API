@@ -202,9 +202,8 @@ const GroupMasterController = {
     deleteData: async (req, res) => {
         try {
             const id = req.query.id;
-
+            const getDataById = await GroupMasterService.getServiceById(id);
             const deleteData = await GroupMasterService.deleteByid(id, req, res);
-
             if (deleteData === 0) {
                 return res
                     .status(responseCode.BAD_REQUEST)
@@ -217,7 +216,7 @@ const GroupMasterController = {
                         )
                     );
             }
-
+            await uploadFileToS3Folder.deleteVideoByUrl(getDataById.s3_url);
             return res
                 .status(responseCode.CREATED)
                 .send(
