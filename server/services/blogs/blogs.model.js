@@ -13,8 +13,13 @@ const BlogsModel = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
+      
       title: {
         type: DataTypes.STRING(255),
+        allowNull: false,
+      },
+      blog_title_content:{
+        type: DataTypes.TEXT,
         allowNull: false,
       },
       content: {
