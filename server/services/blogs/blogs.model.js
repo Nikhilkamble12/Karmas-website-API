@@ -18,6 +18,10 @@ const BlogsModel = (sequelize) => {
         type: DataTypes.STRING(255),
         allowNull: false,
       },
+      static_image: {
+        type: DataTypes.STRING(600),
+        allowNull: false,
+      },
       blog_title_content:{
         type: DataTypes.TEXT,
         allowNull: false,
