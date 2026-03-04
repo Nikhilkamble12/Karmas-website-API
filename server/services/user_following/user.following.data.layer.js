@@ -112,33 +112,31 @@ const UserFollowingDAL = {
     }, getDataByUserNameByLIke: async (user_id, full_name) => {
     try {
 
-        let nameCondition = "";
         let replacements = { user_id };
+        let nameFilter = "";
 
-        // ✅ Only apply LIKE if full_name is provided
         if (full_name && full_name.trim() !== "") {
-            nameCondition = `
-                AND (
-                    (user_id = :user_id AND following_full_name LIKE :full_name)
-                    OR
-                    (following_user_id = :user_id AND user_full_name LIKE :full_name)
-                )
+            nameFilter = `
+                AND full_name LIKE :full_name
             `;
             replacements.full_name = `%${full_name}%`;
         }
 
-        // 1️⃣ Fetch matching relations
         const relations = await db.sequelize.query(
             `
-            ${ViewFieldTableVise.USER_FOLLOWING_FIELDS}
-            WHERE
-                (
-                    user_id = :user_id
-                    OR
-                    following_user_id = :user_id
-                )
-                AND is_following = 1
-                ${nameCondition}
+            SELECT * FROM (
+                SELECT *
+                FROM user_following
+                WHERE user_id = :user_id
+                  AND is_following = 1
+
+                UNION ALL
+
+                SELECT *
+                FROM user_following
+                WHERE following_user_id = :user_id
+                  AND is_following = 1
+            ) AS combined
             `,
             {
                 replacements,
@@ -146,25 +144,20 @@ const UserFollowingDAL = {
             }
         );
 
-        if (!relations.length) {
-            return [];
-        }
+        if (!relations.length) return [];
 
-        // 2️⃣ Extract unique user IDs (excluding self)
         const uniqueUserIds = [
             ...new Set(
-                relations.flatMap(row => [
-                    row.user_id,
-                    row.following_user_id
-                ])
+                relations.map(row =>
+                    row.user_id === user_id
+                        ? row.following_user_id
+                        : row.user_id
+                )
             )
-        ].filter(id => id !== user_id);
+        ];
 
-        if (!uniqueUserIds.length) {
-            return [];
-        }
+        if (!uniqueUserIds.length) return [];
 
-        // 3️⃣ Fetch user master details
         const users = await db.sequelize.query(
             `
             ${ViewFieldTableVise.USER_MASTER_WITHOUT_PASSWORD}
