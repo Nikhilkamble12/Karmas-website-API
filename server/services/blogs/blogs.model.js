@@ -13,10 +13,13 @@ const BlogsModel = (sequelize) => {
         type: DataTypes.INTEGER,
         allowNull: true,
       },
-      
       title: {
         type: DataTypes.STRING(255),
         allowNull: false,
+      },
+      author:{
+        type: DataTypes.STRING(255),
+        allowNull: false, 
       },
       static_image: {
         type: DataTypes.STRING(600),
