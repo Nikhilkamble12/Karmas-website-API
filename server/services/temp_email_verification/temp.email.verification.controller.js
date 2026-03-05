@@ -311,13 +311,14 @@ const TempEmailVerificationController = {
             );
         }
         if (existingUser?.ngo_id && ngo_id) {
+            console.log("existingUser",existingUser)
 
             if (existingUser?.email_id) {
 
                 const ngo = await NgoMasterService.getServiceById(existingUser.ngo_id);
-
+                console.log("ngo",ngo)
                 if (ngo && ngo.email === existingUser.email_id) {
-
+                    console.log("inside")
                     await UserMasterService.updateService(existingUser.user_id, {
                         is_authenticated: true
                     });
