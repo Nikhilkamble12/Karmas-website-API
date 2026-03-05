@@ -758,11 +758,15 @@ const NgoMasterController = {
                         password: data.password,
                         full_name: data.ngo_name,
                         email_id: data.email,
+
                         gender: 'NA',
                         enrolling_date: currentTime(),
                         ngo_id: ngoWalaId,
                         role_id: ROLE_MASTER.NGO
                     };
+                    if(data.is_authenticated==true){
+                        createUserMaster.is_authenticated=true
+                    }
                     await addMetaDataWhileCreateUpdate(createUserMaster, req, res, false);
                     const CreateUser = await UserMasterService.createService(createUserMaster);
                 }
