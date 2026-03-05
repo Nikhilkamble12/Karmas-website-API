@@ -1,4 +1,4 @@
-import LikesModel from "./likes.model.js";
+import LikesModel from "../likes/likes.model.js"
 import commonPath from "../../middleware/comman_path/comman.path.js"; // Import common paths and utilities
 const { db, ViewFieldTableVise, tokenData } = commonPath; // Destructure necessary components from commonPath
 

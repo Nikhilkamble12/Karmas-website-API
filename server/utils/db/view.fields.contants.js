@@ -6,8 +6,8 @@ const ViewFieldTableWise = {
     // -------> B
     BLOG_FIELDS: ` SELECT blog_id, user_id, title, static_image, author, blog_title_content, content, created_at, total_likes, total_comments, is_active, created_by FROM ${VIEW_NAME.GET_ALL_BLOGS} `,
     Blog_MEDIA_FIELDS: ` SELECT media_id, blog_id, sequence, media_type, media_url, s3_url, expiry_time, created_at, is_active, created_by FROM ${VIEW_NAME.GET_ALL_BLOG_MEDIA} `,
-    BONUS_MASTER_FIELDS: ` SELECT bonus_id, create_score, start_date, end_date, score_category_id, score_category_name, status_id, status_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_BONUS_MASTER} `,
-    BONUS_HISTORY_FIELDS: ` SELECT history_id, bonus_id, previous_create_score, new_create_score, change_date, score_category_id, score_category_name, changed_by, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_BONUS_HISTORY} `,
+    BONUS_MASTER_FIELDS: ` SELECT bonus_id, create_score, start_date, end_date, score_category_id, score_category_name, status_id, status_name, is_active, created_by FROM ${VIEW_NAME.GET_ALL_BONUS_MASTER} `,
+    BONUS_HISTORY_FIELDS: ` SELECT history_id, bonus_id, previous_create_score, new_create_score, change_date, score_category_id, score_category_name, changed_by, is_active, created_by FROM ${VIEW_NAME.GET_ALL_BONUS_HISTORY} `,
     BLACK_LISTED_NGO_FIELDS: ` SELECT ngo_id, ngo_name, unique_id, darpan_reg_date, ngo_type, registration_no, act_name, city_of_registration_id, state_of_registration_id, country_of_registration_id, date_of_registration, address, city_id, state_id, country_id, telephone, mobile_no, website_url, email, ngo_logo, ngo_logo_path, pan_cad_file_name, pan_card_file_url, crs_regis_file_name, crs_regis_file_path, is_blacklist, blacklist_reason FROM ${VIEW_NAME.GET_ALL_BLACKLIST_NGO} `,
     BLACK_LISTED_USER_FIELDS: ` SELECT user_id, user_name, password, full_name, role_id, is_account_public, email_id, gender, enrolling_date, ngo_id, first_time_login, file_name, file_path, reset_otp, reset_otp_expiry, google_id, is_blacklisted, is_active, blacklist_reason FROM ${VIEW_NAME.GET_ALL_BLACKLISTER_USER} `,
     BUG_TYPE_FIELDS: ` SELECT bug_type_id, module_type_id, module_name, bug_type_name, severity_level, description, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_BUG_TYPE} `,
@@ -22,7 +22,7 @@ const ViewFieldTableWise = {
     COUPONS_FIELDS: `SELECT coupon_id, coupon_code, expiry_date, gift_master_id, status_id, user_id, status_name, redeem_date, redeem_time, is_active, created_by FROM ${VIEW_NAME.GET_ALL_COUPONS}`,
 
     // -------> D
-    DESIGNATION_MASTER_FIELDS: ` SELECT designation_id, table_id, table_name, designation_name, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_DESIGNATION_MASTER} `,
+    DESIGNATION_MASTER_FIELDS: ` SELECT designation_id, table_id, table_name, designation_name, is_active, created_by FROM ${VIEW_NAME.GET_ALL_DESIGNATION_MASTER} `,
     DISTRICT_MASTER_FIELDS: ` SELECT district_id, district_name, state_id, state_name, country_id, country_name, district_is_active, district_created_by, district_created_at, district_modified_by, district_modified_at, district_deleted_by, district_deleted_at, state_is_active, country_is_active FROM ${VIEW_NAME.GET_ALL_DISTRICT} `,
     DESIGNATION_GROUP_PAGE_PERMSIION_FIELDS:` SELECT designation_page_permission_id, ngo_designation_id, designation_name, page_id, page_url, page_name, permission, description, is_active, created_by FROM ${VIEW_NAME.GET_ALL_DESIGNATION_GROUP_PAGE_PERMISSION} `,
 
@@ -35,20 +35,20 @@ const ViewFieldTableWise = {
     LIKES_FIELDS: ` SELECT like_id, user_id, post_id, is_liked, created_at, is_active, user_name, user_profile FROM ${VIEW_NAME.GET_ALL_LIKES} `,
 
     // 📘----> M
-    MENU_FIELDS: ` SELECT menu_id, menu, role_type, ip_address, city_cordinates, created_by, created_at, modified_by, modified_at FROM ${VIEW_NAME.GET_ALL_MENU} `,
+    MENU_FIELDS: ` SELECT menu_id, menu, role_type, ip_address, city_cordinates, created_by, created_at FROM ${VIEW_NAME.GET_ALL_MENU} `,
     MODULE_TYPE_FIELDS: ` SELECT module_type_id, module_name, description, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_MODULE_TYPE} `,
 
 
     // -------> N
-    NGO_FIELD_FIELDS: ` SELECT ngo_field_id, field_name, field_description, request_type_id, request_type_name, is_active, created_by, created_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_FIELDS} `,
+    NGO_FIELD_FIELDS: ` SELECT ngo_field_id, field_name, field_description, request_type_id, request_type_name, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_NGO_FIELDS} `,
     NGO_MASTER_FIELDS: ` SELECT ngo_id, unique_id, darpan_reg_date, ngo_name, ngo_type, ngo_type_name, registration_no, act_name, city_of_registration_id, city_of_registration_name, state_of_registration_id, state_of_registration_name, country_of_registration_id, country_of_registration_name, date_of_registration, address, city_id, city_name, state_id, state_name, country_id, country_name, telephone, mobile_no, website_url, email, ngo_logo, ngo_logo_path, pan_cad_file_name, pan_card_file_url, crs_regis_file_name, crs_regis_file_path, digital_signature_file_name, digital_signature_file_path, stamp_file_name, stamp_file_path, is_active, total_request_assigned, total_request_completed, total_request_rejected, remarks, total_ngo_likes,is_blacklist,blacklist_reason, status_id, status_name FROM ${VIEW_NAME.GET_ALL_NGO_MASTER} `,
-    NGO_FUNDS_DETAILS_FIELDS: ` SELECT ngo_funds_id, ngo_id, department_name, source, financial_year, amount_sanctioned, purpose, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_FUNDS_DETAILS} `,
-    NGO_BEARERS_FIELDS: ` SELECT bearer_id, ngo_id, name, designation_id, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_OFFICE_BEARRRS} `,
-    NGO_STATE_DISTRICT_MAPPING_FILDS: ` SELECT ngo_state_district_mapping_id, ngo_id, ngo_name, unique_id, darpan_reg_date, ngo_type, ngo_type_name, registration_no, email, mobile_no, state_id, state_name, district_id, district_name, city_id, city_name, ngo_field_id_mul, ngo_field_name_mul, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_NGO_STATE_DISTING_MAPPING_VIEW} `,
+    NGO_FUNDS_DETAILS_FIELDS: ` SELECT ngo_funds_id, ngo_id, department_name, source, financial_year, amount_sanctioned, purpose, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_NGO_FUNDS_DETAILS} `,
+    NGO_BEARERS_FIELDS: ` SELECT bearer_id, ngo_id, name, designation_id, designation_name, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_NGO_OFFICE_BEARRRS} `,
+    NGO_STATE_DISTRICT_MAPPING_FILDS: ` SELECT ngo_state_district_mapping_id, ngo_id, ngo_name, unique_id, darpan_reg_date, ngo_type, ngo_type_name, registration_no, email, mobile_no, state_id, state_name, district_id, district_name, city_id, city_name, ngo_field_id_mul, ngo_field_name_mul, is_active, created_by, created_at FROM ${VIEW_NAME.GET_ALL_NGO_STATE_DISTING_MAPPING_VIEW} `,
     NGO_FIELD_MAPPING_FIELDS: ` SELECT * FROM ${VIEW_NAME.GET_ALL_NGO_FIELD_MAPPING} `,
     NGO_REQUEST_MAPPING_FIELDS: ` SELECT Request_Ngo_Id, RequestId, RequestName, request_user_id, category_id, user_name, ngo_id, ngo_name, ngo_logo_path, status_id, status_name, Reason, is_document_required, AssignedDate, ApprovalDate, ngo_document_required, ngo_document_uploaded FROM ${VIEW_NAME.GET_ALL_NGO_REQUEST} `,
     NGO_TYPE_FIELDS: ` SELECT ngo_type_id, ngo_type, description, is_active FROM ${VIEW_NAME.GET_ALL_NGO_TYPE} `,
-    NOTIFICATION_HISTORY_FIELDS: ` SELECT notification_history_id, token_id, user_id, user_image, ngo_id, request_id, post_id, notification_details, notification_type, is_viewed, image_object, is_active, created_by, created_at, modified_by, modified_at  FROM ${VIEW_NAME.GET_ALL_NOTIFICATION_HISTORY} `,
+    NOTIFICATION_HISTORY_FIELDS: ` SELECT notification_history_id, token_id, user_id, user_image, ngo_id, request_id, post_id, notification_details, notification_type, is_viewed, image_object, is_active, created_by, created_at  FROM ${VIEW_NAME.GET_ALL_NOTIFICATION_HISTORY} `,
     NGO_MEDIA_FIELDS: ` SELECT ngo_media_id, ngo_id, ngo_name, ngo_type, media_type, media_url, sequence, s3_url, created_at, is_active is_active FROM ${VIEW_NAME.GET_ALL_NGO_MEDIA} `,
     NGO_MEDIA_LIKES_FIELDS: ` SELECT like_id, ngo_media_id, user_id, user_name, is_liked, created_at FROM ${VIEW_NAME.GET_ALL_NGO_MEDIA_LIKES} `,
     NGO_MEDIA_COMMENTS_FIELDS: ` SELECT comment_id, ngo_media_id, user_id, file_path, user_name, comment_text, total_comment, parent_id, parent_comment_text, created_at FROM ${VIEW_NAME.GET_ALL_NGO_MEDIA_COMMENTS} `,

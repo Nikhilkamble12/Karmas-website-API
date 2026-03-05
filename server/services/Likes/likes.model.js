@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 
 const LikesModel = (sequelize) => {
   return sequelize.define(
-    "Likes",
+    "likes",
     {
       like_id: {
         type: DataTypes.INTEGER,
@@ -53,7 +53,7 @@ const LikesModel = (sequelize) => {
       },
     },
     {
-      tableName: "Likes",
+      tableName: "likes",
       paranoid: true,
       timestamps: false,
       defaultScope: {
