@@ -3,6 +3,7 @@ import commonPath from "../../middleware/comman_path/comman.path.js";
 import UserMasterService from "../user_master/user.master.service.js";
 import sendEmail from "../../utils/helper/comman.email.function.js";
 import CommonEmailtemplate from "../../utils/helper/common.email.templates.js";
+import NgoMasterService from "../ngo_master/ngo.master.service.js";
 
 const {
     commonResponse,
@@ -308,6 +309,21 @@ const TempEmailVerificationController = {
                     true
                 )
             );
+        }
+        if (existingUser?.ngo_id && ngo_id) {
+
+            if (existingUser?.email_id) {
+
+                const ngo = await NgoMasterService.getServiceById(existingUser.ngo_id);
+
+                if (ngo && ngo.email === existingUser.email_id) {
+
+                    await UserMasterService.updateService(existingUser.user_id, {
+                        is_authenticated: true
+                    });
+
+                }
+            }
         }
 
         // ----------------SUCCESS----------------
