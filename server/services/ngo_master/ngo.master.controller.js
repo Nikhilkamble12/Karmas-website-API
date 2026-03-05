@@ -758,7 +758,6 @@ const NgoMasterController = {
                         password: data.password,
                         full_name: data.ngo_name,
                         email_id: data.email,
-
                         gender: 'NA',
                         enrolling_date: currentTime(),
                         ngo_id: ngoWalaId,
