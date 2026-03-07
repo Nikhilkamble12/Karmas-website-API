@@ -9,6 +9,7 @@ import UserMasterService from "../user_master/user.master.service.js";
 import ngoMediaService from "../ngo_media/ngo.media.service.js";
 const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
 import saveBase64ToFile from "../../utils/helper/base64ToFile.js";
+import UserActivtyService from "../user_activity/user.activity.service.js";
 
 const NgoMasterController = {
     // Create A new Record 
@@ -768,6 +769,13 @@ const NgoMasterController = {
                     }
                     await addMetaDataWhileCreateUpdate(createUserMaster, req, res, false);
                     const CreateUser = await UserMasterService.createService(createUserMaster);
+                    if (CreateUser) {
+                        const userActivityData = {
+                            user_id:CreateUser.dataValues.user_id
+                        }
+                        await addMetaDataWhileCreateUpdate(userActivityData, req, res, false);
+                        const createActivity = await UserActivtyService.createService(userActivityData)
+                    }
                 }
             }
 
