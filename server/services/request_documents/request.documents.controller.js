@@ -248,30 +248,29 @@ const RequestDocumentsController = {
             }
         }
         try {
-            if (data.RequestId == "" || data.RequestId == "undefined" || data.RequestId == '0' || data.RequestId == 0 || data.RequestId == undefined) {
+            if (data.Request_Ngo_Id == "" || data.Request_Ngo_Id == "undefined" || data.Request_Ngo_Id == '0' || data.Request_Ngo_Id == 0 || data.Request_Ngo_Id == undefined) {
                 deleteFile(filePath)
                 return res
                     .status(responseCode.BAD_REQUEST)
                     .send(
                         commonResponse(
                             responseCode.BAD_REQUEST,
-                            responseConst.REQUEST_ID_IS_REQUIRED,
+                            responseConst.REQUEST_NGO_ID_IS_REQUIRED,
                             null,
                             true
                         )
                     )
             }
-            const RequestData = await RequestService.getServiceById(data.RequestId)
+            const NgoRequestData = await RequestNgoService.getServiceById(data.Request_Ngo_Id)
 
-
-            if (RequestData && RequestData.length > 0) {
+            if (NgoRequestData && NgoRequestData.length > 0) {
                 deleteFile(filePath)
                 return res
                     .status(responseCode.BAD_REQUEST)
                     .send(
                         commonResponse(
                             responseCode.BAD_REQUEST,
-                            responseConst.REQUEST_ID_IS_REQUIRED,
+                            responseConst.DATA_NOT_FOUND_FOR_ID,
                             null,
                             true
                         )
@@ -294,7 +293,7 @@ const RequestDocumentsController = {
                         file_name:fileName,
                         document_type_id: data.document_type_id,
                         document_type_name: data.document_type_name,
-                        RequestId: data.RequestId,
+                        Request_Ngo_Id: data.Request_Ngo_Id,
                     }
                     await addMetaDataWhileCreateUpdate(dataToStore, req, res, true);
                     const update = await RequestDocumentService.updateService(data.request_media_id, dataToStore)
@@ -349,44 +348,18 @@ const RequestDocumentsController = {
                         file_name:fileName,
                         document_type_id: data.document_type_id,
                         document_type_name: data.document_type_name,
-                        RequestId: data.RequestId,
+                        Request_Ngo_Id: data.Request_Ngo_Id,
                     }
                     await addMetaDataWhileCreateUpdate(dataToStore, req, res, false);
                     const createData = await RequestDocumentService.createService(dataToStore)
-                    // 1. Get all NGOs associated with this Request ID
-                        const getAllNgo = await RequestNgoService.getAllNgoByRequestIdOnly(data.RequestId);
 
-                        // Check if we found any NGOs
-                        if (getAllNgo && getAllNgo.length > 0) {
-                            
-                            // Extract just the 'ngo_id' values into an array (e.g., [1, 5, 12])
-                            const ngoIdList = getAllNgo.map(ngo => ngo.ngo_id);
+                    const updateCount = await RequestNgoService.UpdateRequestCountByRequestNgoId(
+                        data.Request_Ngo_Id, 
+                        "ngo_document_uploaded", 
+                        1 // Increment by 1
+                    );
 
-                            // 2. Get Document Categories using the list of NGO IDs
-                            // This likely returns records linking the NGO to the specific category
-                            const getDocumentById = await NgoRequestDocumentCategoryService.getByNgoIdUsingInAndCategoryId(
-                                ngoIdList, 
-                                RequestData.category_id
-                            );
 
-                            // Check if we found matching document categories
-                            if (getDocumentById && getDocumentById.length > 0) {
-                                
-                                // Ensure you use the correct primary key column name from your model
-                                // 3. FILTER the original list to get the Request_Ngo_Ids for only the valid NGOs
-                                const requestNgoIdList = getAllNgo
-                                    .filter(ngoItem => validNgoIds.includes(ngoItem.ngo_id)) // Keep only NGOs that have the document
-                                    .map(ngoItem => ngoItem.Request_Ngo_Id); // Extract their specific Request_Ngo_Id
-                                if (requestNgoIdList.length > 0) {
-                                // 3. Update the count for all those Request_Ngo_Ids at once
-                                const updateCount = await RequestNgoService.UpdateRequestCountByRequestNgoId(
-                                    requestNgoIdList, 
-                                    "ngo_document_uploaded", 
-                                    1 // Increment by 1
-                                );
-                                 }
-                            }
-                        }
                     deleteFile(filePath)
                     if (createData) {
                         return res

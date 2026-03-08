@@ -112,7 +112,8 @@ const RESPONSE_CONSTANTS = {
     NGO_REGISTRATION_REJECTED: "NGO registration rejected.",
     NGO_REGISTRATION_REOPEND: "NGO registration reopened.",
     NGO_REGISTRATION_ALREADY_COMPLETED: "NGO Registration Already Completed.",
-    CATERGORY_ID_IS_REQUIRED_IN_REQUEST:"Category Id Is Required In Request.",
+    CATERGORY_ID_IS_REQUIRED_IN_REQUEST: "Category Id Is Required In Request.",
+    REQUEST_NGO_ID_IS_REQUIRED: "Request Ngo Id Is Required.",
 
     // ============================================================
     // GIFTS & COUPONS

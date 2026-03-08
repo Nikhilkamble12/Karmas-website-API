@@ -325,22 +325,7 @@ const RequestNgoController = {
                     }
                     const documentRequired = await NgoRequestDocumentCategoryService.getDataByNgoIdAndCategory(currentData.ngo_id, currentData.category_id)
                     currentData.ngo_document_required = documentRequired?.length ?? 0
-                    if (documentRequired && documentRequired?.length > 0) {
-                        const documentIdList = documentRequired.map(
-                            doc => doc.document_type_id
-                        )
-
-                        const uploadedCount =
-                            await RequestDocumentService.getDataByRequestIdAndDocumentTypeListCount(
-                                currentData.RequestId,
-                                documentIdList
-                            )
-
-                        currentData.ngo_document_uploaded = Number(uploadedCount) || 0
-
-                    } else {
-                        currentData.ngo_document_uploaded = 0
-                    }
+                    currentData.ngo_document_uploaded = 0
                     const createRequestNgo = await RequestNgoService.createService(currentData)
                     if (createRequestNgo) {
                         Total_request_Assigned += 1

@@ -307,21 +307,30 @@
     {
       "code": "1.0060",
       "message": "Unauthorized Access. Please Login."
-    },{
-      "code":"1.0061",
-      "message":"User Already Verifyied."
-    },{
-      "code":"1.0062",
-      "message":"Invalid Credential."
-    },{
-      "code":"1.0062",
-      "message":"Status Not Found."
-    },{
-      "code":"1.0063",
-      "message":"Data Already Present."
-    },{
-      "code":"1.0064",
-      "message":"Category Id Is Required In Request."
+    },
+    {
+      "code": "1.0061",
+      "message": "User Already Verifyied."
+    },
+    {
+      "code": "1.0062",
+      "message": "Invalid Credential."
+    },
+    {
+      "code": "1.0062",
+      "message": "Status Not Found."
+    },
+    {
+      "code": "1.0063",
+      "message": "Data Already Present."
+    },
+    {
+      "code": "1.0064",
+      "message": "Category Id Is Required In Request."
+    },
+    {
+      "code": "1.0065",
+      "message": "Request Ngo Id Is Required."
     }
   ]
 }

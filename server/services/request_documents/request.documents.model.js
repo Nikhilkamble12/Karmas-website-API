@@ -6,7 +6,7 @@ const RequestDocumentModel = (sequelize)=>{
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true
-        }, RequestId:{
+        }, Request_Ngo_Id:{
             type:DataTypes.INTEGER,
             allowNull:true
         }, document_type_id:{

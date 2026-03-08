@@ -68,29 +68,6 @@ const NgoRequestDocumentCategoryController = {
             )
         }
 
-        // 5️⃣ Find which requests already have this document uploaded
-        let uploadedRequestIds = []
-
-        if (liveRequestIds.length > 0) {
-            const uploadedDocs =
-                await RequestDocumentService
-                    .getDataByRequestIdListAndDocumentType(
-                        liveRequestIds,
-                        data.document_type_id
-                    )
-
-            uploadedRequestIds =
-                uploadedDocs.map(doc => doc.RequestId)
-        }
-
-        // 6️⃣ Increase uploaded count ONLY for requests that already have documents
-        if (uploadedRequestIds.length > 0) {
-            await RequestNgoService.UpdateRequestCountByRequestListDataCount(
-                uploadedRequestIds,
-                "ngo_document_uploaded",
-                1
-            )
-        }
 
         return res.status(responseCode.CREATED).send(
             commonResponse(
