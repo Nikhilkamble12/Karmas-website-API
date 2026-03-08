@@ -487,7 +487,7 @@ const UserMasterController = {
                 }
             }
             // If not found in JSON, fetch data from the database
-            const getDataByid = await UserMasterService.getServiceById(Id)
+            let getDataByid = await UserMasterService.getServiceById(Id)
             const getActivity = await UserActivtyService.getDataByUserId(Id)
             if (getDataByid.length !== 0) {
 
@@ -498,7 +498,7 @@ const UserMasterController = {
                     const ngoRows = await NgoUserMasterService.getDataByUserIdByView(Id);
                     if (ngoRows && ngoRows.length !== 0) {
                         // Merge NGO fields into the main user object
-                        userData = { ...ngoRows, ...userData };
+                        getDataByid = { ...ngoRows, ...getDataByid };
                     }
                 }
                 if (getDataByid.file_path && getDataByid.file_path !== "" && getDataByid.file_path !== 0) {
