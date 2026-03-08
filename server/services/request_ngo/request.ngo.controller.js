@@ -1012,6 +1012,8 @@ const RequestNgoController = {
                             document_type_id: requiredDoc.document_type_id,
                             document_type_name: documentName,
                             is_mandatory: requiredDoc.is_mandatory, 
+                            ngo_id:getRequestData.ngo_id,
+                            ngo_name:getRequestData.ngo_name,
                             is_uploaded: isUploaded,
                             media_url: submittedDoc ? submittedDoc.media_url : null,
                             s3_url: submittedDoc ? submittedDoc.s3_url : null,
