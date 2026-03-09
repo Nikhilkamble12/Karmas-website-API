@@ -490,7 +490,6 @@ const UserMasterController = {
             let getDataByid = await UserMasterService.getServiceById(Id)
             const getActivity = await UserActivtyService.getDataByUserId(Id)
             if (getDataByid.length !== 0) {
-
                 getDataByid.getActivity = getActivity[0]
                 // 5. Merge NGO Data if applicable
                 const ngoRoles = [ROLE_MASTER.NGO, ROLE_MASTER.NGO_USER];
