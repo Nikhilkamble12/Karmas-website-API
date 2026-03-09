@@ -40,15 +40,15 @@ const DesignationGroupPagePermissionService = {
         } catch (error) {
             throw error
         }
-    },getDataByDesignationId:async(designation_id)=>{
+    },getDataByDesignationId:async(ngo_designation_id)=>{
         try{
-            return await DesignationGroupPagePermissionDAL.getDataByDesignationId(designation_id)
+            return await DesignationGroupPagePermissionDAL.getDataByDesignationId(ngo_designation_id)
         }catch(error){
             throw error
         }
-    },getDataByDesignationIdAndPageId:async(designation_id,page_id)=>{
+    },getDataByDesignationIdAndPageId:async(ngo_designation_id,page_id)=>{
         try{
-            return await DesignationGroupPagePermissionDAL.getDataByDesignationIdAndPageId(designation_id,page_id)
+            return await DesignationGroupPagePermissionDAL.getDataByDesignationIdAndPageId(ngo_designation_id,page_id)
         }catch(error){
             throw error
         }

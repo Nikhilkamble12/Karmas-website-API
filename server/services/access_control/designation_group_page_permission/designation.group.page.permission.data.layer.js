@@ -53,16 +53,16 @@ const DesignationGroupPagePermissionDAL = {
         } catch (error) {
             throw error // Throw error for handling in the controller
         }
-    },getDataByDesignationId:async(designation_id)=>{
+    },getDataByDesignationId:async(ngo_designation_id)=>{
         try{
-            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.DESIGNATION_GROUP_PAGE_PERMSIION_FIELDS} where designation_id = ${designation_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            const getAllData = await db.sequelize.query(`${ViewFieldTableVise.DESIGNATION_GROUP_PAGE_PERMSIION_FIELDS} where ngo_designation_id = ${ngo_designation_id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData // Return the retrieved data
         }catch(error){
             throw error
         }
-    },getDataByDesignationIdAndPageId:async(designation_id,page_id)=>{
+    },getDataByDesignationIdAndPageId:async(ngo_designation_id,page_id)=>{
         try{
-             const getAllData = await db.sequelize.query(`${ViewFieldTableVise.DESIGNATION_GROUP_PAGE_PERMSIION_FIELDS} where  designation_id = ${designation_id} and page_id = ${page_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+             const getAllData = await db.sequelize.query(`${ViewFieldTableVise.DESIGNATION_GROUP_PAGE_PERMSIION_FIELDS} where  ngo_designation_id = ${ngo_designation_id} and page_id = ${page_id} `, { type: db.Sequelize.QueryTypes.SELECT })
             return getAllData
         }catch(error){
             throw error

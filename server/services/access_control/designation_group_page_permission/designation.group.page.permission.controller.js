@@ -275,8 +275,8 @@ const DesignationGroupPagePermissionController = {
         }
     },getDataByDesignationId:async(req,res)=>{
         try{
-            const designation_id = req.query.designation_id
-            const getData = await DesignationGroupPagePermissionService.getDataByDesignationId(designation_id)
+            const ngo_designation_id = req.query.ngo_designation_id
+            const getData = await DesignationGroupPagePermissionService.getDataByDesignationId(ngo_designation_id)
             if (getData.length !== 0) {
                 return res
                     .status(responseCode.OK)
@@ -316,7 +316,7 @@ const DesignationGroupPagePermissionController = {
     },createOrUpdateGroupDesignationPagePermission:async(req,res)=>{
         try{
            const data = req.body
-            const GetDataByRoleAndPage = await DesignationGroupPagePermissionService.getDataByDesignationIdAndPageId(data.designation_id,data.page_id)
+            const GetDataByRoleAndPage = await DesignationGroupPagePermissionService.getDataByDesignationIdAndPageId(data.ngo_designation_id,data.page_id)
             if(GetDataByRoleAndPage && GetDataByRoleAndPage.length>0){
                await addMetaDataWhileCreateUpdate(data, req, res, true);
                const updateData = await DesignationGroupPagePermissionService.updateService(GetDataByRoleAndPage[0].designation_page_permission_id,data)
