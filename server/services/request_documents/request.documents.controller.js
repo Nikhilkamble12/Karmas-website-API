@@ -228,15 +228,6 @@ const RequestDocumentsController = {
         }
     }, createOrUpdateMulitileRequestDocuments: async (req, res) => {
         const data = req.body
-        if (!req.file) {
-                deleteFile(filePath)
-                return res.status(400).send({ error: 'No file uploaded' });
-        }
-        const fileType = req.file.mimetype;
-        const folderType = 'request_documents';
-        const filePath = req.file.path;  // Multer stores the file temporarily here
-        const fileName = req.file.filename;
-        // Ensure a file is uploaded
         async function deleteFile(filePath) {
             console.log("Inside delete function:", filePath);
             try {
@@ -247,6 +238,16 @@ const RequestDocumentsController = {
                 console.error(`❌ Failed to delete file: ${filePath}`, err.message);
             }
         }
+        if (!req.file) {
+                deleteFile(req?.file?.path)
+                return res.status(400).send({ error: 'No file uploaded' });
+        }
+        const fileType = req.file.mimetype;
+        const folderType = 'request_documents';
+        const filePath = req.file.path;  // Multer stores the file temporarily here
+        const fileName = req.file.filename;
+        // Ensure a file is uploaded
+        
         try {
             if (data.Request_Ngo_Id == "" || data.Request_Ngo_Id == "undefined" || data.Request_Ngo_Id == '0' || data.Request_Ngo_Id == 0 || data.Request_Ngo_Id == undefined) {
                 deleteFile(filePath)
