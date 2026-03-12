@@ -114,5 +114,23 @@ router.get(
     RequestDocumentsController.getDataByRequestId
 )
 
+router.get(
+  `${basePath}/getBy/RequestNgoId`,
+  verifyToken,
+  RequestDocumentsController.getDataByRequestNgoId
+)
+
+router.get(
+  `${basePath}/getBy/RequestNgoIdAndNgoId`,
+  verifyToken,
+  RequestDocumentsController.getDataByNgoIdAndRequestNgoId
+)
+
+router.get(
+  `${basePath}/getBy/Request`,
+  verifyToken,
+  RequestDocumentsController.getDataByRequestId
+)
+
 // Export the router for use in other parts of the application
 export default router

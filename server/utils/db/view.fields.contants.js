@@ -91,7 +91,7 @@ const ViewFieldTableWise = {
     REPORT_TYPE_FIELDS: ` SELECT report_type_id, report_type, is_active, created_by, created_at, modified_by, modified_at, deleted_by, deleted_at FROM ${VIEW_NAME.GET_ALL_REPORT_TYPE} `,
     REQUEST_DOCUMENT_TYPE_FIELDS:` SELECT document_type_id, document_type, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_DOCUMENT_TYPE} `,
     REQUEST_DOCUMENT_CATEGORY_FIELDS:` SELECT categrory_document_id, category_id, document_type_id, is_active, created_by FROM ${VIEW_NAME.GET_ALL_REQUEST_DOCUMENT_CATEGORY} `,
-    REQUEST_DOCUMENTS_FIELDS:` SELECT request_document_id, Request_Ngo_Id, RequestId, category_id, document_type_id, document_type_name, file_name, s3_url, media_url, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_DOCUMENTS} `,
+    REQUEST_DOCUMENTS_FIELDS:` SELECT request_document_id, Request_Ngo_Id, ngo_id, RequestId, category_id, document_type_id, document_type_name, file_name, s3_url, media_url, is_active FROM ${VIEW_NAME.GET_ALL_REQUEST_DOCUMENTS} `,
 
     // -------> S
     STATE_MASTER_FIELDS: ` SELECT state_id, state_name, country_id, country_name, is_union_teritory, is_active  FROM ${VIEW_NAME.GET_ALL_STATE_MASTER} `,

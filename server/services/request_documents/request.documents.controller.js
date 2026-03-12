@@ -480,6 +480,106 @@ const RequestDocumentsController = {
             commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
         );
     }
+},getDataByRequestNgoId:async(req,res)=>{
+    try{
+        const requestNgoId = req.query.requestNgoId;
+        const getData = await RequestDocumentService.getDataByRequestNgoIdByView(requestNgoId);
+        if (getData.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getData
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            }
+    }catch(error){
+        console.log("error", error);
+        logger.error(`Error ---> ${error}`);
+        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+        );
+    }
+},getDataByNgoIdAndRequestNgoId:async(req,res)=>{
+    try{
+        const requestNgoId = req.query.requestNgoId;
+        const ngo_id = req.query.ngo_id;
+        const getData = await RequestDocumentService.getDataByNgoIdAndRequestNgoId(ngo_id,requestNgoId);   
+        if (getData.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getData
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            } 
+    }catch(error){
+        console.log("error", error);
+        logger.error(`Error ---> ${error}`);
+        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+        );
+    }
+},getDataByRequestId:async(req,res)=>{
+    try{
+        const RequestId = req.query.RequestId 
+        const getData = await RequestDocumentService.getDataByRequestIdByView(RequestId);
+        if (getData.length !== 0) {
+                return res
+                    .status(responseCode.OK)
+                    .send(
+                        commonResponse(
+                            responseCode.OK,
+                            responseConst.DATA_RETRIEVE_SUCCESS,
+                            getData
+                        )
+                    );
+            } else {
+                return res
+                    .status(responseCode.BAD_REQUEST)
+                    .send(
+                        commonResponse(
+                            responseCode.BAD_REQUEST,
+                            responseConst.DATA_NOT_FOUND,
+                            null,
+                            true
+                        )
+                    );
+            } 
+    }catch(error){
+        console.log("error", error);
+        logger.error(`Error ---> ${error}`);
+        return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
+            commonResponse(responseCode.INTERNAL_SERVER_ERROR, responseConst.INTERNAL_SERVER_ERROR, null, true)
+        );
+    }
 }
 
 }

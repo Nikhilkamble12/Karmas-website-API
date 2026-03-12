@@ -83,6 +83,7 @@ GET_ALL_REQUEST_DOCUMENTS:"v_request_documents",
 GET_ALL_NGO_REQUEST_DOCUMENT_CATEGORY:"v_ngo_request_document_category",
 GET_ALL_DESIGNATION_GROUP_PAGE_PERMISSION:"v_designation_group_page_permission",
 GET_ALL_GROUP_MASTER:"v_group_master",
+GET_ALL_REQUEST_DOCUMENT_CATEGORY:"v_request_document_category"
 
 }
 export default VIEW_NAME

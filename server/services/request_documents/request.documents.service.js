@@ -58,6 +58,18 @@ const RequestDocumentService = {
         }catch(error){
             throw error
         }
+    },getDataByRequestNgoIdByView:async(Request_Ngo_Id)=>{
+        try{
+            return await RequestDocumentsDAL.getDataByRequestNgoIdByView(Request_Ngo_Id)
+        }catch(error){
+            throw error
+        }
+    },getDataByNgoIdAndRequestNgoId:async(ngo_id,Request_Ngo_Id)=>{
+        try{
+            return await RequestDocumentsDAL.getDataByNgoIdAndRequestNgoId(ngo_id,Request_Ngo_Id)
+        }catch(error){
+            throw error
+        }
     }
 }
 

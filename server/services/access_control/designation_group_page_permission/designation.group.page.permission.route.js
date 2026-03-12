@@ -42,7 +42,7 @@ router.get(
     `${basePath}/get/DataBydesigantion/Id`,
     verifyToken,
     DesignationGroupPagePermissionController.getDataByDesignationId
-  )
+)
 router.put(
     `${basePath}/create/update/groupRole`,
     verifyToken,

@@ -109,6 +109,20 @@ const RequestDocumentsDAL = {
         } catch (error) {
             throw error
         }
+    },getDataByRequestNgoIdByView: async (Request_Ngo_Id) => {
+        try {
+            const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.REQUEST_DOCUMENTS_FIELDS} where Request_Ngo_Id  = ${Request_Ngo_Id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getDataById ?? [] // Return the retrieved data
+        }catch(error){
+            throw error
+        }
+    },getDataByNgoIdAndRequestNgoId:async(ngo_id,Request_Ngo_Id)=>{
+        try{
+              const getDataById = await db.sequelize.query(` ${ViewFieldTableVise.REQUEST_DOCUMENTS_FIELDS} where Request_Ngo_Id  = ${Request_Ngo_Id} and ngo_id =  ${ngo_id} `, { type: db.Sequelize.QueryTypes.SELECT })
+            return getDataById ?? [] // Return the retrieved data
+        }catch(erorr){
+            throw erorr
+        }
     }
 }
 

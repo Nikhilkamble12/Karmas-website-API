@@ -4,6 +4,7 @@ import BonusMasterService from "../bonus_master/bonus.master.service.js";
 import {
   BONUS_MASTER,
   OTP_TYPE_MASTER,
+  ROLE_MASTER,
   STATUS_MASTER,
 } from "../../utils/constants/id_constant/id.constants.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
@@ -16,6 +17,7 @@ import GroupRolePagePermissionService from "../access_control/group_role_page_pe
 import MenuService from "../access_control/menu/menu.service.js";
 import RoleMasterService from "../access_control/role_master/role.master.service.js";
 import UserOtpLogsService from "../user_otp_log/user.otp.log.service.js";
+import NgoUserMasterService from "../ngo_user_master/ngo.user.master.service.js";
 // import RoleService from "../access_control/role/role.service.js";
 const {
   commonResponse,
@@ -221,6 +223,8 @@ let AuthController = {
         ]);
       }
 
+      
+
       // ✅ OPTIMIZATION 12: Generate token (only after all logic succeeds)
       const token = JWT.sign(
         {
@@ -248,6 +252,12 @@ let AuthController = {
         },
         menu: getMenuByRoleId?.menu ?? [],
       };
+      if(userData?.role_id == ROLE_MASTER.NGO || role_id == ROLE_MASTER.NGO_USER){
+          const getDesignation  = await NgoUserMasterService.getDataByUserIdByView(userData.user_id)
+          jwtResponseData?.userDetails?.designation_id = getDesignation?.designation_id 
+      }else{
+          jwtResponseData?.userDetails?.designation_id = null
+      }
 
       return res
         .status(responseCode.OK)
