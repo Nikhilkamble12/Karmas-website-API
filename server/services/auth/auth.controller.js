@@ -2,10 +2,7 @@ import AuthService from "./auth.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import BonusMasterService from "../bonus_master/bonus.master.service.js";
 import {
-  BONUS_MASTER,
-  OTP_TYPE_MASTER,
-  ROLE_MASTER,
-  STATUS_MASTER,
+  ROLE_MASTER
 } from "../../utils/constants/id_constant/id.constants.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
 import UserMasterService from "../user_master/user.master.service.js";
@@ -252,11 +249,17 @@ let AuthController = {
         },
         menu: getMenuByRoleId?.menu ?? [],
       };
-      if(userData?.role_id == ROLE_MASTER.NGO || role_id == ROLE_MASTER.NGO_USER){
-          const getDesignation  = await NgoUserMasterService.getDataByUserIdByView(userData.user_id)
-          jwtResponseData?.userDetails?.designation_id = getDesignation?.designation_id 
-      }else{
-          jwtResponseData?.userDetails?.designation_id = null
+      if (userData?.role_id == ROLE_MASTER.NGO || role_id == ROLE_MASTER.NGO_USER) {
+            const getDesignation = await NgoUserMasterService.getDataByUserIdByView(userData.user_id)
+
+            if (jwtResponseData && jwtResponseData.userDetails) {
+                jwtResponseData.userDetails.designation_id = getDesignation?.designation_id
+            }
+
+        } else {
+            if (jwtResponseData && jwtResponseData.userDetails) {
+                jwtResponseData.userDetails.designation_id = null
+            }
       }
 
       return res
