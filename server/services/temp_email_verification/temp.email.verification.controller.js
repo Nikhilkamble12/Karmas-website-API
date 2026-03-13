@@ -222,7 +222,7 @@ const TempEmailVerificationController = {
                 validity: "20 min"
             });
             // 3. Send Email (You need to implement the actual sending helper)
-            await sendEmail({to:email_id, subject:emailContent.subject,text:null, html:emailContent.html});
+            await sendEmail({to:email_id, subject:emailContent.subject,text:null, html:emailContent.html, type : "OTP"});
 
         return res.status(responseCode.OK).send(
             commonResponse(

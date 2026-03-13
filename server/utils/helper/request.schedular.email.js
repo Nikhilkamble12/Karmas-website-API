@@ -159,7 +159,9 @@ async function sendDailyNgoReports() {
                 await sendEmail({
                     to: recipientEmail,
                     subject: `Daily Request Summary - ${ngoName}`,
-                    html: htmlBody
+                    text:null,
+                    html: htmlBody,
+                    type: "Request UPDATE"
                 });
                 console.log(`✅ Email sent successfully to ${ngoName} (${recipientEmail})`);
             } catch (emailError) {

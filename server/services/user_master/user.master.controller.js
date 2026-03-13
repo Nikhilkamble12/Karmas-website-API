@@ -921,7 +921,7 @@ const UserMasterController = {
                     username: getDatabyUser.full_name || "User", // Assuming 'full_name' exists, else default
                 });
                 // 3. Send Email (You need to implement the actual sending helper)
-                await sendEmail({ to: getDatabyUser.email_id, subject: emailContent.subject, text: null, html: emailContent.html });
+                await sendEmail({ to: getDatabyUser.email_id, subject: emailContent.subject, text: null, html: emailContent.html,type:"OTP" });
                 return res
                     .status(responseCode.CREATED)
                     .send(
@@ -977,7 +977,7 @@ const UserMasterController = {
                 validity: "20 min"
             });
             // 3. Send Email (You need to implement the actual sending helper)
-            await sendEmail({ to: getUserByEmail.email_id, subject: emailContent.subject, text: null, html: emailContent.html });
+            await sendEmail({ to: getUserByEmail.email_id, subject: emailContent.subject, text: null, html: emailContent.html,type:"OTP" });
             // logger.info(`Email sent to ${getDataById.email_id}`);
 
             // 4. Calculate Expiry (Current Time + 20 Minutes)

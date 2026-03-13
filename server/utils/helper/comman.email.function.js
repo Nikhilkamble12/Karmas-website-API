@@ -3,41 +3,66 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 // SMTP config from environment variables
-const smtpConfig = {
-    from: process.env.EMAIL_FROM,
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-    service: process.env.EMAIL_SERVICE || 'gmail'
+const emailConfigs = {
+    DEFAULT: {
+        from: process.env.EMAIL_FROM,
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+        service: process.env.EMAIL_SERVICE || 'gmail'
+    },
+
+    "NGO Registration": {
+        from: process.env.EMAIL_NGO_REGISTRATION_FROM,
+        user: process.env.EMAIL_NGO_REGISTRATION_USER,
+        pass: process.env.EMAIL_NGO_REGISTRATION_PASS,
+        service: process.env.EMAIL_SERVICE || 'gmail'
+    },
+
+    OTP: {
+        from: process.env.EMAIL_OTP_GENERATION_FROM,
+        user: process.env.EMAIL_OTP_GENERATION_USER,
+        pass: process.env.EMAIL_OTP_GENERATION_PASS,
+        service: process.env.EMAIL_SERVICE || 'gmail'
+    },
+
+    "Request UPDATE": {
+        from: process.env.EMAIL_REQUEST_UPDATE_FROM,
+        user: process.env.EMAIL_REQUEST_UPDATE_USER,
+        pass: process.env.EMAIL_REQUEST_UPDATE_PASS,
+        service: process.env.EMAIL_SERVICE || 'gmail'
+    }
 };
 
 // Create transporter ONCE and reuse it (major performance improvement)
-let transporter = null;
+const transporters = {};
 
-function getTransporter() {
-    if (!transporter) {
-        transporter = nodemailer.createTransport({
-            service: smtpConfig.service,
+function getTransporter(type = 'DEFAULT') {
+    const config = emailConfigs[type] || emailConfigs.DEFAULT;
+
+    if (!transporters[type]) {
+        transporters[type] = nodemailer.createTransport({
+            service: config.service,
             auth: {
-                user: smtpConfig.user,
-                pass: smtpConfig.pass
+                user: config.user,
+                pass: config.pass
             },
-            pool: true, // Use connection pooling
-            maxConnections: 5, // Max concurrent connections
-            maxMessages: 100, // Max messages per connection
-            rateDelta: 1000, // Rate limiting: time window in ms
-            rateLimit: 10 // Max messages per rateDelta
+            pool: true,
+            maxConnections: 5,
+            maxMessages: 100,
+            rateDelta: 1000,
+            rateLimit: 10
         });
 
-        // Verify transporter on creation
-        transporter.verify((error) => {
+        transporters[type].verify((error) => {
             if (error) {
-                console.error('SMTP connection error:', error);
+                console.error(`SMTP error for ${type}:`, error);
             } else {
-                console.log('SMTP server is ready to send emails');
+                console.log(`SMTP ready for ${type}`);
             }
         });
     }
-    return transporter;
+
+    return transporters[type];
 }
 
 // Helper function to prepare attachments (optimized)
@@ -77,7 +102,8 @@ async function sendEmail({
     to, 
     subject, 
     text, 
-    html, 
+    html,
+    type,
     attachments = [], 
 }) {
     try {
@@ -106,7 +132,8 @@ async function sendEmail({
         }
 
         // Use reusable transporter instead of creating new one each time
-        const transport = getTransporter();
+        const config = emailConfigs[type] || emailConfigs.DEFAULT;
+        const transport = getTransporter(type);
 
         // Send email using async/await instead of Promise wrapper
         const info = await transport.sendMail(mailOptions);

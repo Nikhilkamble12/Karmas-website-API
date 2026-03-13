@@ -592,7 +592,7 @@ const NgoRegistrationController = {
                 const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationApprovedSuccessfully({ email_id: generate_user_name, username: registration.ngo_name, password: randomPassword })
                 console.log("registration",registration)
                 createdNgo.status_id = data.status_id
-                await sendEmail({ to: registration.email, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
+                await sendEmail({ to: registration.email, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html,type:"NGO Registration" })
                 return res.send(commonResponse(200, responseConst.NGO_APPROVED_SUCCESSFULLY, { ngo: createdNgo, user: createdUser }));
             }
 
@@ -609,7 +609,7 @@ const NgoRegistrationController = {
                     }
                 );
                 const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationRejected({ email_id: registration.email, username: registration.ngo_name, reason: data.remarks })
-                await sendEmail({ to: registration.email, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
+                await sendEmail({ to: registration.email, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html , type:"NGO Registration" })
                 return res.send(commonResponse(200, responseConst.NGO_REGISTRATION_REJECTED));
             }
 
@@ -627,7 +627,7 @@ const NgoRegistrationController = {
                 );
                 const ResponseTemplate = await CommonEmailtemplate.NgoRegistrationResubmitRequired({ email_id: registration.email, username: registration.ngo_name, reason: data.remarks })
                 console.log("registration",registration)
-                await sendEmail({ to: registration.email, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html })
+                await sendEmail({ to: registration.email, subject: ResponseTemplate.subject, text: null, html: ResponseTemplate.html ,type:"NGO Registration" })
                 return res.send(commonResponse(200, responseConst.NGO_REGISTRATION_REOPEND));
             }
 
@@ -689,7 +689,7 @@ const NgoRegistrationController = {
                 validity: "20 min"
             });
             // 3. Send Email (You need to implement the actual sending helper)
-            await sendEmail({ to: checkWetherEmailPresent.email, subject: emailContent.subject, text: null, html: emailContent.html });
+            await sendEmail({ to: checkWetherEmailPresent.email, subject: emailContent.subject, text: null, html: emailContent.html , type:"NGO Registration" });
             // logger.info(`Email sent to ${getDataById.email_id}`);
 
             // 4. Calculate Expiry (Current Time + 20 Minutes)

@@ -65,15 +65,6 @@ const validateUser = (userData, user_name, google_id, isGoogleAuth = false) => {
   return { valid: true };
 };
 
-// ============================================================================
-// OPTIMIZATION 2: Send Email Without Blocking (Fire-and-Forget)
-// ============================================================================
-const sendEmailAsync = (emailData) => {
-  sendEmail(emailData).catch((err) => 
-    logger.error("Email sending failed:", err)
-  );
-};
-
 let AuthController = {
   loginUser: async (req, res) => {
     try {
@@ -460,7 +451,7 @@ let AuthController = {
         validity: "20 minutes",
       });
 
-      await sendEmail({ to: user.email_id, subject, html });
+      await sendEmail({ to: user.email_id, subject, html,type:"OTP" });
 
       return res
         .status(200)
@@ -623,7 +614,7 @@ let AuthController = {
           username: user.username || user.fullname || email,
         });
 
-      await sendEmail({ to: user.email_id, subject, html });
+      await sendEmail({ to: user.email_id, subject, html,type:"OTP" });
 
       return res
         .status(200)
