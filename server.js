@@ -524,16 +524,17 @@ async function startServer(app, port) {
 
     // ✅ 4. Setup WebSocket
     timer.start("websocket-init");
-    const wsManager = await setupWebSocket(server);
+    const wsManager = null
+    // const wsManager = await setupWebSocket(server);
 
-    initScheduler()
+    // initScheduler()
 
-    if (wsManager) {
-      timer.log("websocket-init", "🔌");
-      logger.info("✅ WebSocket server initialized");
-    } else {
-      console.log("⚠️  WebSocket not initialized (clustering mode)");
-    }
+    // if (wsManager) {
+    //   timer.log("websocket-init", "🔌");
+    //   logger.info("✅ WebSocket server initialized");
+    // } else {
+    //   console.log("⚠️  WebSocket not initialized (clustering mode)");
+    // }
 
     // ✅ 5. Display summary
     timer.logTotal();
