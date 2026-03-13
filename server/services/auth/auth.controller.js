@@ -108,7 +108,6 @@ let AuthController = {
             )
           );
       }
-      console.log("userData",userData)
       // ✅ OPTIMIZATION 5: Validate user (single function)
       const validation = validateUser(userData, cleanIdentifier, cleanGoogleId, !!cleanGoogleId);
       if (!validation.valid) {
@@ -249,7 +248,7 @@ let AuthController = {
         },
         menu: getMenuByRoleId?.menu ?? [],
       };
-      if (userData?.role_id == ROLE_MASTER.NGO || role_id == ROLE_MASTER.NGO_USER) {
+      if (userData?.role_id == ROLE_MASTER.NGO || userData?.role_id == ROLE_MASTER.NGO_USER) {
             const getDesignation = await NgoUserMasterService.getDataByUserIdByView(userData.user_id)
 
             if (jwtResponseData && jwtResponseData.userDetails) {
