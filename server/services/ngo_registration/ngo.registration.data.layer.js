@@ -9,6 +9,13 @@ const NgoRegistrationDAL = {
       const createdData = await NgoRegistrationModel(db.sequelize).create(data);
       return createdData; // Return the created data
     } catch (error) {
+      if (error.name === "SequelizeUniqueConstraintError") {
+      throw {
+        status: 409,
+        message: "Email already exists for NGO registration",
+        field: "email-unique"
+      };
+    }
       throw error; // Throw error for handling in the controller
     }
   },

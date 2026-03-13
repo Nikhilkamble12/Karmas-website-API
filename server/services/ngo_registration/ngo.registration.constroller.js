@@ -178,6 +178,11 @@ const NgoRegistrationController = {
             );
 
         } catch (error) {
+            if (error?.field == "email-unique") {
+                return res.status(responseCode.BAD_REQUEST).send(
+                    commonResponse(responseCode.BAD_REQUEST, responseConst.EMAIL_ALREADY_IN_USE, null, true)
+                );
+            }
             console.error("Error:", error);
             logger.error(`Error ---> ${error}`);
             return res.status(responseCode.INTERNAL_SERVER_ERROR).send(
