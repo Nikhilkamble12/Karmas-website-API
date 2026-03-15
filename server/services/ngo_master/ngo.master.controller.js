@@ -10,6 +10,7 @@ import ngoMediaService from "../ngo_media/ngo.media.service.js";
 const { commonResponse, responseCode, responseConst, logger, tokenData, currentTime, addMetaDataWhileCreateUpdate } = commonPath
 import saveBase64ToFile from "../../utils/helper/base64ToFile.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
+import { createNgoCommunity } from "../../utils/helper/firebase/community.firebase.helper.js";
 
 const NgoMasterController = {
     // Create A new Record 
@@ -770,6 +771,15 @@ const NgoMasterController = {
                     await addMetaDataWhileCreateUpdate(createUserMaster, req, res, false);
                     const CreateUser = await UserMasterService.createService(createUserMaster);
                     if (CreateUser) {
+                        const community = await createNgoCommunity({
+                                ngoId: ngoWalaId,
+                                ngoName:data.ngo_name,
+                                userId: CreateUser.dataValues.user_id
+                            })
+                            if(community){
+                                const updateNgo = await NgoMasterService
+                                .updateService(createdNgo.dataValues.ngo_id,{ngo_community_id:community.communityId})
+                            }
                         const userActivityData = {
                             user_id:CreateUser.dataValues.user_id
                         }
