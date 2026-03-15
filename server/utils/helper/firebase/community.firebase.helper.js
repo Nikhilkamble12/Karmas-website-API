@@ -1,79 +1,116 @@
 import axios from "axios";
 import { GoogleAuth } from "google-auth-library";
-import { v4 as uuidv4 } from "uuid";
 import path from "path";
 import { fileURLToPath } from "url";
 
-/* resolve absolute path for ES6 */
+/* ======================================================
+   PATH RESOLUTION (ES6)
+====================================================== */
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+/* ======================================================
+   CONFIG
+====================================================== */
 
 const PROJECT_ID = "karmas-f6ac2";
 
 const BASE_URL =
 `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
 
-/*
-  SERVICE ACCOUNT FILE PATH
-*/
+const COMMIT_URL =
+`https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents:commit`;
+
 const serviceAccountPath = path.resolve(
   __dirname,
   "../../../middleware/external_documents/firebase/community.karmas.firebase.json"
 );
 
-/*
-  FIREBASE AUTH
-*/
+/* ======================================================
+   FIREBASE AUTH
+====================================================== */
+
 const auth = new GoogleAuth({
   keyFile: serviceAccountPath,
   scopes: ["https://www.googleapis.com/auth/datastore"]
 });
 
-async function getAccessToken() {
-  const client = await auth.getClient();
-  const accessTokenResponse = await client.getAccessToken();
+/* ======================================================
+   TOKEN CACHE
+====================================================== */
 
-  return accessTokenResponse.token;
+let cachedToken = null;
+let tokenExpiry = 0;
+
+async function getAccessToken() {
+
+  if (cachedToken && Date.now() < tokenExpiry) {
+    return cachedToken;
+  }
+
+  const client = await auth.getClient();
+  const tokenResponse = await client.getAccessToken();
+
+  cachedToken = tokenResponse.token;
+  tokenExpiry = Date.now() + (50 * 60 * 1000); // 50 minutes
+
+  return cachedToken;
 }
 
-/**
- * Generic Firestore PATCH
- */
-async function firestorePatch(url, payload) {
+/* ======================================================
+   FIRESTORE REQUEST HELPERS
+====================================================== */
 
-  
+async function firestorePost(collection, payload) {
+
   const token = await getAccessToken();
 
-  return axios.patch(url, payload, {
+  const url = `${BASE_URL}/${collection}`;
+
+  const response = await axios.post(url, payload, {
     headers: {
       Authorization: `Bearer ${token}`,
       "Content-Type": "application/json"
     }
   });
 
+  return response.data;
 }
 
+async function firestoreCommit(payload) {
 
+  const token = await getAccessToken();
+
+  const response = await axios.post(COMMIT_URL, payload, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    }
+  });
+
+  return response.data;
+}
 
 /* ======================================================
    CREATE NGO COMMUNITY
 ====================================================== */
+
 export async function createNgoCommunity({ ngoId, ngoName, userId }) {
 
-  const communityId = uuidv4();
-  const announcementGroupId = uuidv4();
-
-  const communityUrl = `${BASE_URL}/communities/${communityId}`;
-  const chatRoomUrl = `${BASE_URL}/chat_rooms/${announcementGroupId}`;
+  /* Create Community */
 
   const communityPayload = {
     fields: {
-      id: { stringValue: communityId },
+
       name: { stringValue: ngoName },
+
       description: {
         stringValue: `Official community for ${ngoName}`
       },
+
       ngoId: { integerValue: ngoId },
+
       createdBy: { stringValue: userId.toString() },
 
       admins: {
@@ -86,23 +123,22 @@ export async function createNgoCommunity({ ngoId, ngoName, userId }) {
         arrayValue: {
           values: [{ stringValue: userId.toString() }]
         }
-      },
-
-      announcementGroupId: {
-        stringValue: announcementGroupId
       }
+
     }
   };
 
-  const chatRoomPayload = {
-    fields: {
-      id: { stringValue: announcementGroupId },
+  const communityDoc = await firestorePost("communities", communityPayload);
 
-      participants: {
-        arrayValue: {
-          values: [{ stringValue: userId.toString() }]
-        }
-      },
+  const communityPath = communityDoc.name;
+  const communityId = communityPath.split("/").pop();
+
+  /* Create Announcement Chat Room */
+
+  const chatPayload = {
+    fields: {
+
+      communityId: { stringValue: communityId },
 
       groupName: {
         stringValue: `${ngoName} Announcements`
@@ -114,66 +150,76 @@ export async function createNgoCommunity({ ngoId, ngoName, userId }) {
       isCommunityGroup: { booleanValue: true },
       isAnnouncementGroup: { booleanValue: true },
 
-      communityId: { stringValue: communityId }
+      participants: {
+        arrayValue: {
+          values: [{ stringValue: userId.toString() }]
+        }
+      }
+
     }
   };
 
-  await firestorePatch(communityUrl, communityPayload);
-  await firestorePatch(chatRoomUrl, chatRoomPayload);
+  const chatDoc = await firestorePost("chat_rooms", chatPayload);
+
+  const chatPath = chatDoc.name;
+  const announcementGroupId = chatPath.split("/").pop();
 
   return {
-    communityId:communityId,
-    announcementGroupId:announcementGroupId
+    communityId,
+    announcementGroupId
   };
-
 }
 
-
-
-
-
 /* ======================================================
-   ADD ADMIN
+   ADD ADMIN TO COMMUNITY (ARRAY UNION)
 ====================================================== */
+
 export async function addAdminToCommunity({ communityId, userId }) {
 
-  const communityUrl = `${BASE_URL}/communities/${communityId}`;
-
   const payload = {
-    fields: {
-      admins: {
-        arrayValue: {
-          values: [{ stringValue: userId.toString() }]
+    writes: [
+      {
+        transform: {
+          document: `projects/${PROJECT_ID}/databases/(default)/documents/communities/${communityId}`,
+          fieldTransforms: [
+            {
+              fieldPath: "admins",
+              appendMissingElements: {
+                values: [{ stringValue: userId.toString() }]
+              }
+            }
+          ]
         }
       }
-    }
+    ]
   };
 
-  await firestorePatch(communityUrl, payload);
-
+  return firestoreCommit(payload);
 }
 
-
-
-
-
 /* ======================================================
-   ADD MEMBER / EMPLOYEE
+   ADD MEMBER / EMPLOYEE TO COMMUNITY
 ====================================================== */
+
 export async function addMemberToCommunity({ communityId, userId }) {
 
-  const communityUrl = `${BASE_URL}/communities/${communityId}`;
-
   const payload = {
-    fields: {
-      members: {
-        arrayValue: {
-          values: [{ stringValue: userId.toString() }]
+    writes: [
+      {
+        transform: {
+          document: `projects/${PROJECT_ID}/databases/(default)/documents/communities/${communityId}`,
+          fieldTransforms: [
+            {
+              fieldPath: "members",
+              appendMissingElements: {
+                values: [{ stringValue: userId.toString() }]
+              }
+            }
+          ]
         }
       }
-    }
+    ]
   };
 
-  await firestorePatch(communityUrl, payload);
-
+  return firestoreCommit(payload);
 }
