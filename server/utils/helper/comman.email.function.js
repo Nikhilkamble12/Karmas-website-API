@@ -111,13 +111,13 @@ async function sendEmail({
         if (!to || !subject) {
             throw new Error('Missing required fields: to, subject');
         }
-
+        const config = emailConfigs[type] || emailConfigs.DEFAULT;
         // Prepare recipients (optimized)
         const recipients = Array.isArray(to) ? to.join(', ') : to;
 
         // Prepare mail options
         const mailOptions = {
-            from: smtpConfig.from,
+            from: config.from,
             to: recipients,
             subject: subject
         };
@@ -132,7 +132,7 @@ async function sendEmail({
         }
 
         // Use reusable transporter instead of creating new one each time
-        const config = emailConfigs[type] || emailConfigs.DEFAULT;
+
         const transport = getTransporter(type);
 
         // Send email using async/await instead of Promise wrapper
