@@ -12,6 +12,7 @@ package-lock.json
 
 
 server/middleware/external_documents/firebase/karmas.firebase.json
+server/middleware/external_documents/firebase/community.karmas.firebase.json
 server/utils/helper/gcloud/theta-cell-481406-d1-b87e5a98b5bf.json
 # Ignore all .json files under resources/
 resources/json/**/*.json
