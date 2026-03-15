@@ -2,7 +2,10 @@ import AuthService from "./auth.service.js";
 import commonPath from "../../middleware/comman_path/comman.path.js";
 import BonusMasterService from "../bonus_master/bonus.master.service.js";
 import {
-  ROLE_MASTER
+  ROLE_MASTER,
+  BONUS_MASTER,
+  STATUS_MASTER,
+  OTP_TYPE_MASTER,
 } from "../../utils/constants/id_constant/id.constants.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
 import UserMasterService from "../user_master/user.master.service.js";

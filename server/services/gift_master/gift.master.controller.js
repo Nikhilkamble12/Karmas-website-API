@@ -351,7 +351,9 @@ const GiftMasterController = {
                     (userScore / gift.gift_score_required) * 100,
                     100
                 );
+                
                 const userCoupon = couponMap.get(gift.gift_master_id);
+                console.log("userCoupon", userCoupon);
                 const hasCoupon = !!userCoupon;
                 
                 // // Track if this gift just reached 100% but doesn't have a coupon yet
