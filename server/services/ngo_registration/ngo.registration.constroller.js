@@ -11,6 +11,7 @@ import sendEmail from "../../utils/helper/comman.email.function.js";
 import UserActivtyService from "../user_activity/user.activity.service.js";
 import db from "../index.js";
 import VIEW_NAME from "../../utils/db/view.constants.js";
+import { createNgoCommunity } from "../../utils/helper/firebase/community.firebase.helper.js";
 
 
 
@@ -30,48 +31,61 @@ const generateUniqueUsername = async (fullName, email) => {
     let username = "";
     let attempt = 0;
 
-    // 1. Clean the inputs
-    const cleanName = fullName.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
-    const emailPrefix = email.split('@')[0].toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+    // Clean inputs
+    let cleanName = fullName.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+    let emailPrefix = email.split('@')[0].toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+
+    if (cleanName.length < 3) cleanName += "user";
+    if (emailPrefix.length < 3) emailPrefix += "mail";
 
     while (!isUnique) {
-        // 2. Decide pattern based on attempt count
+
+        const randomNum = Math.floor(10 + Math.random() * 90); // 2 digit
+
         if (attempt === 0) {
-            username = cleanName;
-        } else if (attempt === 1) {
-            username = emailPrefix;
-        } else if (attempt === 2) {
-            username = `${cleanName}_${Math.floor(10 + Math.random() * 90)}`;
-        } else if (attempt === 3) {
-            username = `${emailPrefix}${Math.floor(10 + Math.random() * 90)}`;
-        } else {
-            // Fallback for high-collision names
-            username = `${cleanName}${Math.floor(1000 + Math.random() * 9000)}`;
+            username = `${cleanName.slice(0,6)}_${randomNum}`;
+        } 
+        else if (attempt === 1) {
+            username = `${emailPrefix.slice(0,6)}_${randomNum}`;
+        } 
+        else if (attempt === 2) {
+            username = `${cleanName.slice(0,4)}_${cleanName.slice(4,8)}${randomNum}`;
+        } 
+        else {
+            username = `${cleanName.slice(0,5)}_${Math.floor(1000 + Math.random() * 9000)}`;
         }
 
-        // 3. Database Check (Using your View)
+        // Enforce max 20 characters
+        if (username.length > 20) {
+            username = username.slice(0, 20);
+        }
+
+        // Enforce min 6 characters
+        if (username.length < 6) {
+            username = `${cleanName.slice(0,3)}_${randomNum}`;
+        }
+
         const checkResult = await db.sequelize.query(
             `SELECT COUNT(*) as count FROM ${VIEW_NAME.GET_ALL_USER_MASTER} WHERE user_name = :username`,
             {
-                replacements: { username: username },
+                replacements: { username },
                 type: db.Sequelize.QueryTypes.SELECT
             }
         );
 
-        // checkResult[0].count works for MySQL/Sequelize RAW queries
         if (parseInt(checkResult[0].count) === 0) {
             isUnique = true;
         } else {
             attempt++;
         }
 
-        // Safety break to prevent infinite loops (should never happen)
+        // Safety fallback
         if (attempt > 15) {
-            username = `${cleanName}${Date.now().toString().slice(-4)}`;
+            username = `${cleanName.slice(0,10)}_${Date.now().toString().slice(-4)}`;
+            username = username.slice(0, 20);
             break;
         }
     }
-
     return username;
 };
 
@@ -529,6 +543,7 @@ const NgoRegistrationController = {
 
                 // Create NGO entry
                 const createdNgo = await NgoMasterService.createService(ngoPayload);
+
                 if (createdNgo?.success == false) {
                 return res
                     .status(responseCode.BAD_REQUEST)
@@ -544,7 +559,7 @@ const NgoRegistrationController = {
                 // Build User Master Payload
                 const randomPassword = generateRandomPassword(10);
                 const generate_user_name = await generateUniqueUsername(registration.ngo_name,registration.email)
-
+  
                 const userPayload = {
                     user_name: generate_user_name,
                     password: randomPassword,
@@ -581,6 +596,15 @@ const NgoRegistrationController = {
                 // Create User entry
                 const createdUser = await UserMasterService.createService(userPayload);
                 if(createdUser){
+                    const community = await createNgoCommunity({
+                        ngoId: createdNgo.dataValues.ngo_id,
+                        ngoName:registration.ngo_name,
+                        userId: createdUser.dataValues.user_id
+                    })
+                    if(community){
+                        const updateNgo = await NgoMasterService
+                        .updateService(createdNgo.dataValues.ngo_id,{ngo_community_id:community.communityId})
+                    }
                     const activtyCreate = {
                         user_id:createdUser.dataValues.user_id,
                         is_active: 1,

@@ -123,6 +123,10 @@ const NgoMasterModel = (sequelize)=>{
             type: DataTypes.STRING(500),
             allowNull: true
         },
+        ngo_community_id:{
+            type: DataTypes.STRING(150),
+            allowNull: true
+        },
         status_id : {
             type: DataTypes.INTEGER,
             allowNull: false
